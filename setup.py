@@ -2,6 +2,10 @@
 import setuptools
 from setuptools import setup
 
+def readme():
+    with open('README.md') as f:
+        return f.read()
+      
 setup(name='map-of-elections',
       version='1.0.0',
       description='Map of Elections',
