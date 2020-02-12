@@ -1,3 +1,7 @@
+Installation
+=============================
+some text
+
 Markdown and reStructuredText
 =============================
 GitHub supports several lightweight markup languages for documentation;
