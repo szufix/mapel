@@ -8,7 +8,6 @@ setup(name='map-of-elections',
       url='https://github.com/szufix/mapel',
       author='Stanislaw Szufa',
       author_email='s.szufa@gmail.com',
-      license='MIT',
       packages=setuptools.find_packages(),
       install_requires=['numpy'],
       zip_safe=False)
