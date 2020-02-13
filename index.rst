@@ -21,6 +21,12 @@ if it won't work then add the following::
 
 
 
+Test
+=============================
+::
+
+    mapel.test()
+    
 Markdown and reStructuredText
 =============================
 GitHub supports several lightweight markup languages for documentation;
