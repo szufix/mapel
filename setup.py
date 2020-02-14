@@ -13,6 +13,7 @@ setup(name='map-of-elections',
       download_url='https://github.com/szufix/mapel/archive/v1.0.5.tar.gz',
       author='Stanislaw Szufa',
       author_email='s.szufa@gmail.com',
+      package_data={'mapel': [mapel + '/*.txt']},
       packages=setuptools.find_packages(),
       install_requires=['numpy'],
       zip_safe=False)
