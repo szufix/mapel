@@ -2,9 +2,8 @@ import os
 import setuptools
 from setuptools import setup
 
-def readme():
-    with open('README.md') as f:
-        return f.read()
+with open("README.md", "r") as fh:
+    long_description = fh.read()
     
 mapel_dir_1 = os.path.join('controllers','models')
 mapel_dir_2 = os.path.join('results','points')
@@ -18,5 +17,11 @@ setup(name='map-of-elections',
       author_email='s.szufa@gmail.com',
       package_data={'mapel': [mapel_dir_1 + '/*.txt', mapel_dir_2 + '/*.txt']},
       packages=setuptools.find_packages(),
-      install_requires=['matplotlib', 'numpy'],
-      zip_safe=False)
+      install_requires=['matplotlib', 'numpy
+      classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        ],
+        python_requires='>=3.6',
+    )
