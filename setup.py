@@ -7,10 +7,10 @@ def readme():
         return f.read()
       
 setup(name='map-of-elections',
-      version='1.0.3',
+      version='1.0.4',
       description='Map of Elections',
       url='https://github.com/szufix/mapel',      
-      download_url='https://github.com/szufix/mapel/archive/v1.0.3.tar.gz',
+      download_url='https://github.com/szufix/mapel/archive/v1.0.4.tar.gz',
       author='Stanislaw Szufa',
       author_email='s.szufa@gmail.com',
       packages=setuptools.find_packages(),
