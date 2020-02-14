@@ -1,4 +1,4 @@
-import modern as mo
+from . import modern as mo
 
 def hello():
     print("hello")
