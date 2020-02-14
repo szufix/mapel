@@ -17,7 +17,7 @@ setup(name='map-of-elections',
       author_email='s.szufa@gmail.com',
       package_data={'mapel': [mapel_dir_1 + '/*.txt', mapel_dir_2 + '/*.txt']},
       packages=setuptools.find_packages(),
-      install_requires=['matplotlib', 'numpy
+      install_requires=['matplotlib', 'numpy'],
       classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
