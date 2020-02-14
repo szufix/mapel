@@ -10,10 +10,10 @@ mapel_dir_1 = os.path.join('controllers','models')
 mapel_dir_2 = os.path.join('results','points')
 
 setup(name='map-of-elections',
-      version='1.0.6',
+      version='1.0.7',
       description='Map of Elections',
       url='https://github.com/szufix/mapel',      
-      download_url='https://github.com/szufix/mapel/archive/v1.0.6.tar.gz',
+      download_url='https://github.com/szufix/mapel/archive/v1.0.7.tar.gz',
       author='Stanislaw Szufa',
       author_email='s.szufa@gmail.com',
       package_data={'mapel': [mapel_dir_1 + '/*.txt', mapel_dir_2 + '/*.txt']},
