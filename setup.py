@@ -6,7 +6,7 @@ def readme():
     with open('README.md') as f:
         return f.read()
     
-mapel_dir = os.path.join('results')
+mapel_dir = os.path.join('results', 'points')
       
 setup(name='map-of-elections',
       version='1.0.5',
