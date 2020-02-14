@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import objects as obj
+from . import objects as obj
 import os
 
 
