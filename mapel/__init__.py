@@ -1,4 +1,4 @@
-import voting.modern as mo
+from .voting import modern as mo
 
 def hello():
     print("hello")
