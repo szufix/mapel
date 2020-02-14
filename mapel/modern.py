@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import voting.objects as obj
+import objects as obj
 
 
 def print_2d(name, num_winners=0, shades=False):
