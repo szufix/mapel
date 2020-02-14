@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import math
+import os
 
 
 class Model_xd:
@@ -81,7 +82,8 @@ class Model_2d:
     @staticmethod
     def import_points(name):
 
-        file_name = "results/points/" + str(name) + ".txt"
+        file_name = str(os.path.join(os.path.abspath(os.path.dirname(__file__)), '../'))
+        file_name += "/results/points/" + str(name) + ".txt"
         file_ = open(file_name, 'r')
         num_winners = int(file_.readline())
         points = [[0, 0] for _ in range(num_winners)]
@@ -96,7 +98,8 @@ class Model_2d:
     @staticmethod
     def import_controllers(name):
 
-        file_name = "controllers/models/" + name + ".txt"
+        file_name = str(os.path.join(os.path.abspath(os.path.dirname(__file__)), '../'))
+        file_name += "controllers/models/" + name + ".txt"
         file_ = open(file_name, 'r')
         num_voters = int(file_.readline())
         num_candidates = int(file_.readline())
@@ -123,7 +126,8 @@ class Model_2d:
     @staticmethod
     def import_winners(name, first_winners):
 
-        file_name = "results/winners/" + str(name) + "_cc.txt"
+        file_name = str(os.path.join(os.path.abspath(os.path.dirname(__file__)), '../'))
+        file_name += "results/winners/" + str(name) + "_cc.txt"
         file_ = open(file_name, 'r')
         number_of_elections = int(file_.readline())
         real_num_winners = int(file_.readline())
