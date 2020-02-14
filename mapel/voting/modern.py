@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import objects as obj
+import os
 
 
 def print_2d(name, num_winners=0, shades=False):
@@ -34,8 +35,10 @@ def print_2d(name, num_winners=0, shades=False):
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    name = "images/" + str(name) + ".png"
-    plt.savefig(name)
+
+    file_name = str(os.path.join(os.path.abspath(os.path.dirname(__file__)), '../'))
+    file_name += "images/" + str(name) + ".png"
+    plt.savefig(file_name)
     plt.show()
 
 
