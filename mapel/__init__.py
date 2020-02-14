@@ -1,4 +1,4 @@
-from .modern import modern
+import voting.modern as mo
 
 def hello():
     print("hello")
@@ -10,4 +10,4 @@ def test():
 
     #mo.convert_xd_to_2d(name, num_iterations=1000)
 
-    modern.print_2d(name, shades=False)
+    mo.print_2d(name, shades=False)
