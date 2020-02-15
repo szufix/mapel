@@ -1,0 +1,13 @@
+# Include the README
+include *.md
+
+# Include the license file
+include LICENSE.txt
+
+# Include the requirements file
+include requirements.txt
+
+# Include other txt files
+include controllers/models/*.txt
+include results/points/*.txt
+include *.txt
