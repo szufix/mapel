@@ -4,8 +4,8 @@ import os
 rootDir = os.path.abspath(os.path.dirname(__file__))
 reqPath = os.path.join(rootDir, 'requirements.txt')
 readmePath = os.path.join(rootDir, 'README.md')
-mapel_dir_1 = os.path.join(rootDir, 'controllers', 'models')
-mapel_dir_2 = os.path.join(rootDir, 'results', 'points')
+mapel_dir_1 = os.path.join(rootDir, 'mapel', 'controllers', 'models')
+mapel_dir_2 = os.path.join(rootDir, 'mapel', 'results', 'points')
 
 with open(reqPath) as f:
     requirements = f.read().splitlines()
