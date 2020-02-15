@@ -20,7 +20,7 @@ with open(readmePath, "r") as f:
 
 setup(
     name='mapel',
-    version='1.0.8',
+    version='1.0.9',
     license='MIT',
     author='Stanislaw Szufa',
     author_email='s.szufa@gmail.com',
@@ -29,8 +29,8 @@ setup(
     url='https://github.com/szufix/mapel',
     download_url='https://github.com/szufix/mapel/archive/v1.0.7.tar.gz',
     package_data={'mapel': [mapel_dir_1 + '/*.txt', mapel_dir_2 + '/*.txt']},
-    packages=find_packages(),
-    install_requires=required,
+    packages=find_packages(where='mapel'),
+    # install_requires=required,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
