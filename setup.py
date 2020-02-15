@@ -8,7 +8,12 @@ mapel_dir_1 = os.path.join(rootDir, 'controllers', 'models')
 mapel_dir_2 = os.path.join(rootDir, 'results', 'points')
 
 with open(reqPath) as f:
-    required = f.read().splitlines()
+    requirements = f.read().splitlines()
+
+required = []
+for req in requirements:
+    end = req.find("==")
+    required.append(req[0:end])
 
 with open(readmePath, "r") as f:
     long_description = f.read()
