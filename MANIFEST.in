@@ -8,6 +8,6 @@ include LICENSE.txt
 include requirements.txt
 
 # Include other txt files
-include controllers/models/*.txt
-include results/points/*.txt
+include mapel/controllers/models/*.txt
+include mapel/results/points/*.txt
 include *.txt
