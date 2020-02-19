@@ -2,7 +2,7 @@ Installation
 =============================
 ::
 
-    pip install git+https://github.com/szufix/mapel
+    pip install mapel
 
 Import
 =============================
