@@ -19,7 +19,7 @@ Test
 
 Examples
 =============================
-Mixture of 800 election from 30 different  models:
+Mixture of 800 election from 30 different  models: 
 5x30, Impartial Culture, Single Crossing, SPOC, Single Peaked (by Walsh), Single Peaked (by Conitzer)
 6x30 Euclidean: 1D Interval, 2D Square, 3D Cube, 5D Cube, 10D Cube 20D Cube, 2D Sphere, 3D Sphere, 5D Sphere,  
 6x30 Urn Model with the following parameter: 0.5, 0.2, 0.1, 0.05, 0.02, 0.01 
