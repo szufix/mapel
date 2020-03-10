@@ -42,3 +42,10 @@ Example 5: 100 voters, 4 candidates, example_100_4
 
 Example 6: 100 voters, 3 candidates, example_100_3
 
+Functionalities
+=============================
+::
+
+    mapel.print_2d(name="...")
+    mapel.print_matrix(name="...")
+
