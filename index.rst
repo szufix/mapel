@@ -30,15 +30,15 @@ Mixture of 800 election from 30 different  models:
 20x(each) Mallows with the following parameter: 0.999, 0.99, 0.95, 0.75, 0.5, 0.25, 0.1, 0.05, 0.01, 0.001
 
 
-Example 1: 100 voters, 100 candidates
+Example 1: 100 voters, 100 candidates, example_100_100
 
-Example 2: 100 voters, 20 candidates
+Example 2: 100 voters, 20 candidates, example_100_20
 
-Example 3: 100 voters, 10 candidates
+Example 3: 100 voters, 10 candidates, example_100_10
 
-Example 4: 100 voters, 5 candidates
+Example 4: 100 voters, 5 candidates, example_100_5
 
-Example 5: 100 voters, 4 candidates
+Example 5: 100 voters, 4 candidates, example_100_4
 
-Example 6: 100 voters, 3 candidates
+Example 6: 100 voters, 3 candidates, example_100_3
 
