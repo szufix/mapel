@@ -31,9 +31,14 @@ Mixture of 800 election from 30 different  models:
 
 
 Example 1: 100 voters, 100 candidates
+
 Example 2: 100 voters, 20 candidates
+
 Example 3: 100 voters, 10 candidates
+
 Example 4: 100 voters, 5 candidates
+
 Example 5: 100 voters, 4 candidates
+
 Example 6: 100 voters, 3 candidates
 
