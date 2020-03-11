@@ -84,7 +84,8 @@ def print_2d(name, num_winners=0, shades=False, mask=False, angle=0, reverse=Fal
         plt.axis('off')
 
         #####################################################
-        file_name = "controllers/models/" + name + ".txt"
+        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+        file_name = os.path.join(file_name, "experiments", str(name), "controllers", str(name) + ".txt")
         file_ = open(file_name, 'r')
         num_voters = int(file_.readline())
         num_candidates = int(file_.readline())
@@ -92,8 +93,12 @@ def print_2d(name, num_winners=0, shades=False, mask=False, angle=0, reverse=Fal
         #####################################################
 
         text = ax.text(0.0, 1.05, text_name, transform=ax.transAxes)
-        name = "images/" + str(name) + ".png"
-        plt.savefig(name, bbox_extra_artists=(lgd, text), bbox_inches='tight')
+        #name = "images/" + str(name) + ".png"
+
+        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+        file_name = os.path.join(file_name, "images", str(name) + "_map.png")
+
+        plt.savefig(file_name, bbox_extra_artists=(lgd, text), bbox_inches='tight')
         plt.show()
 
         """

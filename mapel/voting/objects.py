@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import math
 
 def rotate_point(cx, cy, angle, px, py):
@@ -99,7 +100,8 @@ class Model_2d:
     @staticmethod
     def import_points(name):
 
-        file_name = "../experiments/" + str(name) + "/results/points/" + str(name) + ".txt"
+        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+        file_name = os.path.join(file_name, "experiments", str(name), "results", "points", str(name) + ".txt")
         file_ = open(file_name, 'r')
         num_winners = int(file_.readline())
         points = [[0, 0] for _ in range(num_winners)]
@@ -114,7 +116,8 @@ class Model_2d:
     @staticmethod
     def import_controllers(name):
 
-        file_name = "controllers/models/" + name + ".txt"
+        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+        file_name = os.path.join(file_name, "experiments", str(name), "controllers", str(name) + ".txt")
         file_ = open(file_name, 'r')
         num_voters = int(file_.readline())
         num_candidates = int(file_.readline())
