@@ -4,10 +4,21 @@ from . import objects as obj
 import os
 
 
-def print_2d(name, num_winners=0, shades=False):
+def print_2d(name, num_winners=0, shades=False, mask=False, angle=0, reverse=False, update=False):
+
     model = obj.Model_2d(name, num_winners=num_winners, shades=shades)
     fig = plt.figure()
     ax = fig.add_subplot(111)
+
+    # rotate by angle
+    if angle != 0:
+        model.rotate(angle)
+
+    if reverse:
+        model.reverse()
+
+    if update:
+        model.update()
 
     if shades:
         file_name = "results/times/" + str(name) + ".txt"
@@ -24,31 +35,82 @@ def print_2d(name, num_winners=0, shades=False):
                 ctr += 1
 
     else:
-        #for w in model.winners:
-        #for w in [513, 527]:
-        #    ax.scatter(model.points[w][0], model.points[w][1], color="black", s=30)
+
         for k in range(model.num_families):
-            ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1],
-                       color=model.colors[k], label=model.labels[k],
-                       alpha=model.alphas[k], s=9)
+            if k < 30:
+                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1],
+                           color=model.colors[k], label=model.labels[k],
+                           alpha=model.alphas[k], s=9)
+            else:
+                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1],
+                           color=model.colors[k], label=model.labels[k],
+                           alpha=model.alphas[k], s=30)
 
-    box = ax.get_position()
-    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        for w in model.winners:
+            ax.scatter(model.points[w][0], model.points[w][1], color="black", s=20)
 
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-    file_name = os.path.join(file_name, "images", str(name) + ".png")
-    plt.savefig(file_name)
-    plt.show()
-    
- 
-def generate_matrix(experiment_id):
-    # generate MATRIX
 
-    experiment_id = "example_100_3"
+    if mask:
+
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+        #ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.axis('off')
+        plt.margins(0.25)
+        name = "images/" + str(name) + ".png"
+        plt.savefig(name)
+        #plt.show()
+
+        print("mask")
+
+        background = Image.open("images/example_100_100.png")
+        c = 0.59
+        x = int(1066*c)
+        y = int(675*c)
+        foreground = Image.open("images/mask.png").resize((x, y))
+
+        background.paste(foreground, (-30, 39), foreground)
+        background.show()
+        background = background.save("geeks.png")
+        name = "images/" + str(name) + ".png"
+        plt.savefig(name)
+
+    else:
+
+        box = ax.get_position()
+
+        #ax.set_position([box.x0, box.y0, box.width * 1, 1*box.height])
+        lgd = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.axis('off')
+
+        #####################################################
+        file_name = "controllers/models/" + name + ".txt"
+        file_ = open(file_name, 'r')
+        num_voters = int(file_.readline())
+        num_candidates = int(file_.readline())
+        text_name = "100x" + str(num_candidates)
+        #####################################################
+
+        text = ax.text(0.0, 1.05, text_name, transform=ax.transAxes)
+        name = "images/" + str(name) + ".png"
+        plt.savefig(name, bbox_extra_artists=(lgd, text), bbox_inches='tight')
+        plt.show()
+
+        """
+        lgd = ax.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, -0.1))
+        text = ax.text(-0.2, 1.05, "Aribitrary text", transform=ax.transAxes)
+        ax.set_title("Trigonometry")
+        ax.grid('on')
+        fig.savefig('samplefigure', bbox_extra_artists=(lgd, text), bbox_inches='tight')
+        """
+
+
+def generate_matrix(experiment_id, scale=1.):
+
+    #experiment_id = "example_100_3"
 
     ######
-    file_controllers = open("experiments/" + experiment_id + "/controllers/example_100_3.txt", 'r')
+    file_controllers = open("experiments/" + experiment_id + "/controllers/" + experiment_id + ".txt", 'r')
     num_families = int(file_controllers.readline())
     num_families = int(file_controllers.readline())
     num_families = int(file_controllers.readline())
@@ -74,7 +136,7 @@ def generate_matrix(experiment_id):
         alphas[i] = float(line[4])
     ######
 
-    file_name = "experiments/" + str(experiment_id) + "/results/distances/example_100_3.txt"
+    file_name = "experiments/" + str(experiment_id) + "/results/distances/" + experiment_id + ".txt"
     file_ = open(file_name, 'r')
 
     num_elections = int(file_.readline())
@@ -92,11 +154,8 @@ def generate_matrix(experiment_id):
             code[ctr] = i
             ctr += 1
 
-    #print(code)
-
     for i in range(third_line):
         line = file_.readline().split(' ')
-        # print(code[int(line[0])])
         a = code[int(line[0])]
         b = code[int(line[1])]
         value = float(line[2])
@@ -106,22 +165,16 @@ def generate_matrix(experiment_id):
     for i in range(second_line):
         for j in range(i, second_line):
             matrix[i][j] /= float(quan[i][j])
-            matrix[i][j] *= 10.
+            matrix[i][j] *= scale
             matrix[i][j] = int(round(matrix[i][j], 0))
             matrix[j][i] = matrix[i][j]
 
-    #print(matrix[0][0])
 
-    print("ok")
     file_.close()
 
     fig, ax = plt.subplots()
 
     min_val, max_val = 0, num_families
-
-    intersection_matrix = np.random.randint(0, 10, size=(max_val, max_val))
-
-    #print(intersection_matrix)
 
     ax.matshow(matrix, cmap=plt.cm.Blues)
 
@@ -130,18 +183,17 @@ def generate_matrix(experiment_id):
             c = int(matrix[i][j])
             ax.text(i, j, str(c), va='center', ha='center')
 
-
-
     x_values = family_full_name
     y_values = family_full_name
     y_axis = np.arange(0, num_families, 1)
     x_axis = np.arange(0, num_families, 1)
 
-    # plt.barh(y_axis, x_values, align='center')
     plt.yticks(y_axis, y_values)
     plt.xticks(x_axis, x_values, rotation='vertical')
 
-    plt.savefig("matrix_luty.png")
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(file_name, "experiments", str(name), "images", str(name) + "_matrix.png")
+    plt.savefig(file_name)
     plt.show()
 
 

@@ -1,7 +1,24 @@
 #!/usr/bin/env python
 
 import math
-import os
+
+def rotate_point(cx, cy, angle, px, py):
+
+  s = math.sin(angle)
+  c = math.cos(angle)
+
+  # translate point back to origin:
+  px -= cx
+  py -= cy
+
+  #// rotate point
+  xnew = px * c - py * s
+  ynew = px * s + py * c
+
+  #// translate point back:
+  px = xnew + cx
+  py = ynew + cy
+  return px, py
 
 
 class Model_xd:
@@ -15,8 +32,7 @@ class Model_xd:
     @staticmethod
     def import_distances(name):
 
-        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "results", "distances", str(name) + ".txt")
+        file_name = "results/distances/" + str(name) + ".txt"
         file_ = open(file_name, 'r')
         num_points = int(file_.readline())
         num_families = int(file_.readline())
@@ -35,8 +51,7 @@ class Model_xd:
     @staticmethod
     def import_controllers(name):
 
-        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "controllers", "models", str(name) + ".txt")
+        file_name = "controllers/models/" + name + ".txt"
         file_ = open(file_name, 'r')
         num_voters = int(file_.readline())
         num_candidates = int(file_.readline())
@@ -84,8 +99,7 @@ class Model_2d:
     @staticmethod
     def import_points(name):
 
-        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "results", "points", str(name) + ".txt")
+        file_name = "../experiments/" + str(name) + "/results/points/" + str(name) + ".txt"
         file_ = open(file_name, 'r')
         num_winners = int(file_.readline())
         points = [[0, 0] for _ in range(num_winners)]
@@ -100,8 +114,7 @@ class Model_2d:
     @staticmethod
     def import_controllers(name):
 
-        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "controllers", "models", str(name) + ".txt")
+        file_name = "controllers/models/" + name + ".txt"
         file_ = open(file_name, 'r')
         num_voters = int(file_.readline())
         num_candidates = int(file_.readline())
@@ -128,8 +141,7 @@ class Model_2d:
     @staticmethod
     def import_winners(name, first_winners):
 
-        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "results", "winners", str(name) + "_cc.txt")
+        file_name = "results/winners/" + str(name) + "_approx_cc.txt"
         file_ = open(file_name, 'r')
         number_of_elections = int(file_.readline())
         real_num_winners = int(file_.readline())
@@ -165,3 +177,37 @@ class Model_2d:
             distance += (self.points[i][d] - self.points[j][d]) ** 2
 
         return math.sqrt(distance)
+
+    def rotate(self, angle):
+
+        for i in range(self.num_points):
+            self.points[i][0], self.points[i][1] = rotate_point(0.5, 0.5, angle, self.points[i][0], self.points[i][1])
+
+        self.points_by_families = self.compute_points_by_families()
+
+    def reverse(self, ):
+
+        for i in range(self.num_points):
+            self.points[i][0] = self.points[i][0]
+            self.points[i][1] = -self.points[i][1]
+
+        self.points_by_families = self.compute_points_by_families()
+
+    def update(self):
+
+        ### SAVE MY_POS TO FILE
+        file_name = "results/points/" + str(self.name) + ".txt"
+        file_ = open(file_name, 'w')
+        file_.write(str(self.num_points) + "\n")
+
+        for i in range(self.num_points):
+            x = round(self.points[i][0], 5)
+            y = round(self.points[i][1], 5)
+            file_.write(str(x) + ', ' + str(y) + "\n")
+        file_.close()
+
+
+
+
+
+

@@ -1,0 +1,33 @@
+100
+20
+30
+30, impartial_culture, 0, black, 1, Impartial Culture, i
+30, 1d_interval, 0, DarkGreen, 1, 1D Interval, 1
+30, 2d_square, 0, Green, 1, 2D Square, 2
+30, 3d_cube, 0, ForestGreen, 0.7, 3D Cube, 4
+30, 5d_cube, 0, MediumSeaGreen, 1, 5D Cube, 5
+30, 10d_cube, 0, MediumSeaGreen, 0.6, 10D Cube, 10
+30, 20d_cube, 0, MediumSeaGreen, 0.2, 20D Cube, 20
+30, 2d_sphere, 0, black, 0.2, 2D Sphere, a
+30, 3d_sphere, 0, black, 0.4, 3D Sphere, 3
+30, 5d_sphere, 0, black, 0.6, 3D Sphere, a
+30, spoc_conitzer, 0, DarkRed, 0.7, SPOC, x
+30, single_crossing, 0, purple, 0.6, Single Crossing, sc
+30, conitzer, 0, LimeGreen, 1, Conitzer SP, c
+30, walsh, 0, OliveDrab, 1, Walsh SP, w
+30, urn_model, 0.5, OrangeRed, 1, Urn model 0.5, u
+30, urn_model, 0.2, DarkOrange, 1, Urn model 0.2, u
+30, urn_model, 0.1, Orange, 1, Urn model 0.1, u
+30, urn_model, 0.05, Gold, 1, Urn model 0.05, u
+30, urn_model, 0.02, Yellow, 1, Urn model 0.02, u
+30, urn_model, 0.01, Yellow, 0.5, Urn model 0.01, u
+20, mallows, 0.999, DarkBlue, 1, Mallows 0.999, a
+20, mallows, 0.99, DarkBlue, 0.9, Mallows 0.99, a
+20, mallows, 0.95, DarkBlue, 0.8, Mallows 0.95, m
+20, mallows, 0.75, MediumBlue, 1, Mallows 0.75, m
+20, mallows, 0.5, Blue, 1, Mallows 0.5, m
+20, mallows, 0.25, Blue, 0.7, Mallows 0.25, m
+20, mallows, 0.1, DodgerBlue, 1, Mallows 0.1, m
+20, mallows, 0.05, SkyBlue, 1, Mallows 0.05, m
+20, mallows, 0.01, LightBlue, 1, Mallows 0.01, m
+20, mallows, 0.001, PaleTurquoise, 1, Mallows 0.001, m
