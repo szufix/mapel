@@ -1,13 +1,16 @@
 from .voting import modern as mo
 
-def hello():
-    print("hello")
 
 def test():
 
-    #name = str(sys.argv[1])
-    name = "example_100_20"
+    print("Welcome to Mapel!")
 
-    #mo.convert_xd_to_2d(name, num_iterations=1000)
 
-    mo.print_2d(name, shades=False)
+def print_2d(name):
+
+    mo.print_2d(name)
+
+
+def print_matrix(name):
+
+    mo.generate_matrix(name)

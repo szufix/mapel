@@ -115,7 +115,10 @@ def generate_matrix(experiment_id, scale=1.):
     #experiment_id = "example_100_3"
 
     ######
-    file_controllers = open("experiments/" + experiment_id + "/controllers/" + experiment_id + ".txt", 'r')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(file_name, "experiments", str(experiment_id), "controllers", str(experiment_id) + ".txt")
+    file_controllers = open(file_name, 'r')
+
     num_families = int(file_controllers.readline())
     num_families = int(file_controllers.readline())
     num_families = int(file_controllers.readline())
@@ -141,8 +144,10 @@ def generate_matrix(experiment_id, scale=1.):
         alphas[i] = float(line[4])
     ######
 
-    file_name = "experiments/" + str(experiment_id) + "/results/distances/" + experiment_id + ".txt"
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(file_name, "experiments", str(experiment_id), "results", "distances", str(experiment_id) + ".txt")
     file_ = open(file_name, 'r')
+
 
     num_elections = int(file_.readline())
     second_line = int(file_.readline())
@@ -183,8 +188,10 @@ def generate_matrix(experiment_id, scale=1.):
 
     ax.matshow(matrix, cmap=plt.cm.Blues)
 
-    for i in xrange(num_families):
-        for j in xrange(num_families):
+    #for i in xrange(num_families):
+    #    for j in xrange(num_families):
+    for i in range(num_families):
+        for j in range(num_families):
             c = int(matrix[i][j])
             ax.text(i, j, str(c), va='center', ha='center')
 
@@ -197,7 +204,7 @@ def generate_matrix(experiment_id, scale=1.):
     plt.xticks(x_axis, x_values, rotation='vertical')
 
     file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-    file_name = os.path.join(file_name, "experiments", str(name), "images", str(name) + "_matrix.png")
+    file_name = os.path.join(file_name, "images", str(experiment_id) + "_matrix.png")
     plt.savefig(file_name)
     plt.show()
 
