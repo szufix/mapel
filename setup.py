@@ -24,7 +24,7 @@ setup(
     long_description_content_type="text/markdown",
     url='https://github.com/szufix/mapel',
     download_url='https://github.com/szufix/mapel',
-    package_data={'mapel': [dir_1 + '/*']},
+    #package_data={'mapel': [dir_1 + '/*']},
     packages=find_packages(),
     install_requires=required,
     classifiers=[
