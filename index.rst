@@ -70,3 +70,7 @@ List of examples
 - Example 4: 100 voters, 5 candidates, name: example_100_5
 - Example 5: 100 voters, 4 candidates, name: example_100_4
 - Example 6: 100 voters, 3 candidates, name: example_100_3
+
+Example of use::
+
+    mapel.print_2d("example_100_20", winners=50)
