@@ -33,7 +33,7 @@ Print the map of elections
 **print_2d** function is printing a two dimensional embedding of all the elections from a given experiment.
 ::
 
-    mapel.print_2d(name, winners=0, angle=0.)
+    mapel.print_2d(name, winners=0, angle=0, mask=False)
 
 name
   : obligatory, name of the experiment.
@@ -43,6 +43,9 @@ winners
 
 angle
   : optional, rotate the image by *angle*.
+    
+mask
+  : optional (only for *example_100_100*), mark all families on the map.
 
 
 Print the matrix with distances
