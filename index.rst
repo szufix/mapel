@@ -74,3 +74,13 @@ List of examples
 Example of use::
 
     mapel.print_2d("example_100_20", winners=50)
+    
+Extras
+=============================
+
+Matrix with distances
+-----------------------------
+In *experiments/name_of_the_experiment/controllers/name_of_the_experiment_matrix.txt* there a is list of names of the families of elections. The number of families and their order can be change and will influet the *mapel.print_matrix()* function.
+
+
+
