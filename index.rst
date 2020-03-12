@@ -99,4 +99,5 @@ SOC files
 -----------------------------
 In *experiments/name_of_the_experiment/elections/soc_approx_cc/* are all the elections ordered by greedy CC.
 
+Definition of the soc format can be found here: http://www.preflib.org/data/format.php#soc
 
