@@ -25,7 +25,7 @@ Functionalities
 
 Print the map of elections
 -----------------------------
-**print_2d** function is printing an 2d embedding of all the elections from a given experiment.
+**print_2d** function is printing a two dimensional embedding of all the elections from a given experiment.
 ::
 
     mapel.print_2d(name, winners=0, angle=0.)
@@ -42,7 +42,7 @@ angle
 
 Print the matrix with distances
 -----------------------------
-**print_matrix** function is printing an array with average distances between each family of elections.
+**print_matrix** function is printing an array with average distances between each family of elections from a given experiment.
 
 ::
 
@@ -54,7 +54,7 @@ name
   
 
 scale
-  : optional, multiply all the values by *scale*
+  : optional, multiply all the values by *scale*.
 
 Experiments
 =============================
@@ -67,12 +67,12 @@ Mixture of 800 election from 30 different  models:
 
 List of examples
 -----------------------------
-- Example 1: 100 voters, 100 candidates, name: example_100_100
-- Example 2: 100 voters, 20 candidates, name: example_100_20
-- Example 3: 100 voters, 10 candidates, name: example_100_10
-- Example 4: 100 voters, 5 candidates, name: example_100_5
-- Example 5: 100 voters, 4 candidates, name: example_100_4
-- Example 6: 100 voters, 3 candidates, name: example_100_3
+- Example 1: 100 voters, 100 candidates; name: **example_100_100**
+- Example 2: 100 voters, 20 candidates; name: **example_100_20**
+- Example 3: 100 voters, 10 candidates; name: **example_100_10**
+- Example 4: 100 voters, 5 candidates; name: **example_100_5**
+- Example 5: 100 voters, 4 candidates; name: **example_100_4**
+- Example 6: 100 voters, 3 candidates; name: **example_100_3**
 
 Example of use::
 
