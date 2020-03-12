@@ -17,6 +17,42 @@ Test
 
     mapel.test()
 
+
+
+Functionalities
+=============================
+
+
+Print the map of elections
+-----------------------------
+::
+
+    mapel.print_2d(name, winners=0, angle=0.)
+
+name
+  : obligatory, name of the experiment.
+  
+winners
+  : optional, number of winners of greedy CC to be marked.
+
+angle
+  : optional, rotate the image by *angle*.
+
+
+Print the matrix with distances
+-----------------------------
+::
+
+    mapel.print_matrix(name, scale=1.)
+
+
+name
+  : obligatory, name of the experiment.
+  
+
+scale
+  : optional, multiply all the values by *scale*
+
 Experiments
 =============================
 Mixture of 800 election from 30 different  models: 
@@ -28,30 +64,9 @@ Mixture of 800 election from 30 different  models:
 
 List of examples
 -----------------------------
-- Example 1: 100 voters, 100 candidates, example_100_100
-- Example 2: 100 voters, 20 candidates, example_100_20
-- Example 3: 100 voters, 10 candidates, example_100_10
-- Example 4: 100 voters, 5 candidates, example_100_5
-- Example 5: 100 voters, 4 candidates, example_100_4
-- Example 6: 100 voters, 3 candidates, example_100_3
-
-Functionalities
-=============================
-
-
-Print the map of elections
------------------------------
-::
-
-    mapel.print_2d(name="...")
-
-
-Print the matrix with distances
------------------------------
-::
-
-    mapel.print_matrix(name, scale=1.)
-
-Obligaotry paramteres: name
-
-Optional parameters: scale (by deafalut =1.)
+- Example 1: 100 voters, 100 candidates, name: example_100_100
+- Example 2: 100 voters, 20 candidates, name: example_100_20
+- Example 3: 100 voters, 10 candidates, name: example_100_10
+- Example 4: 100 voters, 5 candidates, name: example_100_5
+- Example 5: 100 voters, 4 candidates, name: example_100_4
+- Example 6: 100 voters, 3 candidates, name: example_100_3
