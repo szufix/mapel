@@ -25,6 +25,7 @@ Functionalities
 
 Print the map of elections
 -----------------------------
+**print_2d** function is printing an 2d embedding of all the elections from a given experiment.
 ::
 
     mapel.print_2d(name, winners=0, angle=0.)
@@ -41,6 +42,8 @@ angle
 
 Print the matrix with distances
 -----------------------------
+**print_matrix** function is printing an array with average distances between each family of elections.
+
 ::
 
     mapel.print_matrix(name, scale=1.)
