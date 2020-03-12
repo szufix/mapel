@@ -4,8 +4,9 @@ import os
 rootDir = os.path.abspath(os.path.dirname(__file__))
 reqPath = os.path.join(rootDir, 'requirements.txt')
 readmePath = os.path.join(rootDir, 'README.md')
-mapel_dir_1 = os.path.join(rootDir, 'mapel', 'controllers', 'models')
-mapel_dir_2 = os.path.join(rootDir, 'mapel', 'results', 'points')
+dir_1 = os.path.join(rootDir, 'mapel', 'controllers')
+dir_2= os.path.join(rootDir, 'mapel', 'elections')
+dir_3 = os.path.join(rootDir, 'mapel', 'results')
 
 with open(reqPath) as f:
     required = f.read().splitlines()
@@ -24,7 +25,7 @@ setup(
     long_description_content_type="text/markdown",
     url='https://github.com/szufix/mapel',
     download_url='https://github.com/szufix/mapel',
-    package_data={'mapel': [mapel_dir_1 + '/*.txt', mapel_dir_2 + '/*.txt']},
+    package_data={'mapel': [dir_1 + '/*.txt', dir_2 + '/*.txt', dir_3 + '/*.txt']},
     packages=find_packages(),
     install_requires=required,
     classifiers=[
