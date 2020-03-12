@@ -83,6 +83,8 @@ Example of use::
 
     mapel.print_2d("example_100_20", winners=50)
     
+Experiment structure: tbu
+    
 Extras
 =============================
 
