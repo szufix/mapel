@@ -80,7 +80,7 @@ Extras
 
 Matrix with distances
 -----------------------------
-In *experiments/name_of_the_experiment/controllers/name_of_the_experiment_matrix.txt* there a is list of names of the families of elections. The number of families and their order can be change and will influet the *mapel.print_matrix()* function.
+In *experiments/name_of_the_experiment/controllers/name_of_the_experiment_matrix.txt* there a is list of names of the families of elections. The number of families and their order can be change and will influence the *mapel.print_matrix()* function.
 
 SOC files
 -----------------------------
