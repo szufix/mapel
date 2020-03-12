@@ -179,26 +179,42 @@ def generate_matrix(experiment_id, scale=1.):
             matrix[i][j] = int(round(matrix[i][j], 0))
             matrix[j][i] = matrix[i][j]
 
-
     file_.close()
+
+    order = [i for i in range(num_families)]
+
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(file_name, "experiments", str(experiment_id), "controllers", str(experiment_id) + "_matrix.txt")
+    file_ = open(file_name, 'r')
+
+    num_families_order = int(file_.readline())
+
+    for i in range(num_families_order):
+        line = str(file_.readline().replace("\n","").replace(" ", ""))
+        for j in range(num_families):
+            if family_full_name[j].replace(" ","") == line:
+                order[i] = j
 
     fig, ax = plt.subplots()
 
-    min_val, max_val = 0, num_families
+    matrix_order = [[0. for _ in range(num_families_order)] for _ in range(num_families_order)]
 
-    ax.matshow(matrix, cmap=plt.cm.Blues)
-
-    #for i in xrange(num_families):
-    #    for j in xrange(num_families):
-    for i in range(num_families):
-        for j in range(num_families):
-            c = int(matrix[i][j])
+    for i in range(num_families_order):
+        for j in range(num_families_order):
+            c = int(matrix[order[i]][order[j]])
+            matrix_order[i][j] = c
             ax.text(i, j, str(c), va='center', ha='center')
 
-    x_values = family_full_name
-    y_values = family_full_name
-    y_axis = np.arange(0, num_families, 1)
-    x_axis = np.arange(0, num_families, 1)
+    family_full_name_order = []
+    for i in range(num_families_order):
+        family_full_name_order.append(family_full_name[order[i]])
+
+    ax.matshow(matrix_order, cmap=plt.cm.Blues)
+
+    x_values = family_full_name_order
+    y_values = family_full_name_order
+    y_axis = np.arange(0, num_families_order, 1)
+    x_axis = np.arange(0, num_families_order, 1)
 
     plt.yticks(y_axis, y_values)
     plt.xticks(x_axis, x_values, rotation='vertical')

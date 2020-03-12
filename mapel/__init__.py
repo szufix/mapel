@@ -11,6 +11,6 @@ def print_2d(name):
     mo.print_2d(name)
 
 
-def print_matrix(name):
+def print_matrix(name, scale=1.):
 
-    mo.generate_matrix(name)
+    mo.generate_matrix(name, scale)

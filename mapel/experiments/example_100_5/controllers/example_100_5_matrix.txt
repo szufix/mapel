@@ -1,0 +1,32 @@
+31
+Impartial Culture
+IAC
+1D Interval
+2D Square
+3D Cube
+5D Cube
+10D Cube
+20D Cube
+2D Sphere
+3D Sphere
+5D Sphere
+SPOC
+Single Crossing
+SP
+Walsh SP
+Urn model 0.5
+Urn model 0.2
+Urn model 0.1
+Urn model 0.05
+Urn model 0.02
+Urn model 0.01
+Mallows 0.999
+Mallows 0.99
+Mallows 0.95
+Mallows 0.75
+Mallows 0.5
+Mallows 0.25
+Mallows 0.1
+Mallows 0.05
+Mallows 0.01
+Mallows 0.001
