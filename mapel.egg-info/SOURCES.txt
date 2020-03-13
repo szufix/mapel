@@ -1,0 +1,15 @@
+LICENSE.txt
+MANIFEST.in
+README.md
+requirements.txt
+setup.cfg
+setup.py
+mapel/__init__.py
+mapel.egg-info/PKG-INFO
+mapel.egg-info/SOURCES.txt
+mapel.egg-info/dependency_links.txt
+mapel.egg-info/requires.txt
+mapel.egg-info/top_level.txt
+mapel/voting/__init__.py
+mapel/voting/modern.py
+mapel/voting/objects.py
