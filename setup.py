@@ -25,7 +25,7 @@ setup(
     url='https://github.com/szufix/mapel',
     download_url='https://github.com/szufix/mapel',
     include_package_data=True,
-    package_data={'mapel': [dir_1 + '/*']},
+	package_data={'mapel': ['**/*', '**/**/*', '**/**/**/*', '**/**/**/**/*']},
     packages=find_packages(),
     install_requires=required,
     classifiers=[

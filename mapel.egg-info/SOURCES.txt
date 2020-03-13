@@ -10,6 +10,7 @@ mapel.egg-info/SOURCES.txt
 mapel.egg-info/dependency_links.txt
 mapel.egg-info/requires.txt
 mapel.egg-info/top_level.txt
+mapel/experiments/__init__.py
 mapel/voting/__init__.py
 mapel/voting/modern.py
 mapel/voting/objects.py
