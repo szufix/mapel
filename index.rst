@@ -1,6 +1,6 @@
 Introduction
 =============================
-**mapel** (map of elections) is a python package that servs for drawing map of elections.
+**mapel** (map of elections) is a python package that serves for drawing map of elections.
 
 
 Installation
