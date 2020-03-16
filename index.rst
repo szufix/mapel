@@ -18,10 +18,12 @@ Import
 
 Test
 -----------------------------
+If everthing was correctly downloaded and imported then after writing the following command:
 ::
 
     mapel.test()
 
+the program should print "Welcome to Mapel!".
 
 
 Functionalities
