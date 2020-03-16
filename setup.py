@@ -1,18 +1,18 @@
 from setuptools import setup, find_packages
 import os
-
+ 
 rootDir = os.path.abspath(os.path.dirname(__file__))
 reqPath = os.path.join(rootDir, 'requirements.txt')
 readmePath = os.path.join(rootDir, 'README.md')
 dir_1 = os.path.join(rootDir, 'mapel')
-
-
+ 
+ 
 with open(reqPath) as f:
     required = f.read().splitlines()
-
+ 
 with open(readmePath, "r") as f:
     long_description = f.read()
-
+ 
 setup(
     name='mapel',
     version='1.0.2',
@@ -25,7 +25,7 @@ setup(
     url='https://github.com/szufix/mapel',
     download_url='https://github.com/szufix/mapel',
     include_package_data=True,
-	package_data={'mapel': ['**/*', '**/**/*', '**/**/**/*', '**/**/**/**/*']},
+    package_data={'mapel': ['**/*', '**/**/*', '**/**/**/*', '**/**/**/**/*', '**/**/**/**/*']},
     packages=find_packages(),
     install_requires=required,
     classifiers=[
