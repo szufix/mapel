@@ -90,10 +90,14 @@ scale
 
 Prepare SOC files
 -----------------------------
-**prepare_approx_cc_order** [the name of this function should be changed]
+**prepare_approx_cc_order** funtion serves for preparing elections in soc format in approx_cc order. If you want to run an experiment that is problematic time-wise and you want to run it only for small amount of elections, we suggest you use this function to prepare the elections and then run the experiment for first elections in *exp_name/elections/soc_approx_cc/*.
+In truth this function is just coping files from *soc_original* and pasting them in an order from winners *exp_name/results/winners/appro_cc.txt*
+
+We do not precompute it because it would have doubled the size of the package.
+
 ::
 
-    mapel.print_matrix(exp_name)
+    mapel.prepare_approx_cc_order(exp_name)
 
 
 exp_name
