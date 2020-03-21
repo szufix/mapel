@@ -59,7 +59,7 @@ main_order
   : optional, string; name of the file that contains the order in which the points should appear.
   
 values
-  : optional, string; name of the file that contains alpha values.
+  : optional, string; name of the file that contains alpha values. The file should be in *exp_name/controler/* folder.
   
 coloring
   : optional, string; color in which all the points should appear. If set to "intervals" then it will color all points from [0.8,1] red, [0.6,0.8) orange, [0.4,0.6) yellow, [0.2,0.4) green, [0,0.2) blue.
@@ -90,10 +90,7 @@ scale
 
 Prepare SOC files
 -----------------------------
-**prepare_approx_cc_order** funtion serves for preparing elections in soc format in approx_cc order. If you want to run an experiment that is problematic time-wise and you want to run it only for small amount of elections, we suggest you use this function to prepare the elections and then run the experiment for first elections in *exp_name/elections/soc_approx_cc/*.
-In truth this function is just coping files from *soc_original* and pasting them in an order from winners *exp_name/results/winners/appro_cc.txt*
-
-We do not precompute it because it would have doubled the size of the package.
+**prepare_approx_cc_order** funtion serves for preparing elections in soc format in approx_cc order. This function is just coping files from *soc_original* and pasting them in an order from winners *exp_name/results/winners/appro_cc.txt*. 
 
 ::
 
@@ -129,7 +126,8 @@ Experiment structure (after downloading mapel):
     exp_name
     ├── controllers.py     
     │   ├── map.py
-    │   └── matrix.py
+    │   ├── matrix.py
+    │   └── zip_sizes.py
     ├── elections          
     │   ├── soc_approx_cc 
     │   │   ├── (empty)
@@ -153,11 +151,17 @@ Simple example of use
     mapel.print_2d("example_100_20", winners=50)
 
 
-Your own experiment
+Your own (simple) experiment
 -----------------------------
+Image that you want to run your own experiment. For example you want to check wheter similar elections have the same size after compression or not. You zip all the elections from *exp_name/elections/soc_original/*. [...]
 
 
+Your own (complex) experiment
+-----------------------------
+If you want to run an experiment that is problematic time-wise and you want to run it only for small amount of elections, we suggest you use *prepare_approx_cc_order* function to prepare the elections and then run the experiment for first elections from *exp_name/elections/soc_approx_cc/*.
 
+We do not precompute it because it would have doubled the size of the package.
+    
     
 Extras
 =============================
