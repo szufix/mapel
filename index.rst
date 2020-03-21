@@ -29,7 +29,6 @@ the program should print "Welcome to Mapel!".
 Functionalities
 =============================
 
-
 Print the map of elections
 -----------------------------
 **print_2d** function is printing a two dimensional embedding of all the elections from a given experiment.
@@ -71,16 +70,29 @@ Print the matrix with distances
 
 ::
 
-    mapel.print_matrix(name, scale=1.)
+    mapel.print_matrix(exp_name, scale=1.)
 
 
-name
+exp_name
   : obligatory, name of the experiment.
   
 
 scale
   : optional, multiply all the values by *scale*.
 
+
+Prepare SOC files
+-----------------------------
+**prepare_approx_cc_order** [the name of this function should be changed]
+::
+
+    mapel.print_matrix(exp_name)
+
+
+exp_name
+  : obligatory, name of the experiment.
+  
+  
 Experiments
 =============================
 Mixture of 800 election from 30 different  models: 
@@ -98,10 +110,6 @@ List of experiments
 - Experiment 4: 100 voters, 5 candidates; exp_name: **example_100_5**
 - Experiment 5: 100 voters, 4 candidates; exp_name: **example_100_4**
 - Experiment 6: 100 voters, 3 candidates; exp_name: **example_100_3**
-
-Example of use::
-
-    mapel.print_2d("example_100_20", winners=50)
     
 Experiment structure: tbu
 
@@ -109,8 +117,15 @@ Experiment structure: tbu
 Examples
 =============================
 
+Simple example of use
+
+    mapel.print_2d("example_100_20", winners=50)
+
+
 Your own experiment
 -----------------------------
+
+
 
     
 Extras
@@ -118,11 +133,14 @@ Extras
 
 Matrix with distances
 -----------------------------
-In *experiments/name_of_the_experiment/controllers/name_of_the_experiment_matrix.txt* there a is list of names of the families of elections. The number of families and their order can be change and will influence the *mapel.print_matrix()* function.
+If you want to print just several selected families of elections or change the order in which they appear you should go to the file:  "*experiments/exp_name/controllers/exp_name_matrix.txt*". There a is list of names of all the families of elections. The number of families and their order can be change and will influence the *mapel.print_matrix()* function.
 
 SOC files
 -----------------------------
-In *experiments/name_of_the_experiment/elections/soc_approx_cc/* are all the elections ordered by greedy CC.
-
 Definition of the soc format can be found here: http://www.preflib.org/data/format.php#soc
 
+
+
+Contact
+=============================
+If you have any questions or have found a bug please contact email me at *stanislaw.szufa@uj.edu.pl*
