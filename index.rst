@@ -143,4 +143,4 @@ Definition of the soc format can be found here: http://www.preflib.org/data/form
 
 Contact
 =============================
-If you have any questions or have found a bug please contact email me at *stanislaw.szufa@uj.edu.pl*
+If you have any questions or have found a bug please email me at *stanislaw.szufa@uj.edu.pl*
