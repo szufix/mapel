@@ -1,6 +1,12 @@
 Introduction
 =============================
-**mapel** (map of elections) is a python package that serves for drawing map of elections.
+**mapel** (map of elections) is a python package that serves for drawing map of elections. It is a testbed of elections to be used
+for various election-related experiments such as testing algorithms
+or estimating the frequency of a given phenomenon.
+
+For more details please look at:
+
+    Szufa,  S.,  Faliszewski,  P.,  Skowron,  P.,  Slinko,  A.,  Talmon,  N.:  Drawing  a  map of elections in the space of statistical cultures. In: Proceedings of AAMAS-2020, to appear.
 
 
 Installation
@@ -8,6 +14,7 @@ Installation
 ::
 
     pip install mapel
+
 
 Import
 -----------------------------
@@ -37,31 +44,31 @@ Print the map of elections
     mapel.print_2d(exp_name, num_elections=800, main_order="", num_winners=0,  winners_order="approx_cc", values="default", coloring="purple", mask=False, angle=0) 
 
 exp_name
-  : obligatory, name of the experiment.
+  : obligatory, string; name of the experiment.
   
 num_winners
-  : optional, number of winners of greedy CC to be marked.
+  : optional, int; number of winners of greedy CC to be marked.
   
 winners_order
-  : optional, order in which the winners should appear.
+  : optional, string, name of the file that contains the order in which the winners should appear.
   
 num_elections
-  : optional, number of elections/points to be printed.
+  : optional, int, number of points to be printed.
   
 main_order
-  : optional, order in which the elections/points should appear.
+  : optional, string; name of the file that contains the order in which the points should appear.
   
 values
-  : optional, ...
+  : optional, string; name of the file that contains alpha values.
   
 coloring
-  : optional, ...
+  : optional, string; color in which all the points should appear. If set to "intervals" then it will color all points from [0.8,1] red, [0.6,0.8) orange, [0.4,0.6) yellow, [0.2,0.4) green, [0,0.2) blue.
   
 angle
-  : optional, rotate the image by *angle*.
+  : optional, float; rotate the image by *angle*.
     
 mask
-  : optional (only for *example_100_100*), mark all families on the map.
+  : optional, bool; mark all families on the map (only for *example_100_100*).
 
 
 Print the matrix with distances
@@ -74,11 +81,11 @@ Print the matrix with distances
 
 
 exp_name
-  : obligatory, name of the experiment.
+  : obligatory, string; name of the experiment.
   
 
 scale
-  : optional, multiply all the values by *scale*.
+  : optional, string; multiply all the values by *scale*.
 
 
 Prepare SOC files
@@ -111,7 +118,25 @@ List of experiments
 - Experiment 5: 100 voters, 4 candidates; exp_name: **example_100_4**
 - Experiment 6: 100 voters, 3 candidates; exp_name: **example_100_3**
     
-Experiment structure: tbu
+Experiment structure: 
+
+::
+
+    exp_name
+    ├── controllers.py     
+    │   ├── map.py
+    │   └── matrix.py
+    ├── elections          
+    │   ├── soc_approx_cc
+    │   └── soc_original
+    └── results
+        ├── distances
+        │   ├── positionwise.txt
+        │   └── positionwise_info.txt
+        ├── points
+        │   └── 2d.txt
+        └── winners
+            └── approx_cc.txt
 
 
 Examples
