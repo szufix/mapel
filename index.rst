@@ -118,7 +118,7 @@ List of experiments
 - Experiment 5: 100 voters, 4 candidates; exp_name: **example_100_4**
 - Experiment 6: 100 voters, 3 candidates; exp_name: **example_100_3**
     
-Experiment structure: 
+Experiment structure (after downloading mapel): 
 
 ::
 
@@ -127,8 +127,10 @@ Experiment structure:
     │   ├── map.py
     │   └── matrix.py
     ├── elections          
-    │   ├── soc_approx_cc
+    │   ├── soc_approx_cc 
+    │   │   ├── (empty)
     │   └── soc_original
+    │       └── (800 txt files with elections)
     └── results
         ├── distances
         │   ├── positionwise.txt
