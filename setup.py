@@ -15,7 +15,7 @@ with open(readmePath, "r") as f:
  
 setup(
     name='mapel',
-    version='1.0.2',
+    version='1.0.3',
     license='MIT',
     author='Stanislaw Szufa',
     author_email='s.szufa@gmail.com',
@@ -25,7 +25,7 @@ setup(
     url='https://github.com/szufix/mapel',
     download_url='https://github.com/szufix/mapel',
     include_package_data=True,
-    package_data={'mapel': ['**/*', '**/**/*', '**/**/**/*', '**/**/**/**/*', '**/**/**/**/*']},
+    package_data={'mapel': ['**/*', '**/**/*', '**/**/**/*', '**/**/**/**/*']},
     packages=find_packages(),
     install_requires=required,
     classifiers=[

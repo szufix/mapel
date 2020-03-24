@@ -1,42 +1,55 @@
-#!/usr/bin/env python
+""" This module contains all the objects """
 
 import os
 import math
 
-def rotate_point(cx, cy, angle, px, py):
 
-  s = math.sin(angle)
-  c = math.cos(angle)
+class Model:
+    """ Abstract model of elections """
 
-  # translate point back to origin:
-  px -= cx
-  py -= cy
-
-  #// rotate point
-  xnew = px * c - py * s
-  ynew = px * s + py * c
-
-  #// translate point back:
-  px = xnew + cx
-  py = ynew + cy
-  return px, py
-
-
-class Model_xd:
-
-    def __init__(self, name):
-        self.name = name
-        self.num_points, self.num_distances, self.distances = self.import_distances(name)
-        self.num_families, self.family_name, self.family_special, self.family_size, \
-            self.labels, self.colors, self.alphas = self.import_controllers(name)
+    def __init__(self, exp_name):
+        self.exp_name = exp_name
+        self.num_voters, self.num_candidates, self.num_families, \
+            self.families = self.import_controllers(exp_name)
 
     @staticmethod
-    def import_distances(name):
+    def import_controllers(exp_name):
+        """ Import from a file all the controllers"""
 
-        file_name = "results/distances/" + str(name) + ".txt"
+        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+        file_name = os.path.join(file_name, "experiments", str(exp_name), "controllers", "map.txt")
+        file_ = open(file_name, 'r')
+        num_voters = int(file_.readline())
+        num_candidates = int(file_.readline())
+        num_families = int(file_.readline())
+        families = []
+
+        for i in range(num_families):
+            line = file_.readline().rstrip("\n").split(',')
+            families.append(Family(name=str(line[1]), special=float(line[2]),
+                                   size=int(line[0]), label=str(line[5]),
+                                   color=str(line[3].replace(" ", "")), alpha=float(line[4])))
+
+        file_.close()
+        return num_voters, num_candidates, num_families, families
+
+
+class Model_xd(Model):
+    """ Multi-dimensional model of elections """
+
+    def __init__(self, exp_name):
+        Model.__init__(self, exp_name)
+        self.num_points, self.num_distances, self.distances = self.import_distances(exp_name)
+
+    @staticmethod
+    def import_distances(exp_name):
+        """Import from a file precomputed distances between each pair of elections  """
+
+        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "distances", "positionwise.txt")
         file_ = open(file_name, 'r')
         num_points = int(file_.readline())
-        num_families = int(file_.readline())
+        file_.readline()  # skip this line
         num_distances = int(file_.readline())
 
         hist_data = [[0 for _ in range(num_points)] for _ in range(num_points)]
@@ -49,139 +62,84 @@ class Model_xd:
 
         return num_points, num_distances, hist_data
 
-    @staticmethod
-    def import_controllers(name):
 
-        file_name = "controllers/models/" + name + ".txt"
-        file_ = open(file_name, 'r')
-        num_voters = int(file_.readline())
-        num_candidates = int(file_.readline())
-        num_families = int(file_.readline())
-        family_name = [0 for _ in range(num_families)]
-        family_special = [0 for _ in range(num_families)]
-        family_size = [0 for _ in range(num_families)]
-        labels = [0 for _ in range(num_families)]
-        colors = [0 for _ in range(num_families)]
-        alphas = [0 for _ in range(num_families)]
+class Model_2d(Model):
+    """ Two-dimensional model of elections """
 
-        for i in range(num_families):
-            line = file_.readline().rstrip("\n").split(',')
-            family_name[i] = str(line[1])
-            family_special[i] = float(line[2])
-            family_size[i] = int(line[0])
-            labels[i] = str(line[5])
-            colors[i] = str(line[3].replace(" ", ""))
-            alphas[i] = float(line[4])
+    def __init__(self, exp_name, num_winners=0, num_elections="800", winners_order="approx_cc", main_order=""):
+        Model.__init__(self, exp_name)
 
-        file_.close()
-        return num_families, family_name, family_special, family_size, labels, colors, alphas
-
-
-class Model_2d:
-
-    def __init__(self, name, num_winners=0, shades=False):
-
-        self.name = name
-        self.num_points, self.points, = self.import_points(name)
-        self.num_families, self.family_name, self.family_special, self.family_size, \
-            self.labels, self.colors, self.alphas = self.import_controllers(name)
+        self.num_points, self.points, = self.import_points(exp_name)
         self.points_by_families = self.compute_points_by_families()
 
-        if num_winners > 0:
-            self.winners = self.import_winners(name, num_winners)
-        else:
-            self.winners = []
-
-        if shades:
-            print("shades")
-        else:
-            self.shades = [1. for _ in range(self.num_points)]
+        self.winners_order = self.import_order(exp_name, num_elections, winners_order)
+        self.main_order = self.import_order(exp_name, num_elections, main_order)
+        self.winners = self.winners_order[0:num_winners]
 
     @staticmethod
-    def import_points(name):
+    def import_points(exp_name):
+        """ Import from a file precomputed coordinates of all the points -- each point refer to one election """
 
         file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "experiments", str(name), "results", "points", str(name) + ".txt")
+        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "points", "2d.txt")
         file_ = open(file_name, 'r')
-        num_winners = int(file_.readline())
-        points = [[0, 0] for _ in range(num_winners)]
 
-        for i in range(num_winners):
+        num_points = int(file_.readline())
+        points = [[0, 0] for _ in range(num_points)]
+
+        for i in range(num_points):
             line = file_.readline().replace("\n", '').split(',')
             points[i] = [float(line[0]), float(line[1])]
 
         file_.close()
-        return len(points), points
+        return num_points, points
 
     @staticmethod
-    def import_controllers(name):
+    def import_order(exp_name, num_elections, order_name):
+        """ Import from a file precomputed order of all the elections """
+
+        if order_name == "":
+            return [i for i in range(num_elections)]
 
         file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "experiments", str(name), "controllers", str(name) + ".txt")
+        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "winners",
+                                 str(order_name) + ".txt")
         file_ = open(file_name, 'r')
-        num_voters = int(file_.readline())
-        num_candidates = int(file_.readline())
-        num_families = int(file_.readline())
-        family_name = [0 for _ in range(num_families)]
-        family_special = [0 for _ in range(num_families)]
-        family_size = [0 for _ in range(num_families)]
-        labels = [0 for _ in range(num_families)]
-        colors = [0 for _ in range(num_families)]
-        alphas = [0 for _ in range(num_families)]
+        file_.readline()  # skip this line
+        file_.readline()  # skip this line
+        file_.readline()  # skip this line
+        order = []
 
-        for i in range(num_families):
-            line = file_.readline().rstrip("\n").split(',')
-            family_name[i] = str(line[1])
-            family_special[i] = float(line[2])
-            family_size[i] = int(line[0])
-            labels[i] = str(line[5])
-            colors[i] = str(line[3].replace(" ", ""))
-            alphas[i] = float(line[4])
+        for w in range(num_elections):
+            order.append(int(file_.readline()))
 
-        file_.close()
-        return num_families, family_name, family_special, family_size, labels, colors, alphas
+        return order
 
-    @staticmethod
-    def import_winners(name, first_winners):
-
-        file_name = "results/winners/" + str(name) + "_approx_cc.txt"
-        file_ = open(file_name, 'r')
-        number_of_elections = int(file_.readline())
-        real_num_winners = int(file_.readline())
-        real_num_winners = first_winners
-        real_winners = []
-        time = float(file_.readline())
-
-        for w in range(real_num_winners):
-            real_winners.append(int(file_.readline()))
-
-        return real_winners
-
-    #@staticmethod
     def compute_points_by_families(self):
+        """ Group all points by their families """
 
         points_by_families = [[[] for _ in range(2)] for _ in range(self.num_points)]
         ctr = 0
 
         for i in range(self.num_families):
-            for j in range(self.family_size[i]):
+            for j in range(self.families[i].size):
                 points_by_families[i][0].append(self.points[ctr][0])
                 points_by_families[i][1].append(self.points[ctr][1])
                 ctr += 1
 
         return points_by_families
 
-    #@staticmethod
     def get_distance(self, i, j):
+        """ Compute Euclidean distance in two-dimensional space"""
 
         distance = 0.
-
         for d in range(2):
             distance += (self.points[i][d] - self.points[j][d]) ** 2
 
         return math.sqrt(distance)
 
     def rotate(self, angle):
+        """ Rotate all the points by a given angle """
 
         for i in range(self.num_points):
             self.points[i][0], self.points[i][1] = rotate_point(0.5, 0.5, angle, self.points[i][0], self.points[i][1])
@@ -189,6 +147,7 @@ class Model_2d:
         self.points_by_families = self.compute_points_by_families()
 
     def reverse(self, ):
+        """ Reverse all the points"""
 
         for i in range(self.num_points):
             self.points[i][0] = self.points[i][0]
@@ -197,8 +156,8 @@ class Model_2d:
         self.points_by_families = self.compute_points_by_families()
 
     def update(self):
+        """ Save current coordinates of all the points to the original file"""
 
-        ### SAVE MY_POS TO FILE
         file_name = "results/points/" + str(self.name) + ".txt"
         file_ = open(file_name, 'w')
         file_.write(str(self.num_points) + "\n")
@@ -208,6 +167,35 @@ class Model_2d:
             y = round(self.points[i][1], 5)
             file_.write(str(x) + ', ' + str(y) + "\n")
         file_.close()
+
+    @staticmethod
+    def rotate_point(cx, cy, angle, px, py):
+        """ Rotate two-dimensional point by angle """
+
+        s = math.sin(angle)
+        c = math.cos(angle)
+        px -= cx
+        py -= cy
+        x_new = px * c - py * s
+        y_new = px * s + py * c
+        px = x_new + cx
+        py = y_new + cy
+
+        return px, py
+
+
+class Family:
+    """ Family of elections """
+
+    def __init__(self, name="none", special=0., size=0, label="none", color="black", alpha=1.):
+
+        self.name = name
+        self.special = special
+        self.size = size
+        self.label = label
+        self.color = color
+        self.alpha = alpha
+
 
 
 
