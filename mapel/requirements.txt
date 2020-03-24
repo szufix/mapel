@@ -166,7 +166,7 @@ python-multiwinner-package==1.5.2
 pytz==2016.10
 pywin32==220
 pywin32-ctypes==0.2.0
-PyYAML==3.12
+PyYAML==5.1
 pyzmq==18.0.1
 qiskit==0.10.1
 qiskit-aer==0.2.0
