@@ -62,7 +62,7 @@ values
   : optional, string; name of the file that contains alpha values. The file should be in *exp_name/controler/* folder.
   
 coloring
-  : optional, string; color in which all the points should appear. If set to "intervals" then it will color all points from [0.8,1] red, [0.6,0.8) orange, [0.4,0.6) yellow, [0.2,0.4) green, [0,0.2) blue.
+  : optional, string; color in which all the points should appear (use this only if *values* is not equall to *default*). If set to "intervals" then it will color all points from [0.8,1] red, [0.6,0.8) orange, [0.4,0.6) yellow, [0.2,0.4) green, [0,0.2) blue.
   
 angle
   : optional, float; rotate the image by *angle*.
@@ -124,10 +124,10 @@ Experiment structure (after downloading mapel):
 ::
 
     exp_name
-    ├── controllers.py     
+    ├── controllers     
     │   ├── map.py
     │   ├── matrix.py
-    │   └── zip_sizes.py
+    │   └── zip_sizes.txt
     ├── elections          
     │   ├── soc_approx_cc 
     │   │   ├── (empty)
@@ -147,20 +147,34 @@ Examples
 =============================
 
 Simple example of use
+::
 
-    mapel.print_2d("example_100_20", winners=50)
+    mapel.print_2d("example_100_20", num_winners=50, winners_order="approx_cc")
+    mapel.print_2d("example_100_100", mask=True)")
+    mapel.print_matrix("example_100_10", scale=0.3)
 
 
 Your own (simple) experiment
 -----------------------------
-Image that you want to run your own experiment. For example you want to check wheter similar elections have the same size after compression or not. You zip all the elections from *exp_name/elections/soc_original/*. [...]
+Imagine that you want to run your own experiment. For example you want to check wheter similar elections have the same size after compression or not. You zip all the elections from *exp_name/elections/soc_original/*. You check their sizes, and now you would like to print the map, where the *alpha* of each point is proportional to its color. 
+
+First should normilize the values so all of them will fall into [0,1] interval. Then you should put the value with those values in *exp_name/controllers/*. One value per line -- where the first lines is corresponding with the first election and so on and so forth. If you are not sure about the format please look at *exp_name/controllers/zip_sizes.txt* file.
+
+Finally if you would like to print the results::
+
+    mapel.print_2d("experiment_name", values="your_file_name.txt")
+
+For example if we run zip experiment for example_100_100 the upper line will  like this::
+
+    mapel.print_2d("example_100_100", values="zip_sizes.txt")
+
 
 
 Your own (complex) experiment
 -----------------------------
-If you want to run an experiment that is problematic time-wise and you want to run it only for small amount of elections, we suggest you use *prepare_approx_cc_order* function to prepare the elections and then run the experiment for first elections from *exp_name/elections/soc_approx_cc/*.
+If you want to run an experiment that is problematic time-wise and you want to run it only for a small amount of elections, we suggest you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 50) elections from *exp_name/elections/soc_approx_cc/*. If you are chossing this option rember to set the value of *main_order* to *approx_cc*.
 
-We do not precompute it because it would have doubled the size of the package.
+We do not precompute those soc files because it would have doubled the size of the package.
     
     
 Extras
