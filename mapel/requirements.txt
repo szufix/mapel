@@ -205,7 +205,7 @@ src==1.0
 statsmodels==0.6.1
 sympy==1.4
 tables==3.4.3
-tensorflow==1.2.1
+tensorflow==1.15.2
 testpath==0.4.2
 Theano==1.0.4
 toolz==0.8.2
