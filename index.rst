@@ -127,7 +127,7 @@ Experiment structure (after downloading mapel):
     ├── controllers     
     │   ├── map.py
     │   ├── matrix.py
-    │   └── zip_sizes.txt
+    │   └── zip_sizes.txt (only in example_100_100)
     ├── elections          
     │   ├── soc_approx_cc 
     │   │   ├── (empty)
@@ -150,7 +150,13 @@ Simple example of use
 ::
 
     mapel.print_2d("example_100_20", num_winners=50, winners_order="approx_cc")
-    mapel.print_2d("example_100_100", mask=True)")
+    
+::  
+
+    mapel.print_2d("example_100_100", mask=True)
+    
+::  
+
     mapel.print_matrix("example_100_10", scale=0.3)
 
 
