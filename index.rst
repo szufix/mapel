@@ -126,7 +126,7 @@ Experiment structure (after downloading mapel):
 
 ::
 
-    exp_name
+    ?exp_name?
     ├── controllers     
     │   ├── basic
     │   │   ├── map.txt
@@ -153,7 +153,9 @@ Experiment structure (after downloading mapel):
 Examples
 =============================
 
-Simple example of use
+Simple examples of use. Just type the following commands in python and enjoy the results.
+
+
 ::
 
     mapel.print_2d("example_100_20", num_winners=50, winners_order="positionwise_approx_cc")
