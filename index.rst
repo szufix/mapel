@@ -138,10 +138,10 @@ Experiment structure (after downloading mapel):
     │       └── (800 txt files with elections)
     └── results
         ├── distances        
-        │   ├── bordawise.txt
+        │   ├── bordawise.txt (only in example_100_100)
         │   └── positionwise.txt
         ├── points
-        │   ├── bordawise_2d.txt
+        │   ├── bordawise_2d.txt (only in example_100_100)
         │   └── positionwise_2d.txt
         └── winners
             └── positionwise_approx_cc.txt
