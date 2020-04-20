@@ -90,15 +90,18 @@ scale
 
 Prepare SOC files
 -----------------------------
-**prepare_approx_cc_order** funtion serves for preparing elections in soc format in approx_cc order. This function is just coping files from *soc_original* and pasting them in an order from winners *exp_name/results/winners/appro_cc.txt*. 
+**prepare_approx_cc_order** funtion serves for preparing elections in soc format in approx_cc order. This function is just coping files from *soc_original* and pasting them in an order from winners *exp_name/results/winners/metric_name_approx_cc.txt*. 
 
 ::
 
-    mapel.prepare_approx_cc_order(exp_name)
+    mapel.prepare_approx_cc_order(exp_name, metric="positionwise")
 
 
 exp_name
   : obligatory, name of the experiment.
+ 
+metric
+  : optional, string, name of the metric.
   
   
 Experiments
@@ -168,7 +171,7 @@ Your own (simple) experiment
 -----------------------------
 Imagine that you want to run your own experiment. For example you want to check wheter similar elections have the same size after compression or not. You zip all the elections from *exp_name/elections/soc_original/*. You check their sizes, and now you would like to print the map, where the *alpha* of each point is proportional to its color. 
 
-First should normilize the values so all of them will fall into [0,1] interval. Then you should put the value with those values in *exp_name/controllers/*. One value per line -- where the first lines is corresponding with the first election and so on and so forth. If you are not sure about the format please look at *exp_name/controllers/zip_sizes.txt* file.
+First should normilize the values so all of them will fall into [0,1] interval. Then you should put the value with those values in *exp_name/controllers/advanced*. One value per line -- where the first lines is corresponding with the first election and so on and so forth. If you are not sure about the format please look at *exp_name/controllers/advanced/zip_sizes.txt* file.
 
 Finally if you would like to print the results::
 
@@ -182,7 +185,7 @@ For example if we run zip experiment for example_100_100 the upper line will  li
 
 Your own (complex) experiment
 -----------------------------
-If you want to run an experiment that is problematic time-wise and you want to run it only for a small amount of elections, we suggest you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 50) elections from *exp_name/elections/soc_approx_cc/*. If you are chossing this option rember to set the value of *main_order* to *approx_cc*.
+If you want to run an experiment that is problematic time-wise and you want to run it only for a small amount of elections, we suggest you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 50) elections from *exp_name/elections/soc_metric_name_approx_cc/*. If you are chossing this option rember to set the value of *main_order* to *metric_name_approx_cc*.
 
 We do not precompute those soc files because it would have doubled the size of the package.
     
@@ -192,7 +195,7 @@ Extras
 
 Matrix with distances
 -----------------------------
-If you want to print just several selected families of elections or change the order in which they appear you should go to the file:  "*experiments/exp_name/controllers/exp_name_matrix.txt*". There a is list of names of all the families of elections. The number of families and their order can be change and will influence the *mapel.print_matrix()* function.
+If you want to print just several selected families of elections or change the order in which they appear you should go to the file:  "*experiments/exp_name/controllers/basic/matrix.txt*". There a is list of names of all the families of elections. The number of families and their order can be change and will influence the *mapel.print_matrix()* function.
 
 SOC files
 -----------------------------
