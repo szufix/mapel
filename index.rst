@@ -128,7 +128,7 @@ Experiment structure (after downloading mapel):
     │   ├── basic
     │   │   ├── map.txt
     │   │   └── matrix.txt
-    │   └── advance
+    │   └── advanced
     │       ├── hb_time.txt (only in example_100_100)
     │       └── zip_sizes.txt (only in example_100_100)
     ├── elections          
