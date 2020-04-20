@@ -125,22 +125,28 @@ Experiment structure (after downloading mapel):
 
     exp_name
     ├── controllers     
-    │   ├── map.py
-    │   ├── matrix.py
-    │   └── zip_sizes.txt (only in example_100_100)
+    │   ├── basic
+    │   │   ├── map.txt
+    │   │   └── matrix.txt
+    │   └── advance
+    │       ├── hb_time.txt (only in example_100_100)
+    │       ├── positionwise_approx_cc_greedy.txt (only in example_100_100)           
+    │       ├── positionwise_approx_cc_removal.txt (only in example_100_100)
+    │       └── zip_sizes.txt (only in example_100_100)
     ├── elections          
-    │   ├── soc_approx_cc 
-    │   │   ├── (empty)
+    │   ├── soc_positionwise_approx_cc 
+    │   │   └── (empty)
     │   └── soc_original
     │       └── (800 txt files with elections)
     └── results
-        ├── distances
-        │   ├── positionwise.txt
-        │   └── positionwise_info.txt
+        ├── distances        
+        │   ├── bordawise.txt
+        │   └── positionwise.txt
         ├── points
-        │   └── 2d.txt
+        │   ├── bordawise_2d.txt
+        │   └── positionwise_2d.txt
         └── winners
-            └── approx_cc.txt
+            └── positionwise_approx_cc.txt
 
 
 Examples
