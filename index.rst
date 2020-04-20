@@ -130,8 +130,6 @@ Experiment structure (after downloading mapel):
     │   │   └── matrix.txt
     │   └── advance
     │       ├── hb_time.txt (only in example_100_100)
-    │       ├── positionwise_approx_cc_greedy.txt (only in example_100_100)           
-    │       ├── positionwise_approx_cc_removal.txt (only in example_100_100)
     │       └── zip_sizes.txt (only in example_100_100)
     ├── elections          
     │   ├── soc_positionwise_approx_cc 
