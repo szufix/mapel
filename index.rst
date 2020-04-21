@@ -34,6 +34,7 @@ the program should print "Welcome to Mapel!".
 
 Functionalities
 =============================
+In this section we describe main functionalites of mapel.
 
 Print the map of elections
 -----------------------------
