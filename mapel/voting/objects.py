@@ -17,7 +17,7 @@ class Model:
         """ Import from a file all the controllers"""
 
         file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "experiments", str(exp_name), "controllers", "map.txt")
+        file_name = os.path.join(file_name, "experiments", str(exp_name), "controllers", "basic", "map.txt")
         file_ = open(file_name, 'r')
         num_voters = int(file_.readline())
         num_candidates = int(file_.readline())
@@ -26,9 +26,15 @@ class Model:
 
         for i in range(num_families):
             line = file_.readline().rstrip("\n").split(',')
+            show = True
+            if line[0][0] == "#":
+                line[0] = line[0].replace("#", "")
+                show = False
+
             families.append(Family(name=str(line[1]), special=float(line[2]),
                                    size=int(line[0]), label=str(line[5]),
-                                   color=str(line[3].replace(" ", "")), alpha=float(line[4])))
+                                   color=str(line[3].replace(" ", "")), alpha=float(line[4]),
+                                   show=show))
 
         file_.close()
         return num_voters, num_candidates, num_families, families
@@ -37,16 +43,16 @@ class Model:
 class Model_xd(Model):
     """ Multi-dimensional model of elections """
 
-    def __init__(self, exp_name):
+    def __init__(self, exp_name, metric):
         Model.__init__(self, exp_name)
-        self.num_points, self.num_distances, self.distances = self.import_distances(exp_name)
+        self.num_points, self.num_distances, self.distances = self.import_distances(exp_name, metric)
 
     @staticmethod
-    def import_distances(exp_name):
+    def import_distances(exp_name, metric):
         """Import from a file precomputed distances between each pair of elections  """
 
         file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "distances", "positionwise.txt")
+        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "distances", str(metric) + ".txt")
         file_ = open(file_name, 'r')
         num_points = int(file_.readline())
         file_.readline()  # skip this line
@@ -66,10 +72,10 @@ class Model_xd(Model):
 class Model_2d(Model):
     """ Two-dimensional model of elections """
 
-    def __init__(self, exp_name, num_winners=0, num_elections="800", winners_order="approx_cc", main_order=""):
+    def __init__(self, exp_name, num_winners=0, num_elections="800", winners_order="positionwise_approx_cc", main_order="", metric="positionwise"):
         Model.__init__(self, exp_name)
 
-        self.num_points, self.points, = self.import_points(exp_name)
+        self.num_points, self.points, = self.import_points(exp_name, metric)
         self.points_by_families = self.compute_points_by_families()
 
         self.winners_order = self.import_order(exp_name, num_elections, winners_order)
@@ -77,11 +83,11 @@ class Model_2d(Model):
         self.winners = self.winners_order[0:num_winners]
 
     @staticmethod
-    def import_points(exp_name):
+    def import_points(exp_name, metric):
         """ Import from a file precomputed coordinates of all the points -- each point refer to one election """
 
         file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "points", "2d.txt")
+        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "points", str(metric) + "_2d.txt")
         file_ = open(file_name, 'r')
 
         num_points = int(file_.readline())
@@ -102,8 +108,7 @@ class Model_2d(Model):
             return [i for i in range(num_elections)]
 
         file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "winners",
-                                 str(order_name) + ".txt")
+        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "winners", str(order_name) + ".txt")
         file_ = open(file_name, 'r')
         file_.readline()  # skip this line
         file_.readline()  # skip this line
@@ -187,7 +192,7 @@ class Model_2d(Model):
 class Family:
     """ Family of elections """
 
-    def __init__(self, name="none", special=0., size=0, label="none", color="black", alpha=1.):
+    def __init__(self, name="none", special=0., size=0, label="none", color="black", alpha=1., show=True):
 
         self.name = name
         self.special = special
@@ -195,6 +200,7 @@ class Family:
         self.label = label
         self.color = color
         self.alpha = alpha
+        self.show = show
 
 
 
