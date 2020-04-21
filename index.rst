@@ -41,7 +41,7 @@ Print the map of elections
 **print_2d** function is printing a two dimensional embedding of all the elections from a given experiment.
 ::
 
-    mapel.print_2d(exp_name, num_elections=800, main_order="", num_winners=0,  winners_order="positionwise_approx_cc", values="default", coloring="purple", mask=False, angle=0) 
+    mapel.print_2d(exp_name, num_elections=800, main_order="", num_winners=0,  winners_order="positionwise_approx_cc", values="default", coloring="purple", angle=0,  mask=False, metric="positionwise", saveas="map_2d") 
 
 exp_name
   : obligatory, string; name of the experiment.
@@ -68,7 +68,13 @@ angle
   : optional, float; rotate the image by *angle*.
     
 mask
-  : optional, bool; mark all families on the map (only for *example_100_100*).
+  : optional, bool; mark all families on the map (only for *example_100_100*).".
+  
+metric
+  : optional, string; name of the metric.
+  
+saveas
+  : optional, string; name of the saved file.
 
 
 Print the matrix with distances
@@ -77,15 +83,43 @@ Print the matrix with distances
 
 ::
 
-    mapel.print_matrix(exp_name, scale=1.)
-
+    mapel.print_matrix(exp_name, scale=1., metric="positionwise", saveas="matrix")
 
 exp_name
   : obligatory, string; name of the experiment.
   
-
 scale
   : optional, string; multiply all the values by *scale*.
+   
+metric
+  : optional, string; name of the metric.
+  
+saveas
+  : optional, string; name of the saved file.
+
+
+Print the correlation between a given parameter and the average distance from IC.
+-----------------------------
+**print_param_vs_distance** function is printing an array with average distances between each family of elections from a given experiment. For now it works only with original example_100_100.
+
+::
+
+    mapel.print_param_vs_distance(exp_name, values="hb_time", scale="none", metric="positionwise", saveas="correlation")
+
+exp_name
+  : obligatory, string; name of the experiment.
+  
+values
+  : optional, string; name of the file that contains param values. The file should be in *?exp_name?/controllers/advanced/* folder.
+  
+scale
+  : optional, string; scale your param values with "log" or "loglog".
+  
+metric
+  : optional, string; name of the metric.
+ 
+saveas
+  : optional, string; name of the saved file.
 
 
 Prepare SOC files
@@ -95,7 +129,6 @@ Prepare SOC files
 ::
 
     mapel.prepare_approx_cc_order(exp_name, metric="positionwise")
-
 
 exp_name
   : obligatory, name of the experiment.
@@ -162,7 +195,7 @@ Simple examples of use. Just type the following commands in python and enjoy the
     
 ::  
 
-    mapel.print_2d("example_100_100", mask=True)
+    mapel.print_2d("example_100_100", mask=True, saveas="awesome")
     
 ::  
 
@@ -175,14 +208,13 @@ Imagine that you want to run your own experiment. For example you want to check 
 
 First should normilize the values so all of them will fall into [0,1] interval. Then you should put the value with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first lines is corresponding with the first election and so on and so forth. If you are not sure about the format please look at *?exp_name?/controllers/advanced/zip_sizes.txt* file.
 
-Finally if you would like to print the results::
-
-    mapel.print_2d("experiment_name", values="your_file_name.txt")
-
-For example if we run zip experiment for example_100_100 the upper line will  like this::
+If we woudl like to run zip experiment for example_100_100 we should type::
 
     mapel.print_2d("example_100_100", values="zip_sizes.txt")
 
+and if we would like the see the correlation of zip_sizes and the average distance from IC elections we should type::
+
+    mapel.print_param_vs_distance("example_100_100", values="zip_sizes.txt")
 
 
 Your own (complex) experiment
@@ -194,6 +226,32 @@ We do not precompute those soc files because it would have doubled the size of t
     
 Extras
 =============================
+
+Controllers
+-----------------------------
+The whole description of an experiment is kept in *?exp_name?/controllers/basic/map.txt". Before editing this file make a safe copy. The content looks as follows::
+
+    number_of_voter
+
+    number_of_candidates
+
+    number_of_families
+
+    first_family_size, first_family_code, first_family_param, first_family_color, first_family_alpha, first_family_label
+
+    second_family_size, second_family_code, second_family_param, second_family_color, second_family_alpha, second_family_label
+
+    ...
+
+    last_family_size, family_code, family_param, family_color, family_alpha, family_label
+
+
+If you want to hide a given family and do not print it just put '#' at the begging of a that family line::
+
+    #that_family_size, that_family_code, that_family_param, that_family_color, that_family_alpha, that_family_label
+
+You can hide many families at the same time.
+
 
 Matrix with distances
 -----------------------------
