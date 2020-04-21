@@ -104,13 +104,13 @@ Print the correlation between a given parameter and the average distance from IC
 
 ::
 
-    mapel.print_param_vs_distance(exp_name, values="hb_time", scale="none", metric="positionwise", saveas="correlation")
+    mapel.print_param_vs_distance(exp_name, values="", scale="none", metric="positionwise", saveas="correlation")
 
 exp_name
   : obligatory, string; name of the experiment.
   
 values
-  : optional, string; name of the file that contains param values. The file should be in *?exp_name?/controllers/advanced/* folder.
+  : obligatory, string; name of the file that contains param values. The file should be in *?exp_name?/controllers/advanced/* folder.
   
 scale
   : optional, string; scale your param values with "log" or "loglog".
@@ -195,7 +195,11 @@ Simple examples of use. Just type the following commands in python and enjoy the
     
 ::  
 
-    mapel.print_2d("example_100_100", mask=True, saveas="awesome")
+    mapel.print_2d("example_100_100", mask=True, saveas="awesome") 
+    
+::
+
+    mapel.print_2d("example_100_100", values="hb_time", mask=True)
     
 ::  
 
@@ -206,15 +210,15 @@ Your own (simple) experiment
 -----------------------------
 Imagine that you want to run your own experiment. For example you want to check wheter similar elections have the same size after compression or not. You zip all the elections from *?exp_name?/elections/soc_original/*. You check their sizes, and now you would like to print the map, where the *alpha* of each point is proportional to its color. 
 
-First should normilize the values so all of them will fall into [0,1] interval. Then you should put the value with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first lines is corresponding with the first election and so on and so forth. If you are not sure about the format please look at *?exp_name?/controllers/advanced/zip_sizes.txt* file.
+First should normilize the values so all of them will fall into [0,1] interval. Then you should put the value with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first lines is corresponding with the first election and so on and so forth. If you are not sure about the format please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
 
-If we woudl like to run zip experiment for example_100_100 we should type::
+Let us assume that you run your experiment for example_100_100. If you want to print a map you just need to type:
 
-    mapel.print_2d("example_100_100", values="zip_sizes.txt")
+    mapel.print_2d("example_100_100", values="zip_size", mask=True, coloring="intervals")
+    
+We have chosen coloring="intervals" because in this case such coloring is more informative. And if we would like the see the correlation of zip_sizes and the average distance from IC elections we should type::
 
-and if we would like the see the correlation of zip_sizes and the average distance from IC elections we should type::
-
-    mapel.print_param_vs_distance("example_100_100", values="zip_sizes.txt")
+    mapel.print_param_vs_distance("example_100_100", values="zip_size")
 
 
 Your own (complex) experiment
