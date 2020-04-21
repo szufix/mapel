@@ -191,15 +191,15 @@ Simple examples of use. Just type the following commands in python and enjoy the
 
 ::
 
-    mapel.print_2d("example_100_20", num_winners=50, winners_order="positionwise_approx_cc")
-    
+    mapel.print_2d("example_100_100", values="hb_time", mask=True)
+   
 ::  
 
     mapel.print_2d("example_100_100", mask=True, saveas="awesome") 
     
 ::
 
-    mapel.print_2d("example_100_100", values="hb_time", mask=True)
+     mapel.print_2d("example_100_20", num_winners=50, winners_order="positionwise_approx_cc")
     
 ::  
 
@@ -212,7 +212,7 @@ Imagine that you want to run your own experiment. For example you want to check 
 
 First should normilize the values so all of them will fall into [0,1] interval. Then you should put the value with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first lines is corresponding with the first election and so on and so forth. If you are not sure about the format please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
 
-Let us assume that you run your experiment for example_100_100. If you want to print a map you just need to type:
+Let us assume that you run your experiment for example_100_100. If you want to print a map you just need to type::
 
     mapel.print_2d("example_100_100", values="zip_size", mask=True, coloring="intervals")
     
