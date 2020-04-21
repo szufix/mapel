@@ -139,13 +139,14 @@ metric
   
 Experiments
 =============================
-Mixture of 800 election from 30 different  models: 
+The mapel package contains 6 precomomputed experiments. All of them based on a mixture of 800 election from 30 different  models: 
 
 - 30x(each), Impartial Culture, Single Crossing, SPOC, Single Peaked (by Walsh), Single Peaked (by Conitzer),
 - 30x(each) Euclidean: 1D Interval, 2D Square, 3D Cube, 5D Cube, 10D Cube 20D Cube, 2D Sphere, 3D Sphere, 5D Sphere,  
 - 30x(each) Urn Model with the following parameter: 0.5, 0.2, 0.1, 0.05, 0.02, 0.01 
 - 20x(each) Mallows with the following parameter: 0.999, 0.99, 0.95, 0.75, 0.5, 0.25, 0.1, 0.05, 0.01, 0.001
 
+They differ only in the number of candidates
 List of experiments
 -----------------------------
 - Experiment 1: 100 voters, 100 candidates; exp_name: **example_100_100**
