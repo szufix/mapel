@@ -24,7 +24,7 @@ Import
 
 Test
 -----------------------------
-If everthing was correctly downloaded and imported then after writing the following command:
+If everything was correctly downloaded and imported then after writing the following command:
 ::
 
     mapel.test()
