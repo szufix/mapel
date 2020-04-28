@@ -34,7 +34,7 @@ If everything was correctly downloaded and imported then after writing the follo
     import mapel    
     mapel.print_2d("example_100_100", mask=True)
 
-the program should print the map of elections.
+the program should display the map of elections.
 
 Functionalities
 =============================
