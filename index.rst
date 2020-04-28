@@ -1,44 +1,48 @@
 Introduction
 =============================
-**Mapel** (map of elections) is a python package that serves for drawing map of elections. It is a testbed of elections to be used
-for various election-related experiments such as testing algorithms or estimating the frequency of a given phenomenon. If you want to run en experiment on a large variaty of elections then mapel is for you!
+**Mapel** (map of elections) is a python package that serves for drawing maps of elections. It contains a testbed of elections to be used
+for various election-related experiments such as testing algorithms or estimating the frequency of a given phenomenon. If you want to run an experiment on a large variaty of elections then mapel is for you!
 
 For more details please look at:
 
     Szufa,  S.,  Faliszewski,  P.,  Skowron,  P.,  Slinko,  A.,  Talmon,  N.:  Drawing  a  map of elections in the space of statistical cultures. In: Proceedings of AAMAS-2020, to appear.
 
+The package contains the following elements
+- several sets of elections, including the one used by Szufa et al. [AAMAS-2020]
+- tools for drawing maps of elections
 
 Installation
 -----------------------------
-::
+To install mapel on your system type::
 
     pip install mapel
 
 
+Note that this will install necessary dependecies (e.g. matplotlip, numpy, etc).
+
 Import
 -----------------------------
-::
+In order to use mapel package in your project, just type::
 
     import mapel
 
 
 Test
 -----------------------------
-If everything was correctly downloaded and imported then after writing the following command:
+If everything was correctly downloaded and imported then after writing the following lines of code in python:
 ::
+    import mapel    
+    mapel.print_2d("example_100_100", mask=True)
 
-    mapel.test()
-
-the program should print "Welcome to Mapel!".
-
+the program should print the map of elections.
 
 Functionalities
 =============================
-In this section we describe main functionalities of mapel.
+In this section we describe the main functionalities of mapel.
 
-Print the map of elections
+Printing the map of elections
 -----------------------------
-**print_2d** function is printing a two dimensional embedding of all the elections from a given experiment.
+**print_2d** function is displaying a two dimensional embedding of all the elections from a given experiment.
 ::
 
     mapel.print_2d(exp_name, num_elections=800, main_order="", num_winners=0,  winners_order="positionwise_approx_cc", values="default", coloring="purple", angle=0,  mask=False, metric="positionwise", saveas="map_2d") 
