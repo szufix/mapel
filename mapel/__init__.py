@@ -1,7 +1,7 @@
 from .voting import modern as mo
 
 
-def test():
+def hello():
     print("Welcome to Mapel!")
 
 

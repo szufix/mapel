@@ -21,13 +21,11 @@ def add_margin(pil_img, top, right, bottom, left, color):
 def print_2d(exp_name, num_winners=0, mask=False,
              angle=0, reverse=False, update=False, values="default", coloring="purple",
              num_elections=800, winners_order="positionwise_approx_cc", main_order="", metric="positionwise",
-             saveas="map_2d"):
+             saveas="map_2d", show=True):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
     model = obj.Model_2d(exp_name, num_winners=num_winners, num_elections=num_elections,
                          winners_order=winners_order, main_order=main_order, metric=metric)
-    core = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-
     if angle != 0:
         model.rotate(angle)
 
@@ -43,8 +41,7 @@ def print_2d(exp_name, num_winners=0, mask=False,
 
     if values != "default":
 
-        #file_name = os.path.join(core, "experiments", str(exp_name), "controllers", str(values) + ".txt")
-        file_name = os.path.join(core, "experiments", str(exp_name), "controllers", "advanced", str(values) + ".txt")
+        file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "controllers", "advanced", str(values) + ".txt")
         file_ = open(file_name, 'r')
         #num_elections = int(file_.readline())
 
@@ -76,7 +73,7 @@ def print_2d(exp_name, num_winners=0, mask=False,
 
     if mask:
 
-        file_points = os.path.join(core, "images", "tmp", str(exp_name) + "_points.png")
+        file_points = os.path.join(os.getcwd(), "images", "tmp", str(exp_name) + "_points.png")
         plt.savefig(file_points)
 
         x = int(640 * 1)
@@ -87,17 +84,17 @@ def print_2d(exp_name, num_winners=0, mask=False,
 
         background = add_margin(background, 20, 115, 40, 145, (255, 255, 255))
 
-        file_mask = os.path.join(core, "images", "masks", "mask.png")
+        file_mask = os.path.join(os.getcwd(), "images", "masks", "mask.png")
         foreground = Image.open(file_mask)#.resize((x, y))
         #background.show()
 
 
         background.paste(foreground, (9, 11), foreground)
-        background.show()
 
+        if show:
+            background.show()
 
-
-        file_map_with_mask = os.path.join(core, "images", str(saveas) + ".png")
+        file_map_with_mask = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
         background.save(file_map_with_mask)
 
         """
@@ -126,16 +123,18 @@ def print_2d(exp_name, num_winners=0, mask=False,
 
         text_name = str(model.num_voters) + " x " + str(model.num_candidates)
         text = ax.text(0.0, 1.05, text_name, transform=ax.transAxes)
-        file_name = os.path.join(core, "images", str(saveas) + ".png")
+        file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
         if values == "default":
             lgd = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
             plt.savefig(file_name, bbox_extra_artists=(lgd, text), bbox_inches='tight')
         else:
             plt.savefig(file_name, bbox_inches='tight')
-        plt.show()
+
+        if show:
+            plt.show()
 
 
-def print_matrix(exp_name, scale=1., metric="positionwise", saveas="matrix"):
+def print_matrix(exp_name, scale=1., metric="positionwise", saveas="matrix", show=True):
     """Print the matrix with average distances between each pair of models """
 
     model = obj.Model_xd(exp_name, metric=metric)
@@ -156,8 +155,7 @@ def print_matrix(exp_name, scale=1., metric="positionwise", saveas="matrix"):
             matrix[i][j] = int(round(matrix[i][j], 0))
             matrix[j][i] = matrix[i][j]
 
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-    file_name = os.path.join(file_name, "experiments", str(exp_name), "controllers", "basic", "matrix.txt")
+    file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "controllers", "basic", "matrix.txt")
     file_ = open(file_name, 'r')
 
     #  everything with _new refers to a new order
@@ -196,17 +194,16 @@ def print_matrix(exp_name, scale=1., metric="positionwise", saveas="matrix"):
     plt.yticks(y_axis, y_values)
     plt.xticks(x_axis, x_values, rotation='vertical')
 
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-    file_name = os.path.join(file_name, "images", str(saveas) + ".png")
+    file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
     plt.savefig(file_name)
-    plt.show()
+    if show:
+        plt.show()
 
 
 def prepare_approx_cc_order(exp_name, metric="positionwise"):
     """ Copy all the elections and the change the order according to approx_cc order """
 
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-    file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "winners", str(metric) + "_approx_cc.txt")
+    file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "results", "winners", str(metric) + "_approx_cc.txt")
     file_ = open(file_name, 'r')
 
     file_.readline()  # skip this line
@@ -216,12 +213,10 @@ def prepare_approx_cc_order(exp_name, metric="positionwise"):
     for i in range(num_elections):
         target = str(file_.readline().replace("\n", ""))
 
-        src = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        src = os.path.join(src, "experiments", str(exp_name), "elections", "soc_original",
+        src = os.path.join(os.getcwd(), "experiments", str(exp_name), "elections", "soc_original",
                            "tmp_" + str(target) + ".soc")
 
-        dst = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        dst = os.path.join(dst, "experiments", str(exp_name), "elections", "soc_" + str(metric) + "_approx_cc",
+        dst = os.path.join(os.getcwd(), "experiments", str(exp_name), "elections", "soc_" + str(metric) + "_approx_cc",
                            "tmp_" + str(i) + ".soc")
 
         copyfile(src, dst)
@@ -243,16 +238,14 @@ def interval_color(shade):
     return color
 
 
-def print_param_vs_distance(exp_name, values="", scale="none", metric="positionwise", saveas="correlation"):
+def print_param_vs_distance(exp_name, values="", scale="none", metric="positionwise", saveas="correlation", show=True):
 
     #  only for example_100_100
 
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-    file_name = os.path.join(file_name, "experiments", str(exp_name), "controllers", "advanced", str(values) + ".txt")
+    file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "controllers", "advanced", str(values) + ".txt")
     file_ = open(file_name, 'r')
 
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-    file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "distances", str(metric) + ".txt")
+    file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "results", "distances", str(metric) + ".txt")
     file_ = open(file_name, 'r')
 
     num_elections = int(file_.readline())
@@ -316,8 +309,8 @@ def print_param_vs_distance(exp_name, values="", scale="none", metric="positionw
     add_text = ax.text(0.7, 0.8, pear_text, transform=ax.transAxes)
     plt.title(title_text)
     plt.xlabel("average distance from IC elections")
-    core = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-    file_name = os.path.join(core, "images", str(saveas) + ".png")
+    file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
     lgd = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.savefig(file_name, bbox_extra_artists=(lgd, add_text), bbox_inches='tight')
-    plt.show()
+    if show:
+        plt.show()

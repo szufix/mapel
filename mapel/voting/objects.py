@@ -16,8 +16,8 @@ class Model:
     def import_controllers(exp_name):
         """ Import from a file all the controllers"""
 
-        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "experiments", str(exp_name), "controllers", "basic", "map.txt")
+        file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "controllers", "basic", "map.txt")
+        print(file_name)
         file_ = open(file_name, 'r')
         num_voters = int(file_.readline())
         num_candidates = int(file_.readline())
@@ -51,8 +51,7 @@ class Model_xd(Model):
     def import_distances(exp_name, metric):
         """Import from a file precomputed distances between each pair of elections  """
 
-        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "distances", str(metric) + ".txt")
+        file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "results", "distances", str(metric) + ".txt")
         file_ = open(file_name, 'r')
         num_points = int(file_.readline())
         file_.readline()  # skip this line
@@ -86,8 +85,7 @@ class Model_2d(Model):
     def import_points(exp_name, metric):
         """ Import from a file precomputed coordinates of all the points -- each point refer to one election """
 
-        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "points", str(metric) + "_2d.txt")
+        file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "results", "points", str(metric) + "_2d.txt")
         file_ = open(file_name, 'r')
 
         num_points = int(file_.readline())
@@ -107,8 +105,7 @@ class Model_2d(Model):
         if order_name == "":
             return [i for i in range(num_elections)]
 
-        file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        file_name = os.path.join(file_name, "experiments", str(exp_name), "results", "winners", str(order_name) + ".txt")
+        file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "results", "winners", str(order_name) + ".txt")
         file_ = open(file_name, 'r')
         file_.readline()  # skip this line
         file_.readline()  # skip this line
