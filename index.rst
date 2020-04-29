@@ -10,6 +10,7 @@ For more details please look at:
 The package contains the following elements
 - several sets of elections, including the one used by Szufa et al. [AAMAS-2020]
 - tools for drawing maps of elections
+- tools for generating elections and computing distances between them (*available soon*)
 
 Installation
 -----------------------------
@@ -31,7 +32,6 @@ After extracting the structure should look as follows::
         └── test.py
 
 
-
 Testing
 -----------------------------
 Inside mapel_data there as a python file *test.py*::
@@ -48,9 +48,14 @@ As a next step you can uncomment the last line and after running test.py, it sho
 
 If you have any problems so far please contact: *stanislaw.szufa@uj.edu.pl*
 
-Content brief description
+Features
 -----------------------------
-Here we present basic functionalities of the mapel package.
+Here we present main features of the mapel package.
+
+* printing maps of elections
+* printing matrices of distances
+* generating elections according to many different models (*available soon*)
+* computing distances between elections (*available soon*)
 
 
 
@@ -61,19 +66,79 @@ Simple examples of use. Just type the following commands in python and enjoy the
 
 ::
 
-    mapel.print_2d("example_100_100", values="hb_time", mask=True)
+    mapel.print_2d("testbed_100_100", values="hb_time", mask=True)
     
 ::
 
-     mapel.print_2d("example_100_20", num_winners=50, winners_order="positionwise_approx_cc")
+     mapel.print_2d("testbed_100_20", num_winners=50, winners_order="positionwise_approx_cc")
     
 ::  
 
-    mapel.print_matrix("example_100_10", scale=0.3)
+    mapel.print_matrix("testbed_100_10", scale=0.3)
+    
+Experiments
+=============================
+The mapel package contains 6 precomputed experiments. Each of them contains a mixture of 800 election from 30 different  models: 
+
+- Impartial Culture, Single Crossing, SPOC, Single Peaked (by Walsh), Single Peaked (by Conitzer),
+- Euclidean: 1D Interval, 2D Square, 3D Cube, 5D Cube, 10D Cube 20D Cube, 2D Sphere, 3D Sphere, 5D Sphere,  
+- Urn Model with the following parameter: 0.5, 0.2, 0.1, 0.05, 0.02, 0.01 
+- Mallows with the following parameter: 0.999, 0.99, 0.95, 0.75, 0.5, 0.25, 0.1, 0.05, 0.01, 0.001
+
+Each of these experiments regards 100 voters and x candadates where x = 3,4,5,10,20,100.
+
+The names of these experiments are:
+
+- Experiment 1: 100 voters, 100 candidates; exp_name: **testbed_100_100**
+- Experiment 2: 100 voters, 20 candidates; exp_name: **testbed_100_20**
+- Experiment 3: 100 voters, 10 candidates; exp_name: **testbed_100_10**
+- Experiment 4: 100 voters, 5 candidates; exp_name: **testbed_100_5**
+- Experiment 5: 100 voters, 4 candidates; exp_name: **testbed_100_4**
+- Experiment 6: 100 voters, 3 candidates; exp_name: **testbed_100_3**
+    
+General structure of a single experiment::
+
+    ?exp_name?
+    ├── controllers     
+    │   ├── basic/
+    │   └── advanced/
+    ├── elections
+    │   └── soc_original/
+    └── results
+        ├── distances/        
+        ├── points/
+        └── winners/
+            
+Exact structure of percomputed experiments::
+
+    ?exp_name?
+    ├── controllers     
+    │   ├── basic
+    │   │   ├── map.txt
+    │   │   └── matrix.txt
+    │   └── advanced
+    │       ├── hb_time.txt (only in example_100_100)
+    │       └── zip_sizes.txt (only in example_100_100)
+    ├── elections          
+    │   ├── soc_positionwise_approx_cc 
+    │   │   └── (empty)
+    │   └── soc_original
+    │       └── (800 txt files with elections)
+    └── results
+        ├── distances        
+        │   ├── bordawise.txt (only in example_100_100)
+        │   └── positionwise.txt
+        ├── points
+        │   ├── bordawise_2d.txt (only in example_100_100)
+        │   └── positionwise_2d.txt
+        └── winners
+            └── positionwise_approx_cc.txt
+
+You can your own experiments, but remember that they should have the same structure. If you want to create an experiment of your own we suggest you first copy one of the existing experiemnts and then just replace necessary files.
 
 Functionalities
 =============================
-In this section we describe the main functionalities of mapel.
+In this section we describe in details the functionalities of mapel.
 
 Printing the map of elections
 -----------------------------
@@ -176,50 +241,7 @@ metric
   : optional, string, name of the metric.
   
   
-Experiments
-=============================
-The mapel package contains 6 precomputed experiments. Each of them contains a mixture of 800 election from 30 different  models: 
 
-- 30x(each), Impartial Culture, Single Crossing, SPOC, Single Peaked (by Walsh), Single Peaked (by Conitzer),
-- 30x(each) Euclidean: 1D Interval, 2D Square, 3D Cube, 5D Cube, 10D Cube 20D Cube, 2D Sphere, 3D Sphere, 5D Sphere,  
-- 30x(each) Urn Model with the following parameter: 0.5, 0.2, 0.1, 0.05, 0.02, 0.01 
-- 20x(each) Mallows with the following parameter: 0.999, 0.99, 0.95, 0.75, 0.5, 0.25, 0.1, 0.05, 0.01, 0.001
-
-They differ only in the number of candidates.
-
-- Experiment 1: 100 voters, 100 candidates; exp_name: **example_100_100**
-- Experiment 2: 100 voters, 20 candidates; exp_name: **example_100_20**
-- Experiment 3: 100 voters, 10 candidates; exp_name: **example_100_10**
-- Experiment 4: 100 voters, 5 candidates; exp_name: **example_100_5**
-- Experiment 5: 100 voters, 4 candidates; exp_name: **example_100_4**
-- Experiment 6: 100 voters, 3 candidates; exp_name: **example_100_3**
-    
-Experiment structure (after downloading mapel): 
-
-::
-
-    ?exp_name?
-    ├── controllers     
-    │   ├── basic
-    │   │   ├── map.txt
-    │   │   └── matrix.txt
-    │   └── advanced
-    │       ├── hb_time.txt (only in example_100_100)
-    │       └── zip_sizes.txt (only in example_100_100)
-    ├── elections          
-    │   ├── soc_positionwise_approx_cc 
-    │   │   └── (empty)
-    │   └── soc_original
-    │       └── (800 txt files with elections)
-    └── results
-        ├── distances        
-        │   ├── bordawise.txt (only in example_100_100)
-        │   └── positionwise.txt
-        ├── points
-        │   ├── bordawise_2d.txt (only in example_100_100)
-        │   └── positionwise_2d.txt
-        └── winners
-            └── positionwise_approx_cc.txt
 
 
 Your own (simple) experiment
@@ -228,13 +250,13 @@ Imagine that you want to run your own experiment. For example you want to check 
 
 First you should normalize the values so all of them fall into the [0,1] interval. Then you should put the file with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first line is corresponding to the first election, the secon one corresponds to the second election and so on and so forth. If you are not sure about the format, please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
 
-Let us assume that you run your experiment for example_100_100. If you want to print a map, you just need to type::
+Let us assume that you run your experiment for testbed_100_100. If you want to print a map, you just need to type::
 
-    mapel.print_2d("example_100_100", values="zip_size", mask=True, coloring="intervals")
+    mapel.print_2d("testbed_100_100", values="zip_size", mask=True, coloring="intervals")
     
 We have chosen coloring="intervals" because in this case such coloring is more informative. And if we would like the see the correlation of zip_sizes and the average distance from IC elections, we should type::
 
-    mapel.print_param_vs_distance("example_100_100", values="zip_size")
+    mapel.print_param_vs_distance("testbed_100_100", values="zip_size")
 
 
 Your own (complex) experiment
