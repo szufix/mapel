@@ -21,7 +21,7 @@ To install mapel on your system type::
 Note that this will install necessary dependecies (e.g. matplotlip, numpy, etc).
 
 Beside installing the package please download zip file from https://github.com/szufix/mapel_data/blob/master/mapel_data.zip
-which contains all the data. After downloading extract it to wherever you want to use our package.
+which contains all the data. After downloading extract it to wherever you want to use the package.
 
 After extracting the structure should look as follows::
 
@@ -34,7 +34,7 @@ After extracting the structure should look as follows::
 
 Testing
 -----------------------------
-Inside mapel_data there as a python test.py::
+Inside mapel_data there as a python file *test.py*::
 
     import mapel
     
@@ -44,14 +44,32 @@ Inside mapel_data there as a python test.py::
 
 If everything was correctly downloaded and imported then after running test.py you should see "Welcome to Mapel!" text.
 
-Then you can uncomment the last line and after running, test program should display the map of elections.
+As a next step you can uncomment the last line and after running test.py, it should display the map of elections.
 
-If have any problems so far please contact: *stanislaw.szufa@uj.edu.pl*
+If you have any problems so far please contact: *stanislaw.szufa@uj.edu.pl*
 
-Teaser
+Content brief description
 -----------------------------
 Here we present basic functionalities of the mapel package.
 
+
+
+Examples
+-----------------------------
+Simple examples of use. Just type the following commands in python and enjoy the results.
+
+
+::
+
+    mapel.print_2d("example_100_100", values="hb_time", mask=True)
+    
+::
+
+     mapel.print_2d("example_100_20", num_winners=50, winners_order="positionwise_approx_cc")
+    
+::  
+
+    mapel.print_matrix("example_100_10", scale=0.3)
 
 Functionalities
 =============================
@@ -98,9 +116,9 @@ saveas
   : optional, string; name of the saved file.
 
 
-Print the matrix with distances
+Printing the matrix with distances
 -----------------------------
-**print_matrix** function is printing an array with average distances between each family of elections from a given experiment.
+**print_matrix** function is displaying an array with average distances between each family of elections from a given experiment.
 
 ::
 
@@ -119,7 +137,7 @@ saveas
   : optional, string; name of the saved file.
 
 
-Print the correlation between a given parameter and the average distance from IC.
+Printing the plot of a given election parameter against the average distance from IC.
 -----------------------------
 **print_param_vs_distance** function is printing an array with average distances between each family of elections from a given experiment. For now it works only with original example_100_100.
 
@@ -160,7 +178,7 @@ metric
   
 Experiments
 =============================
-The mapel package contains 6 precomomputed experiments. All of them based on a mixture of 800 election from 30 different  models: 
+The mapel package contains 6 precomputed experiments. Each of them contains a mixture of 800 election from 30 different  models: 
 
 - 30x(each), Impartial Culture, Single Crossing, SPOC, Single Peaked (by Walsh), Single Peaked (by Conitzer),
 - 30x(each) Euclidean: 1D Interval, 2D Square, 3D Cube, 5D Cube, 10D Cube 20D Cube, 2D Sphere, 3D Sphere, 5D Sphere,  
@@ -204,40 +222,17 @@ Experiment structure (after downloading mapel):
             └── positionwise_approx_cc.txt
 
 
-Examples
-=============================
-
-Simple examples of use. Just type the following commands in python and enjoy the results.
-
-
-::
-
-    mapel.print_2d("example_100_100", values="hb_time", mask=True)
-   
-::  
-
-    mapel.print_2d("example_100_100", mask=True, saveas="awesome") 
-    
-::
-
-     mapel.print_2d("example_100_20", num_winners=50, winners_order="positionwise_approx_cc")
-    
-::  
-
-    mapel.print_matrix("example_100_10", scale=0.3)
-
-
 Your own (simple) experiment
 -----------------------------
 Imagine that you want to run your own experiment. For example you want to check wheter similar elections have the same size after compression or not. You zip all the elections from *?exp_name?/elections/soc_original/*. You check their sizes, and now you would like to print the map, where the *alpha* of each point is proportional to its color. 
 
-First should normilize the values so all of them will fall into [0,1] interval. Then you should put the value with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first lines is corresponding with the first election and so on and so forth. If you are not sure about the format please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
+First you should normalize the values so all of them fall into the [0,1] interval. Then you should put the file with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first line is corresponding to the first election, the secon one corresponds to the second election and so on and so forth. If you are not sure about the format, please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
 
-Let us assume that you run your experiment for example_100_100. If you want to print a map you just need to type::
+Let us assume that you run your experiment for example_100_100. If you want to print a map, you just need to type::
 
     mapel.print_2d("example_100_100", values="zip_size", mask=True, coloring="intervals")
     
-We have chosen coloring="intervals" because in this case such coloring is more informative. And if we would like the see the correlation of zip_sizes and the average distance from IC elections we should type::
+We have chosen coloring="intervals" because in this case such coloring is more informative. And if we would like the see the correlation of zip_sizes and the average distance from IC elections, we should type::
 
     mapel.print_param_vs_distance("example_100_100", values="zip_size")
 
@@ -256,7 +251,7 @@ Controllers
 -----------------------------
 The whole description of an experiment is kept in *?exp_name?/controllers/basic/map.txt". Before editing this file make a safe copy. The content looks as follows::
 
-    number_of_voter
+    number_of_voters
 
     number_of_candidates
 
@@ -271,16 +266,14 @@ The whole description of an experiment is kept in *?exp_name?/controllers/basic/
     last_family_size, family_code, family_param, family_color, family_alpha, family_label
 
 
-If you want to hide a given family and do not print it just put '#' at the begging of a that family line::
+If you want to hide a given family and do not print it, just put '#' at the begging of a that family line::
 
     #that_family_size, that_family_code, that_family_param, that_family_color, that_family_alpha, that_family_label
-
-You can hide many families at the same time.
 
 
 Matrix with distances
 -----------------------------
-If you want to print just several selected families of elections or change the order in which they appear you should go to the file:  "*?exp_name?/controllers/basic/matrix.txt*". There a is list of names of all the families of elections. The number of families and their order can be change and will influence the *mapel.print_matrix()* function.
+If you want to print just several selected families of elections or change the order in which they appear, you should go to the file:  "*?exp_name?/controllers/basic/matrix.txt*". There a is list of names of all the families of elections. The number of families and their order can be change and will influence the *mapel.print_matrix()* function.
 
 SOC files
 -----------------------------
