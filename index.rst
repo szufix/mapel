@@ -300,12 +300,13 @@ Before editing this file, please make a safe copy. The content looks as follows:
     
     
 Detailed explanation
-*size -- number of elections from a given family
-*code -- the id of the election model, for example impartial_culture, 3d_sphere or 20d_cube
-*param -- model's parameter; only important urn_model or mallows
-*color -- the color in which the family will be displayed
-*alpha -- transparency
-*label -- full name of the family; for example "Urn Model 0.1"
+
+* size -- number of elections from a given family
+* code -- the id of the election model, for example impartial_culture, 3d_sphere or 20d_cube
+* param -- model's parameter; only important urn_model or mallows
+* color -- the color in which the family will be displayed
+* alpha -- transparency
+* label -- full name of the family; for example "Urn Model 0.1"
 
 If you want to hide a given family and do not print it, just put '#' at the begging of a that family line::
 
