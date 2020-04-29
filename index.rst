@@ -20,21 +20,39 @@ To install mapel on your system type::
 
 Note that this will install necessary dependecies (e.g. matplotlip, numpy, etc).
 
+Beside installing the package please download zip file from https://github.com/szufix/mapel_data/blob/master/mapel_data.zip
+which contains all the data. After downloading extract it to wherever you want to use our package.
+
+After extracting the structure should look as follows::
+
+your_folder
+    ├── experiments/
+    ├── images/
+    └── test.py
+
+
 Import
 -----------------------------
-In order to use mapel package in your project, just type::
+In order to use mapel python package in your project, just type::
 
     import mapel
 
 
-Test
+Testing
 -----------------------------
-If everything was correctly downloaded and imported then after writing the following lines of code in python:
-::
-    import mapel    
-    mapel.print_2d("example_100_100", mask=True)
+Inside mapel_data there as a python test.py::
 
-the program should display the map of elections.
+    import mapel
+    
+    mapel.hello()
+    
+    # mapel.print_2d("testbed_100_100", mask=True)
+
+If everything was correctly downloaded and imported then after running test file you see "Welcome to Mapel!" text.
+
+Then you can uncomment the last line and after running, test program should display the map of elections.
+
+
 
 Functionalities
 =============================
