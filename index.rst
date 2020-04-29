@@ -8,9 +8,9 @@ For more details please look at:
     Szufa,  S.,  Faliszewski,  P.,  Skowron,  P.,  Slinko,  A.,  Talmon,  N.:  Drawing  a  map of elections in the space of statistical cultures. In: Proceedings of AAMAS-2020, to appear.
 
 The package contains the following elements
-- several sets of elections, including the one used by Szufa et al. [AAMAS-2020]
-- tools for drawing maps of elections
-- tools for generating elections and computing distances between them (*available soon*)
+* several sets of elections, including the one used by Szufa et al. [AAMAS-2020]
+* tools for drawing maps of elections
+* tools for generating elections and computing distances between them (*available soon*)
 
 Installation
 -----------------------------
@@ -70,7 +70,7 @@ Simple examples of use. Just type the following commands in python and enjoy the
     
 ::
 
-     mapel.print_2d("testbed_100_20", num_winners=50, winners_order="positionwise_approx_cc")
+    mapel.print_2d("testbed_100_20")
     
 ::  
 
@@ -154,11 +154,17 @@ If we would like the see the correlation of zip_sizes and the average distance f
     mapel.print_param_vs_distance("testbed_100_100", values="zip_size")
 
 
+Representative set of elections
+-----------------------------
+800 elections is really a lot, and many elections within those 800 are very simmilar to one another. The basic idea is that we wanted to create a smaller set that will be representive. By representive set of elections we mean such set that by testing some algorithm on this set we will draw more or less the same conclusions as while testing that algortihm on all 800 elections.
+
+Using approximation algorithm for Chamberlin-Courant voting rule, we precomputed a ranking of all 800 elections. Each election was a voter ana a candidate at the same time. The smaller was the (positionwise) distance between two elections the higher they appear in one another vote. We refer to this ranking as *approx_cc*.
+
+
 Advanced example of use (2)
 -----------------------------
-If you want to test an algorithm that is taking a lot of time to compute and you want to run it only for a small amount of elections, we suggest you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 50) elections from *?exp_name?/elections/soc_?metric?_approx_cc/*. If you are chossing this option rember to set the value of *main_order* to *?metric?_approx_cc*.
+If you want to test an algorithm that is taking a lot of time to compute and you want to run it only on a small amount of elections, we suggest you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 50) elections from *?exp_name?/elections/soc_?metric?_approx_cc/*. If you are chossing this option rember to set the value of *main_order* to *?metric?_approx_cc*.
 
-We do not precompute those soc files because it would have doubled the size of mapel_data.zip file.
 
 
 Functionalities
