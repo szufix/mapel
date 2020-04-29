@@ -25,17 +25,11 @@ which contains all the data. After downloading extract it to wherever you want t
 
 After extracting the structure should look as follows::
 
-your_folder
-    ├── experiments/
-    ├── images/
-    └── test.py
+    your_folder
+        ├── experiments/
+        ├── images/
+        └── test.py
 
-
-Import
------------------------------
-In order to use mapel python package in your project, just type::
-
-    import mapel
 
 
 Testing
@@ -48,11 +42,11 @@ Inside mapel_data there as a python test.py::
     
     # mapel.print_2d("testbed_100_100", mask=True)
 
-If everything was correctly downloaded and imported then after running test file you see "Welcome to Mapel!" text.
+If everything was correctly downloaded and imported then after running test.py you should see "Welcome to Mapel!" text.
 
 Then you can uncomment the last line and after running, test program should display the map of elections.
 
-
+If have any problems regarding Installation please contact: *stanislaw.szufa@uj.edu.pl*
 
 Functionalities
 =============================
