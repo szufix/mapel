@@ -176,7 +176,7 @@ Printing the map of elections
 **print_2d** function is displaying a two dimensional embedding of all the elections from a given experiment.
 ::
 
-    mapel.print_2d(exp_name, num_elections=800, main_order="", values="default", coloring="purple", angle=0,  mask=False, metric="positionwise", saveas="map_2d", show=True) 
+    mapel.print_2d(exp_name, num_elections=800, order="", values="default", coloring="purple", angle=0,  mask=False, metric="positionwise", saveas="map_2d", show=True) 
 
 exp_name
   : obligatory, string; name of the experiment.
@@ -184,7 +184,7 @@ exp_name
 num_elections
   : optional, int, number of points to be printed.
   
-main_order
+order
   : optional, string; name of the file that contains the order in which the points should appear.
   
 values
