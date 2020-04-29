@@ -46,7 +46,12 @@ If everything was correctly downloaded and imported then after running test.py y
 
 Then you can uncomment the last line and after running, test program should display the map of elections.
 
-If have any problems regarding Installation please contact: *stanislaw.szufa@uj.edu.pl*
+If have any problems so far please contact: *stanislaw.szufa@uj.edu.pl*
+
+Teaser
+-----------------------------
+Here we present basic functionalities of the mapel package.
+
 
 Functionalities
 =============================
