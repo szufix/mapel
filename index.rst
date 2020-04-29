@@ -163,7 +163,7 @@ Using approximation algorithm for Chamberlin-Courant voting rule, we precomputed
 
 Advanced example of use (2)
 -----------------------------
-If you want to test an algorithm that is taking a lot of time to compute and you want to run it only on a small amount of elections, we suggest you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 50) elections from *?exp_name?/elections/soc_?metric?_approx_cc/*. If you are chossing this option rember to set the value of *main_order* to *?metric?_approx_cc*.
+If you want to test an algorithm that is taking a lot of time to compute and you want to run it only on few elections, we suggest that you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 200) elections from *?exp_name?/elections/soc_?metric?_approx_cc/*. If you are chossing this option, rember to set the value of *main_order* to *?metric?_approx_cc*.
 
 
 
@@ -280,7 +280,9 @@ Extras
 
 Controllers
 -----------------------------
-The whole description of an experiment is kept in *?exp_name?/controllers/basic/map.txt". Before editing this file make a safe copy. The content looks as follows::
+The whole technical description of an experiment is kept in *?exp_name?/controllers/basic/map.txt". 
+
+Before editing this file, please make a safe copy. The content looks as follows::
 
     number_of_voters
 
@@ -295,7 +297,15 @@ The whole description of an experiment is kept in *?exp_name?/controllers/basic/
     ...
 
     last_family_size, family_code, family_param, family_color, family_alpha, family_label
-
+    
+    
+Detailed explanation
+*size -- number of elections from a given family
+*code -- the id of the election model, for example impartial_culture, 3d_sphere or 20d_cube
+*param -- model's parameter; only important urn_model or mallows
+*color -- the color in which the family will be displayed
+*alpha -- transparency
+*label -- full name of the family; for example "Urn Model 0.1"
 
 If you want to hide a given family and do not print it, just put '#' at the begging of a that family line::
 
