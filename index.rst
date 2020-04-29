@@ -107,15 +107,15 @@ General structure of a single experiment::
     └── results
         ├── distances/        
         ├── points/
-        └── winners/
+        └── orders/
             
 Exact structure of percomputed experiments::
 
     ?exp_name?
     ├── controllers     
     │   ├── basic
-    │   │   ├── map.txt
-    │   │   └── matrix.txt
+    │   │   ├── map.txt                                     #  contains all techinical details of the experiment
+    │   │   └── matrix.txt                                  #  auxiliarry file print_matrix() function
     │   └── advanced
     │       ├── hb_time.txt (only in testbed_100_100)
     │       └── zip_sizes.txt (only in testbed_100_100)
@@ -123,16 +123,16 @@ Exact structure of percomputed experiments::
     │   ├── soc_positionwise_approx_cc 
     │   │   └── (empty)
     │   └── soc_original
-    │       └── (800 txt files with elections)
+    │       └── (800 txt files with elections)              #  all the elections -- each election in a separete file
     └── results
         ├── distances        
-        │   ├── bordawise.txt (only in testbed_100_100)
-        │   └── positionwise.txt
+        │   ├── bordawise.txt (only in testbed_100_100)     #  bordawise distances between each pair of elections
+        │   └── positionwise.txt                            #  positionwise distances between each pair of elections
         ├── points
-        │   ├── bordawise_2d.txt (only in testbed_100_100)
-        │   └── positionwise_2d.txt
-        └── winners
-            └── positionwise_approx_cc.txt
+        │   ├── bordawise_2d.txt (only in testbed_100_100)  
+        │   └── positionwise_2d.txt                         
+        └── orders
+            └── positionwise_approx_cc.txt                  
 
 You can your own experiments, but remember that they should have the same structure. If you want to create an experiment of your own we suggest you first copy one of the existing experiemnts and then just replace necessary files.
 
@@ -262,7 +262,7 @@ show
 
 Prepare SOC files
 -----------------------------
-**prepare_approx_cc_order** funtion serves for preparing elections in soc format in approx_cc order. This function is just coping files from *soc_original* and pasting them in an order from winners *?exp_name?/results/winners/?metric?_approx_cc.txt*. 
+**prepare_approx_cc_order** funtion serves for preparing elections in soc format in approx_cc order. This function is just coping files from *soc_original* and pasting them in an order from *?exp_name?/results/orders/?metric?_approx_cc.txt*. 
 
 ::
 
