@@ -1,7 +1,7 @@
 Introduction
 =============================
 **Mapel** (map of elections) is a python package that serves for drawing maps of elections. It contains a testbed of elections to be used
-for various election-related experiments such as testing algorithms or estimating the frequency of a given phenomenon. If you want to run an experiment on a large variaty of elections then mapel is for you!
+for various election-related experiments such as testing algorithms or estimating the frequency of a given phenomenon. If you want to run an experiment on a large variety of elections then mapel is for you!
 
 For more details please look at:
 
@@ -19,7 +19,7 @@ To install mapel on your system type::
     pip install mapel
 
 
-Note that this will install necessary dependecies (e.g. matplotlip, numpy, etc).
+Note that this will install necessary dependencies  (e.g. matplotlip, numpy, etc).
 
 Beside installing the package please download zip file from https://github.com/szufix/mapel_data/blob/master/mapel_data.zip
 which contains all the data. After downloading extract it to wherever you want to use the package.
@@ -54,7 +54,7 @@ Here we present main features of the mapel package.
 
 * printing maps of elections
 * printing matrices of distances
-* generating elections according to many different models (*available soon*)
+* generating elections according to many models (*available soon*)
 * computing distances between elections (*available soon*)
 
 
@@ -85,7 +85,7 @@ The mapel package contains 6 precomputed experiments. Each of them contains a mi
 - Urn Model with the following parameter: 0.5, 0.2, 0.1, 0.05, 0.02, 0.01 
 - Mallows with the following parameter: 0.999, 0.99, 0.95, 0.75, 0.5, 0.25, 0.1, 0.05, 0.01, 0.001
 
-Each of these experiments regards 100 voters and x candadates where x = 3,4,5,10,20,100.
+Each of these experiments regards 100 voters and x candidates where x = 3,4,5,10,20,100.
 
 The names of these experiments are:
 
@@ -114,8 +114,8 @@ Exact structure of percomputed experiments::
     ?exp_name?
     ├── controllers     
     │   ├── basic
-    │   │   ├── map.txt                                     #  contains all techinical details of the experiment
-    │   │   └── matrix.txt                                  #  auxiliarry file print_matrix() function
+    │   │   ├── map.txt                                     #  contains all technical details of the experiment
+    │   │   └── matrix.txt                                  #  auxiliary file print_matrix() function
     │   └── advanced
     │       ├── hb_time.txt (only in testbed_100_100)
     │       └── zip_sizes.txt (only in testbed_100_100)
@@ -123,7 +123,7 @@ Exact structure of percomputed experiments::
     │   ├── soc_positionwise_approx_cc 
     │   │   └── (empty)
     │   └── soc_original
-    │       └── (800 txt files with elections)              #  all the elections -- each election in a separete file
+    │       └── (800 txt files with elections)              #  all the elections -- each election in a separate file
     └── results
         ├── distances        
         │   ├── bordawise.txt (only in testbed_100_100)     #  bordawise distances between each pair of elections
@@ -139,9 +139,9 @@ You can your own experiments, but remember that they should have the same struct
 
 Advanced example of use (1)
 -----------------------------
-Imagine that you want to check wheter similar elections have the same size after compression or not. You zip all the elections from *?exp_name?/elections/soc_original/*. You check their sizes, and now you would like to print the map, where the *alpha* of each point is proportional to its color. 
+Imagine that you want to check whether similar elections have the same size after compression or not. You zip all the elections from *?exp_name?/elections/soc_original/*. You check their sizes, and now you would like to print the map, where the *alpha* of each point is proportional to its color. 
 
-First you should normalize the values so all of them fall into the [0,1] interval. Then you should put the file with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first line is corresponding to the first election, the secon one corresponds to the second election and so on and so forth. If you are not sure about the format, please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
+First you should normalize the values so all of them fall into the [0,1] interval. Then you should put the file with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first line is corresponding to the first election, the second one corresponds to the second election and so on and so forth. If you are not sure about the format, please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
 
 Let us assume that you run your experiment for testbed_100_100. If you want to print a map, you just need to type::
 
@@ -149,21 +149,21 @@ Let us assume that you run your experiment for testbed_100_100. If you want to p
     
 More detailed description of all the parameters can be found in the next section called *Functionalities*. 
 
-If we would like the see the correlation of zip_sizes and the average distance from IC elections, we should type::
+If we would like to see the correlation of zip_sizes and the average distance from IC elections, we should type::
 
     mapel.print_param_vs_distance("testbed_100_100", values="zip_size")
 
 
 Representative set of elections
 -----------------------------
-800 elections is really a lot, and many elections within those 800 are very simmilar to one another. The basic idea is that we wanted to create a smaller set that will be representive. By representive set of elections we mean such set that by testing some algorithm on this set we will draw more or less the same conclusions as while testing that algortihm on all 800 elections.
+800 elections is really a lot, and many elections within those 800 are very similar to one another. The basic idea is that we wanted to create a smaller set that will be representative. By representative set of elections we mean such set that by testing some algorithm on this set we will draw more or less the same conclusions as while testing that algorithm  on all 800 elections.
 
 Using approximation algorithm for Chamberlin-Courant voting rule, we precomputed a ranking of all 800 elections. Each election was a voter ana a candidate at the same time. The smaller was the (positionwise) distance between two elections the higher they appear in one another vote. We refer to this ranking as *approx_cc*.
 
 
 Advanced example of use (2)
 -----------------------------
-If you want to test an algorithm that is taking a lot of time to compute and you want to run it only on few elections, we suggest that you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 200) elections from *?exp_name?/elections/soc_?metric?_approx_cc/*. If you are chossing this option, rember to set the value of *main_order* to *?metric?_approx_cc*.
+If you want to test an algorithm that is taking a lot of time to compute and you want to run it only on few elections, we suggest that you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 200) elections from *?exp_name?/elections/soc_?metric?_approx_cc/*. If you are choosing  this option, remember to set the value of *main_order* to *?metric?_approx_cc*.
 
 
 
@@ -235,7 +235,7 @@ show
 
 Printing the plot of a given election parameter against the average distance from IC.
 -----------------------------
-**print_param_vs_distance** function is printing an array with average distances between each family of elections from a given experiment. For now it works only with original example_100_100.
+**print_param_vs_distance** function is printing an array with average distances between each family of elections from a given experiment. For now, it works only with original example_100_100.
 
 ::
 
@@ -262,7 +262,7 @@ show
 
 Prepare SOC files
 -----------------------------
-**prepare_approx_cc_order** funtion serves for preparing elections in soc format in approx_cc order. This function is just coping files from *soc_original* and pasting them in an order from *?exp_name?/results/orders/?metric?_approx_cc.txt*. 
+**prepare_approx_cc_order** function serves for preparing elections in soc format in approx_cc order. This function is just coping files from *soc_original* and pasting them in an order from *?exp_name?/results/orders/?metric?_approx_cc.txt*. 
 
 ::
 
@@ -315,7 +315,7 @@ If you want to hide a given family and do not print it, just put '#' at the begg
 
 Matrix with distances
 -----------------------------
-If you want to print just several selected families of elections or change the order in which they appear, you should go to the file:  "*?exp_name?/controllers/basic/matrix.txt*". There a is list of names of all the families of elections. The number of families and their order can be change and will influence the *mapel.print_matrix()* function.
+If you want to print just several selected families of elections or change the order in which they appear, you should go to the file:  "*?exp_name?/controllers/basic/matrix.txt*". There is list of names of all the families of elections. The number of families and their order can be change and will influence the *mapel.print_matrix()* function.
 
 SOC files
 -----------------------------
