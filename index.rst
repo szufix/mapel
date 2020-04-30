@@ -165,7 +165,7 @@ Using approximation algorithm for Chamberlin-Courant voting rule, we precomputed
 
 Advanced example of use (2)
 -----------------------------
-If you want to test an algorithm that is taking a lot of time to compute and you want to run it only on few elections, we suggest that you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 200) elections from *?exp_name?/elections/soc_?metric?_approx_cc/*. If you are choosing  this option, remember to set the value of *main_order* to *?metric?_approx_cc*.
+If you want to test an algorithm that is taking a lot of time to compute and you want to run it only on few elections, we suggest that you use *prepare_approx_cc_order* function to prepare the elections in approx_cc order and then run the experiment for first (for example top 200) elections from *?exp_name?/elections/soc_?metric?_approx_cc/*. If you are choosing  this option, remember to set the value of *order* to *?metric?_approx_cc*.
 
 
 
