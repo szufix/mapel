@@ -8,6 +8,7 @@ For more details please look at:
     Szufa,  S.,  Faliszewski,  P.,  Skowron,  P.,  Slinko,  A.,  Talmon,  N.:  Drawing  a  map of elections in the space of statistical cultures. In: Proceedings of AAMAS-2020, to appear.
 
 The package contains the following elements
+
 * several sets of elections, including the one used by Szufa et al. [AAMAS-2020]
 * tools for drawing maps of elections
 * tools for generating elections and computing distances between them (*available soon*)
