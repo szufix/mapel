@@ -129,12 +129,14 @@ Exact structure of percomputed experiments::
         │   ├── bordawise.txt (only in testbed_100_100)     #  bordawise distances between each pair of elections
         │   └── positionwise.txt                            #  positionwise distances between each pair of elections
         ├── points
-        │   ├── bordawise_2d.txt (only in testbed_100_100)  
-        │   └── positionwise_2d.txt                         
+        │   ├── bordawise_2d.txt (only in testbed_100_100)  #  coordinates of embedded points
+        │   └── positionwise_2d.txt                         #  coordinates of embedded points
         └── orders
-            └── positionwise_approx_cc.txt                  
+            └── positionwise_approx_cc.txt                  #  ranking of elections
 
 You can your own experiments, but remember that they should have the same structure. If you want to create an experiment of your own we suggest you first copy one of the existing experiemnts and then just replace necessary files.
+
+Controllers are described in details in the last section.
 
 
 Advanced example of use (1)
