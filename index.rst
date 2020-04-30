@@ -197,7 +197,7 @@ angle
   : optional, float; rotate the image by *angle*.
     
 mask
-  : optional, bool; mark all families on the map (only for *example_100_100*).".
+  : optional, bool; mark all families on the map (only for *testbed_100_100*).".
   
 metric
   : optional, string; name of the metric.
@@ -235,7 +235,7 @@ show
 
 Printing the plot of a given election parameter against the average distance from IC.
 -----------------------------
-**print_param_vs_distance** function is printing an array with average distances between each family of elections from a given experiment. For now, it works only with original example_100_100.
+**print_param_vs_distance** function is printing an array with average distances between each family of elections from a given experiment. For now, it works only with original testbed_100_100.
 
 ::
 
