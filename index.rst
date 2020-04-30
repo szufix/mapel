@@ -21,7 +21,7 @@ To install mapel on your system type::
 
 Note that this will install necessary dependencies  (e.g. matplotlip, numpy, etc).
 
-Beside installing the package please download zip file from https://github.com/szufix/mapel_data/blob/master/mapel_data.zip
+Beside installing the package please download mapel_data.zip file from https://github.com/szufix/mapel_data/
 which contains all the data. After downloading extract it to wherever you want to use the package.
 
 After extracting the structure should look as follows::
