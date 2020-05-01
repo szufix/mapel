@@ -1,4 +1,4 @@
-# mapel
-map of elections
+# Mapel
+Map of elections
 
 https://mapel.readthedocs.io/
