@@ -15,6 +15,8 @@ The package contains the following elements
 
 Installation
 -----------------------------
+[For mapel to work you need python 3.6 or newer]
+
 To install mapel on your system type::
 
     pip install mapel
