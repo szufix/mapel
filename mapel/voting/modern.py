@@ -21,7 +21,7 @@ def add_margin(pil_img, top, right, bottom, left, color):
 def print_2d(exp_name, num_winners=0, mask=False,
              angle=0, reverse=False, update=False, values="default", coloring="purple",
              num_elections=800, winners_order="positionwise_approx_cc", main_order="", metric="positionwise",
-             saveas="map_2d", show=True):
+             saveas="map_2d", show=True, ms=9, coloring_func=None):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
     model = obj.Model_2d(exp_name, num_winners=num_winners, num_elections=num_elections,
@@ -51,12 +51,15 @@ def print_2d(exp_name, num_winners=0, mask=False,
                 if ctr >= num_elections:
                     break
                 shade = float(file_.readline())
+                marker = "o"
                 color = coloring
                 if coloring == "intervals":
                     color = interval_color(shade)
                     shade = 1
+                if coloring_func is not None:
+                    shade, color, marker = coloring_func(shade)
                 ax.scatter(model.points[model.main_order[ctr]][0], model.points[model.main_order[ctr]][1],
-                           label=values, color=color, alpha=shade, s=9)
+                           label=values, color=color, alpha=shade, s=ms, marker=marker)
                 ctr += 1
 
     else:
@@ -65,7 +68,7 @@ def print_2d(exp_name, num_winners=0, mask=False,
             if model.families[k].show:
                 ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1],
                            color=model.families[k].color, label=model.families[k].label,
-                           alpha=model.families[k].alpha, s=9)
+                           alpha=model.families[k].alpha, s=ms)
 
     #  mark the winners
     for w in model.winners:
@@ -182,8 +185,6 @@ def print_matrix(exp_name, scale=1., metric="positionwise", saveas="matrix", sho
     for i in range(num_families_new):
         labels_new.append(model.families[order[i]].label)
 
-    print(labels_new)
-
     ax.matshow(matrix_new, cmap=plt.cm.Blues)
 
     x_values = labels_new
@@ -214,10 +215,10 @@ def prepare_approx_cc_order(exp_name, metric="positionwise"):
         target = str(file_.readline().replace("\n", ""))
 
         src = os.path.join(os.getcwd(), "experiments", str(exp_name), "elections", "soc_original",
-                           "tmp_" + str(target) + ".soc")
+                           "core_" + str(target) + ".soc")
 
         dst = os.path.join(os.getcwd(), "experiments", str(exp_name), "elections", "soc_" + str(metric) + "_approx_cc",
-                           "tmp_" + str(i) + ".soc")
+                           "core_" + str(i) + ".soc")
 
         copyfile(src, dst)
 
@@ -284,17 +285,14 @@ def print_param_vs_distance(exp_name, values="", scale="none", metric="positionw
         plt.ylabel("log ( " + str(values) + " )")
     elif scale == "loglog":
         times = np.log(times)
+        times = np.log(times)
         plt.ylabel("log ( log ( " + str(values) + " ) )")
 
 
     pear = stats.pearsonr(times, distances)
     pear = round(pear[0], 2)
-    #print(pear)
 
     model = obj.Model_xd(exp_name, metric)
-
-    #print(model.families[0].size)
-
 
     left = 0
     for k in range(model.num_families):

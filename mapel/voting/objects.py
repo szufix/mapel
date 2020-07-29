@@ -2,6 +2,7 @@
 
 import os
 import math
+import csv
 
 
 class Model:
@@ -17,7 +18,6 @@ class Model:
         """ Import from a file all the controllers"""
 
         file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "controllers", "basic", "map.txt")
-        print(file_name)
         file_ = open(file_name, 'r')
         num_voters = int(file_.readline())
         num_candidates = int(file_.readline())
@@ -31,9 +31,11 @@ class Model:
                 line[0] = line[0].replace("#", "")
                 show = False
 
-            families.append(Family(name=str(line[1]), special=float(line[2]),
-                                   size=int(line[0]), label=str(line[5]),
-                                   color=str(line[3].replace(" ", "")), alpha=float(line[4]),
+            families.append(Family(name=str(line[1]),
+                                   special_1=str(line[2]),
+                                   special_2=str(line[3]),
+                                   size=int(line[0]), label=str(line[6]),
+                                   color=str(line[4].replace(" ", "")), alpha=float(line[5]),
                                    show=show))
 
         file_.close()
@@ -82,21 +84,17 @@ class Model_2d(Model):
         self.winners = self.winners_order[0:num_winners]
 
     @staticmethod
-    def import_points(exp_name, metric):
+    def import_points(experiment, metric):
         """ Import from a file precomputed coordinates of all the points -- each point refer to one election """
 
-        file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "results", "points", str(metric) + "_2d.txt")
-        file_ = open(file_name, 'r')
+        points = []
+        file_name = os.path.join(os.getcwd(), "experiments", experiment, "results", "points", metric + "_2d.csv")
+        with open(file_name, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=',')
+            for row in reader:
+                points.append([float(row['x']), float(row['y'])])
 
-        num_points = int(file_.readline())
-        points = [[0, 0] for _ in range(num_points)]
-
-        for i in range(num_points):
-            line = file_.readline().replace("\n", '').split(',')
-            points[i] = [float(line[0]), float(line[1])]
-
-        file_.close()
-        return num_points, points
+        return len(points), points
 
     @staticmethod
     def import_order(exp_name, num_elections, order_name):
@@ -105,7 +103,7 @@ class Model_2d(Model):
         if order_name == "":
             return [i for i in range(num_elections)]
 
-        file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "results", "winners", str(order_name) + ".txt")
+        file_name = os.path.join(os.getcwd(), "experiments", str(exp_name), "results", "orders", str(order_name) + ".txt")
         file_ = open(file_name, 'r')
         file_.readline()  # skip this line
         file_.readline()  # skip this line
@@ -189,10 +187,11 @@ class Model_2d(Model):
 class Family:
     """ Family of elections """
 
-    def __init__(self, name="none", special=0., size=0, label="none", color="black", alpha=1., show=True):
+    def __init__(self, name="none", special_1=0., special_2=0., size=0, label="none", color="black", alpha=1., show=True):
 
         self.name = name
-        self.special = special
+        self.special_1 = special_1
+        self.special_2 = special_2
         self.size = size
         self.label = label
         self.color = color
