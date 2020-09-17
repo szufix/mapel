@@ -204,17 +204,17 @@ main_order_name
 values
   : optional, string; name of the file that contains 'values'. The file should be in *?exp_name?/controllers/advanced/* folder.
 
-    cmap
-      : optional, cmap; use cmap coloring.
+cmap
+  : optional [use only if 'values is not None], cmap; use cmap coloring.
 
-    normalizing_func
-      : optional, function; convert 'values'.
+normalizing_func
+  : optional [use only if 'values is not None], function;  marker_func takes single argument 'float' and returns 'float'.
 
-    xticklabels
-      : optional, list[]; 
+xticklabels
+  : optional [use only if 'values is not None], list[]; define xtick labels.
 
-    marker_func=None,
-      : optional, function;
+marker_func=None,
+  : optional [use only if 'values is not None], function; marker_func takes single argument 'float' and returns 'marker' (e.g., 'x').
   
 angle
   : optional, float; rotate the image by *angle*.
