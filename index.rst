@@ -112,8 +112,10 @@ General structure of a single experiment::
     │   └── soc_original/
     └── results
         ├── distances/        
-        ├── points/
-        └── orders/
+        ├── orders/        
+        ├── points/        
+        ├── scores/
+        └── time/
             
 Exact structure of percomputed experiments::
 
@@ -184,25 +186,41 @@ Printing the map of elections
 **print_2d** function is displaying a two dimensional embedding of all the elections from a given experiment.
 ::
 
-    mapel.print_2d(exp_name, num_elections=800, order="", values="default", coloring="purple", angle=0,  mask=False, metric="positionwise", saveas="map_2d", show=True) 
+    mapel.print_2d(experiment_id, mask=False,
+             angle=0, reverse=False, values=None,
+             num_elections=800, main_order_name="default", metric="positionwise",
+             saveas="map_2d", show=True, ms=9, normalizing_func=None, xticklabels=None, cmap='Purples_r',
+             ignore=None, marker_func=None, tex=False, black=False) 
 
-exp_name
+experiment_id
   : obligatory, string; name of the experiment.
   
 num_elections
   : optional, int, number of points to be printed.
   
-order
+main_order_name
   : optional, string; name of the file that contains the order in which the points should appear.
   
 values
-  : optional, string; name of the file that contains alpha values. The file should be in *?exp_name?/controllers/advanced/* folder.
-  
-coloring
-  : optional, string; color in which all the points should appear (use this only if *values* is not equall to *default*). If set to "intervals" then it will color all points from [0.8,1] red, [0.6,0.8) orange, [0.4,0.6) yellow, [0.2,0.4) green, [0,0.2) blue.
+  : optional, string; name of the file that contains 'values'. The file should be in *?exp_name?/controllers/advanced/* folder.
+
+    cmap
+      : optional, cmap; use cmap coloring.
+
+    normalizing_func
+      : optional, function; convert 'values'.
+
+    xticklabels
+      : optional, list[]; 
+
+    marker_func=None,
+      : optional, function;
   
 angle
   : optional, float; rotate the image by *angle*.
+  
+reverse
+  : optional, bool; reverse the image.
     
 mask
   : optional, bool; mark all families on the map (only for *testbed_100_100*).".
@@ -214,8 +232,19 @@ saveas
   : optional, string; name of the saved file.
   
 show
-  : optional, bool, if set to False the results will not be displayed.
+  : optional, bool; if set to False the results will not be displayed.
+  
+ms 
+  : optional, int; marker size.
 
+ignore 
+  : optional, list[int]; list containg ids of election to ignore (not print).
+  
+tex
+  : optional, bool; save file in a tex format.
+  
+black
+  : optional, bool; only for mask: print names in black.
 
 Printing the matrix with distances
 -----------------------------
@@ -223,9 +252,9 @@ Printing the matrix with distances
 
 ::
 
-    mapel.print_matrix(exp_name, scale=1., metric="positionwise", saveas="matrix", show=True)
+    mapel.print_matrix(experiment_id, scale=1., metric="positionwise", saveas="matrix", show=True)
 
-exp_name
+experiment_id
   : obligatory, string; name of the experiment.
   
 scale
@@ -247,9 +276,9 @@ Printing the plot of a given election parameter against the average distance fro
 
 ::
 
-    mapel.print_param_vs_distance(exp_name, values="", scale="none", metric="positionwise", saveas="correlation", show=True)
+    mapel.print_param_vs_distance(experiment_id, values="", scale="none", metric="positionwise", saveas="correlation", show=True)
 
-exp_name
+experiment_id
   : obligatory, string; name of the experiment.
   
 values
@@ -274,9 +303,9 @@ Prepare SOC files
 
 ::
 
-    mapel.prepare_approx_cc_order(exp_name, metric="positionwise")
+    mapel.prepare_approx_cc_order(experiment_id, metric="positionwise")
 
-exp_name
+experiment_id
   : obligatory, name of the experiment.
  
 metric
