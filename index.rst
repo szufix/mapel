@@ -153,13 +153,18 @@ Controllers are described in details in the last section.
 
 Advanced example of use (1)
 -----------------------------
-Imagine that you want to check whether similar elections have the same size after compression or not. You zip all the elections from *?exp_name?/elections/soc_original/*. You check their sizes, and now you would like to print the map, where the *alpha* of each point is proportional to its color. 
+Imagine that you want to check whether similar elections have the same size after compression or not. You zip all the elections from *?exp_name?/elections/soc_original/*. You check their sizes, and now you would like to print the map.
 
-First you should normalize the values so all of them fall into the [0,1] interval. Then you should put the file with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first line is corresponding to the first election, the second one corresponds to the second election and so on and so forth. If you are not sure about the format, please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
+You should put the file with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first line is corresponding to the first election, the second one corresponds to the second election and so on and so forth. If you are not sure about the format, please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
 
 Let us assume that you run your experiment for testbed_100_100. If you want to print a map, you just need to type::
 
-    mapel.print_2d("testbed_100_100", values="zip_size", mask=True, coloring="intervals")
+    mapel.print_2d("testbed_100_100", values="zip_size", mask=True)
+    
+If you want to use different coloring we recommend using cmap.
+
+    my_cmap = mapel.custom_div_cmap(colors=["white", "orange", "red"])
+    mapel.print_2d("testbed_100_100", values="zip_size", mask=True, cmap=my_cmap)
     
 More detailed description of all the parameters can be found in the next section called *Functionalities*. 
 
