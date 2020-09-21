@@ -36,3 +36,16 @@ def print_highest_dodgson():
 
 def print_highest_borda():
     pr.print_highest_borda()
+
+
+# HELPER FUNCTIONS
+def custom_div_cmap(num_colors=101, name='custom_div_cmap',
+                    colors=None):
+
+    if colors is None:
+        colors = ["lightgreen", "yellow", "orange", "red", "black"]
+
+    from matplotlib.colors import LinearSegmentedColormap
+
+    cmap = LinearSegmentedColormap.from_list(name=name, colors=colors, N=num_colors)
+    return cmap
