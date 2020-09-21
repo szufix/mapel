@@ -113,9 +113,8 @@ General structure of a single experiment::
     └── results
         ├── distances/        
         ├── orders/        
-        ├── points/        
-        ├── scores/
-        └── time/
+        ├── points/
+        └── scores/
             
 Exact structure of percomputed experiments::
 
@@ -131,16 +130,21 @@ Exact structure of percomputed experiments::
     │   ├── soc_positionwise_approx_cc 
     │   │   └── (empty)
     │   └── soc_original
-    │       └── (800 txt files with elections)              #  all the elections -- each election in a separate file
+    │       └── (800 txt files with elections)                  #  all the elections -- each election in a separate file
     └── results
         ├── distances        
-        │   ├── bordawise.txt (only in testbed_100_100)     #  bordawise distances between each pair of elections
-        │   └── positionwise.txt                            #  positionwise distances between each pair of elections
+        │   ├── bordawise.txt (only in testbed_100_100)         #  bordawise distances between each pair of elections
+        │   └── positionwise.txt                                #  positionwise distances between each pair of elections
+        ├── orders
+        │   └── positionwise_approx_cc.txt                      #  ranking of elections
         ├── points
-        │   ├── bordawise_2d.txt (only in testbed_100_100)  #  coordinates of embedded points
-        │   └── positionwise_2d.txt                         #  coordinates of embedded points
-        └── orders
-            └── positionwise_approx_cc.txt                  #  ranking of elections
+        │   ├── bordawise_2d.txt (only in testbed_100_100)      #  coordinates of embedded points
+        │   └── positionwise_2d.txt                             #  coordinates of embedded points
+        └── scores
+            ├── highest_borda (only in testbed_100_100)
+            ├── highest_copeland (only in testbed_100_100)
+            ├── highest_dodgson (only in testbed_100_100)
+            └── highest_plurality (only in testbed_100_100)
 
 You can your own experiments, but remember that they should have the same structure. If you want to create an experiment of your own we suggest you first copy one of the existing experiemnts and then just replace necessary files.
 
@@ -327,13 +331,13 @@ Before editing this file, please make a safe copy. The content looks as follows:
 
     number_of_families
 
-    first_family_size, first_family_code, first_family_param, first_family_color, first_family_alpha, first_family_label
+    first_family_size, first_family_code, first_family_param_1,  first_family_param_2, first_family_color, first_family_alpha, first_family_label
 
-    second_family_size, second_family_code, second_family_param, second_family_color, second_family_alpha, second_family_label
+    second_family_size, second_family_code, second_family_param_1, second_family_param_2, second_family_color, second_family_alpha, second_family_label
 
     ...
 
-    last_family_size, family_code, family_param, family_color, family_alpha, family_label
+    last_family_size, last_family_code, last_family_param_1, last_family_param_2, last_family_color, last_family_alpha, last_family_label
     
     
 Detailed explanation
