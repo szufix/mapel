@@ -161,7 +161,7 @@ Let us assume that you run your experiment for testbed_100_100. If you want to p
 
     mapel.print_2d("testbed_100_100", values="zip_size", mask=True)
     
-If you want to use different coloring we recommend using cmap.
+If you want to use different coloring we recommend using cmap::
 
     my_cmap = mapel.custom_div_cmap(colors=["white", "orange", "red"])
     mapel.print_2d("testbed_100_100", values="zip_size", mask=True, cmap=my_cmap)
@@ -315,11 +315,27 @@ Prepare SOC files
     mapel.prepare_approx_cc_order(experiment_id, metric="positionwise")
 
 experiment_id
-  : obligatory, name of the experiment.
+  : obligatory; name of the experiment.
  
 metric
-  : optional, string, name of the metric.
-      
+  : optional, string; name of the metric.
+  
+  
+Create CMAP
+-----------------------------
+**custom_div_cmap** function serves for creating cmap.
+
+::
+
+    custom_div_cmap(colors=None, num_colors=101)
+
+colors
+  : optional, List[string]; list of leading colors (e.g., ['white', 'orange', 'red'])
+ 
+num_colors
+  : optional, string; number of different colors (it does not have to do anything with the length of the upper list).
+  
+       
     
 Extras
 =============================
