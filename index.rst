@@ -336,6 +336,25 @@ num_colors
   : optional, string; number of different colors (it does not have to do anything with the length of the upper list).
   
        
+       
+Tutorial
+=============================
+In this section we show how to conduct the whole experiment from the very beginning till the end.
+
+1) Install the package:
+
+    pip install mapel
+    
+2) Download the data from https://github.com/szufix/mapel_data/ and extracted wherever you want.
+3) Test the 'import' by running the test.py file, that is located inside the mapel_data. You should see "Welcom to Mapel" text on the screen.
+4) Test the 'data' by uncomment last line in the test.py file, and then running the file again. You should see the main map containg all 800 elections.
+
+    
+    
+
+
+
+
     
 Extras
 =============================
