@@ -345,9 +345,13 @@ In this section we show how to conduct the whole experiment from the very beginn
 
     pip install mapel
     
-2) Download the data from https://github.com/szufix/mapel_data/ and extracted wherever you want.
+2) Download the data from https://github.com/szufix/mapel_data/ and extract it wherever you want.
 3) Test the 'import' by running the test.py file, that is located inside the mapel_data. You should see "Welcom to Mapel" text on the screen.
-4) Test the 'data' by uncomment last line in the test.py file, and then running the file again. You should see the main map containg all 800 elections.
+4) Test the 'data' by uncommenting last line in the test.py file, and then running the file again. You should see the main map containg all 800 elections.
+5) Compute Borda score for each elections [to be updated]
+6) Put the borda_score.txt file to [...]
+7) Run the following command [...]
+8) Enjoy the results!
 
     
     
