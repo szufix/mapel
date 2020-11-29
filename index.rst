@@ -382,10 +382,19 @@ In this section we show how to conduct the whole experiment from the very beginn
 
     if __name__ == "__main__":
 
-        compute_highest_borda_map('testbed/testbed_100_100')
+        experiment_id = 'testbed_100_100'
+        compute_highest_borda_map(experiment_id)
 
-6) Put the borda_score.txt file to [...]
-7) Run the following command [...]
+6) If you computed borda scores on your own rember to put them in experiments/*experiment_id*/controllers/advanced/*file_name*.txt
+7) Run the following command:
+
+::
+
+   import mapel 
+   experiment_id = 'testbed_100_100'
+   file_name = 'borda_score'
+   mapel.print_2d(experiment_id, values=file_name)   
+    
 8) Enjoy the results!
 
     
