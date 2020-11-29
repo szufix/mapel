@@ -346,9 +346,44 @@ In this section we show how to conduct the whole experiment from the very beginn
     pip install mapel
     
 2) Download the data from https://github.com/szufix/mapel_data/ and extract it wherever you want.
-3) Test the 'import' by running the test.py file, that is located inside the mapel_data. You should see "Welcom to Mapel" text on the screen.
-4) Test the 'data' by uncommenting last line in the test.py file, and then running the file again. You should see the main map containg all 800 elections.
-5) Compute Borda score for each elections [to be updated]
+3) Test the *import* by running the test.py file, that is located inside the mapel_data folder. It should print "*Welcom to Mapel*" text.
+4) Test the *data* by uncommenting last line in the test.py file, and then running the file again. You should see the main map containg 800 points (elections).
+5) Compute Borda score for each elections. You can use the code presented below.
+
+::
+
+    import os
+    from mapel.voting import objects as obj
+
+    def get_highest_borda_score(election):
+    scores = [0 for _ in range(election.num_candidates)]
+    for vote in election.votes:
+        for i in range(len(vote)):
+            scores[vote[i]] += election.num_candidates - i - 1
+    return max(scores)
+
+
+    def compute_highest_borda_map(experiment_id):
+
+        model = obj.Model(experiment_id)
+
+        for i in range(model.num_elecitons):
+            election_id = 'core_' + str(i)
+            election = obj.Election(experiment_id, election_id)
+
+            score = get_highest_borda_score(election)
+            print(i, score)
+
+            file_name = 'borda_score.txt'
+            path = os.path.join(os.getcwd(), 'experiments', experiment_id, 'controllers', 'advanced', file_name)
+            with open(path, 'a') as txtfile:
+                txtfile.write(str(score) + "\n")
+
+
+    if __name__ == "__main__":
+
+        compute_highest_borda_map('testbed/testbed_100_100')
+
 6) Put the borda_score.txt file to [...]
 7) Run the following command [...]
 8) Enjoy the results!
