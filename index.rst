@@ -400,9 +400,77 @@ In this section we show how to conduct the whole experiment from the very beginn
 
     
     
+Objects
+=============================
 
+Model
+-----------------------------
+Abstract model of an experiment. It contains the following fields:
+::
 
+    self.experiment_id
+    self.num_voters
+    self.num_candidates 
+    self.num_families 
+    self.num_elections
+    self.main_order
+    self.metric
+    self.families
+    
 
+Model xd
+-----------------------------
+Extension of Model. Beside all fields from Model it contains:
+::  
+
+    self.num_distances
+    self.distances
+
+Model 2d
+-----------------------------
+Extension of Model. Beside all fields from Model it contains:
+::  
+
+    self.num_points 
+    self.points
+    self.points_by_families
+    
+
+Election
+-----------------------------
+::
+    self.experiment_id = experiment_id
+    self.election_id = election_id
+    self.num_candidates
+    self.num_voters
+    self.fake 
+    
+if fake is True:
+::
+    self.fake_model_name
+    self.fake_param
+
+if fake is False
+::
+    self.votes
+    self.potes
+
+Votes are two-dimensional arrays
+Potes are positional votes, that is...
+
+Family
+-----------------------------
+::
+        self.name
+        self.special_1
+        self.special_2
+        self.size
+        self.label
+        self.color
+        self.alpha
+        self.show
+        self.marker
+        self.starting_from
 
     
 Extras
