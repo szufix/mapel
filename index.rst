@@ -439,6 +439,7 @@ Extension of Model. Beside all fields from Model it contains:
 Election
 -----------------------------
 ::
+
     self.experiment_id = experiment_id
     self.election_id = election_id
     self.num_candidates
@@ -461,6 +462,7 @@ Potes are positional votes, that is...
 Family
 -----------------------------
 ::
+
         self.name
         self.special_1
         self.special_2
