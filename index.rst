@@ -153,13 +153,18 @@ Controllers are described in details in the last section.
 
 Advanced example of use (1)
 -----------------------------
-Imagine that you want to check whether similar elections have the same size after compression or not. You zip all the elections from *?exp_name?/elections/soc_original/*. You check their sizes, and now you would like to print the map, where the *alpha* of each point is proportional to its color. 
+Imagine that you want to check whether similar elections have the same size after compression or not. You zip all the elections from *?exp_name?/elections/soc_original/*. You check their sizes, and now you would like to print the map.
 
-First you should normalize the values so all of them fall into the [0,1] interval. Then you should put the file with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first line is corresponding to the first election, the second one corresponds to the second election and so on and so forth. If you are not sure about the format, please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
+You should put the file with those values in *?exp_name?/controllers/advanced*. One value per line -- where the first line is corresponding to the first election, the second one corresponds to the second election and so on and so forth. If you are not sure about the format, please look at *?exp_name?/controllers/advanced/zip_size.txt* file.
 
 Let us assume that you run your experiment for testbed_100_100. If you want to print a map, you just need to type::
 
-    mapel.print_2d("testbed_100_100", values="zip_size", mask=True, coloring="intervals")
+    mapel.print_2d("testbed_100_100", values="zip_size", mask=True)
+    
+If you want to use different coloring we recommend using cmap::
+
+    my_cmap = mapel.custom_div_cmap(colors=["white", "orange", "red"])
+    mapel.print_2d("testbed_100_100", values="zip_size", mask=True, cmap=my_cmap)
     
 More detailed description of all the parameters can be found in the next section called *Functionalities*. 
 
@@ -310,11 +315,94 @@ Prepare SOC files
     mapel.prepare_approx_cc_order(experiment_id, metric="positionwise")
 
 experiment_id
-  : obligatory, name of the experiment.
+  : obligatory; name of the experiment.
  
 metric
-  : optional, string, name of the metric.
-      
+  : optional, string; name of the metric.
+  
+  
+Create CMAP
+-----------------------------
+**custom_div_cmap** function serves for creating cmap.
+
+::
+
+    custom_div_cmap(colors=None, num_colors=101)
+
+colors
+  : optional, List[string]; list of leading colors (e.g., ['white', 'orange', 'red'])
+ 
+num_colors
+  : optional, string; number of different colors (it does not have to do anything with the length of the upper list).
+  
+       
+       
+Tutorial
+=============================
+In this section we show how to conduct the whole experiment from the very beginning till the end.
+
+1) Install the package:
+
+    pip install mapel
+    
+2) Download the data from https://github.com/szufix/mapel_data/ and extract it wherever you want.
+3) Test the *import* by running the test.py file, that is located inside the mapel_data folder. It should print "*Welcom to Mapel*" text.
+4) Test the *data* by uncommenting last line in the test.py file, and then running the file again. You should see the main map containg 800 points (elections).
+5) Compute Borda score for each elections. You can use the code presented below.
+
+::
+
+    import os
+    from mapel.voting import objects as obj
+
+    def get_highest_borda_score(election):
+    scores = [0 for _ in range(election.num_candidates)]
+    for vote in election.votes:
+        for i in range(len(vote)):
+            scores[vote[i]] += election.num_candidates - i - 1
+    return max(scores)
+
+
+    def compute_highest_borda_map(experiment_id):
+
+        model = obj.Model(experiment_id)
+
+        for i in range(model.num_elecitons):
+            election_id = 'core_' + str(i)
+            election = obj.Election(experiment_id, election_id)
+
+            score = get_highest_borda_score(election)
+            print(i, score)
+
+            file_name = 'borda_score.txt'
+            path = os.path.join(os.getcwd(), 'experiments', experiment_id, 'controllers', 'advanced', file_name)
+            with open(path, 'a') as txtfile:
+                txtfile.write(str(score) + "\n")
+
+
+    if __name__ == "__main__":
+
+        experiment_id = 'testbed_100_100'
+        compute_highest_borda_map(experiment_id)
+
+6) If you computed borda scores on your own rember to put them in experiments/*experiment_id*/controllers/advanced/*file_name*.txt
+7) Run the following command:
+
+::
+
+   import mapel 
+   experiment_id = 'testbed_100_100'
+   file_name = 'borda_score'
+   mapel.print_2d(experiment_id, values=file_name)   
+    
+8) Enjoy the results!
+
+    
+    
+
+
+
+
     
 Extras
 =============================
