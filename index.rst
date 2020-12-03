@@ -111,7 +111,7 @@ General structure of a single experiment::
     │   ├── distances/ 
     │   ├── orders/
     │   └── points/
-    ├── elections
+    └── elections
         └── soc_original/
 
             
@@ -122,28 +122,30 @@ Exact structure of percomputed experiments::
     │   ├── basic
     │   │   ├── map.txt                                     #  contains all technical details of the experiment
     │   │   └── matrix.txt                                  #  auxiliary file print_matrix() function
-    │   └── advanced
-    │       ├── hb_time.txt (only in testbed_100_100)
-    │       └── zip_sizes.txt (only in testbed_100_100)
-    ├── elections          
-    │   ├── soc_positionwise_approx_cc 
-    │   │   └── (empty)
-    │   └── soc_original
-    │       └── (800 txt files with elections)                  #  all the elections -- each election in a separate file
-    └── results
-        ├── distances        
-        │   ├── bordawise.txt (only in testbed_100_100)         #  bordawise distances between each pair of elections
-        │   └── positionwise.txt                                #  positionwise distances between each pair of elections
-        ├── orders
-        │   └── positionwise_approx_cc.txt                      #  ranking of elections
-        ├── points
-        │   ├── bordawise_2d.txt (only in testbed_100_100)      #  coordinates of embedded points
-        │   └── positionwise_2d.txt                             #  coordinates of embedded points
-        └── scores
-            ├── highest_borda (only in testbed_100_100)
-            ├── highest_copeland (only in testbed_100_100)
-            ├── highest_dodgson (only in testbed_100_100)
-            └── highest_plurality (only in testbed_100_100)
+    │   ├── advanced
+    │   │   ├── hb_time.txt (only in testbed_100_100)
+    │   │   ├── zip_sizes.txt (only in testbed_100_100)
+    │   │   ├── highest_borda (only in testbed_100_100)
+    │   │   ├── highest_copeland (only in testbed_100_100)
+    │   │   ├── highest_dodgson (only in testbed_100_100)
+    │   │   ├── highest_plurality (only in testbed_100_100)
+    │   ├── distances        
+    │   │   ├── bordawise.txt (only in testbed_100_100)         #  bordawise distances between each pair of elections
+    │   │   └── positionwise.txt                                #  positionwise distances between each pair of elections
+    │   ├── orders
+    │   │   └── positionwise_approx_cc.txt                      #  ranking of elections
+    │   └── points
+    │       ├── bordawise_2d.txt (only in testbed_100_100)      #  coordinates of embedded points
+    │       └── positionwise_2d.txt                             #  coordinates of embedded points
+    └── elections          
+        ├── soc_positionwise_approx_cc 
+        │   └── (empty)
+        └── soc_original
+            └── (800 txt files with elections)                  #  all the elections -- each election in a separate file
+
+
+   
+            
 
 You can your own experiments, but remember that they should have the same structure. If you want to create an experiment of your own we suggest you first copy one of the existing experiemnts and then just replace necessary files.
 
