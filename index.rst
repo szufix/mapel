@@ -457,6 +457,7 @@ if fake is False
     self.potes
 
 Votes are two-dimensional arrays
+
 Potes are positional votes, that is...
 
 Family
@@ -464,8 +465,8 @@ Family
 ::
 
         self.name
-        self.special_1
-        self.special_2
+        self.param_1
+        self.param_2
         self.size
         self.label
         self.color
