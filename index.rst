@@ -106,15 +106,14 @@ General structure of a single experiment::
 
     ?exp_name?
     ├── controllers     
-    │   ├── basic/
-    │   └── advanced/
+    │   ├── advanced/ 
+    │   ├── basic/ 
+    │   ├── distances/ 
+    │   ├── orders/
+    │   └── points/
     ├── elections
-    │   └── soc_original/
-    └── results
-        ├── distances/        
-        ├── orders/        
-        ├── points/
-        └── scores/
+        └── soc_original/
+
             
 Exact structure of percomputed experiments::
 
