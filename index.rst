@@ -480,33 +480,32 @@ Extras
 
 Controllers
 -----------------------------
-The whole technical description of an experiment is kept in *?exp_name?/controllers/basic/map.txt". 
+The whole technical description of an experiment is kept in *?exp_name?/controllers/basic/map.csv" and *?exp_name?/controllers/basic/meta.csv". 
 
-Before editing this file, please make a safe copy. The content looks as follows::
+File meta.csv contains:
+::
 
-    number_of_voters
-
-    number_of_candidates
-
-    number_of_families
-
-    first_family_size, first_family_code, first_family_param_1,  first_family_param_2, first_family_color, first_family_alpha, first_family_label
-
-    second_family_size, second_family_code, second_family_param_1, second_family_param_2, second_family_color, second_family_alpha, second_family_label
-
-    ...
-
-    last_family_size, last_family_code, last_family_param_1, last_family_param_2, last_family_color, last_family_alpha, last_family_label
+    key,value
+    num_voters,???
+    num_candidates,???
+    num_families,???
+    num_elections,???
     
+File map.csv contains the folowing columns:
+::
+    
+    family_size, election_model, param_1, param_2, color, alpha, label, show, marker    
     
 Detailed explanation
 
-* size -- number of elections from a given family
-* code -- the id of the election model, for example impartial_culture, 3d_sphere or 20d_cube
-* param -- model's parameter; only important urn_model or mallows
+* family_size -- number of elections from a given family
+* election_model -- the id of the election model, for example impartial_culture, 3d_sphere or 20d_cube
+* param -- model's parameter;
 * color -- the color in which the family will be displayed
 * alpha -- transparency
 * label -- full name of the family; for example "Urn Model 0.1"
+* show -- ...
+* marker -- ...
 
 If you want to hide a given family and do not print it, just put '#' at the begging of a that family line::
 
