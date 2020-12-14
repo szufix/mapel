@@ -458,7 +458,7 @@ if fake is False
 
 Votes are two-dimensional arrays
 
-Potes are positional votes, that is...
+Potes are positional votes,
 
 Family
 -----------------------------
@@ -505,12 +505,8 @@ Detailed explanation
 * color -- the color in which the family will be displayed
 * alpha -- transparency
 * label -- full name of the family; for example "Urn Model 0.1"
-* show -- ...
-* marker -- ...
-
-If you want to hide a given family and do not print it, just put '#' at the begging of a that family line::
-
-    #that_family_size, that_family_code, that_family_param, that_family_color, that_family_alpha, that_family_label
+* show -- if *True* then it will be printed
+* marker -- for example: 'x', 'o', 'v'
 
 
 Matrix with distances
