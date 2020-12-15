@@ -1,9 +1,10 @@
-import voting.print as mo
+#import voting.print as mo
+from . import print as mo
 import math
-import voting.canonical as can
+#import voting.canonical as can
 import os
 import matplotlib.pyplot as plt
-import voting.metrics as metr
+#import voting.metrics as metr
 
 
 
@@ -280,42 +281,6 @@ def print_highest_dodgson_time():
                 marker_func=marker_func, cmap=custom_map, tex=True, black=True)
 
 
-# NOT MAP
-def print_excel_mallows(experiment_id, target):
-
-    for num_candidates in [5, 10, 20, 50, 100]:
-
-        file_name = str(num_candidates) + ".txt"
-
-        if target == "identity":
-            file_name = "urn_model_id_" + file_name
-        elif target == "uniformity":
-            file_name = "urn_model_un_" + file_name
-
-        path = os.path.join(os.getcwd(), "experiments", experiment_id, "results", "excel", file_name)
-        file_ = open(path, 'r')
-
-        keys = []
-        values = []
-        #for i in range(101):
-        for i in range(51):
-            line = file_.readline().strip().replace(" ", "").split(',')
-            keys.append(float(line[0]))
-            values.append(float(line[1]) / can.diagonal_math(num_candidates))
-        file_.close()
-
-        plt.plot(keys, values, label=str(num_candidates))
-
-    plt.xlabel("Urn Model parameter")
-    plt.ylabel("Normiazlied distance from " + str(target))
-    plt.xlim([0, 5])
-    plt.ylim([0, 1])
-    plt.legend()
-
-    path = os.path.join(os.getcwd(), "images", "urn_model_" + str(target))
-    plt.savefig(path, bbox_inches='tight')
-    plt.show()
-
 ################
 ### 100 x 10 ###
 ################
@@ -591,42 +556,6 @@ def print_crazy(experiment_id):
 
     xticklabels = list(['900', '800', '700', '600', '500'])
     mo.print_2d(experiment_id, saveas="scores/map_crazy", ms=16, values="crazy",
-                normalizing_func=normalizing_func, xticklabels=xticklabels,
-                cmap=custom_map, black=True, levels=True)
-
-
-def print_smooth_levels_c10(experiment_id):
-
-    def normalizing_func(shade):
-        shade /= metr.map_diameter(10)
-        return shade
-
-    def reversed_func(arg):
-        arg *= metr.map_diameter(10)
-        return arg
-
-
-    [print(reversed_func(i)) for i in [0., 0.25, 0.5, 0.75, 1.]]
-
-    custom_map = mo.custom_div_cmap(colors=["lightgreen", "yellow", "orange", "red", "black"])
-    xticklabels = list(['0', '8.25', '16.5', '24.75', '33'])
-    mo.print_2d(experiment_id, saveas="scores/map_smooth_levels_10", ms=16, values="levels",
-                normalizing_func=normalizing_func, xticklabels=xticklabels,
-                cmap=custom_map, black=True, levels=True)
-
-
-def print_sharp_levels_c10(experiment_id, num_levels=5):
-
-    def normalizing_func(shade):
-        shade /= metr.map_diameter(10)
-        shade *= num_levels
-        shade = math.floor(shade)
-        shade /= num_levels
-        return shade
-
-    custom_map = mo.custom_div_cmap(colors=["lightgreen", "yellow", "orange", "red", "black"])
-    xticklabels = list(['0', '8.25', '16.5', '24.75', '33'])
-    mo.print_2d(experiment_id, saveas="scores/map_sharp_levels_10_l" + str(num_levels), ms=16, values="levels",
                 normalizing_func=normalizing_func, xticklabels=xticklabels,
                 cmap=custom_map, black=True, levels=True)
 
