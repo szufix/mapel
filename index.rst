@@ -106,15 +106,14 @@ General structure of a single experiment::
 
     ?exp_name?
     ├── controllers     
-    │   ├── basic/
-    │   └── advanced/
-    ├── elections
-    │   └── soc_original/
-    └── results
-        ├── distances/        
-        ├── orders/        
-        ├── points/
-        └── scores/
+    │   ├── advanced/ 
+    │   ├── basic/ 
+    │   ├── distances/ 
+    │   ├── orders/
+    │   └── points/
+    └── elections
+        └── soc_original/
+
             
 Exact structure of percomputed experiments::
 
@@ -123,28 +122,30 @@ Exact structure of percomputed experiments::
     │   ├── basic
     │   │   ├── map.txt                                     #  contains all technical details of the experiment
     │   │   └── matrix.txt                                  #  auxiliary file print_matrix() function
-    │   └── advanced
-    │       ├── hb_time.txt (only in testbed_100_100)
-    │       └── zip_sizes.txt (only in testbed_100_100)
-    ├── elections          
-    │   ├── soc_positionwise_approx_cc 
-    │   │   └── (empty)
-    │   └── soc_original
-    │       └── (800 txt files with elections)                  #  all the elections -- each election in a separate file
-    └── results
-        ├── distances        
-        │   ├── bordawise.txt (only in testbed_100_100)         #  bordawise distances between each pair of elections
-        │   └── positionwise.txt                                #  positionwise distances between each pair of elections
-        ├── orders
-        │   └── positionwise_approx_cc.txt                      #  ranking of elections
-        ├── points
-        │   ├── bordawise_2d.txt (only in testbed_100_100)      #  coordinates of embedded points
-        │   └── positionwise_2d.txt                             #  coordinates of embedded points
-        └── scores
-            ├── highest_borda (only in testbed_100_100)
-            ├── highest_copeland (only in testbed_100_100)
-            ├── highest_dodgson (only in testbed_100_100)
-            └── highest_plurality (only in testbed_100_100)
+    │   ├── advanced
+    │   │   ├── hb_time.txt (only in testbed_100_100)
+    │   │   ├── zip_sizes.txt (only in testbed_100_100)
+    │   │   ├── highest_borda (only in testbed_100_100)
+    │   │   ├── highest_copeland (only in testbed_100_100)
+    │   │   ├── highest_dodgson (only in testbed_100_100)
+    │   │   ├── highest_plurality (only in testbed_100_100)
+    │   ├── distances        
+    │   │   ├── bordawise.txt (only in testbed_100_100)         #  bordawise distances between each pair of elections
+    │   │   └── positionwise.txt                                #  positionwise distances between each pair of elections
+    │   ├── orders
+    │   │   └── positionwise_approx_cc.txt                      #  ranking of elections
+    │   └── points
+    │       ├── bordawise_2d.txt (only in testbed_100_100)      #  coordinates of embedded points
+    │       └── positionwise_2d.txt                             #  coordinates of embedded points
+    └── elections          
+        ├── soc_positionwise_approx_cc 
+        │   └── (empty)
+        └── soc_original
+            └── (800 txt files with elections)                  #  all the elections -- each election in a separate file
+
+
+   
+            
 
 You can your own experiments, but remember that they should have the same structure. If you want to create an experiment of your own we suggest you first copy one of the existing experiemnts and then just replace necessary files.
 
@@ -399,9 +400,80 @@ In this section we show how to conduct the whole experiment from the very beginn
 
     
     
+Objects
+=============================
 
+Model
+-----------------------------
+Abstract model of an experiment. It contains the following fields:
+::
 
+    self.experiment_id
+    self.num_voters
+    self.num_candidates 
+    self.num_families 
+    self.num_elections
+    self.main_order
+    self.metric
+    self.families
+    
 
+Model xd
+-----------------------------
+Extension of Model. Beside all fields from Model it contains:
+::  
+
+    self.num_distances
+    self.distances
+
+Model 2d
+-----------------------------
+Extension of Model. Beside all fields from Model it contains:
+::  
+
+    self.num_points 
+    self.points
+    self.points_by_families
+    
+
+Election
+-----------------------------
+::
+
+    self.experiment_id = experiment_id
+    self.election_id = election_id
+    self.num_candidates
+    self.num_voters
+    self.fake 
+    
+if fake is True:
+::
+    self.fake_model_name
+    self.fake_param
+
+if fake is False
+::
+    self.votes
+    self.potes
+
+Votes are two-dimensional arrays
+
+Potes are positional votes,
+
+Family
+-----------------------------
+::
+
+        self.name
+        self.param_1
+        self.param_2
+        self.size
+        self.label
+        self.color
+        self.alpha
+        self.show
+        self.marker
+        self.starting_from
 
     
 Extras
@@ -409,37 +481,32 @@ Extras
 
 Controllers
 -----------------------------
-The whole technical description of an experiment is kept in *?exp_name?/controllers/basic/map.txt". 
+The whole technical description of an experiment is kept in *?exp_name?/controllers/basic/map.csv" and *?exp_name?/controllers/basic/meta.csv". 
 
-Before editing this file, please make a safe copy. The content looks as follows::
+File meta.csv contains:
+::
 
-    number_of_voters
-
-    number_of_candidates
-
-    number_of_families
-
-    first_family_size, first_family_code, first_family_param_1,  first_family_param_2, first_family_color, first_family_alpha, first_family_label
-
-    second_family_size, second_family_code, second_family_param_1, second_family_param_2, second_family_color, second_family_alpha, second_family_label
-
-    ...
-
-    last_family_size, last_family_code, last_family_param_1, last_family_param_2, last_family_color, last_family_alpha, last_family_label
+    key,value
+    num_voters,???
+    num_candidates,???
+    num_families,???
+    num_elections,???
     
+File map.csv contains the folowing columns:
+::
+    
+    family_size, election_model, param_1, param_2, color, alpha, label, show, marker    
     
 Detailed explanation
 
-* size -- number of elections from a given family
-* code -- the id of the election model, for example impartial_culture, 3d_sphere or 20d_cube
-* param -- model's parameter; only important urn_model or mallows
+* family_size -- number of elections from a given family
+* election_model -- the id of the election model, for example impartial_culture, 3d_sphere or 20d_cube
+* param -- model's parameter;
 * color -- the color in which the family will be displayed
 * alpha -- transparency
 * label -- full name of the family; for example "Urn Model 0.1"
-
-If you want to hide a given family and do not print it, just put '#' at the begging of a that family line::
-
-    #that_family_size, that_family_code, that_family_param, that_family_color, that_family_alpha, that_family_label
+* show -- if *True* then it will be printed
+* marker -- for example: 'x', 'o', 'v'
 
 
 Matrix with distances
