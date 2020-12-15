@@ -12,8 +12,6 @@ from PIL import Image
 from shutil import copyfile
 import scipy.stats as stats
 
-import voting.elections as el
-import voting.metrics as metr
 
 #  mark the orders
 #  for w in model.orders:
@@ -398,7 +396,7 @@ def prepare_approx_cc_order(experiment_id, metric="positionwise"):
 
         copyfile(src, dst)
 
-
+"""
 def print_param_vs_distance(experiment_id, values="", scale="none", metric="positionwise", saveas="correlation",
                             show=True, target='identity', ylabel_text=''):
 
@@ -493,7 +491,7 @@ def print_param_vs_distance(experiment_id, values="", scale="none", metric="posi
     plt.savefig(file_name, bbox_inches='tight')
     if show:
         plt.show()
-
+"""
 
 # HELPER FUNCTIONS
 def custom_div_cmap(num_colors=101, name='custom_div_cmap',
