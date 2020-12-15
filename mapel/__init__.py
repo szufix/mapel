@@ -1,5 +1,5 @@
 #import voting.print as mo
-from voting import print as mo
+from .voting import print as mo
 import math
 #import voting.canonical as can
 import os
