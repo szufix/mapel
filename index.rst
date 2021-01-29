@@ -408,14 +408,16 @@ Model
 Abstract model of an experiment. It contains the following fields:
 ::
 
-    self.experiment_id
-    self.num_voters
-    self.num_candidates 
-    self.num_families 
-    self.num_elections
-    self.main_order
-    self.metric
-    self.families
+    self.experiment_id      # string
+    self.num_voters         # integer
+    self.num_candidates     # integer
+    self.num_families       # integer
+    self.num_elections      # integer
+    self.main_order         # array of integers
+    self.distance_name      # string
+    self.metric_name        # string
+    self.families           # array of 'Family' objects
+    self.elections          # array of 'Elections' objects
     
 
 Model xd
@@ -423,8 +425,8 @@ Model xd
 Extension of Model. Beside all fields from Model it contains:
 ::  
 
-    self.num_distances
-    self.distances
+    self.num_distances      # integer
+    self.distances          # two dimensional array with integers
 
 Model 2d
 -----------------------------
@@ -434,6 +436,7 @@ Extension of Model. Beside all fields from Model it contains:
     self.num_points 
     self.points
     self.points_by_families
+    self.attraction_factor
     
 
 Election
