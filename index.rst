@@ -120,7 +120,8 @@ Exact structure of percomputed experiments::
     ?exp_name?
     ├── controllers     
     │   ├── basic
-    │   │   ├── map.txt                                     #  contains all technical details of the experiment
+    │   │   ├── map.csv                                     #  contains technical details of the experiment
+    │   │   ├── meta.csv                                    #  contains meta details of the experiment
     │   │   └── matrix.txt                                  #  auxiliary file print_matrix() function
     │   ├── advanced
     │   │   ├── hb_time.txt (only in testbed_100_100)
@@ -340,7 +341,10 @@ num_colors
        
 Tutorial
 =============================
-In this section we show how to conduct the whole experiment from the very beginning till the end.
+
+Mini experiment (with precomputed data)
+-----------------------------
+In this section we show how to conduct the mini experiment from the very beginning till the end.
 
 1) Install the package:
 
@@ -398,7 +402,14 @@ In this section we show how to conduct the whole experiment from the very beginn
     
 8) Enjoy the results!
 
-    
+2D fancy printing
+-----------------------------
+To be updated.
+
+
+Creating a map on your own
+-----------------------------
+To be updated.
     
 Objects
 =============================
