@@ -422,7 +422,7 @@ Abstract model of an experiment. It contains the following fields:
 
 Model xd
 -----------------------------
-Extension of Model. Beside all fields from Model it contains:
+Extension of Model, that contains distance between each pair of elections. Beside all fields from Model it contains:
 ::  
 
     self.num_distances      # integer
@@ -430,13 +430,13 @@ Extension of Model. Beside all fields from Model it contains:
 
 Model 2d
 -----------------------------
-Extension of Model xd. Beside all fields from Model xd it contains:
+Extension of Model xd, that contains 2D-Euclidean coordinates of all the elections obtained via embedding. Beside all fields from Model xd it contains:
 ::  
 
-    self.num_points 
-    self.points
+    self.num_points         # integer
+    self.points             # array of pairs of floats 
     self.points_by_families
-    self.attraction_factor
+    self.attraction_factor  # float
     
 
 Election
