@@ -441,6 +441,7 @@ Extension of Model xd, that contains 2D-Euclidean coordinates of all the electio
 
 Election
 -----------------------------
+Single instance of elections:
 ::
 
     self.experiment_id      # string
@@ -465,9 +466,10 @@ Potes is a two-dimensional array with all the positional votes.
 
 Family
 -----------------------------
+Meta information regarding a set of elections.
 ::
 
-    self.name               # string
+    self.election_model     # string
     self.param_1            # float
     self.param_2            # float
     self.size               # integer
