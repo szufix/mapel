@@ -426,11 +426,11 @@ Extension of Model. Beside all fields from Model it contains:
 ::  
 
     self.num_distances      # integer
-    self.distances          # two dimensional array with integers
+    self.distances          # two-dimensional array with integers
 
 Model 2d
 -----------------------------
-Extension of Model. Beside all fields from Model it contains:
+Extension of Model xd. Beside all fields from Model xd it contains:
 ::  
 
     self.num_points 
@@ -443,11 +443,11 @@ Election
 -----------------------------
 ::
 
-    self.experiment_id = experiment_id
-    self.election_id = election_id
-    self.num_candidates
-    self.num_voters
-    self.fake 
+    self.experiment_id      # string
+    self.election_id        # string
+    self.num_candidates     # integer
+    self.num_voters         # integer
+    self.fake               # boolean
     
 if fake is True:
 ::
@@ -456,27 +456,27 @@ if fake is True:
 
 if fake is False
 ::
-    self.votes
-    self.potes
+    self.votes              # two-dimensional array of integers
+    self.potes              # two-dimensional array of integers
 
-Votes are two-dimensional arrays
+Votes is a two-dimensional array with all the votes.
 
-Potes are positional votes,
+Potes is a two-dimensional array with all the positional votes.
 
 Family
 -----------------------------
 ::
 
-        self.name
-        self.param_1
-        self.param_2
-        self.size
-        self.label
-        self.color
-        self.alpha
-        self.show
-        self.marker
-        self.starting_from
+    self.name               # string
+    self.param_1            # float
+    self.param_2            # float
+    self.size               # integer
+    self.label              # string
+    self.color              # string
+    self.alpha              # float from [0,1]
+    self.show               # boolean flag
+    self.marker             # char
+    self.starting_from      # integer
 
     
 Extras
