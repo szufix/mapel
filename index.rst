@@ -407,9 +407,52 @@ In this section we show how to conduct the mini experiment from the very beginni
 To be updated.
 
 
-Creating a map on your own
+Your own map
+=============================
+In this section we describe how to create a map on your own.
+
+In short, we will have to do the following:
+1) create the experiment structure
+2) prepare_elections
+3) compute distances between elections
+4) embed the elections in a two-dimensional space
+5) print the results
+
+We describe each point in a seperate subsection.
+
+Struture
 -----------------------------
 To be updated.
+
+
+Elections
+-----------------------------
+In order to prepare elections use function **prepare_election**.
+::
+
+    prepare_elections(experiment_id)
+
+The only parameter that you need to send is the experiment_id. All other parameter will be read from meta.csv and map.csv
+
+
+Compute distances
+-----------------------------
+In order to compute distances between elections use function **compute_distances_between_elections**.
+::
+
+    compute_distances_between_elections(experiment_id, distance_name='positionwise')
+    
+
+Embed
+-----------------------------
+To be updated.
+
+
+Print
+-----------------------------
+To be updated.
+
+    
     
 Objects
 =============================
