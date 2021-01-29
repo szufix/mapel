@@ -427,7 +427,7 @@ To be updated.
 
 Elections
 -----------------------------
-In order to prepare elections use function **prepare_election**.
+In order to prepare elections use function **prepare_elections**.
 ::
 
     prepare_elections(experiment_id)
