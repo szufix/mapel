@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import voting.elections as el
-import voting.winners as win
-import voting.metrics as metr
-import voting.objects as obj
+from . import metrics as metr
+from . import winners as winpr
+from . import elections as el
+from . import objects as obj
+
 import time
 import os
 import csv

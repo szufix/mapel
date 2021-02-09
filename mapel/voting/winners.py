@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import voting.elections as el
+from . import elections as el
 import random as rand
-import voting.lp as lp
+from . import lp as lp
 import os
 import math
 import time

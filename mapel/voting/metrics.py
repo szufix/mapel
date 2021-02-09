@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import math
-import voting.elections as el
-import voting.lp as lp
-import voting.objects as obj
+from . import elections as el
+from . import objects as obj
+from . import lp as lp
 import random as rand
 import os
 import numpy as np
@@ -73,7 +73,6 @@ def get_distance(election_1, election_2, distance_name='positionwise', metric_na
 
 
 def compute_basic_distance(election_1, election_2, distance_name='positionwise', metric_name='emd'):
-    print(election_1.num_candidates)
     length = election_1.num_candidates
     metric_name = map_metric(metric_name)
     matching_cost = map_matching_cost(distance_name)

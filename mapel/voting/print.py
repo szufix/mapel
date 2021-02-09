@@ -15,6 +15,8 @@ import scipy.stats as stats
 #import voting.elections as el
 #import voting.metrics as metr
 
+from . import metrics as metr
+from . import elections as el
 #  mark the orders
 #  for w in model.orders:
 #    ax.scatter(model.points[w][0], model.points[w][1], color="red", s=50, marker='x')
@@ -625,8 +627,6 @@ def print_param_vs_distance(experiment_id, values="", scale="none", metric="posi
         plt.show()
 
 
-import voting.metrics as metr
-import voting.elections as el
 def excel_super(experiment_id, values="", scale="none", metric="positionwise", saveas="correlation",
                             show=True, target='identity', ylabel_text=''):
     num_elections = 1000

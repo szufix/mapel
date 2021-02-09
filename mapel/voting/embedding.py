@@ -15,8 +15,8 @@ import networkx as nx
 import csv
 
 
-def convert_xd_to_2d(experiment, num_iterations=1000, metric="positionwise", random=True, magic=1.):
-    model = obj.Model_xd(experiment, distance_name=metric)
+def convert_xd_to_2d(experiment_id, num_iterations=1000, metric="positionwise", random=True, magic=1.):
+    model = obj.Model_xd(experiment_id, distance_name=metric)
     X = np.zeros((model.num_elections, model.num_elections))
 
     if random:
@@ -50,10 +50,10 @@ def convert_xd_to_2d(experiment, num_iterations=1000, metric="positionwise", ran
 
     my_pos = nx.spring_layout(G, iterations=num_iterations, dim=2)
     if magic == 1:
-        file_name = os.path.join(os.getcwd(), "experiments", experiment, "controllers",
+        file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
                              "points", metric + "_2d.csv")
     else:
-        file_name = os.path.join(os.getcwd(), "experiments", experiment, "controllers",
+        file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
                              "points", metric + "_2d_p" + str(magic) + ".csv")
 
     with open(file_name, 'w', newline='') as csvfile:
@@ -67,8 +67,8 @@ def convert_xd_to_2d(experiment, num_iterations=1000, metric="positionwise", ran
             writer.writerow([i, x, y])
 
 
-def convert_xd_to_3d(experiment, num_iterations=1000, metric="positionwise", magic=1.):
-    model = obj.Model_xd(experiment, distance_name=metric)
+def convert_xd_to_3d(experiment_id, num_iterations=1000, metric="positionwise", magic=1.):
+    model = obj.Model_xd(experiment_id, distance_name=metric)
     X = np.zeros((model.num_elections, model.num_elections))
     perm = np.random.permutation(model.num_elections)
 
@@ -94,10 +94,10 @@ def convert_xd_to_3d(experiment, num_iterations=1000, metric="positionwise", mag
     my_pos = nx.spring_layout(G, iterations=num_iterations, dim=3)
 
     if magic == 1:
-        file_name = os.path.join(os.getcwd(), "experiments", experiment, "controllers",
+        file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
                              "points", metric + "_3d.csv")
     else:
-        file_name = os.path.join(os.getcwd(), "experiments", experiment, "controllers",
+        file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
                              "points", metric + "_3d_p" + str(magic) + ".csv")
 
     with open(file_name, 'w', newline='') as csvfile:
