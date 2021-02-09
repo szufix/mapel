@@ -2,6 +2,8 @@
 
 import os
 import math
+#from dataclasses import dataclass
+
 import csv
 import numpy as np
 
@@ -22,27 +24,40 @@ def import_controllers_meta(experiment_id):
 
 
 class Model:
-    """ Abstract model of elections """
+    """Abstract model of elections."""
 
     def __init__(self, experiment_id, ignore=None, main_order_name="default",
-                 metric="positionwise", num_elections=None):
+                 distance_name="positionwise", metric_name="emd", num_elections=None):
 
         self.experiment_id = experiment_id
-        self.num_voters, self.num_candidates, self.num_families, self.num_elections \
-            = import_controllers_meta(experiment_id)
-        if num_elections is not None:
+        self.num_voters, self.num_candidates, self.num_families, self.num_elections =\
+            import_controllers_meta(experiment_id)
+        if num_elections:
             self.num_elections = num_elections
         self.main_order = self.import_order(main_order_name)
-        self.metric = metric
+
+        self.distance_name = distance_name
+        self.metric_name = metric_name
+
         self.families = self.import_controllers(ignore=ignore)
 
+        self.elections = self.add_elections_to_model()
+
+    def add_elections_to_model(self):
+        elections = []
+        for i in range(self.num_elections):
+            election_id = 'core_' + str(i)
+            election = Election(self.experiment_id, election_id)
+            elections.append(election)
+        return elections
+
     def import_controllers(self, ignore=None):
-        """ Import from a file all the controllers"""
+        """Import from a file all the controllers."""
 
         families = []
 
-        file_name = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers", "basic", 'map.csv')
-        file_ = open(file_name, 'r')
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers", "basic", 'map.csv')
+        file_ = open(path, 'r')
 
         header = [h.strip() for h in file_.readline().split(',')]
         reader = csv.DictReader(file_, fieldnames=header)
@@ -50,22 +65,50 @@ class Model:
         starting_from = 0
         for row in reader:
 
-            name = str(row['election_model']).strip()
-            color = str(row['color']).strip()
-            label = str(row['nice_name'])
-            special_1 = float(row['param_1'])
-            special_2 = float(row['param_2'])
-            alpha = float(row['alpha'])
-            size = int(row['family_size'])
-            marker = str(row['marker']).strip()
+            election_model = None
+            color = None
+            label = None
+            param_1 = None
+            param_2 = None
+            alpha = None
+            size = None
+            marker = None
+            num_candidates = None
+
+            if 'election_model' in row.keys():
+                election_model = str(row['election_model']).strip()
+
+            if 'color' in row.keys():
+                color = str(row['color']).strip()
+
+            if 'label' in row.keys():
+                label = str(row['label'])
+
+            if 'param_1' in row.keys():
+                param_1 = float(row['param_1'])
+
+            if 'param_2' in row.keys():
+                param_2 = float(row['param_2'])
+
+            if 'alpha' in row.keys():
+                alpha = float(row['alpha'])
+
+            if 'family_size' in row.keys():
+                size = int(row['family_size'])
+
+            if 'marker' in row.keys():
+                marker = str(row['marker']).strip()
+
+            if 'num_candidates' in row.keys():
+                num_candidates = int(row['num_candidates'])
 
             show = True
             if row['show'].strip() != 't':
                 show = False
 
-            families.append(Family(name=name, special_1=special_1, special_2=special_2, label=label,
+            families.append(Family(election_model=election_model, param_1=param_1, param_2=param_2, label=label,
                                    color=color, alpha=alpha, show=show, size=size, marker=marker,
-                                   starting_from=starting_from))
+                                   starting_from=starting_from, num_candidates=num_candidates))
             starting_from += size
 
         if ignore is None:
@@ -106,18 +149,20 @@ class Model:
 class Model_xd(Model):
     """ Multi-dimensional model of elections """
 
-    def __init__(self, experiment_id, metric='positionwise'):
+    def __init__(self, experiment_id, distance_name='positionwise'):
 
-        Model.__init__(self, experiment_id, metric=metric)
+        Model.__init__(self, experiment_id, distance_name=distance_name)
 
-        self.num_points, self.num_distances, self.distances = self.import_distances(experiment_id, metric)
+        #self.num_points, self.num_distances, self.distances = self.import_distances(experiment_id, metric)
+        self.num_distances, self.distances = self.import_distances(experiment_id, distance_name)
 
     @staticmethod
     def import_distances(experiment_id, metric):
         """Import from a file precomputed distances between each pair of elections  """
 
-        file_name = os.path.join(os.getcwd(), "experiments", str(experiment_id), "controllers", "distances", str(metric) + ".txt")
-        file_ = open(file_name, 'r')
+        file_name = f"{metric}.txt"
+        path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "distances", file_name)
+        file_ = open(path, 'r')
         num_points = int(file_.readline())
         file_.readline()  # skip this line
         num_distances = int(file_.readline())
@@ -131,19 +176,33 @@ class Model_xd(Model):
                 hist_data[a][b] = float(line[2])
                 hist_data[b][a] = hist_data[a][b]
 
-        return num_points, num_distances, hist_data
+        #return num_points, num_distances, hist_data
+        return num_distances, hist_data
 
 
 class Model_2d(Model):
     """ Two-dimensional model of elections """
 
-    def __init__(self, experiment_id, main_order_name="default", metric="positionwise", ignore=None, num_elections=None):
+    """
+    experiment_id: str
+    main_order_name: str = "default"
+    metric: str = "positionwise"
+    ignore: [] = None
+    num_elections: int = None
+    magic: int = 1
+    """
 
-        Model.__init__(self, experiment_id, ignore=ignore, main_order_name=main_order_name, metric=metric,
+    def __init__(self, experiment_id, main_order_name="default", distance_name="positionwise", ignore=None,
+                 num_elections=None, attraction_factor=1):
+
+        Model.__init__(self, experiment_id, ignore=ignore, main_order_name=main_order_name, distance_name=distance_name,
                        num_elections=num_elections)
+
+        self.attraction_factor = int(attraction_factor)
 
         self.num_points, self.points, = self.import_points(ignore=ignore)
         self.points_by_families = self.compute_points_by_families()
+
 
     def import_points(self, ignore=None):
         """ Import from a file precomputed coordinates of all the points -- each point refer to one election """
@@ -152,10 +211,17 @@ class Model_2d(Model):
             ignore = []
 
         points = []
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers", "points", self.metric + "_2d.csv")
+        if self.attraction_factor == 1:
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
+                                "points", self.distance_name + "_2d.csv")
+        else:
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
+                                "points", self.distance_name + "_2d_p" + str(self.attraction_factor) + ".csv")
+
         with open(path, 'r', newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
             ctr = 0
+            print(path)
             for row in reader:
                 if self.main_order[ctr] < self.num_elections and self.main_order[ctr] not in ignore:
                     points.append([float(row['x']), float(row['y'])])
@@ -194,7 +260,7 @@ class Model_2d(Model):
 
         self.points_by_families = self.compute_points_by_families()
 
-    def reverse(self, ):
+    def reverse(self):
         """ Reverse all the points"""
 
         for i in range(self.num_points):
@@ -206,9 +272,14 @@ class Model_2d(Model):
     def update(self):
         """ Save current coordinates of all the points to the original file"""
 
-        file_name = os.path.join(os.getcwd(), "experiments", self.experiment_id, "results", "points",
-                                 self.metric + "_2d.csv")
-        with open(file_name, 'w', newline='') as csvfile:
+        if self.attraction_factor == 1:
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
+                                "points", self.distance_name + "_2d.csv")
+        else:
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
+                                "points", self.distance_name + "_2d_p" + str(self.attraction_factor) + ".csv")
+
+        with open(path, 'w', newline='') as csvfile:
 
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(["id", "x", "y"])
@@ -237,22 +308,41 @@ class Model_2d(Model):
 class Model_3d(Model):
     """ Two-dimensional model of elections """
 
-    def __init__(self, experiment_id, ignore=None, main_order_name="positionwise_approx_cc", metric="positionwise"):
+    def __init__(self, experiment_id, main_order_name="default", distance_name="positionwise", ignore=None,
+                 num_elections=None, attraction_factor=1):
 
-        Model.__init__(self, experiment_id, ignore=ignore, main_order_name=main_order_name)
+        Model.__init__(self, experiment_id, ignore=ignore, main_order_name=main_order_name, distance_name=distance_name,
+                       num_elections=num_elections)
 
-        self.num_points, self.points, = self.import_points()
+        self.attraction_factor = int(attraction_factor)
+
+        self.num_points, self.points, = self.import_points(ignore=ignore)
         self.points_by_families = self.compute_points_by_families()
 
-    def import_points(self):
+    def import_points(self, ignore=None):
         """ Import from a file precomputed coordinates of all the points -- each point refer to one election """
 
+        if ignore is None:
+            ignore = []
+
         points = []
-        file_name = os.path.join(os.getcwd(), "experiments", self.experiment_id, "results", "points", self.metric + "_3d.csv")
-        with open(file_name, 'r', newline='') as csvfile:
+        if self.attraction_factor == 1:
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
+                                "points", f"{self.distance_name}_3d.csv")
+        else:
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
+                                "points", f"{self.distance_name}_3d_p" + f"{self.attraction_factor}.csv")
+
+        print(self.main_order[0])
+
+        with open(path, 'r', newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
+            ctr = 0
+            print(path)
             for row in reader:
-                points.append([float(row['x']), float(row['y']), float(row['z'])])
+                if self.main_order[ctr] < self.num_elections and self.main_order[ctr] not in ignore:
+                    points.append([float(row['x']), float(row['y']), float(row['z'])])
+                ctr += 1
 
         return len(points), points
 
@@ -330,12 +420,13 @@ class Model_3d(Model):
 class Family:
     """ Family of elections """
 
-    def __init__(self, name="none", special_1=0., special_2=0., size=0, label="none",
-                 color="black", alpha=1., show=True, marker='o', starting_from=0):
+    def __init__(self, election_model="none", param_1=0., param_2=0., size=0, label="none",
+                 color="black", alpha=1., show=True, marker='o', starting_from=0,
+                 num_candidates=None):
 
-        self.name = name
-        self.special_1 = special_1
-        self.special_2 = special_2
+        self.election_model = election_model
+        self.param_1 = param_1
+        self.param_2 = param_2
         self.size = size
         self.label = label
         self.color = color
@@ -343,6 +434,7 @@ class Family:
         self.show = show
         self.marker = marker
         self.starting_from = starting_from
+        self.num_candidates = num_candidates
 
 
 class Election:
@@ -360,7 +452,7 @@ class Election:
             self.votes, self.num_voters, self.num_candidates = import_soc_elections(experiment_id, election_id)
             self.potes = self.votes_to_potes()
 
-        self.num_elections = 1  # do poprawy
+        #self.num_elections = 1  # do poprawy
 
 
     def votes_to_potes(self):
@@ -376,10 +468,12 @@ class Election:
 
         if self.fake:
 
-            if self.fake_model_name in {'identity', 'uniformity', 'antagonism', 'chess'}:
+            if self.fake_model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
                 vectors = get_fake_vectors_single(self.fake_model_name, self.num_candidates)
-            elif self.fake_model_name in {'unid', 'anid', 'chid', 'anun', 'chun', 'chan'}:
+            elif self.fake_model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
                 vectors = get_fake_vectors_convex(self.fake_model_name, self.num_candidates, self.fake_param)
+            elif self.fake_model_name == 'crate':
+                vectors = get_fake_vectors_crate(self.fake_model_name, self.num_candidates, self.fake_param)
 
 
         else:
@@ -397,18 +491,24 @@ class Election:
 
         return vectors
 
-    def votes_to_lacknerwise_vectors(self):
+    def vector_to_interval(self, vector, precision=None):
+        # discreet version for now
+        interval = []
+        w = int(precision / self.num_candidates)
+        for i in range(self.num_candidates):
+            for j in range(w):
+                interval.append(vector[i]/w)
+        return interval
 
-        vectors = [[0 for _ in range(self.num_voters)] for _ in range(self.num_voters)]
+    def votes_to_positionwise_intervals(self, precision=None):
 
-        for i in range(self.num_voters):
-            for j in range(self.num_voters): # now self-similarity is 1
-                set_1 = set(self.votes[0][i])
-                set_2 = set(self.votes[0][j])
-                vectors[i][j] = self.num_candidates - len(set_1) - len(set_2) + 2 * len(set_1.intersection(set_2))
-            vectors[i] = sorted(vectors[i])
+        vectors = self.votes_to_positionwise_vectors()
+        intervals = []
 
-        return vectors
+        for i in range(len(vectors)):
+            intervals.append(self.vector_to_interval(vectors[i], precision=precision))
+
+        return intervals
 
     def votes_to_bordawise_vector(self):
 
@@ -431,7 +531,6 @@ class Election:
 
 
 def import_soc_elections(experiment_id, election_id):
-
     file_name = str(election_id) + ".soc"
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", "soc_original", file_name)
     my_file = open(path, 'r')
@@ -515,7 +614,14 @@ def import_fake_elections(experiment_id, election_id):
     num_voters = int(my_file.readline().strip())
     num_candidates = int(my_file.readline().strip())
     fake_model_name = str(my_file.readline().strip())
-    fake_param = float(my_file.readline().strip())
+    if fake_model_name == 'crate':
+        fake_param = []
+        fake_param.append(float(my_file.readline().strip()))
+        fake_param.append(float(my_file.readline().strip()))
+        fake_param.append(float(my_file.readline().strip()))
+        fake_param.append(float(my_file.readline().strip()))
+    else:
+        fake_param = float(my_file.readline().strip())
 
     return fake_model_name, fake_param, num_voters, num_candidates
 
@@ -533,7 +639,7 @@ def get_fake_vectors_single(fake_model_name, num_candidates):
             for j in range(num_candidates):
                 vectors[i][j] = 1. / num_candidates
 
-    elif fake_model_name == 'chess':
+    elif fake_model_name == 'stratification':
         half = int(num_candidates/2)
         for i in range(half):
             for j in range(half):
@@ -551,6 +657,16 @@ def get_fake_vectors_single(fake_model_name, num_candidates):
     return vectors
 
 
+def get_fake_vectors_crate(fake_model_name, num_candidates, fake_param):
+
+    base_1 = get_fake_vectors_single('uniformity', num_candidates)
+    base_2 = get_fake_vectors_single('identity', num_candidates)
+    base_3 = get_fake_vectors_single('antagonism', num_candidates)
+    base_4 = get_fake_vectors_single('stratification', num_candidates)
+
+    return crate_combination(base_1, base_2, base_3, base_4, length=num_candidates, alpha=fake_param)
+
+
 def get_fake_vectors_convex(fake_model_name, num_candidates, fake_param):
 
     if fake_model_name == 'unid':
@@ -559,17 +675,17 @@ def get_fake_vectors_convex(fake_model_name, num_candidates, fake_param):
     elif fake_model_name == 'anid':
         base_1 = get_fake_vectors_single('antagonism', num_candidates)
         base_2 = get_fake_vectors_single('identity', num_candidates)
-    elif fake_model_name == 'chid':
-        base_1 = get_fake_vectors_single('chess', num_candidates)
+    elif fake_model_name == 'stid':
+        base_1 = get_fake_vectors_single('stratification', num_candidates)
         base_2 = get_fake_vectors_single('identity', num_candidates)
     elif fake_model_name == 'anun':
         base_1 = get_fake_vectors_single('antagonism', num_candidates)
         base_2 = get_fake_vectors_single('uniformity', num_candidates)
-    elif fake_model_name == 'chun':
-        base_1 = get_fake_vectors_single('chess', num_candidates)
+    elif fake_model_name == 'stun':
+        base_1 = get_fake_vectors_single('stratification', num_candidates)
         base_2 = get_fake_vectors_single('uniformity', num_candidates)
-    elif fake_model_name == 'chan':
-        base_1 = get_fake_vectors_single('chess', num_candidates)
+    elif fake_model_name == 'stan':
+        base_1 = get_fake_vectors_single('stratification', num_candidates)
         base_2 = get_fake_vectors_single('antagonism', num_candidates)
     else:
         raise NameError('No such fake vectors!')
@@ -585,4 +701,13 @@ def convex_combination(base_1, base_2, length=0, alpha=0):
     return vectors
 
 
+def crate_combination(base_1, base_2, base_3, base_4, length=0, alpha=None):
+    #print(alpha)
+    vectors = np.zeros([length, length])
+    for i in range(length):
+        for j in range(length):
+            vectors[i][j] = alpha[0] * base_1[i][j] + alpha[1] * base_2[i][j] + \
+                            alpha[2] * base_3[i][j] + alpha[3] * base_4[i][j]
+
+    return vectors
 
