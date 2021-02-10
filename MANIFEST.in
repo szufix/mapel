@@ -7,7 +7,8 @@ include LICENSE.txt
 # Include the requirements file
 include requirements.txt
 
-
-# Mine:
 include mapel/*
 include mapel/**/*
+include mapel/**/**/*
+include mapel/**/**/**/*
+include mapel/**/**/**/**/* 
