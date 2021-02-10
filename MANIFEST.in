@@ -7,8 +7,15 @@ include LICENSE.txt
 # Include the requirements file
 include requirements.txt
 
-include mapel/*
-include mapel/**/*
-include mapel/**/**/*
-include mapel/**/**/**/*
-include mapel/**/**/**/**/*
+
+# Mine:
+mapel/
+!mapel/images/
+!mapel/experiments/
+!mapel/raw_data/
+!mapel/real_data/
+!mapel/voting/pabulib.py
+!mapel/voting/preflib.py
+!mapel/voting/mapel.py
+!mapel/private.py
+!mapel/MAIN.py
