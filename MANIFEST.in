@@ -10,12 +10,4 @@ include requirements.txt
 
 # Mine:
 include mapel/*
-!mapel/images/*
-!mapel/experiments/*
-!mapel/raw_data/*
-!mapel/real_data/*
-!mapel/voting/pabulib.py
-!mapel/voting/preflib.py
-!mapel/voting/mapel.py
-!mapel/private.py
-!mapel/MAIN.py
+include mapel/**/*
