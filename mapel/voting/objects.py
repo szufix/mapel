@@ -149,9 +149,9 @@ class Model:
 class Model_xd(Model):
     """ Multi-dimensional model of elections """
 
-    def __init__(self, experiment_id, distance_name='positionwise'):
+    def __init__(self, experiment_id, distance_name='positionwise', metric_name='emd'):
 
-        Model.__init__(self, experiment_id, distance_name=distance_name)
+        Model.__init__(self, experiment_id, distance_name=distance_name, metric_name=metric_name)
 
         #self.num_points, self.num_distances, self.distances = self.import_distances(experiment_id, metric)
         self.num_distances, self.distances = self.import_distances(experiment_id, distance_name)

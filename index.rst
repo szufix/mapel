@@ -12,7 +12,7 @@ The package contains the following elements
 
 * several sets of elections, including the one used by Szufa et al. [AAMAS-2020]
 * tools for drawing maps of elections
-* tools for generating elections and computing distances between them (*available soon*)
+* tools for generating elections and computing distances between them
 
 **Citation Policy**: if you are using this package, we kindly ask you to cite the above article *Drawing  a  map of elections in the space of statistical cultures*.
 
@@ -60,9 +60,8 @@ Here we present main features of the mapel package.
 
 * printing maps of elections
 * printing matrices of distances
-* generating elections according to many models (*available soon*)
-* computing distances between elections (*available soon*)
-
+* generating elections according to many models
+* computing distances between elections
 
 
 Examples
@@ -249,7 +248,7 @@ ms
   : optional, int; marker size.
 
 ignore 
-  : optional, list[int]; list containg ids of election to ignore (not print).
+  : optional, list[int]; list containing ids of election to ignore (not print).
   
 tex
   : optional, bool; save file in a tex format.
@@ -353,7 +352,7 @@ In this section we show how to conduct the mini experiment from the very beginni
 2) Download the data from https://github.com/szufix/mapel_data/ and extract it wherever you want.
 3) Test the *import* by running the test.py file, that is located inside the mapel_data folder. It should print "*Welcom to Mapel*" text.
 4) Test the *data* by uncommenting last line in the test.py file, and then running the file again. You should see the main map containg 800 points (elections).
-5) Compute Borda score for each elections. You can use the code presented below.
+5) Compute Borda score for each election. You can use the code presented below.
 
 ::
 
@@ -368,7 +367,7 @@ In this section we show how to conduct the mini experiment from the very beginni
     return max(scores)
 
 
-    def compute_highest_borda_map(experiment_id):
+    def compute_highest_borda(experiment_id):
 
         model = obj.Model(experiment_id)
 
@@ -388,9 +387,9 @@ In this section we show how to conduct the mini experiment from the very beginni
     if __name__ == "__main__":
 
         experiment_id = 'testbed_100_100'
-        compute_highest_borda_map(experiment_id)
+        compute_highest_borda(experiment_id)
 
-6) If you computed borda scores on your own rember to put them in experiments/*experiment_id*/controllers/advanced/*file_name*.txt
+6) If you computed borda scores on your own remember to put them in experiments/*experiment_id*/controllers/advanced/*file_name*.txt
 7) Run the following command:
 
 ::
@@ -412,15 +411,16 @@ Your own map
 In this section we describe how to create a map on your own.
 
 In short, we will have to do the following:
+
 1) create the experiment structure
-2) prepare_elections
+2) prepare elections
 3) compute distances between elections
 4) embed the elections in a two-dimensional space
 5) print the results
 
 We describe each point in a seperate subsection.
 
-Struture
+Structure
 -----------------------------
 To be updated.
 
@@ -437,21 +437,31 @@ The only parameter that you need to send is the experiment_id. All other paramet
 
 Compute distances
 -----------------------------
-In order to compute distances between elections use function **compute_distances_between_elections**.
+In order to compute distances between elections use function **compute_distances**.
 ::
 
-    compute_distances_between_elections(experiment_id, distance_name='positionwise')
+    compute_distances(experiment_id)
     
+By default it will compute positionwise distance but if you want to compute another distance just add a parameter distance_name='...'
+
 
 Embed
 -----------------------------
-To be updated.
+In order to embed our model into two-dimensional space it suffices to
+::
 
+    convert_xd_to_2d(experiment_id)
+
+By default it will run 1000 iterations but if you want more precision just add a parameter num_iterations='...'
 
 Print
 -----------------------------
-To be updated.
+In order to print the results run the following function
+::
 
+    print_2d(experiment_id)
+
+This function has a large number of special parameters that will help you adjust the picture. All of them are describe in detail in 'Functionalities' section.
     
     
 Objects
@@ -506,11 +516,13 @@ Single instance of elections:
     
 if fake is True:
 ::
+
     self.fake_model_name
     self.fake_param
 
 if fake is False
 ::
+
     self.votes              # two-dimensional array of integers
     self.potes              # two-dimensional array of integers
 

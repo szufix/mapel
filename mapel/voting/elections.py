@@ -12,9 +12,13 @@ import math
 import os
 from collections import Counter
 from scipy.stats import gamma
+from . import objects as obj
 
-# BE NICE
-from numpy import number
+
+LIST_OF_PREFLIB_ELECTIONS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
+                             'tshirt', 'cities_survey', 'aspen', 'ers',
+                             'marble', 'cycling_tdf', 'cycling_gdi', 'ice_races',
+                             'grenoble'}
 
 
 def nice_name(name):
@@ -58,6 +62,149 @@ def nice_name(name):
         'mallows05': 'Mallows 0.5',
         'unid': "UNID"
     }.get(name)
+
+
+# PREPARE
+def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=10000):
+
+    model = obj.Model(experiment_id)
+    id_ = 0
+
+    for i in range(model.num_families):
+
+        election_model = model.families[i].election_model
+        param_1 = model.families[i].param_1
+        param_2 = model.families[i].param_2
+        copy_param_1 = param_1
+
+        if id_ >= starting_from and id_ < ending_at:
+
+            # PREFLIB
+            if election_model in LIST_OF_PREFLIB_ELECTIONS:
+
+                selection_method = 'random'
+
+                # list of IDs larger than 10
+                if election_model == 'irish':
+                    folder = 'irish_s1'
+                    #folder = 'irish_f'
+                    ids = [1, 3]
+                elif election_model == 'glasgow':
+                    folder = 'glasgow_s1'
+                    #folder = 'glasgow_f'
+                    ids = [2, 3, 4, 5, 6, 7, 8, 9, 11, 13, 16, 19, 21]
+                elif election_model == 'formula':
+                    folder = 'formula_s1'
+                    # 17 races or more
+                    ids = [17, 35, 37, 40, 41, 42, 44, 45, 46, 47, 48]
+                elif election_model == 'skate':
+                    folder = 'skate_ic'
+                    # 9 judges
+                    ids = [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 47, 48]
+                elif election_model == 'sushi':
+                    folder = 'sushi_ff'
+                    ids = [1]
+                elif election_model == 'grenoble':
+                    folder = 'grenoble_ff'
+                    ids = [1]
+                elif election_model == 'tshirt':
+                    folder = 'tshirt_ff'
+                    ids = [1]
+                elif election_model == 'cities_survey':
+                    folder = 'cities_survey_s1'
+                    ids = [1, 2]
+                elif election_model == 'aspen':
+                    folder = 'aspen_s1'
+                    ids = [1]
+                elif election_model == 'marble':
+                    folder = 'marble_ff'
+                    ids = [1, 2, 3, 4, 5]
+                elif election_model == 'cycling_tdf':
+                    folder = 'cycling_tdf_s1'
+                    #ids = [e for e in range(1, 69+1)]
+                    selection_method = 'random'
+                    ids = [14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26]
+                elif election_model == 'cycling_gdi':
+                    folder = 'cycling_gdi_s1'
+                    ids = [i for i in range(2, 23+1)]
+                elif election_model == 'ers':
+                    folder = 'ers_s1'
+                    #folder = 'ers_f'
+                    # 500 voters or more
+                    ids = [3, 9, 23, 31, 32, 33, 36, 38, 40, 68, 77, 79, 80]
+                elif election_model == 'ice_races':
+                    folder = 'ice_races_s1'
+                    # 80 voters or more
+                    ids = [4, 5, 8, 9, 15, 20, 23, 24, 31, 34, 35, 37, 43, 44, 49]
+                else:
+                    ids = []
+
+                print(model.families[i].size)
+                rand_ids = rand.choices(ids, k=model.families[i].size)
+                for ri in rand_ids:
+                    elections_id = "core_" + str(id_)
+                    tmp_elections_type = election_model + '_' + str(ri)
+                    print(tmp_elections_type)
+                    el.generate_elections_preflib(experiment_id, election_model=tmp_elections_type, elections_id=elections_id,
+                                                  num_voters=model.num_voters, num_candidates=model.num_candidates,
+                                                  special=param_1, folder=folder, selection_method=selection_method)
+                    id_ += 1
+
+            # STATISTICAL CULTURE
+            else:
+
+                base = []
+                if election_model == 'crate':
+                    my_size = 9
+                    # with_edge
+                    for p in range(my_size):
+                        for q in range(my_size):
+                            for r in range(my_size):
+                                a = p / (my_size - 1)
+                                b = q / (my_size - 1)
+                                c = r / (my_size - 1)
+                                d = 1 - a - b - c
+                                tmp = [a, b, c, d]
+                                if d >= 0 and sum(tmp) == 1:
+                                    base.append(tmp)
+                    # without_edge
+                    """
+                    for p in range(1, my_size-1):
+                        for q in range(1, my_size-1):
+                            for r in range(1, my_size-1):
+                                a = p / (my_size - 1)
+                                b = q / (my_size - 1)
+                                c = r / (my_size - 1)
+                                d = 1 - a - b - c
+                                tmp = [a, b, c, d]
+                                if d >= 0 and sum(tmp) == 1:
+                                    #print(tmp)
+                                    base.append(tmp)
+                    """
+                #print(len(base))
+
+                for j in range(model.families[i].size):
+
+                    if election_model in {'unid', 'stan'}:
+                        param_1 = j / (model.families[i].size - 1)
+                    elif election_model in {'anid', 'stid', 'anun', 'stun'}:
+                        param_1 = (j+1) / (model.families[i].size + 1)
+                        #print(param_1)
+                    elif election_model in {'crate'}:
+                        param_1 = base[j]
+                    elif election_model == 'urn_model' and copy_param_1 == -2.:
+                        param_1 = round(j/10000., 2)
+
+                    elections_id = "core_" + str(id_)
+                    el.generate_elections(experiment_id, election_model=election_model, election_id=elections_id,
+                                          num_voters=model.num_voters,
+                                          #num_candidates=model.families[i].num_candidates,
+                                          num_candidates=model.num_candidates,
+                                          special=param_1)
+                    id_ += 1
+
+        else:
+            id_ += model.families[i].size
 
 
 # GENERATE

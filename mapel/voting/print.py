@@ -26,6 +26,16 @@ def get_values_from_file(model, experiment_id, values, normalizing_func=None, ma
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
                         str(values) + ".txt")
 
+    _min = 0
+    _max = 0
+    values = []
+    with open(path, 'r') as txtfile:
+        for _ in range(model.num_elections):
+            values.append(float(txtfile.readline()))
+    _min = min(values)
+    _max = max(values)
+    print(_min, _max)
+
     with open(path, 'r') as txtfile:
 
         shades = []
@@ -37,10 +47,11 @@ def get_values_from_file(model, experiment_id, values, normalizing_func=None, ma
         for k in range(model.num_families):
             for _ in range(model.families[k].size):
 
-                #print(txtfile.readline())
                 shade = float(txtfile.readline())
                 if normalizing_func is not None:
                     shade = normalizing_func(shade)
+                else:
+                    shade = (shade-_min) / (_max-_min)
                 shades.append(shade)
 
                 marker = model.families[k].marker
@@ -57,12 +68,22 @@ def get_values_from_file(model, experiment_id, values, normalizing_func=None, ma
         yy = np.asarray(yy)
         shades = np.asarray(shades)
         markers = np.asarray(markers)
-        return xx, yy, shades, markers
+        return xx, yy, shades, markers, _min, _max
 
 
 def get_values_from_file_3d(model, experiment_id, values, normalizing_func):
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
                         str(values) + ".txt")
+
+    _min = 0
+    _max = 0
+    values = []
+    with open(path, 'r') as txtfile:
+        for _ in range(model.num_elections):
+            values.append(float(txtfile.readline()))
+    _min = min(values)
+    _max = max(values)
+    print(_min, _max)
 
     with open(path, 'r') as txtfile:
 
@@ -79,6 +100,8 @@ def get_values_from_file_3d(model, experiment_id, values, normalizing_func):
                 shade = float(txtfile.readline())
                 if normalizing_func is not None:
                     shade = normalizing_func(shade)
+                else:
+                    shade = (shade-_min) / (_max-_min)
                 shades.append(shade)
 
                 marker = model.families[k].marker
@@ -94,12 +117,12 @@ def get_values_from_file_3d(model, experiment_id, values, normalizing_func):
         zz = np.asarray(zz)
         shades = np.asarray(shades)
         markers = np.asarray(markers)
-        return xx, yy, zz, shades, markers
+        return xx, yy, zz, shades, markers, _min, _max
 
 
 def add_advanced_points_to_picture(fig=None, ax=None, model=None, experiment_id=None, values=None, normalizing_func=None,
                                    marker_func=None, xticklabels=None, ms=None, cmap=None, ticks=None):
-    xx, yy, shades, markers = get_values_from_file(model, experiment_id, values, normalizing_func, marker_func)
+    xx, yy, shades, markers, _min, _max = get_values_from_file(model, experiment_id, values, normalizing_func, marker_func)
     unique_markers = set(markers)
     images = []
 
@@ -111,6 +134,10 @@ def add_advanced_points_to_picture(fig=None, ax=None, model=None, experiment_id=
     from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
     ax_divider = make_axes_locatable(ax)
     cax = ax_divider.append_axes("bottom", size="5%", pad="5%")
+
+    if xticklabels is None:
+        lin = np.linspace(_min, _max, 6)
+        xticklabels = [np.round(lin[i]) for i in range(6)]
 
     cb = fig.colorbar(images[0][0], cax=cax, orientation="horizontal",
                       shrink=1, ticks=ticks)  # shrink not working
@@ -124,7 +151,7 @@ def add_advanced_points_to_picture(fig=None, ax=None, model=None, experiment_id=
 def add_advanced_points_to_picture_3d(fig, ax, model, experiment_id,
                                       values=None, cmap=None, ms=None,
                                       normalizing_func=None):
-    xx, yy, zz, shades, markers = get_values_from_file_3d(model, experiment_id, values, normalizing_func)
+    xx, yy, zz, shades, markers, _min, _max = get_values_from_file_3d(model, experiment_id, values, normalizing_func)
     unique_markers = set(markers)
     images = []
 
@@ -341,12 +368,10 @@ def print_2d(experiment_id, num_winners=0, mask=False,
              angle=0, reverse=False, update=False, values=None, magic=1,
              num_elections=None, secondary_order_name="positionwise_approx_cc", main_order_name="default",
              metric="positionwise", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None,
-             saveas="map_2d", show=True, ms=10, normalizing_func=None, xticklabels=None, cmap='Purples_r',
+             saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
              ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
-    if xticklabels is None:
-        xticklabels = [0., 0.2, 0.4, 0.6, 0.8, 1.]
 
     model = obj.Model_2d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=metric,
                          ignore=ignore, attraction_factor=magic)
@@ -359,6 +384,9 @@ def print_2d(experiment_id, num_winners=0, mask=False,
 
     if update:
         model.update()
+
+    if cmap is None:
+        cmap = custom_div_cmap()
 
     if values is not None:
         fig = plt.figure(figsize=(6.4, 4.8+0.48))
@@ -411,6 +439,9 @@ def print_3d(experiment_id, ms=20, magic=1, ignore=None,
 
     if update:
         model.update()
+
+    if cmap is None:
+        cmap = custom_div_cmap()
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -547,49 +578,44 @@ def print_param_vs_distance(experiment_id, values="", scale="none", metric="posi
     file_2 = open(file_name, 'r')
     times = [float(file_2.readline()) for _ in range(num_elections)]
 
+    distance_name = 'positionwise'
+    metric_name = 'emd'
+    x = 0
+    election_2_id = 'guess'
+
+    model = obj.Model(experiment_id)
+
     distances = [0. for _ in range(num_elections)]
+
     if target == 'uniformity':
         tag = 'un'
         xlabel_text = "average distance from UN elections"
-
-        model = obj.Model(experiment_id)
-        x = 0
-        election_2_id = 'guess'
         election_model = 'uniformity'
-        distance_name = 'positionwise'
-        metric_type = 'emd'
-        el.generate_elections(experiment_id, election_model=election_model, election_id=election_2_id,
-                              num_voters=model.num_voters, num_candidates=model.num_candidates,
-                              special=x)
-        #election_2 = obj.Election(experiment_id, election_2_id)
 
-        for i in range(model.num_elections):
+    elif target == 'antagonism':
+        tag = 'an'
+        xlabel_text = "average distance from AN elections"
+        election_model = 'antagonism'
 
-            election_1_id = 'core_' + str(i)
-            #election_1 = obj.Election(experiment_id, election_1_id)
-            elections_ids = [election_1_id, election_2_id]
-            distances[i] = metr.get_distance(experiment_id, distance_name, elections_ids, metric_type)[0]
+    elif target == 'stratification':
+        tag = 'st'
+        xlabel_text = "average distance from ST elections"
+        election_model = 'stratification'
 
-    elif target == 'identity':
+    else:  #target == 'identity':
         tag = 'id'
         xlabel_text = "average distance from ID elections"
-
-        model = obj.Model(experiment_id)
-        x = 0
-        election_2_id = 'guess'
         election_model = 'identity'
-        distance_name = 'positionwise'
-        metric_type = 'emd'
-        el.generate_elections(experiment_id, election_model=election_model, election_id=election_2_id,
-                              num_voters=model.num_voters, num_candidates=model.num_candidates,
-                              special=x)
-        #election_2 = obj.Election(experiment_id, election_2_id)
 
-        for i in range(model.num_elections):
-            election_1_id = 'core_' + str(i)
-            #election_1 = obj.Election(experiment_id, election_1_id)
-            elections_ids = [election_1_id, election_2_id]
-            distances[i] = metr.get_distance(experiment_id, distance_name, elections_ids, metric_type)[0]
+    el.generate_elections(experiment_id, election_model=election_model, election_id=election_2_id,
+                          num_voters=model.num_voters, num_candidates=model.num_candidates,
+                          special=x)
+    election_2 = obj.Election(experiment_id, election_2_id)
+
+    for i in range(model.num_elections):
+        election_1_id = 'core_' + str(i)
+        election_1 = obj.Election(experiment_id, election_1_id)
+        distances[i] = metr.get_distance(election_1, election_2, distance_name=distance_name, metric_name=metric_name)
 
     fig = plt.figure()
     ax = fig.add_subplot(111)

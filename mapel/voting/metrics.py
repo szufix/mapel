@@ -310,3 +310,36 @@ def remove_lp_file(path):
 
 def map_diameter(c):
     return 1/3*(c+1)*(c-1)
+
+
+# MAIN FUNCTION
+def compute_distances(experiment_id, metric_name='emd', distance_name='positionwise', starting_from=0):
+
+    if starting_from == 0:
+        model = obj.Model(experiment_id, distance_name=distance_name, metric_name=metric_name)
+    else:
+        model = obj.Model_xd(experiment_id, distance_name=distance_name, metric_name=metric_name)
+
+    results = []
+
+    for i in range(0, model.num_elections):
+        print(i)
+        for j in range(i + 1, model.num_elections):
+
+            if j < starting_from:
+                old_result = model.distances[i][j]
+                results.append(old_result)
+            else:
+                result = get_distance(model.elections[i], model.elections[j], distance_name=model.distance_name, metric_name=model.metric_name)
+                results.append(result)
+
+    ctr = 0
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "distances", str(distance_name) + ".txt")
+    with open(path, 'w') as txtfile:
+        txtfile.write(str(model.num_elections) + '\n')
+        txtfile.write(str(model.num_families) + '\n')
+        txtfile.write(str(len(results)) + '\n')
+        for i in range(model.num_elections):
+            for j in range(i + 1, model.num_elections):
+                txtfile.write(str(i) + ' ' + str(j) + ' ' + str(results[ctr]) + '\n')
+                ctr += 1

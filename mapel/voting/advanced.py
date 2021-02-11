@@ -6,7 +6,51 @@ import voting.elections as el
 import time
 import math
 
-# MAIN
+
+# IN USE
+def compute_highest_borda(experiment_id):
+
+    model = obj.Model(experiment_id)
+    scores = []
+
+    for i in range(model.num_elections):
+        election_id = 'core_' + str(i)
+        election = obj.Election(experiment_id, election_id)
+
+        score = metr.get_highest_borda_score(election)
+        scores.append(score)
+        print(election_id, score)
+
+    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
+                             "highest_borda.txt")
+    file_scores = open(file_name, 'w')
+    for i in range(model.num_elections):
+        file_scores.write(str(scores[i]) + "\n")
+    file_scores.close()
+
+
+def compute_highest_plurality(experiment_id):
+
+    model = obj.Model(experiment_id)
+    scores = []
+
+    for i in range(model.num_elections):
+        election_id = 'core_' + str(i)
+        election = obj.Election(experiment_id, election_id)
+
+        score = metr.get_highest_plurality_score(election)
+        scores.append(score)
+        print(election_id, score)
+
+    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
+                             "highest_plurality.txt")
+    file_scores = open(file_name, 'w')
+    for i in range(model.num_elections):
+        file_scores.write(str(scores[i]) + "\n")
+    file_scores.close()
+
+
+# TO BE UPDATED
 def compute_highest_dodgson_map(experiment_id):
 
     model = obj.Model(experiment_id)
@@ -39,27 +83,6 @@ def compute_highest_dodgson_map(experiment_id):
         file_scores.close()
 
 
-def compute_highest_plurality_map(experiment_id):
-
-    model = obj.Model(experiment_id)
-    scores = []
-
-    for i in range(model.num_elections):
-        election_id = 'core_' + str(i)
-        election = obj.Election(experiment_id, election_id)
-
-        score = metr.get_highest_plurality_score(election)
-        scores.append(score)
-        print(election_id, score)
-
-    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
-                             "highest_plurality.txt")
-    file_scores = open(file_name, 'w')
-    for i in range(model.num_elections):
-        file_scores.write(str(scores[i]) + "\n")
-    file_scores.close()
-
-
 def compute_highest_copeland_map(experiment_id):
 
     model = obj.Model(experiment_id)
@@ -81,26 +104,6 @@ def compute_highest_copeland_map(experiment_id):
 
     file_scores.close()
 
-
-def compute_highest_borda_map(experiment_id):
-
-    model = obj.Model(experiment_id)
-    scores = []
-
-    for i in range(model.num_elections):
-        election_id = 'core_' + str(i)
-        election = obj.Election(experiment_id, election_id)
-
-        score = metr.get_highest_borda_score(election)
-        scores.append(score)
-        print(election_id, score)
-
-    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
-                             "highest_borda.txt")
-    file_scores = open(file_name, 'w')
-    for i in range(model.num_elections):
-        file_scores.write(str(scores[i]) + "\n")
-    file_scores.close()
 
 
 def compute_highest_borda1m_map(experiment_id):
