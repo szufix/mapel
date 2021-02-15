@@ -12,6 +12,7 @@ import numpy as np
 # MAPPINGS
 def map_distance(distance_name):
     return {'positionwise': compute_basic_distance,
+            'bordawise': compute_bordawise_distance,
             'positionwise_extension': compute_positionwise_extension_distance,
             'discreet': compute_basic_distance,
             }.get(distance_name)
@@ -58,14 +59,6 @@ def votes_to_vectors(election):
 
 
 # DISTANCES
-"""
-def get_distance(experiment_id, elections_ids, distance_name='positionwise', metric_name='emd'):
-def get_distance(model, i, j):
-    election_1 = model.elections[i]
-    election_2 = model.elections[j]
-    distance_func = map_distance(model.distance_name)
-    return distance_func(election_1, election_2, model.distance_name, model.metric_name)
-"""
 
 def get_distance(election_1, election_2, distance_name='positionwise', metric_name='emd'):
     distance_func = map_distance(distance_name)
@@ -79,6 +72,13 @@ def compute_basic_distance(election_1, election_2, distance_name='positionwise',
     cost_table = matching_cost(election_1, election_2, metric_name)
     objective_value = lp.solve_lp_matching_vector(cost_table, length)
     return objective_value
+
+
+def compute_bordawise_distance(election_1, election_2, distance_name='bordawise', metric_name='emd'):
+    vector_1, num_possible_scores = election_1.votes_to_bordawise_vector()
+    vector_2, _ = election_2.votes_to_bordawise_vector()
+    metric_name = map_metric(metric_name)
+    return metric_name(vector_1, vector_2, num_possible_scores)
 
 
 def compute_positionwise_extension_distance(election_1, election_2, distance_name, metric_name):
@@ -331,6 +331,7 @@ def compute_distances(experiment_id, metric_name='emd', distance_name='positionw
                 results.append(old_result)
             else:
                 result = get_distance(model.elections[i], model.elections[j], distance_name=model.distance_name, metric_name=model.metric_name)
+                #print(int(round(result,0)))
                 results.append(result)
 
     ctr = 0

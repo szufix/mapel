@@ -15,8 +15,9 @@ import networkx as nx
 import csv
 
 
-def convert_xd_to_2d(experiment_id, num_iterations=1000, metric="positionwise", random=True, magic=1.):
-    model = obj.Model_xd(experiment_id, distance_name=metric)
+def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="positionwise",
+                     random=True, attraction_factor=1.):
+    model = obj.Model_xd(experiment_id, distance_name=distance_name)
     X = np.zeros((model.num_elections, model.num_elections))
 
     if random:
@@ -38,7 +39,7 @@ def convert_xd_to_2d(experiment_id, num_iterations=1000, metric="positionwise", 
                 model.distances[perm[i]][perm[j]] = 0.01
             X[i][j] = 1. / model.distances[perm[i]][perm[j]]
             # TMP ROCK IT
-            X[i][j] = X[i][j]**magic
+            X[i][j] = X[i][j] ** attraction_factor
             # END OF TMP
             X[j][i] = X[i][j]
 
@@ -49,12 +50,8 @@ def convert_xd_to_2d(experiment_id, num_iterations=1000, metric="positionwise", 
     print("start spring_layout")
 
     my_pos = nx.spring_layout(G, iterations=num_iterations, dim=2)
-    if magic == 1:
-        file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
-                             "points", metric + "_2d.csv")
-    else:
-        file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
-                             "points", metric + "_2d_p" + str(magic) + ".csv")
+    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
+                         "points", distance_name + "_2d_a" + str(int(attraction_factor)) + ".csv")
 
     with open(file_name, 'w', newline='') as csvfile:
 
@@ -67,8 +64,8 @@ def convert_xd_to_2d(experiment_id, num_iterations=1000, metric="positionwise", 
             writer.writerow([i, x, y])
 
 
-def convert_xd_to_3d(experiment_id, num_iterations=1000, metric="positionwise", magic=1.):
-    model = obj.Model_xd(experiment_id, distance_name=metric)
+def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="positionwise", attraction_factor=1.):
+    model = obj.Model_xd(experiment_id, distance_name=distance_name)
     X = np.zeros((model.num_elections, model.num_elections))
     perm = np.random.permutation(model.num_elections)
 
@@ -84,7 +81,7 @@ def convert_xd_to_3d(experiment_id, num_iterations=1000, metric="positionwise", 
             if model.distances[perm[i]][perm[j]] == 0:
                 model.distances[perm[i]][perm[j]] = 0.01
             X[i][j] = 1. / model.distances[perm[i]][perm[j]]
-            X[i][j] = X[i][j]**magic
+            X[i][j] = X[i][j]**attraction_factor
             X[j][i] = X[i][j]
 
     dt = [('weight', float)]
@@ -93,12 +90,8 @@ def convert_xd_to_3d(experiment_id, num_iterations=1000, metric="positionwise", 
 
     my_pos = nx.spring_layout(G, iterations=num_iterations, dim=3)
 
-    if magic == 1:
-        file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
-                             "points", metric + "_3d.csv")
-    else:
-        file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
-                             "points", metric + "_3d_p" + str(magic) + ".csv")
+    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
+                             "points", distance_name + "_3d_a" + str(int(attraction_factor)) + ".csv")
 
     with open(file_name, 'w', newline='') as csvfile:
 

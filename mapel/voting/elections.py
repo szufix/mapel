@@ -196,7 +196,7 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
                         param_1 = round(j/10000., 2)
 
                     elections_id = "core_" + str(id_)
-                    el.generate_elections(experiment_id, election_model=election_model, election_id=elections_id,
+                    generate_elections(experiment_id, election_model=election_model, election_id=elections_id,
                                           num_voters=model.num_voters,
                                           #num_candidates=model.families[i].num_candidates,
                                           num_candidates=model.num_candidates,

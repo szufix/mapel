@@ -203,7 +203,6 @@ class Model_2d(Model):
         self.num_points, self.points, = self.import_points(ignore=ignore)
         self.points_by_families = self.compute_points_by_families()
 
-
     def import_points(self, ignore=None):
         """ Import from a file precomputed coordinates of all the points -- each point refer to one election """
 
@@ -211,12 +210,8 @@ class Model_2d(Model):
             ignore = []
 
         points = []
-        if self.attraction_factor == 1:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                                "points", self.distance_name + "_2d.csv")
-        else:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                                "points", self.distance_name + "_2d_p" + str(self.attraction_factor) + ".csv")
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
+                            "points", self.distance_name + "_2d_a" + str(int(self.attraction_factor)) + ".csv")
 
         with open(path, 'r', newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
@@ -326,12 +321,8 @@ class Model_3d(Model):
             ignore = []
 
         points = []
-        if self.attraction_factor == 1:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                                "points", f"{self.distance_name}_3d.csv")
-        else:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                                "points", f"{self.distance_name}_3d_p" + f"{self.attraction_factor}.csv")
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
+                            "points", f"{self.distance_name}_3d_a" + f"{int(self.attraction_factor)}.csv")
 
         print(self.main_order[0])
 
@@ -475,7 +466,6 @@ class Election:
             elif self.fake_model_name == 'crate':
                 vectors = get_fake_vectors_crate(self.fake_model_name, self.num_candidates, self.fake_param)
 
-
         else:
             for i in range(self.num_voters):
                 pos = 0
@@ -512,9 +502,34 @@ class Election:
 
     def votes_to_bordawise_vector(self):
 
+        if self.fake:
+            print('hello')
+            print(self.fake_model_name)
+            if self.fake_model_name == 'antagonism':
+                return [800.0, 800.0, 800.0, 600.0, 500.0, 400.0, 300.0, 200.0, 100.0, 0.0], 10
+
+
+        c = self.num_candidates
+        v = self.num_voters
+        vectors = self.votes_to_positionwise_vectors()
+        borda_vector = [sum([vectors[j][i] * (c - i - 1) for i in range(c)])*v for j in range(self.num_candidates)]
+        borda_vector = sorted(borda_vector, reverse=True)
+        #print(borda_vector)
+        return borda_vector, len(borda_vector)
+
+    """
+    def votes_to_bordawise_vector(self):
+
+        vector = get_borda_points(self.votes, self.num_voters, self.num_candidates)
+        vector = sorted(vector, reverse=True)
+        return vector, len(vector)
+    """
+
+    def votes_to_bordawise_vector_long_empty(self):
+
         num_possible_scores = 1 + self.num_voters*(self.num_candidates - 1)
 
-        if self.votes[0][0][0] == -1:
+        if self.votes[0][0] == -1:
 
             vector = [0 for _ in range(num_possible_scores)]
             peak = sum([i for i in range(self.num_candidates)]) * float(self.num_voters) / float(self.num_candidates)
@@ -523,11 +538,13 @@ class Election:
         else:
 
             vector = [0 for _ in range(num_possible_scores)]
-            points = get_borda_points(self.votes[0], self.num_voters, self.num_candidates)
+            points = get_borda_points(self.votes, self.num_voters, self.num_candidates)
             for i in range(self.num_candidates):
                 vector[points[i]] += 1
 
         return vector, num_possible_scores
+
+
 
 
 def import_soc_elections(experiment_id, election_id):

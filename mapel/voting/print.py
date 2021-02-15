@@ -365,16 +365,15 @@ def saveas_tex(saveas=None):
 
 # MAIN FUNCTIONS
 def print_2d(experiment_id, num_winners=0, mask=False,
-             angle=0, reverse=False, update=False, values=None, magic=1,
+             angle=0, reverse=False, update=False, values=None, attraction_factor=1,
              num_elections=None, secondary_order_name="positionwise_approx_cc", main_order_name="default",
-             metric="positionwise", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None,
+             distance_name="positionwise", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None,
              saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
              ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
-
-    model = obj.Model_2d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=metric,
-                         ignore=ignore, attraction_factor=magic)
+    model = obj.Model_2d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
+                         ignore=ignore, attraction_factor=attraction_factor)
 
     if angle != 0:
         model.rotate(angle)
@@ -425,11 +424,11 @@ def print_2d(experiment_id, num_winners=0, mask=False,
 
 def print_3d(experiment_id, ms=20, magic=1, ignore=None,
              angle=0, reverse=False, update=False, values=None, coloring="purple",
-             num_elections=None, main_order_name="default", order="", metric="positionwise",
+             num_elections=None, main_order_name="default", order="", distance_name="positionwise",
              saveas="map_3d", show=True, dot=9, normalizing_func=None, xticklabels=None, cmap=None):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
-    model = obj.Model_3d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=metric,
+    model = obj.Model_3d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
                          ignore=ignore, attraction_factor=magic)
     if angle != 0:
         model.rotate(angle)
@@ -1117,7 +1116,6 @@ def print_clustering_bis(experiment_id, magic=1, q=0):
                         'AN-UN'])
     print_2d(experiment_id, saveas="distances/map_clustering_" + str(q), ms=16, values="guardians", magic=magic,
                 normalizing_func=normalizing_func, xticklabels=xticklabels, cmap=custom_map, black=True, levels=True)
-
 
 
 def print_clustering_bis_3d(experiment_id, magic=1, q=0):

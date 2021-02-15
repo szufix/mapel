@@ -1,8 +1,9 @@
 
 import os
-import voting.metrics as metr
-import voting.objects as obj
-import voting.elections as el
+
+from . import elections as el
+from . import objects as obj
+from . import metrics as metr
 import time
 import math
 
