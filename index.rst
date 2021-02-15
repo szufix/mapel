@@ -191,6 +191,101 @@ Functionalities
 =============================
 In this section we describe in details the functionalities of mapel.
 
+Prepare elections
+-----------------------------
+**prepare_elections** function is computing elections based on map.csv and meta.csv files.
+::
+
+    mapel.prepare_elections(experiment_id) 
+
+experiment_id
+  : obligatory, string; name of the experiment.
+
+Compute distances between elections
+-----------------------------
+**compute_distances** function is computing distances between elections.
+::
+
+    mapel.compute_distances(experiment_id, metric_name='emd', distance_name='positionwise') 
+
+experiment_id
+  : obligatory, string; name of the experiment.
+  
+metric_name
+  : optional, string; name of the metric (for example: emd, l1, l2 etc.)
+    
+distance_name
+  : optional, string; name of the distance (for example: discreet, bordawise, positionwise etc.)
+  
+
+Embedding
+-----------------------------
+**convert_xd_to_2d** function is embedding the model into two-dimensional space.
+::
+
+    mapel.convert_xd_to_2d(experiment_id, metric_name='emd',  distance_name="positionwise", num_iterations=1000, attraction_factor=1)
+
+experiment_id
+  : obligatory, string; name of the experiment.
+  
+metric_name
+  : optional, string; name of the metric
+    
+distance_name
+  : optional, string; name of the distance
+  
+num_iterations
+  : optional, integer; number of interations of the algorithm
+ 
+attraction_factor
+  : optional, integer; attraction factor of the algorithm  
+  
+ 
+Embedding
+-----------------------------
+**convert_xd_to_3d** function is embedding the model into three-dimensional space.
+::
+
+    mapel.convert_xd_to_3d(experiment_id, metric_name='emd',  distance_name="positionwise", num_iterations=1000, attraction_factor=1)
+
+experiment_id
+  : obligatory, string; name of the experiment.
+  
+metric_name
+  : optional, string; name of the metric
+    
+distance_name
+  : optional, string; name of the distance
+  
+num_iterations
+  : optional, integer; number of interations of the algorithm
+ 
+attraction_factor
+  : optional, integer; attraction factor of the algorithm  
+
+
+Compute highest plurality score
+-----------------------------
+**compute_highest_plurality** function is computing highest plurality score for each election.
+::
+
+    mapel.compute_highest_plurality(experiment_id)
+
+experiment_id
+  : obligatory, string; name of the experiment.
+
+
+Compute Borda plurality score
+-----------------------------
+**compute_borda_plurality** function is computing highest Borda score for each election.
+::
+
+    mapel.compute_borda_plurality(experiment_id)
+
+experiment_id
+  : obligatory, string; name of the experiment.
+
+
 Printing the map of elections
 -----------------------------
 **print_2d** function is displaying a two dimensional embedding of all the elections from a given experiment.
