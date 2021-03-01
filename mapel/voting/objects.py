@@ -3,7 +3,7 @@
 import os
 import math
 #from dataclasses import dataclass
-
+from . import metrics as metr
 import csv
 import numpy as np
 
@@ -23,10 +23,11 @@ def import_controllers_meta(experiment_id):
     return num_voters, num_candidates, num_families, num_elections
 
 
+
 class Model:
     """Abstract model of elections."""
 
-    def __init__(self, experiment_id, ignore=None, main_order_name="default",
+    def __init__(self, experiment_id, ignore=None, main_order_name="default", raw=False,
                  distance_name="positionwise", metric_name="emd", num_elections=None):
 
         self.experiment_id = experiment_id
@@ -41,7 +42,8 @@ class Model:
 
         self.families = self.import_controllers(ignore=ignore)
 
-        self.elections = self.add_elections_to_model()
+        if not raw:
+            self.elections = self.add_elections_to_model()
 
     def add_elections_to_model(self):
         elections = []
@@ -443,9 +445,6 @@ class Election:
             self.votes, self.num_voters, self.num_candidates = import_soc_elections(experiment_id, election_id)
             self.potes = self.votes_to_potes()
 
-        #self.num_elections = 1  # do poprawy
-
-
     def votes_to_potes(self):
         potes = [[-1 for _ in range(self.num_candidates)] for _ in range(self.num_voters)]
         for i in range(self.num_voters):
@@ -460,11 +459,12 @@ class Election:
         if self.fake:
 
             if self.fake_model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-                vectors = get_fake_vectors_single(self.fake_model_name, self.num_candidates)
+                vectors = get_fake_vectors_single(self.fake_model_name, self.num_candidates, self.num_voters)
             elif self.fake_model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-                vectors = get_fake_vectors_convex(self.fake_model_name, self.num_candidates, self.fake_param)
+                vectors = get_fake_convex(self.fake_model_name, self.num_candidates, self.num_voters, self.fake_param,
+                                          get_fake_vectors_single)
             elif self.fake_model_name == 'crate':
-                vectors = get_fake_vectors_crate(self.fake_model_name, self.num_candidates, self.fake_param)
+                vectors = get_fake_vectors_crate(self.fake_model_name, self.num_candidates, self.num_voters, self.fake_param)
 
         else:
             for i in range(self.num_voters):
@@ -500,21 +500,69 @@ class Election:
 
         return intervals
 
-    def votes_to_bordawise_vector(self):
+    def votes_to_pairwise_matrix(self):
+        """ convert VOTES to pairwise MATRIX """
+        matrix = np.zeros([self.num_candidates, self.num_candidates])
 
         if self.fake:
-            print('hello')
-            print(self.fake_model_name)
-            if self.fake_model_name == 'antagonism':
-                return [800.0, 800.0, 800.0, 600.0, 500.0, 400.0, 300.0, 200.0, 100.0, 0.0], 10
 
+            if self.fake_model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+                matrix = get_fake_matrix_single(self.fake_model_name, self.num_candidates, self.num_voters)
+            elif self.fake_model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+                matrix = get_fake_convex(self.fake_model_name, self.num_candidates, self.num_voters, self.fake_param,
+                                         get_fake_vectors_single)
 
-        c = self.num_candidates
-        v = self.num_voters
-        vectors = self.votes_to_positionwise_vectors()
-        borda_vector = [sum([vectors[j][i] * (c - i - 1) for i in range(c)])*v for j in range(self.num_candidates)]
-        borda_vector = sorted(borda_vector, reverse=True)
-        #print(borda_vector)
+        else:
+
+            for v in range(self.num_voters):
+                for c1 in range(self.num_candidates):
+                    for c2 in range(c1 + 1, self.num_candidates):
+                        matrix[int(self.votes[v][c1])][int(self.votes[v][c2])] += 1
+
+            for i in range(self.num_candidates):
+                for j in range(i + 1, self.num_candidates):
+                    matrix[i][j] /= float(self.num_voters)
+                    matrix[j][i] = 1. - matrix[i][j]
+
+        return matrix
+
+    def votes_to_voter_likeness_matrix(self):
+        """ convert VOTES to voter-likeness MATRIX """
+        matrix = np.zeros([self.num_candidates, self.num_candidates])
+
+        for v1 in range(self.num_voters):
+            for v2 in range(self.num_voters):
+                # Spearman distance between votes
+                matrix[v1][v2] = sum([abs(self.potes[v1][c] - self.potes[v2][c]) for c in range(self.num_candidates)])
+
+        for i in range(self.num_candidates):
+            for j in range(i + 1, self.num_candidates):
+                matrix[i][j] /= float(self.num_candidates)
+                matrix[j][i] = 1. - matrix[i][j]
+
+        return matrix
+
+    def votes_to_bordawise_vector(self):
+        """ convert VOTES to Borda vector """
+
+        borda_vector = np.zeros([self.num_candidates])
+
+        if self.fake:
+
+            if self.fake_model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+                borda_vector = get_fake_borda_vector(self.fake_model_name, self.num_candidates, self.num_voters)
+            elif self.fake_model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+                borda_vector = get_fake_convex(self.fake_model_name, self.num_candidates, self.num_voters, self.fake_param,
+                                         get_fake_borda_vector)
+
+        else:
+            c = self.num_candidates
+            v = self.num_voters
+            vectors = self.votes_to_positionwise_vectors()
+            borda_vector = [sum([vectors[j][i] * (c - i - 1) for i in range(c)])*v for j in range(self.num_candidates)]
+            borda_vector = sorted(borda_vector, reverse=True)
+            #print(borda_vector)
+
         return borda_vector, len(borda_vector)
 
     """
@@ -643,7 +691,7 @@ def import_fake_elections(experiment_id, election_id):
     return fake_model_name, fake_param, num_voters, num_candidates
 
 
-def get_fake_vectors_single(fake_model_name, num_candidates):
+def get_fake_vectors_single(fake_model_name, num_candidates, num_voters):
 
     vectors = np.zeros([num_candidates, num_candidates])
 
@@ -674,48 +722,110 @@ def get_fake_vectors_single(fake_model_name, num_candidates):
     return vectors
 
 
-def get_fake_vectors_crate(fake_model_name, num_candidates, fake_param):
+def get_fake_matrix_single(fake_model_name, num_candidates, num_voters):
 
-    base_1 = get_fake_vectors_single('uniformity', num_candidates)
-    base_2 = get_fake_vectors_single('identity', num_candidates)
-    base_3 = get_fake_vectors_single('antagonism', num_candidates)
-    base_4 = get_fake_vectors_single('stratification', num_candidates)
+    matrix = np.zeros([num_candidates, num_candidates])
+
+    if fake_model_name == 'identity':
+        for i in range(num_candidates):
+            for j in range(i+1, num_candidates):
+                matrix[i][j] = 1
+
+    elif fake_model_name in {'uniformity', 'antagonism'}:
+        for i in range(num_candidates):
+            for j in range(num_candidates):
+                if i != j:
+                    matrix[i][j] = 0.5
+
+    elif fake_model_name == 'stratification':
+        for i in range(int(num_candidates/2)):
+            for j in range(int(num_candidates/2), num_candidates):
+                matrix[i][j] = 1
+        for i in range(int(num_candidates/2)):
+            for j in range(int(num_candidates/2)):
+                if i != j:
+                    matrix[i][j] = 0.5
+        for i in range(int(num_candidates/2), num_candidates):
+            for j in range(int(num_candidates/2), num_candidates):
+                if i != j:
+                    matrix[i][j] = 0.5
+    #print(matrix)
+    return matrix
+
+
+def get_fake_borda_vector(fake_model_name, num_candidates, num_voters):
+
+    borda_vector = np.zeros([num_candidates])
+
+    m = num_candidates
+    n = num_voters
+
+    if fake_model_name == 'identity':
+        for i in range(m):
+            borda_vector[i] = n*(m-1-i)
+
+    elif fake_model_name in {'uniformity', 'antagonism'}:
+        for i in range(m):
+            borda_vector[i] = n*(m-1)/2
+
+    elif fake_model_name == 'stratification':
+        for i in range(int(m/2)):
+            borda_vector[i] = n*(m-1)*3/4
+        for i in range(int(m/2), m):
+            borda_vector[i] = n*(m-1)/4
+
+    return borda_vector
+
+
+def get_fake_vectors_crate(fake_model_name, num_candidates, num_voters, fake_param):
+
+    base_1 = get_fake_vectors_single('uniformity', num_candidates, num_voters)
+    base_2 = get_fake_vectors_single('identity', num_candidates, num_voters)
+    base_3 = get_fake_vectors_single('antagonism', num_candidates, num_voters)
+    base_4 = get_fake_vectors_single('stratification', num_candidates, num_voters)
 
     return crate_combination(base_1, base_2, base_3, base_4, length=num_candidates, alpha=fake_param)
 
 
-def get_fake_vectors_convex(fake_model_name, num_candidates, fake_param):
+def get_fake_convex(fake_model_name, num_candidates, num_voters, fake_param, function_name):
 
     if fake_model_name == 'unid':
-        base_1 = get_fake_vectors_single('uniformity', num_candidates)
-        base_2 = get_fake_vectors_single('identity', num_candidates)
+        base_1 = function_name('uniformity', num_candidates, num_voters)
+        base_2 = function_name('identity', num_candidates, num_voters)
     elif fake_model_name == 'anid':
-        base_1 = get_fake_vectors_single('antagonism', num_candidates)
-        base_2 = get_fake_vectors_single('identity', num_candidates)
+        base_1 = function_name('antagonism', num_candidates, num_voters)
+        base_2 = function_name('identity', num_candidates, num_voters)
     elif fake_model_name == 'stid':
-        base_1 = get_fake_vectors_single('stratification', num_candidates)
-        base_2 = get_fake_vectors_single('identity', num_candidates)
+        base_1 = function_name('stratification', num_candidates, num_voters)
+        base_2 = function_name('identity', num_candidates, num_voters)
     elif fake_model_name == 'anun':
-        base_1 = get_fake_vectors_single('antagonism', num_candidates)
-        base_2 = get_fake_vectors_single('uniformity', num_candidates)
+        base_1 = function_name('antagonism', num_candidates, num_voters)
+        base_2 = function_name('uniformity', num_candidates, num_voters)
     elif fake_model_name == 'stun':
-        base_1 = get_fake_vectors_single('stratification', num_candidates)
-        base_2 = get_fake_vectors_single('uniformity', num_candidates)
+        base_1 = function_name('stratification', num_candidates, num_voters)
+        base_2 = function_name('uniformity', num_candidates, num_voters)
     elif fake_model_name == 'stan':
-        base_1 = get_fake_vectors_single('stratification', num_candidates)
-        base_2 = get_fake_vectors_single('antagonism', num_candidates)
+        base_1 = function_name('stratification', num_candidates, num_voters)
+        base_2 = function_name('antagonism', num_candidates, num_voters)
     else:
-        raise NameError('No such fake vectors!')
+        raise NameError('No such fake vectors/matrix!')
 
     return convex_combination(base_1, base_2, length=num_candidates, alpha=fake_param)
 
 
 def convex_combination(base_1, base_2, length=0, alpha=0):
-    vectors = np.zeros([length, length])
-    for i in range(length):
-        for j in range(length):
-            vectors[i][j] = alpha * base_1[i][j] + (1-alpha) * base_2[i][j]
-    return vectors
+    if base_1.ndim == 1:
+        output = np.zeros([length])
+        for i in range(length):
+            output[i] = alpha * base_1[i] + (1-alpha) * base_2[i]
+    elif base_1.ndim == 2:
+        output = np.zeros([length, length])
+        for i in range(length):
+            for j in range(length):
+                output[i][j] = alpha * base_1[i][j] + (1-alpha) * base_2[i][j]
+    else:
+        raise NameError('Unknown base!')
+    return output
 
 
 def crate_combination(base_1, base_2, base_3, base_4, length=0, alpha=None):

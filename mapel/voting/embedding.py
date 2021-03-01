@@ -16,8 +16,8 @@ import csv
 
 
 def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="positionwise",
-                     random=True, attraction_factor=1.):
-    model = obj.Model_xd(experiment_id, distance_name=distance_name)
+                     random=True, attraction_factor=1., metric_name='emd'):
+    model = obj.Model_xd(experiment_id, distance_name=distance_name, metric_name=metric_name)
     X = np.zeros((model.num_elections, model.num_elections))
 
     if random:
@@ -64,8 +64,9 @@ def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="position
             writer.writerow([i, x, y])
 
 
-def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="positionwise", attraction_factor=1.):
-    model = obj.Model_xd(experiment_id, distance_name=distance_name)
+def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="positionwise", metric_name='emd',
+                                                                                                attraction_factor=1.):
+    model = obj.Model_xd(experiment_id, distance_name=distance_name, metric_name=metric_name)
     X = np.zeros((model.num_elections, model.num_elections))
     perm = np.random.permutation(model.num_elections)
 

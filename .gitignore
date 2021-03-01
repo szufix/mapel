@@ -6,6 +6,7 @@ mapel/experiments/
 mapel/raw_data/
 mapel/real_data/
 mapel/_past/
+mapel/trash/
 
 mapel/private.py
 mapel/MAIN.py

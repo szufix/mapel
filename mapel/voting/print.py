@@ -422,14 +422,14 @@ def print_2d(experiment_id, num_winners=0, mask=False,
         plt.show()
 
 
-def print_3d(experiment_id, ms=20, magic=1, ignore=None,
+def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None,
              angle=0, reverse=False, update=False, values=None, coloring="purple",
              num_elections=None, main_order_name="default", order="", distance_name="positionwise",
              saveas="map_3d", show=True, dot=9, normalizing_func=None, xticklabels=None, cmap=None):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
     model = obj.Model_3d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
-                         ignore=ignore, attraction_factor=magic)
+                         ignore=ignore, attraction_factor=attraction_factor)
     if angle != 0:
         model.rotate(angle)
 

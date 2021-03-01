@@ -389,7 +389,7 @@ In this section we show how to conduct the mini experiment from the very beginni
         experiment_id = 'testbed_100_100'
         compute_highest_borda(experiment_id)
 
-6) If you computed borda scores on your own remember to put them in experiments/*experiment_id*/controllers/advanced/*file_name*.txt
+6) If you computed Borda scores on your own remember to put them in experiments/*experiment_id*/controllers/advanced/*file_name*.txt
 7) Run the following command:
 
 ::
@@ -418,7 +418,7 @@ In short, we will have to do the following:
 4) embed the elections in a two-dimensional space
 5) print the results
 
-We describe each point in a seperate subsection.
+We describe each point in a separate subsection.
 
 Structure
 -----------------------------
@@ -563,7 +563,7 @@ File meta.csv contains:
     num_families,???
     num_elections,???
     
-File map.csv contains the folowing columns:
+File map.csv contains the following columns:
 ::
     
     family_size, election_model, param_1, param_2, color, alpha, label, show, marker    

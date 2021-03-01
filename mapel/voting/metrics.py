@@ -13,6 +13,8 @@ import numpy as np
 def map_distance(distance_name):
     return {'positionwise': compute_basic_distance,
             'bordawise': compute_bordawise_distance,
+            'pairwise': compute_pairwise_distance,
+            'voter_likeness': compute_voter_likeness_distance,
             'positionwise_extension': compute_positionwise_extension_distance,
             'discreet': compute_basic_distance,
             }.get(distance_name)
@@ -35,7 +37,7 @@ def map_matching_cost(distance_name):
             }.get(distance_name)
 
 
-# CONVERTERS
+# CONVERTERS -- probably unnecessary here
 def votes_to_vectors(election):
     """ convert VOTES to VECTORS """
     vectors = np.zeros([election.num_candidates, election.num_candidates])
@@ -91,6 +93,43 @@ def compute_positionwise_extension_distance(election_1, election_2, distance_nam
     return result
 
 
+def compute_pairwise_distance(election_1, election_2, distance_name='pairwise', metric_name='l1'):
+    length = election_1.num_candidates
+
+    matrix_1 = election_1.votes_to_pairwise_matrix()
+    matrix_2 = election_2.votes_to_pairwise_matrix()
+
+    #print(matrix_2)
+
+    #matrix_1 = [[0, 1, 1], [0, 0, 1], [0, 0, 0]]
+    #matrix_2 = [[0, 0.5, 0.5], [0.5, 0, 0.5], [0.5, 0.5, 0]]
+    #length = 3
+
+
+    file_name = str(rand.random()) + '.lp'
+    path = os.path.join(os.getcwd(), "trash", file_name)
+    lp.generate_lp_file_matching_matrix(path, matrix_1, matrix_2, length)
+    matching_cost = lp.solve_lp_matrix(path, matrix_1, matrix_2, length)
+
+    remove_lp_file(path)
+    return matching_cost
+
+
+def compute_voter_likeness_distance(election_1, election_2, distance_name='pairwise', metric_name='l1'):
+    length = election_1.num_voters
+
+    matrix_1 = election_1.votes_to_voter_likeness_matrix()
+    matrix_2 = election_2.votes_to_voter_likeness_matrix()
+
+    file_name = str(rand.random()) + '.lp'
+    path = os.path.join(os.getcwd(), "trash", file_name)
+    lp.generate_lp_file_matching_matrix(path, matrix_1, matrix_2, length)
+    matching_cost = lp.solve_lp_matrix(path, matrix_1, matrix_2, length)
+
+    remove_lp_file(path)
+    return matching_cost
+
+
 # HELPER FUNCTIONS
 def get_matching_cost_positionwise(ele_1, ele_2, metric_name):
     vectors_1 = ele_1.votes_to_positionwise_vectors()
@@ -117,41 +156,41 @@ def get_matching_cost_discreet(ele_1, ele_2, metric_name):
 
 
 # METRICS
-def discreet(vector_1, vector_2, num_candidates):
+def discreet(vector_1, vector_2, length):
     """ compute DISCREET metric """
-    for i in range(num_candidates):
+    for i in range(length):
         if vector_1[i] != vector_2[i]:
             return 1
     return 0
 
 
-def l1(vector_1, vector_2, num_candidates):
+def l1(vector_1, vector_2, length):
     """ compute L1 metric """
-    return sum([abs(vector_1[i] - vector_2[i]) for i in range(num_candidates)])
+    return sum([abs(vector_1[i] - vector_2[i]) for i in range(length)])
 
 
-def l2(vector_1, vector_2, num_candidates):
+def l2(vector_1, vector_2, length):
     """ compute L2 metric """
-    return sum([math.pow((vector_1[i] - vector_2[i]), 2) for i in range(num_candidates)])
+    return sum([math.pow((vector_1[i] - vector_2[i]), 2) for i in range(length)])
 
 
-def chebyshev(vector_1, vector_2, num_candidates):
+def chebyshev(vector_1, vector_2, length):
     """ compute CHEBYSHEV metric """
-    return max([abs(vector_1[i] - vector_2[i]) for i in range(num_candidates)])
+    return max([abs(vector_1[i] - vector_2[i]) for i in range(length)])
 
 
-def hellinger(vector_1, vector_2, num_candidates):
+def hellinger(vector_1, vector_2, length):
     """ compute HELLINGER metric """
     h1 = np.average(vector_1)
     h2 = np.average(vector_2)
-    product = sum([math.sqrt(vector_1[i] * vector_2[i]) for i in range(num_candidates)])
-    return math.sqrt(1 - (1 / math.sqrt(h1 * h2 * num_candidates * num_candidates)) * product)
+    product = sum([math.sqrt(vector_1[i] * vector_2[i]) for i in range(length)])
+    return math.sqrt(1 - (1 / math.sqrt(h1 * h2 * length * length)) * product)
 
 
-def emd(vector_1, vector_2, num_candidates):
+def emd(vector_1, vector_2, length):
     """ compute EMD metric """
     dirt = 0.
-    for i in range(num_candidates-1):
+    for i in range(length-1):
         surplus = vector_1[i] - vector_2[i]
         dirt += abs(surplus)
         vector_1[i+1] += surplus
@@ -313,7 +352,7 @@ def map_diameter(c):
 
 
 # MAIN FUNCTION
-def compute_distances(experiment_id, metric_name='emd', distance_name='positionwise', starting_from=0):
+def compute_distances(experiment_id, metric_name='emd', distance_name='positionwise', starting_from=0, show=False):
 
     if starting_from == 0:
         model = obj.Model(experiment_id, distance_name=distance_name, metric_name=metric_name)
@@ -331,8 +370,9 @@ def compute_distances(experiment_id, metric_name='emd', distance_name='positionw
                 results.append(old_result)
             else:
                 result = get_distance(model.elections[i], model.elections[j], distance_name=model.distance_name, metric_name=model.metric_name)
-                #print(int(round(result,0)))
                 results.append(result)
+                if show:
+                    print(result)
 
     ctr = 0
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "distances", str(distance_name) + ".txt")
@@ -344,3 +384,5 @@ def compute_distances(experiment_id, metric_name='emd', distance_name='positionw
             for j in range(i + 1, model.num_elections):
                 txtfile.write(str(i) + ' ' + str(j) + ' ' + str(results[ctr]) + '\n')
                 ctr += 1
+
+

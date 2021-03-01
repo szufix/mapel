@@ -67,7 +67,7 @@ def nice_name(name):
 # PREPARE
 def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=10000):
 
-    model = obj.Model(experiment_id)
+    model = obj.Model(experiment_id, raw=True)
     id_ = 0
 
     for i in range(model.num_families):
@@ -145,7 +145,7 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
                     elections_id = "core_" + str(id_)
                     tmp_elections_type = election_model + '_' + str(ri)
                     print(tmp_elections_type)
-                    el.generate_elections_preflib(experiment_id, election_model=tmp_elections_type, elections_id=elections_id,
+                    generate_elections_preflib(experiment_id, election_model=tmp_elections_type, elections_id=elections_id,
                                                   num_voters=model.num_voters, num_candidates=model.num_candidates,
                                                   special=param_1, folder=folder, selection_method=selection_method)
                     id_ += 1
