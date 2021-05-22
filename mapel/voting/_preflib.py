@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 """ this module is used to generate and import elections"""
 
-import numpy as np
 import math
 import os
 import random as rand
-import copy
-
 import time
+
+import numpy as np
+
 
 # NOWE
 def get_preflib_meta(data_name):

@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
-from . import elections as el
-import random as rand
-from . import lp as lp
-import os
 import math
+import os
+import random as rand
 import time
+
 import numpy as np
+
+from . import elections as el
+from . import lp as lp
 
 
 def generate_winners(experiment_id, num_winners, rule, utopia_type, elections_id, ballot="ordinal"):
@@ -59,7 +61,7 @@ def generate_winners(experiment_id, num_winners, rule, utopia_type, elections_id
     return winners
 
 
-def get_winners(params, votes, rule, ballot):
+def get_winners(params, votes, rule, ballot='ordinal'):
     if ballot == "ordinal":
         return get_ordinal_winners(params, votes, rule)
     elif ballot == "approval":
@@ -114,10 +116,8 @@ def get_ordinal_winners(params, votes, rule):
         for i in range(params['elections']):
             winners = []
             for j in range(params['voters']):
-                #print(elections['voters'][i][j])
-                #print(orders)
                 winners += [votes[i][j]]
-                #print(orders)
+
             all_winners += winners
         return all_winners
 
@@ -149,21 +149,6 @@ def get_rule(name, length):
     elif name == 'hb':
         for i in range(length):
             rule[i] = 1. / (i + 1.)
-    elif name == 'szufa':
-        for i in range(0,1):
-            rule[i] = 1.
-        for i in range(1,3):
-            rule[i] = 1./3.
-        for i in range(3,7):
-            rule[i] = 1./5.
-        for i in range(7,15):
-            rule[i] = 1./7.
-        for i in range(15,31):
-            rule[i] = 1./9.
-        for i in range(31,63):
-            rule[i] = 1./11.
-        for i in range(63,length):
-            rule[i] = 1./13.
     else:
         return name
     return rule

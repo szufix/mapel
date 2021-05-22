@@ -6,14 +6,15 @@
 # import matplotlib.pyplot as plt
 #########################
 
-import random as rand
-import numpy as np
 import math
 import os
+import random as rand
 from collections import Counter
-from scipy.stats import gamma
-from . import objects as obj
 
+import numpy as np
+from scipy.stats import gamma
+
+from . import objects as obj
 
 LIST_OF_PREFLIB_ELECTIONS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
                              'tshirt', 'cities_survey', 'aspen', 'ers',
@@ -45,7 +46,7 @@ def nice_name(name):
         'spoc_conitzer': 'SPOC',
         'walsh': 'Single-Peaked (by Walsh)',
         'mallows': 'Mallows',
-        'phi_mallows': 'Phi-Mallows',
+        'norm_mallows': 'Norm-Mallows',
         'single_crossing': 'Single Crossing',
         'didi': 'DiDi',
         'pl': 'Plackett Luce',
@@ -60,24 +61,223 @@ def nice_name(name):
         'uniformity': 'Uniformity',
         'stratification': 'Stratification',
         'mallows05': 'Mallows 0.5',
-        'unid': "UNID"
+        'unid': "UNID",
+        'real_identity': 'Real Identity',
+        'real_uniformity':  'Real Uniformity',
+        'real_antagonism': 'Real Antagonism',
+        'real_stratification': 'Real Stratification'
     }.get(name)
 
 
+LOOKUP_TABLE = {(5, 0.5): 0.50417,
+                (10, 0.5): 0.65345,
+                (15, 0.5): 0.73378,
+                (20, 0.5): 0.78389,
+                (25, 0.5): 0.81814,
+                (30, 0.5): 0.84302,
+                (35, 0.5): 0.86191,
+                (40, 0.5): 0.87674,
+                (45, 0.5): 0.8887,
+                (50, 0.5): 0.89854,
+                (55, 0.5): 0.90679,
+                (60, 0.5): 0.91379,
+                (65, 0.5): 0.91982,
+                (70, 0.5): 0.92505,
+                (75, 0.5): 0.92965,
+                (80, 0.5): 0.93371,
+                (85, 0.5): 0.93733,
+                (90, 0.5): 0.94058,
+                (95, 0.5): 0.94351,
+                (100, 0.5): 0.94616,
+
+                (5, 0.75): 0.73407,
+                (10, 0.75): 0.82952,
+                (15, 0.75): 0.87458,
+                (20, 0.75): 0.9008,
+                (25, 0.75): 0.91795,
+                (30, 0.75): 0.93005,
+                (35, 0.75): 0.93904,
+                (40, 0.75): 0.94598,
+                (45, 0.75): 0.9515,
+                (50, 0.75): 0.956,
+                (55, 0.75): 0.95973,
+                (60, 0.75): 0.96288,
+                (65, 0.75): 0.96558,
+                (70, 0.75): 0.96791,
+                (75, 0.75): 0.96994,
+                (80, 0.75): 0.97173,
+                (85, 0.75): 0.97332,
+                (90, 0.75): 0.97474,
+                (95, 0.75): 0.97602,
+                (100, 0.75): 0.97717,
+
+                (5, 0.9): 0.88642,
+                (10, 0.9): 0.93014,
+                (15, 0.9): 0.94956,
+                (20, 0.9): 0.96053,
+                (25, 0.9): 0.96758,
+                (30, 0.9): 0.97249,
+                (35, 0.9): 0.97611,
+                (40, 0.9): 0.97889,
+                (45, 0.9): 0.98109,
+                (50, 0.9): 0.98288,
+                (55, 0.9): 0.98435,
+                (60, 0.9): 0.98559,
+                (65, 0.9): 0.98665,
+                (70, 0.9): 0.98757,
+                (75, 0.9): 0.98837,
+                (80, 0.9): 0.98907,
+                (85, 0.9): 0.98969,
+                (90, 0.9): 0.99024,
+                (95, 0.9): 0.99074,
+                (100, 0.9): 0.99119,
+                (105, 0.9): 0.9916,
+                (110, 0.9): 0.99197,
+                (115, 0.9): 0.99231,
+                (120, 0.9): 0.99262,
+                (125, 0.9): 0.99291,
+                (130, 0.9): 0.99318,
+                (135, 0.9): 0.99342,
+                (140, 0.9): 0.99365,
+                (145, 0.9): 0.99387,
+                (150, 0.9): 0.99407,
+
+                (5, 0.95): 0.9417,
+                (10, 0.95): 0.96459,
+                (15, 0.95): 0.97457,
+                (20, 0.95): 0.98017,
+                (25, 0.95): 0.98374,
+                (30, 0.95): 0.98622,
+                (35, 0.95): 0.98805,
+                (40, 0.95): 0.98945,
+                (45, 0.95): 0.99055,
+                (50, 0.95): 0.99145,
+                (55, 0.95): 0.99219,
+                (60, 0.95): 0.99281,
+                (65, 0.95): 0.99334,
+                (70, 0.95): 0.9938,
+                (75, 0.95): 0.9942,
+                (80, 0.95): 0.99455,
+                (85, 0.95): 0.99486,
+                (90, 0.95): 0.99514,
+                (95, 0.95): 0.99539,
+                (100, 0.95): 0.99561,
+                (105, 0.95): 0.99581,
+                (110, 0.95): 0.996,
+                (115, 0.95): 0.99617,
+                (120, 0.95): 0.99633,
+                (125, 0.95): 0.99647,
+                (130, 0.95): 0.9966,
+                (135, 0.95): 0.99673,
+                (140, 0.95): 0.99684,
+                (145, 0.95): 0.99695,
+                (150, 0.95): 0.99705,
+
+                (5, 0.96): 0.9531,
+                (10, 0.96): 0.97158,
+                (15, 0.96): 0.97962,
+                (20, 0.96): 0.98411,
+                (25, 0.96): 0.98698,
+                (30, 0.96): 0.98897,
+                (35, 0.96): 0.99043,
+                (40, 0.96): 0.99156,
+                (45, 0.96): 0.99244,
+                (50, 0.96): 0.99316,
+                (55, 0.96): 0.99375,
+                (60, 0.96): 0.99425,
+                (65, 0.96): 0.99467,
+                (70, 0.96): 0.99504,
+                (75, 0.96): 0.99536,
+                (80, 0.96): 0.99564,
+                (85, 0.96): 0.99589,
+                (90, 0.96): 0.99611,
+                (95, 0.96): 0.99631,
+                (100, 0.96): 0.99649,
+
+                (5, 0.97): 0.96463,
+                (10, 0.97): 0.97862,
+                (15, 0.97): 0.98468,
+                (20, 0.97): 0.98806,
+                (25, 0.97): 0.99022,
+                (30, 0.97): 0.99172,
+                (35, 0.97): 0.99282,
+                (40, 0.97): 0.99366,
+                (45, 0.97): 0.99433,
+                (50, 0.97): 0.99487,
+                (55, 0.97): 0.99531,
+                (60, 0.97): 0.99569,
+                (65, 0.97): 0.99601,
+                (70, 0.97): 0.99628,
+                (75, 0.97): 0.99652,
+                (80, 0.97): 0.99673,
+                (85, 0.97): 0.99692,
+                (90, 0.97): 0.99708,
+                (95, 0.97): 0.99723,
+                (100, 0.97): 0.99737,
+
+                (5, 0.98): 0.97628,
+                (10, 0.98): 0.9857,
+                (15, 0.98): 0.98976,
+                (20, 0.98): 0.99203,
+                (25, 0.98): 0.99347,
+                (30, 0.98): 0.99448,
+                (35, 0.98): 0.99521,
+                (40, 0.98): 0.99577,
+                (45, 0.98): 0.99622,
+                (50, 0.98): 0.99658,
+                (55, 0.98): 0.99687,
+                (60, 0.98): 0.99712,
+                (65, 0.98): 0.99734,
+                (70, 0.98): 0.99752,
+                (75, 0.98): 0.99768,
+                (80, 0.98): 0.99782,
+                (85, 0.98): 0.99794,
+                (90, 0.98): 0.99806,
+                (95, 0.98): 0.99815,
+                (100, 0.98): 0.99824,
+
+                (5, 0.99): 0.98807,
+                (10, 0.99): 0.99283,
+                (15, 0.99): 0.99487,
+                (20, 0.99): 0.99601,
+                (25, 0.99): 0.99673,
+                (30, 0.99): 0.99723,
+                (35, 0.99): 0.9976,
+                (40, 0.99): 0.99788,
+                (45, 0.99): 0.99811,
+                (50, 0.99): 0.99829,
+                (55, 0.99): 0.99844,
+                (60, 0.99): 0.99856,
+                (65, 0.99): 0.99867,
+                (70, 0.99): 0.99876,
+                (75, 0.99): 0.99884,
+                (80, 0.99): 0.99891,
+                (85, 0.99): 0.99897,
+                (90, 0.99): 0.99903,
+                (95, 0.99): 0.99908,
+                (100, 0.99): 0.99912}
+
+
+
+
 # PREPARE
-def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=10000):
+def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=1000000):
+    """ Prepare elections for a given experiment """
 
     model = obj.Model(experiment_id, raw=True)
     id_ = 0
 
     for i in range(model.num_families):
 
+        print('family:', model.families[i].label)
+
         election_model = model.families[i].election_model
         param_1 = model.families[i].param_1
         param_2 = model.families[i].param_2
         copy_param_1 = param_1
 
-        if id_ >= starting_from and id_ < ending_at:
+        #print(election_model)
+        if starting_from <= id_ < ending_at:
 
             # PREFLIB
             if election_model in LIST_OF_PREFLIB_ELECTIONS:
@@ -139,14 +339,15 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
                 else:
                     ids = []
 
-                print(model.families[i].size)
+                #print(model.families[i].size)
                 rand_ids = rand.choices(ids, k=model.families[i].size)
                 for ri in rand_ids:
                     elections_id = "core_" + str(id_)
                     tmp_elections_type = election_model + '_' + str(ri)
-                    print(tmp_elections_type)
+                    #print(tmp_elections_type)
                     generate_elections_preflib(experiment_id, election_model=tmp_elections_type, elections_id=elections_id,
-                                                  num_voters=model.num_voters, num_candidates=model.num_candidates,
+                                                  num_voters=model.families[i].num_voters,
+                                                  num_candidates=model.families[i].num_candidates,
                                                   special=param_1, folder=folder, selection_method=selection_method)
                     id_ += 1
 
@@ -185,10 +386,15 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
 
                 for j in range(model.families[i].size):
 
-                    if election_model in {'unid', 'stan'}:
-                        param_1 = j / (model.families[i].size - 1)
-                    elif election_model in {'anid', 'stid', 'anun', 'stun'}:
-                        param_1 = (j+1) / (model.families[i].size + 1)
+                    if election_model in {'unid', 'stan', 'anid', 'stid', 'anun', 'stun'}:
+                        if copy_param_1 == 0:    # with both
+                            param_1 = j / (model.families[i].size - 1)
+                        elif copy_param_1 == 1:   # without first (which is last)
+                            param_1 = j / model.families[i].size
+                        elif copy_param_1 == 2:   # without second (which is first)
+                            param_1 = (j+1) / model.families[i].size
+                        elif copy_param_1 == 4:   # without both
+                            param_1 = (j+1) / (model.families[i].size + 1)
                         #print(param_1)
                     elif election_model in {'crate'}:
                         param_1 = base[j]
@@ -197,9 +403,8 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
 
                     elections_id = "core_" + str(id_)
                     generate_elections(experiment_id, election_model=election_model, election_id=elections_id,
-                                          num_voters=model.num_voters,
-                                          #num_candidates=model.families[i].num_candidates,
-                                          num_candidates=model.num_candidates,
+                                          num_voters=model.families[i].num_voters,
+                                          num_candidates=model.families[i].num_candidates,
                                           special=param_1)
                     id_ += 1
 
@@ -210,7 +415,7 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
 # GENERATE
 def generate_elections(experiment_id, election_model=None, election_id=None,
                        num_candidates=None, num_voters=None, special=None):
-    """ main function: generate elections"""
+    """ main function: generate elections """
 
 
     if election_model in  {'identity', 'uniformity', 'antagonism', 'stratification',
@@ -234,24 +439,28 @@ def generate_elections(experiment_id, election_model=None, election_id=None,
 
     else:
 
-        #print(election_model)
-
         if election_model == 'mallows' and special == -1:
             special = rand.random()
-        elif election_model == 'phi_mallows' and special == -1:
+        elif election_model == 'norm_mallows' and special == -1:
             special = phi_mallows_helper(num_candidates)
-        elif election_model == 'phi_mallows' and special >= 0:
-            special = phi_mallows_helper(num_candidates, rdis=special)
+        elif election_model == 'norm_mallows' and special >= 0:
+            if (num_candidates, special) in LOOKUP_TABLE:
+                special = LOOKUP_TABLE[(num_candidates, special)]
+            else:
+                special = phi_mallows_helper(num_candidates, rdis=special)
         elif election_model == 'urn_model' and special == -1:
             special = gamma.rvs(0.8)
-        #print(special)
 
         naked_models = {'impartial_culture': generate_elections_impartial_culture,
                         'impartial_anonymous_culture': generate_elections_impartial_anonymous_culture,
                         'conitzer': generate_elections_conitzer,
                         'spoc_conitzer': generate_elections_spoc_conitzer,
                         'walsh': generate_elections_walsh,
-                        'single_crossing': generate_elections_single_crossing,}
+                        'single_crossing': generate_elections_single_crossing,
+                        'real_identity': generate_elections_real_identity,
+                        'real_uniformity': generate_elections_real_uniformity,
+                        'real_antagonism': generate_elections_real_antagonism,
+                        'real_stratification': generate_elections_real_stratification}
 
         euclidean_models = {'1d_interval': generate_elections_1d_simple,
                             '1d_gaussian': generate_elections_1d_simple,
@@ -277,7 +486,7 @@ def generate_elections(experiment_id, election_model=None, election_id=None,
                             '40d_ball': generate_elections_nd_simple,}
 
         single_param_models = {'mallows': generate_elections_mallows,
-                               'phi_mallows': generate_elections_mallows,
+                               'norm_mallows': generate_elections_mallows,
                                'urn_model': generate_elections_urn_model,}
 
 
@@ -297,19 +506,17 @@ def generate_elections(experiment_id, election_model=None, election_id=None,
                             (str(election_id) + ".soc"))
         file_ = open(path, 'w')
 
-        if election_model in ["mallows", "urn_model"]:
-            file_.write("# " + nice_name(election_model) + " " + str(round(special,5)) + "\n")
+        if election_model in ["norm_mallows", "mallows", "urn_model"]:
+            file_.write("# " + nice_name(election_model) + " " + str(round(special, 5)) + "\n")
         else:
             file_.write("# " + nice_name(election_model) + "\n")
 
         file_.write(str(num_candidates) + "\n")
 
         for i in range(num_candidates):
-            #file_.write(str(i + 1) + ', ' + chr(97 + i) + "\n")
-            file_.write(str(i + 1) + ', c' + str(i) + "\n")
+            file_.write(str(i) + ', c' + str(i) + "\n")
 
 
-        #print(votes[0])
         c = Counter(map(tuple, votes))
         counted_votes = [[count, list(row)] for row, count in c.items()]
         counted_votes = sorted(counted_votes, reverse=True)
@@ -334,17 +541,14 @@ def generate_elections_preflib(experiment_id, election_model=None, elections_id=
 
     votes = generate_votes_preflib(election_model, selection_method=selection_method,
                           num_voters=num_voters, num_candidates=num_candidates, folder=folder)
-    #print(votes)
 
-    # NEW PART -- I assume there is always single election
     path = os.path.join("experiments", experiment_id, "elections", "soc_original", elections_id + ".soc")
     file_ = open(path, 'w')
 
     file_.write(str(num_candidates) + "\n")
 
     for i in range(num_candidates):
-        #file_.write(str(i + 1) + ', ' + chr(97 + i) + "\n")
-        file_.write(str(i + 1) + ', c' + str(i) + "\n")
+        file_.write(str(i) + ', c' + str(i) + "\n")
 
     c = Counter(map(tuple, votes))
     counted_votes = [[count, list(row)] for row, count in c.items()]
@@ -364,9 +568,34 @@ def generate_elections_preflib(experiment_id, election_model=None, elections_id=
     file_.close()
 
 
-
 ########################################################################################################################
 
+
+def generate_elections_real_identity(num_voters=None, num_candidates=None):
+    votes = [[j for j in range(num_candidates)] for _ in range(num_voters)]
+    return votes
+
+
+def generate_elections_real_uniformity(num_voters=None, num_candidates=None):
+    return generate_elections_impartial_culture(num_voters=num_voters, num_candidates=num_candidates)
+
+
+def generate_elections_real_antagonism(num_voters=None, num_candidates=None):
+    votes = [[j for j in range(num_candidates)] for _ in range(int(num_voters/2))] + \
+            [[num_candidates-j-1 for j in range(num_candidates)] for _ in range(int(num_voters/2))]
+    return votes
+
+
+def generate_elections_real_stratification(num_voters=None, num_candidates=None):
+
+    votes = np.zeros([num_voters, num_candidates], dtype=int)
+
+    for i in range(num_voters):
+         votes[i] = list(np.random.permutation(int(num_candidates/2))) + \
+                    list(np.random.permutation([j for j in range(int(num_candidates/2), num_candidates)]))
+    return votes
+
+########################################################################################################################
 
 
 def generate_elections_urn_model(num_voters=None, num_candidates=None, param=None):
@@ -406,7 +635,7 @@ def generate_elections_impartial_anonymous_culture(num_voters=None, num_candidat
 
 
 def generate_elections_impartial_culture(num_voters=None, num_candidates=None):
-    """ helper function: generate impartial culture elections"""
+    """ helper function: generate impartial culture elections """
 
     votes = np.zeros([num_voters, num_candidates], dtype=int)
 
@@ -417,7 +646,7 @@ def generate_elections_impartial_culture(num_voters=None, num_candidates=None):
 
 
 def generate_elections_conitzer(num_voters=None, num_candidates=None):
-    """ helper function: generate conitzer single-peaked elections"""
+    """ helper function: generate conitzer single-peaked elections """
 
     votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
 
@@ -505,6 +734,7 @@ def mallowsAlternativeVote(base, num_candidates, PHI):
 
 
 def hamming_distance(set_1, set_2):
+    """ Compute hamming distance """
     return len(set_1) + len(set_2) - 2 * len(set_1.intersection(set_2))
 
 
@@ -713,6 +943,7 @@ def generate_elections_nd_simple(election_model=None, num_voters=None, num_candi
 # REAL
 def generate_votes_preflib(elections_model, num_voters=None, num_candidates=None, folder=None,
                            selection_method=None):
+    """ Generate votes based on elections from Preflib """
 
     #print(elections_model)
     long_name = str(elections_model)
@@ -758,7 +989,7 @@ def generate_votes_preflib(elections_model, num_voters=None, num_candidates=None
             selected_candidates = order_by_score[0:num_candidates]
         elif selection_method == 'freq':
             freq = import_freq(elections_model)
-            print(freq)
+            #print(freq)
             selected_candidates = freq[0:num_candidates]
         else:
             raise NameError('No such selection method!')
@@ -801,9 +1032,12 @@ def get_borda_scores(votes, num_voters, num_candidates):
     return scores
 
 
-
-
 # IMPORT
+def import_election(experiment_id, election_id):
+    """ main function: import single election """
+    return obj.Election(experiment_id, election_id)
+
+
 def import_soc_elections(experiment_id, election_id):
     """ main function: import elections """
 

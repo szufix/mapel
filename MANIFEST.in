@@ -8,10 +8,14 @@ include LICENSE.txt
 include requirements.txt
 
 
-exclude mapel/private.py
 exclude mapel/MAIN.py
+exclude mapel/MAIN2.py
+exclude mapel/tmp.py
+exclude mapel/tmp2.py
 exclude mapel/workshop.py
 
-exclude mapel/voting/pabulib.py
-exclude mapel/voting/preflib.py
-exclude mapel/voting/mapel.py
+exclude mapel/voting/_canonical.py
+exclude mapel/voting/_pabulib.py
+exclude mapel/voting/_preflib.py
+exclude mapel/voting/_mapel.py
+exclude mapel/voting/_tmp.py

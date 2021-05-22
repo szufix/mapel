@@ -6,15 +6,20 @@ mapel/experiments/
 mapel/raw_data/
 mapel/real_data/
 mapel/_past/
+mapel/_past_recent/
 mapel/trash/
 
-mapel/private.py
 mapel/MAIN.py
+mapel/MAIN2.py
+mapel/tmp.py
+mapel/tmp2.py
 mapel/workshop.py
 
-mapel/voting/pabulib.py
-mapel/voting/preflib.py
-mapel/voting/mapel.py
+mapel/voting/_canonical.py
+mapel/voting/_pabulib.py
+mapel/voting/_preflib.py
+mapel/voting/_mapel.py
+mapel/voting/_tmp.py
 
 
 

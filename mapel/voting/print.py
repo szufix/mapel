@@ -1,25 +1,20 @@
 
 """ This module contains all the functions that user can use """
 
+import os
+from shutil import copyfile
+
 ### COMMENT ON SERVER ###
 import matplotlib.pyplot as plt
-
-
-from . import objects as obj
 import numpy as np
-import os
-from PIL import Image
-from shutil import copyfile
 import scipy.stats as stats
+from PIL import Image
 
-#import voting.elections as el
-#import voting.metrics as metr
-
-from . import metrics as metr
 from . import elections as el
-#  mark the orders
-#  for w in model.orders:
-#    ax.scatter(model.points[w][0], model.points[w][1], color="red", s=50, marker='x')
+from . import metrics as metr
+from . import objects as obj
+
+
 
 # HELPER FUNCTIONS FOR PRINT_2D
 def get_values_from_file(model, experiment_id, values, normalizing_func=None, marker_func=None):
@@ -34,7 +29,6 @@ def get_values_from_file(model, experiment_id, values, normalizing_func=None, ma
             values.append(float(txtfile.readline()))
     _min = min(values)
     _max = max(values)
-    print(_min, _max)
 
     with open(path, 'r') as txtfile:
 
@@ -83,7 +77,6 @@ def get_values_from_file_3d(model, experiment_id, values, normalizing_func):
             values.append(float(txtfile.readline()))
     _min = min(values)
     _max = max(values)
-    print(_min, _max)
 
     with open(path, 'r') as txtfile:
 
@@ -137,7 +130,7 @@ def add_advanced_points_to_picture(fig=None, ax=None, model=None, experiment_id=
 
     if xticklabels is None:
         lin = np.linspace(_min, _max, 6)
-        xticklabels = [np.round(lin[i]) for i in range(6)]
+        xticklabels = [np.round(lin[i], 1) for i in range(6)]
 
     cb = fig.colorbar(images[0][0], cax=cax, orientation="horizontal",
                       shrink=1, ticks=ticks)  # shrink not working
@@ -194,6 +187,72 @@ def add_tmp_points_to_picture(ax=None, model=None, ms=None, tmp=None, tmp2=None,
                 ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1],
                            color=model.families[k].color, label=model.families[k].label, zorder=zorder[2],
                            alpha=tmp[2] * model.families[k].alpha, s=ms*tmp2[2], marker=model.families[k].marker)
+
+
+def add_mixed_points_to_picture(ax=None, model=None, ms=None, tmp=None, tmp2=None, zorder=None, fuzzy_paths=True):
+    tmp=[1,1,1]
+    # TEMPORARY VERSION
+    ctr = 0
+    for k in range(model.num_families):
+        if model.families[k].show:
+
+            if model.families[k].election_model in {'identity', 'uniformity', 'antagonism', 'stratification',
+                                          'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+                zorder = 0
+                if model.families[k].election_model == 'unid':
+                    zorder = 1
+
+                t_ms = ms
+                if fuzzy_paths:
+                    t_ms *= 10
+                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1], zorder=zorder,
+                           color=model.families[k].color, label=model.families[k].label,
+                           alpha=1*model.families[k].alpha, s=t_ms, marker='o', linewidth=0)
+                ctr += model.families[k].size
+
+            elif model.families[k].election_model in {'real_identity','real_uniformity','real_antagonism','real_stratification'}:
+                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1], zorder=5,
+                           color=model.families[k].color, label=model.families[k].label,
+                           alpha=model.families[k].alpha, s=ms*5, marker=model.families[k].marker)
+                ctr += model.families[k].size
+
+            elif model.families[k].election_model in LIST_OF_PREFLIB_ELECTIONS:
+                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1], zorder=2,
+                           color=model.families[k].color, label=model.families[k].label,
+                           alpha=model.families[k].alpha, s=ms, marker=model.families[k].marker)
+                ctr += model.families[k].size
+
+            elif model.families[k].election_model in {'norm_mallows', 'mallows', 'urn_model'}:
+                for i in range(model.families[k].size):
+                    param = float(model.elections[ctr].param)
+                    if param > 1:
+                        param = 1
+
+                    if model.families[k].election_model in {'norm_mallows', 'mallows'}:
+                        my_cmap = custom_div_cmap(num_colors=11, colors=["cyan", "blue"],
+                                                  name='my_custom_m')
+                        #print(param)
+                    elif model.families[k].election_model in {'urn_model'}:
+                        my_cmap = custom_div_cmap(num_colors=11, colors=["gold", "orange", "red"],
+                                                  name='my_custom_u')
+
+                    if i == 0:
+                        ax.scatter(model.points_by_families[k][0][i], model.points_by_families[k][1][i],
+                                   zorder=2, label=model.families[k].label,
+                                   cmap=my_cmap, vmin=0, vmax=1, alpha=0.5,
+                                   c=param * tmp[2] * model.families[k].alpha,
+                                   s=ms * tmp2[2], marker=model.families[k].marker)
+                    else:
+
+                        ax.scatter(model.points_by_families[k][0][i], model.points_by_families[k][1][i], zorder=2,
+                                   cmap=my_cmap, vmin=0, vmax=1, alpha=0.5,
+                                   c=param * tmp[2] * model.families[k].alpha, s=ms*tmp2[2], marker=model.families[k].marker)
+                    ctr += 1
+            else:
+                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1],
+                           color=model.families[k].color, label=model.families[k].label, zorder=2,
+                           alpha=tmp[2] * model.families[k].alpha, s=ms*tmp2[2], marker=model.families[k].marker)
+                ctr += model.families[k].size
 
 
 def add_mask_to_picture(fig=None, ax=None, black=None, saveas=None, tex=None):
@@ -364,16 +423,16 @@ def saveas_tex(saveas=None):
 
 
 # MAIN FUNCTIONS
-def print_2d(experiment_id, num_winners=0, mask=False,
-             angle=0, reverse=False, update=False, values=None, attraction_factor=1,
+def print_2d(experiment_id, num_winners=0, mask=False, mixed=False, fuzzy_paths=True,
+             angle=0, reverse=False, update=False, values=None, attraction_factor=1, metric_name='',
              num_elections=None, secondary_order_name="positionwise_approx_cc", main_order_name="default",
-             distance_name="positionwise", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None,
+             distance_name="", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None,
              saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
              ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
     model = obj.Model_2d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
-                         ignore=ignore, attraction_factor=attraction_factor)
+                         ignore=ignore, attraction_factor=attraction_factor, metric_name=metric_name)
 
     if angle != 0:
         model.rotate(angle)
@@ -402,6 +461,8 @@ def print_2d(experiment_id, num_winners=0, mask=False,
                                        xticklabels=xticklabels, ms=ms, cmap=cmap, ticks=ticks)
     elif tmp:
         add_tmp_points_to_picture(ax=ax, model=model, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder)
+    elif mixed:
+        add_mixed_points_to_picture(ax=ax, model=model, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder, fuzzy_paths=fuzzy_paths)
     else:
         add_basic_points_to_picture(ax=ax, model=model, ms=ms)
 
@@ -422,14 +483,14 @@ def print_2d(experiment_id, num_winners=0, mask=False,
         plt.show()
 
 
-def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None,
+def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None, metric_name='emd',
              angle=0, reverse=False, update=False, values=None, coloring="purple",
              num_elections=None, main_order_name="default", order="", distance_name="positionwise",
              saveas="map_3d", show=True, dot=9, normalizing_func=None, xticklabels=None, cmap=None):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
     model = obj.Model_3d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
-                         ignore=ignore, attraction_factor=attraction_factor)
+                         ignore=ignore, attraction_factor=attraction_factor, metric_name=metric_name)
     if angle != 0:
         model.rotate(angle)
 
@@ -472,17 +533,21 @@ def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None,
         plt.show()
 
 
-def print_matrix(experiment_id, scale=1., metric="positionwise", saveas="matrix", show=True):
+def print_matrix(experiment_id, scale=1., distance_name='', metric_name='', saveas="matrix", show=True,
+                 self_distances=False, yticks='left'):
     """Print the matrix with average distances between each pair of models """
 
-    model = obj.Model_xd(experiment_id, distance_name=metric)
+    model = obj.Model_xd(experiment_id, distance_name=distance_name, metric_name=metric_name, raw=True, self_distances=self_distances)
     matrix = np.zeros([model.num_families, model.num_families])
     quantities = np.zeros([model.num_families, model.num_families])
 
     mapping = [i for i in range(model.num_families) for _ in range(model.families[i].size)]
 
     for i in range(model.num_elections):
-        for j in range(i + 1, model.num_elections):
+        limit = i + 1
+        if self_distances:
+            limit = i
+        for j in range(limit, model.num_elections):
             matrix[mapping[i]][mapping[j]] += model.distances[i][j]
             quantities[mapping[i]][mapping[j]] += 1
 
@@ -492,6 +557,7 @@ def print_matrix(experiment_id, scale=1., metric="positionwise", saveas="matrix"
             matrix[i][j] *= scale
             matrix[i][j] = int(round(matrix[i][j], 0))
             matrix[j][i] = matrix[i][j]
+
 
     file_name = os.path.join(os.getcwd(), "experiments", str(experiment_id), "controllers", "basic", "matrix.txt")
     file_ = open(file_name, 'r')
@@ -510,17 +576,34 @@ def print_matrix(experiment_id, scale=1., metric="positionwise", saveas="matrix"
     fig, ax = plt.subplots()
     matrix_new = np.zeros([num_families_new, num_families_new])
 
-    for i in range(num_families_new):
-        for j in range(num_families_new):
-            c = int(matrix[order[i]][order[j]])
-            matrix_new[i][j] = c
-            ax.text(i, j, str(c), va='center', ha='center')
+    if distance_name == 'voter_subelection':
+        for i in range(num_families_new):
+            for j in range(num_families_new):
+                c = int(matrix[order[i]][order[j]])
+                std = int(round(model.std[i][j] * scale, 0))
+                matrix_new[i][j] = c
+                color = "black"
+                if c >= 75:
+                    color = "white"
+                ax.text(j-0.1, i+0.1, str(c), va='bottom', ha='center', color=color, size=12)
+                if std >= 10:
+                    ax.text(j-0.3, i+0.1, '$\pm$' + str(std), va='top', ha='left', color=color, size=9)
+                else:
+                    ax.text(j-0.1, i+0.1, '$\pm$' + str(std), va='top', ha='left', color=color, size=9)
+
+    else:
+        for i in range(num_families_new):
+            for j in range(num_families_new):
+                c = int(matrix[order[i]][order[j]])
+                matrix_new[i][j] = c
+                color = "black"
+                if c >= 80:
+                    color = "white"
+                ax.text(j, i, str(c), va='center', ha='center', color=color)
 
     labels_new = []
     for i in range(num_families_new):
         labels_new.append(model.families[order[i]].label)
-
-    #print(labels_new)
 
     ax.matshow(matrix_new, cmap=plt.cm.Blues)
 
@@ -529,11 +612,21 @@ def print_matrix(experiment_id, scale=1., metric="positionwise", saveas="matrix"
     y_axis = np.arange(0, num_families_new, 1)
     x_axis = np.arange(0, num_families_new, 1)
 
-    plt.yticks(y_axis, y_values)
-    plt.xticks(x_axis, x_values, rotation='vertical')
+    if yticks != 'none':
+        ax.set_yticks(y_axis)
+        if yticks == 'left':
+            ax.set_yticklabels(y_values, rotation=25, size=12)
+        if yticks == 'right':
+            ax.set_yticklabels(y_values, rotation=-25, size=12)
+            ax.yaxis.tick_right()
+    else:
+        ax.set_yticks([])
+
+    ax.set_xticks(x_axis)
+    ax.set_xticklabels(x_values, rotation=75, size=12)
 
     file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
-    plt.savefig(file_name)
+    plt.savefig(file_name, bbox_inches='tight')
     if show:
         plt.show()
 
@@ -560,6 +653,7 @@ def prepare_approx_cc_order(experiment_id, metric="positionwise"):
                            "core_" + str(i) + ".soc")
 
         copyfile(src, dst)
+
 
 def print_param_vs_distance(experiment_id, values="", scale="none", metric="positionwise", saveas="correlation",
                             show=True, target='identity', ylabel_text=''):
@@ -800,6 +894,7 @@ def excel_super_2(experiment_id, values="", scale="none", metric="positionwise",
 # HELPER FUNCTIONS
 def custom_div_cmap(num_colors=101, name='custom_div_cmap',
                     colors=None):
+
     if colors is None:
         colors = ["lightgreen", "yellow", "orange", "red", "black"]
 
@@ -1034,7 +1129,7 @@ def print_clustering(experiment_id, magic=1, q=0):
     file_.close()
 
     def normalizing_func(shade):
-        print(shade)
+        #print(shade)
         shade /= 3
         return shade
 
@@ -1080,7 +1175,7 @@ def print_clustering_bis(experiment_id, magic=1, q=0):
         #file_.write(str(order[q]) + '\n')
         file_.write(str(int(order[0]+order[1])) + '\n')
         values = sorted(values)
-        print(values[0], values[1])
+        #print(values[0], values[1])
 
     #"""
     file_.close()

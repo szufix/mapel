@@ -1,51 +1,32 @@
 """ This module contains all the objects """
 
-import os
-import math
-#from dataclasses import dataclass
-from . import metrics as metr
+
+
 import csv
+import math
+import os
+
 import numpy as np
-
-
-def import_controllers_meta(experiment_id):
-    info = {}
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "basic", 'meta.csv')
-    with open(path, 'r', newline='') as csvfile:
-        reader = csv.DictReader(csvfile, delimiter=',')
-        for row in reader:
-            info[row['key']] = row['value']
-
-    num_voters = int(info['num_voters'])
-    num_candidates = int(info['num_candidates'])
-    num_families = int(info['num_families'])
-    num_elections = int(info['num_elections'])
-    return num_voters, num_candidates, num_families, num_elections
-
 
 
 class Model:
     """Abstract model of elections."""
 
     def __init__(self, experiment_id, ignore=None, main_order_name="default", raw=False,
-                 distance_name="positionwise", metric_name="emd", num_elections=None):
+                 distance_name="", metric_name="", num_elections=None):
 
         self.experiment_id = experiment_id
-        self.num_voters, self.num_candidates, self.num_families, self.num_elections =\
-            import_controllers_meta(experiment_id)
-        if num_elections:
-            self.num_elections = num_elections
-        self.main_order = self.import_order(main_order_name)
 
         self.distance_name = distance_name
         self.metric_name = metric_name
 
-        self.families = self.import_controllers(ignore=ignore)
+        self.families = self.import_controllers(ignore=ignore, main_order_name=main_order_name)
 
         if not raw:
             self.elections = self.add_elections_to_model()
 
     def add_elections_to_model(self):
+        """ Import elections from a file """
         elections = []
         for i in range(self.num_elections):
             election_id = 'core_' + str(i)
@@ -53,8 +34,8 @@ class Model:
             elections.append(election)
         return elections
 
-    def import_controllers(self, ignore=None):
-        """Import from a file all the controllers."""
+    def import_controllers(self, ignore=None, main_order_name="default"):
+        """ Import controllers from a file """
 
         families = []
 
@@ -76,6 +57,7 @@ class Model:
             size = None
             marker = None
             num_candidates = None
+            num_voters = None
 
             if 'election_model' in row.keys():
                 election_model = str(row['election_model']).strip()
@@ -104,14 +86,22 @@ class Model:
             if 'num_candidates' in row.keys():
                 num_candidates = int(row['num_candidates'])
 
+            if 'num_voters' in row.keys():
+                num_voters = int(row['num_voters'])
+
             show = True
             if row['show'].strip() != 't':
                 show = False
 
             families.append(Family(election_model=election_model, param_1=param_1, param_2=param_2, label=label,
                                    color=color, alpha=alpha, show=show, size=size, marker=marker,
-                                   starting_from=starting_from, num_candidates=num_candidates))
+                                   starting_from=starting_from,
+                                   num_candidates=num_candidates, num_voters=num_voters))
             starting_from += size
+
+        self.num_families = len(families)
+        self.num_elections = sum([families[i].size for i in range(self.num_families)])
+        self.main_order = self.import_order(main_order_name)
 
         if ignore is None:
             ignore = []
@@ -129,7 +119,7 @@ class Model:
         return families
 
     def import_order(self, main_order_name):
-        """ Import from a file precomputed order of all the elections """
+        """Import precomputed order of all the elections from a file."""
 
         if main_order_name == 'default':
             main_order = [i for i in range(self.num_elections)]
@@ -151,18 +141,19 @@ class Model:
 class Model_xd(Model):
     """ Multi-dimensional model of elections """
 
-    def __init__(self, experiment_id, distance_name='positionwise', metric_name='emd'):
+    def __init__(self, experiment_id, distance_name='', metric_name='', raw=False, self_distances=False):
 
-        Model.__init__(self, experiment_id, distance_name=distance_name, metric_name=metric_name)
+        Model.__init__(self, experiment_id, distance_name=distance_name, metric_name=metric_name, raw=raw)
 
         #self.num_points, self.num_distances, self.distances = self.import_distances(experiment_id, metric)
-        self.num_distances, self.distances = self.import_distances(experiment_id, distance_name)
+        self.num_distances, self.distances, self.std = self.import_distances(experiment_id,
+                                                                   distance_name, metric_name, self_distances=self_distances)
 
-    @staticmethod
-    def import_distances(experiment_id, metric):
-        """Import from a file precomputed distances between each pair of elections  """
+    #@staticmethod
+    def import_distances(self, experiment_id, distance_name, metric_name, self_distances=False):
+        """ Import precomputed distances between each pair of elections from a file """
 
-        file_name = f"{metric}.txt"
+        file_name = str(metric_name) + '-' +  str(distance_name) + '.txt'
         path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "distances", file_name)
         file_ = open(path, 'r')
         num_points = int(file_.readline())
@@ -170,37 +161,41 @@ class Model_xd(Model):
         num_distances = int(file_.readline())
 
         hist_data = [[0 for _ in range(num_points)] for _ in range(num_points)]
+        std = [[0. for _ in range(num_points)] for _ in range(num_points)]
 
         for a in range(num_points):
-            for b in range(a + 1, num_points):
+            limit = a+1
+            if self_distances:
+                limit = a
+            for b in range(limit, num_points):
                 line = file_.readline()
                 line = line.split(' ')
                 hist_data[a][b] = float(line[2])
+
+                # tmp correction for discrete distance
+                if distance_name == 'discrete':
+                    hist_data[a][b] = self.families[0].size - hist_data[a][b]   # do poprawy
+
+
                 hist_data[b][a] = hist_data[a][b]
 
-        #return num_points, num_distances, hist_data
-        return num_distances, hist_data
+                if distance_name == 'voter_subelection':
+                    std[a][b] = float(line[3])
+                    std[b][a] = std[a][b]
+
+        return num_distances, hist_data, std
 
 
 class Model_2d(Model):
     """ Two-dimensional model of elections """
 
-    """
-    experiment_id: str
-    main_order_name: str = "default"
-    metric: str = "positionwise"
-    ignore: [] = None
-    num_elections: int = None
-    magic: int = 1
-    """
-
-    def __init__(self, experiment_id, main_order_name="default", distance_name="positionwise", ignore=None,
-                 num_elections=None, attraction_factor=1):
+    def __init__(self, experiment_id, main_order_name="default", distance_name="", ignore=None,
+                 num_elections=None, attraction_factor=1, metric_name=''):
 
         Model.__init__(self, experiment_id, ignore=ignore, main_order_name=main_order_name, distance_name=distance_name,
-                       num_elections=num_elections)
+                       num_elections=num_elections, metric_name=metric_name)
 
-        self.attraction_factor = int(attraction_factor)
+        self.attraction_factor = attraction_factor
 
         self.num_points, self.points, = self.import_points(ignore=ignore)
         self.points_by_families = self.compute_points_by_families()
@@ -213,7 +208,7 @@ class Model_2d(Model):
 
         points = []
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                            "points", self.distance_name + "_2d_a" + str(int(self.attraction_factor)) + ".csv")
+                            "points", self.metric_name + '-' + self.distance_name + "_2d_a" + str(self.attraction_factor) + ".csv")
 
         with open(path, 'r', newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
@@ -269,12 +264,8 @@ class Model_2d(Model):
     def update(self):
         """ Save current coordinates of all the points to the original file"""
 
-        if self.attraction_factor == 1:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                                "points", self.distance_name + "_2d.csv")
-        else:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                                "points", self.distance_name + "_2d_p" + str(self.attraction_factor) + ".csv")
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
+                                "points", self.metric_name + '-' + self.distance_name + "_2d_a" + str(self.attraction_factor) + ".csv")
 
         with open(path, 'w', newline='') as csvfile:
 
@@ -305,11 +296,11 @@ class Model_2d(Model):
 class Model_3d(Model):
     """ Two-dimensional model of elections """
 
-    def __init__(self, experiment_id, main_order_name="default", distance_name="positionwise", ignore=None,
-                 num_elections=None, attraction_factor=1):
+    def __init__(self, experiment_id, main_order_name="default", distance_name="", ignore=None,
+                 num_elections=None, attraction_factor=1, metric_name=''):
 
         Model.__init__(self, experiment_id, ignore=ignore, main_order_name=main_order_name, distance_name=distance_name,
-                       num_elections=num_elections)
+                       num_elections=num_elections, metric_name=metric_name)
 
         self.attraction_factor = int(attraction_factor)
 
@@ -324,9 +315,7 @@ class Model_3d(Model):
 
         points = []
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                            "points", f"{self.distance_name}_3d_a" + f"{int(self.attraction_factor)}.csv")
-
-        print(self.main_order[0])
+                            "points", self.metric_name + '-' + str(self.distance_name) + "_3d_a" + str(self.attraction_factor) + ".csv")
 
         with open(path, 'r', newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
@@ -415,7 +404,7 @@ class Family:
 
     def __init__(self, election_model="none", param_1=0., param_2=0., size=0, label="none",
                  color="black", alpha=1., show=True, marker='o', starting_from=0,
-                 num_candidates=None):
+                 num_candidates=None, num_voters=None):
 
         self.election_model = election_model
         self.param_1 = param_1
@@ -428,6 +417,7 @@ class Family:
         self.marker = marker
         self.starting_from = starting_from
         self.num_candidates = num_candidates
+        self.num_voters = num_voters
 
 
 class Election:
@@ -442,11 +432,12 @@ class Election:
         if self.fake:
             self.fake_model_name, self.fake_param, self.num_voters, self.num_candidates = import_fake_elections(experiment_id, election_id)
         else:
-            self.votes, self.num_voters, self.num_candidates = import_soc_elections(experiment_id, election_id)
+            self.votes, self.num_voters, self.num_candidates, self.param = import_soc_elections(experiment_id, election_id)
             self.potes = self.votes_to_potes()
 
     def votes_to_potes(self):
         potes = [[-1 for _ in range(self.num_candidates)] for _ in range(self.num_voters)]
+        #print(self.votes)
         for i in range(self.num_voters):
             for j in range(self.num_candidates):
                 potes[i][self.votes[i][j]] = j
@@ -481,6 +472,22 @@ class Election:
 
         return vectors
 
+    def votes_to_viper_vectors(self):
+
+        vectors = [[0. for _ in range(self.num_voters)] for _ in range(self.num_voters)]
+
+        c = self.num_candidates
+        v = self.num_voters
+        borda_vector = [sum([vectors[j][i] * (c - i - 1) for i in range(c)]) * v for j in range(self.num_candidates)]
+
+
+
+        for i in range(self.num_candidates):
+            for j in range(self.num_candidates):
+                vectors[i][j] /= float(self.num_voters)
+
+        return vectors
+
     def vector_to_interval(self, vector, precision=None):
         # discreet version for now
         interval = []
@@ -510,7 +517,7 @@ class Election:
                 matrix = get_fake_matrix_single(self.fake_model_name, self.num_candidates, self.num_voters)
             elif self.fake_model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
                 matrix = get_fake_convex(self.fake_model_name, self.num_candidates, self.num_voters, self.fake_param,
-                                         get_fake_vectors_single)
+                                         get_fake_matrix_single)
 
         else:
 
@@ -524,21 +531,33 @@ class Election:
                     matrix[i][j] /= float(self.num_voters)
                     matrix[j][i] = 1. - matrix[i][j]
 
+        #print(matrix)
+
         return matrix
 
-    def votes_to_voter_likeness_matrix(self):
+    def votes_to_voterlikeness_matrix(self):
         """ convert VOTES to voter-likeness MATRIX """
-        matrix = np.zeros([self.num_candidates, self.num_candidates])
+        matrix = np.zeros([self.num_voters, self.num_voters])
 
         for v1 in range(self.num_voters):
             for v2 in range(self.num_voters):
                 # Spearman distance between votes
-                matrix[v1][v2] = sum([abs(self.potes[v1][c] - self.potes[v2][c]) for c in range(self.num_candidates)])
+                #matrix[v1][v2] = sum([abs(self.potes[v1][c] - self.potes[v2][c]) for c in range(self.num_candidates)])
 
-        for i in range(self.num_candidates):
-            for j in range(i + 1, self.num_candidates):
-                matrix[i][j] /= float(self.num_candidates)
-                matrix[j][i] = 1. - matrix[i][j]
+                # Swap distance between votes
+                swap_distance = 0
+                for i in range(self.num_candidates):
+                    for j in range(i+1, self.num_candidates):
+                        if (self.potes[v1][i] > self.potes[v1][j] and self.potes[v2][i] < self.potes[v2][j]) or \
+                           (self.potes[v1][i] < self.potes[v1][j] and self.potes[v2][i] > self.potes[v2][j]):
+                            swap_distance += 1
+                matrix[v1][v2] = swap_distance
+
+        # VOTERLIKENESS IS SYMETRIC
+        for i in range(self.num_voters):
+            for j in range(i + 1, self.num_voters):
+                #matrix[i][j] /= float(self.num_candidates)
+                matrix[j][i] = matrix[i][j]
 
         return matrix
 
@@ -563,15 +582,27 @@ class Election:
             borda_vector = sorted(borda_vector, reverse=True)
             #print(borda_vector)
 
+        #print(borda_vector)
+
         return borda_vector, len(borda_vector)
 
-    """
-    def votes_to_bordawise_vector(self):
+    def votes_to_agg_voterlikeness_vector(self):
+        """ convert VOTES to Borda vector """
 
-        vector = get_borda_points(self.votes, self.num_voters, self.num_candidates)
-        vector = sorted(vector, reverse=True)
+        vector = np.zeros([self.num_voters])
+
+        for v1 in range(self.num_voters):
+            for v2 in range(self.num_voters):
+
+                swap_distance = 0
+                for i in range(self.num_candidates):
+                    for j in range(i+1, self.num_candidates):
+                        if (self.potes[v1][i] > self.potes[v1][j] and self.potes[v2][i] < self.potes[v2][j]) or \
+                           (self.potes[v1][i] < self.potes[v1][j] and self.potes[v2][i] > self.potes[v2][j]):
+                            swap_distance += 1
+                vector[v1] += swap_distance
+
         return vector, len(vector)
-    """
 
     def votes_to_bordawise_vector_long_empty(self):
 
@@ -592,18 +623,19 @@ class Election:
 
         return vector, num_possible_scores
 
-
-
-
 def import_soc_elections(experiment_id, election_id):
     file_name = str(election_id) + ".soc"
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", "soc_original", file_name)
     my_file = open(path, 'r')
 
+    param = 0
     first_line = my_file.readline()
     if first_line[0] != '#':
         num_candidates = int(first_line)
     else:
+        first_line = first_line.strip().split()
+        if any(map(str.isdigit, first_line[len(first_line)-1])):
+            param = first_line[len(first_line)-1]
         num_candidates = int(my_file.readline())
 
     for _ in range(num_candidates):
@@ -624,7 +656,7 @@ def import_soc_elections(experiment_id, election_id):
                 votes[it][l] = int(line[l + 1])
             it += 1
 
-    return votes, num_voters, num_candidates
+    return votes, num_voters, num_candidates, param
 
 
 def get_borda_ranking(votes, num_voters, num_candidates):
@@ -680,11 +712,8 @@ def import_fake_elections(experiment_id, election_id):
     num_candidates = int(my_file.readline().strip())
     fake_model_name = str(my_file.readline().strip())
     if fake_model_name == 'crate':
-        fake_param = []
-        fake_param.append(float(my_file.readline().strip()))
-        fake_param.append(float(my_file.readline().strip()))
-        fake_param.append(float(my_file.readline().strip()))
-        fake_param.append(float(my_file.readline().strip()))
+        fake_param = [float(my_file.readline().strip()), float(my_file.readline().strip()),
+                      float(my_file.readline().strip()), float(my_file.readline().strip())]
     else:
         fake_param = float(my_file.readline().strip())
 
@@ -749,7 +778,7 @@ def get_fake_matrix_single(fake_model_name, num_candidates, num_voters):
             for j in range(int(num_candidates/2), num_candidates):
                 if i != j:
                     matrix[i][j] = 0.5
-    #print(matrix)
+
     return matrix
 
 
@@ -829,7 +858,7 @@ def convex_combination(base_1, base_2, length=0, alpha=0):
 
 
 def crate_combination(base_1, base_2, base_3, base_4, length=0, alpha=None):
-    #print(alpha)
+
     vectors = np.zeros([length, length])
     for i in range(length):
         for j in range(length):

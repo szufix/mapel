@@ -1,6 +1,7 @@
-from setuptools import setup, find_packages
 import os
- 
+
+from setuptools import setup, find_packages
+
 rootDir = os.path.abspath(os.path.dirname(__file__))
 reqPath = os.path.join(rootDir, 'requirements.txt')
 readmePath = os.path.join(rootDir, 'README.md')

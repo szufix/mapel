@@ -1,21 +1,98 @@
 #!/usr/bin/env python
 
-from . import metrics as metr
-from . import winners as winpr
-from . import elections as el
-from . import objects as obj
-
-import time
-import os
 import csv
+import os
 import random as rand
-
-from shutil import copyfile
-import numpy as np
+import time
 from collections import Counter
+from shutil import copyfile
 
-from skopt import gp_minimize
 import matplotlib.pyplot as plt
+import numpy as np
+from skopt import gp_minimize
+
+from . import elections as el
+from . import metrics as metr
+from . import objects as obj
+from . import winners as win
+import copy
+
+
+def compute_approx(experiment_id, method='hb', algorithm='greedy', num_winners=10):
+
+    model = obj.Model(experiment_id)
+
+    file_name = "experiments/" + experiment_id + "/controllers/approx/" + method + "_" + algorithm + ".txt"
+    file_output = open(file_name, 'w')
+    num_lines = model.num_elections
+    file_output.write(str(num_lines) + "\n")
+
+    Z = 0
+    for fam in range(model.num_families):
+
+        for _ in range(model.families[fam].size):
+
+            print(Z)
+            election_id = "core_" + str(Z)
+            # # exact
+            # file_name = "experiments/" + experiment_id + "/controllers/orders/" + election_id + "_" + method + ".txt"
+            # file_controllers = open(file_name, 'r')
+            # num_electitons = int(file_controllers.readline())
+            # num_winners = int(file_controllers.readline())
+            # time = float(file_controllers.readline())
+            # winners = []
+            # for i in range(num_winners):
+            #     winner = file_controllers.readline()
+            #     winners.append(int(winner))
+
+            params = {}
+            params['orders'] = num_winners
+            params['voters'] = model.families[fam].num_voters
+            params['candidates'] = model.families[fam].num_candidates
+            params['elections'] = model.num_elections
+
+
+            # print(orders)
+            if method == "pav":
+                winners_1 = win.get_winners(params, copy.deepcopy(model.elections[Z].votes), method)
+            elif method == "hb":
+                rule = {}
+                rule['name'] = 'hb'
+                rule['length'] = num_winners
+                rule['type'] = 'borda_owa'
+                winners_1 = win.get_winners(params, copy.deepcopy(model.elections[Z].votes), rule)
+
+
+            # print(orders)
+            if method == "pav":
+                score_1 = win.check_pav_score(copy.deepcopy(model.elections[Z].votes), params, winners_1)
+            elif method == "hb":
+                score_1 = win.check_hb_score(copy.deepcopy(model.elections[Z].votes), params, winners_1)
+
+            # approx
+            # """
+            if method == "pav":
+                winners_2 = win.get_winners_approx_pav(copy.deepcopy(model.elections[Z].votes), params, algorithm)
+            elif method == "hb":
+                winners_2 = win.get_winners_approx_hb(copy.deepcopy(model.elections[Z].votes), params, algorithm)
+
+            # print(orders)
+            if method == "pav":
+                score_2 = win.check_pav_score(copy.deepcopy(model.elections[Z].votes), params, winners_2)
+            elif method == "hb":
+                score_2 = win.check_hb_score(copy.deepcopy(model.elections[Z].votes), params, winners_2)
+
+            print(score_1, score_2)
+            output = score_2 / score_1
+            print(output)
+
+            file_output.write(str(output) + "\n")
+
+            Z = Z+1
+
+    file_output.close()
+
+    print("\nDone.")
 
 
 def merge_segments(experiment_id, num_segments):
@@ -1321,72 +1398,6 @@ def compare_metrics():
     plt.yticks(fontsize=14)
     plt.savefig("pairwise_vs_exact.png", bbox_inches="tight")
     plt.show()
-
-    print("\nDone.")
-
-
-def compute_approx():
-
-    experiment_id = "final"
-    algorithm = "removal"
-    method = "hb"
-
-    file_name = "experiments/" + experiment_id + "/controllers/approx/" + experiment_id + "_"+method+"_" + algorithm +".txt"
-    file_output = open(file_name, 'w')
-    num_lines = 860
-    file_output.write(str(num_lines)+"\n")
-
-    for Z in range(num_lines):
-
-        print(Z)
-        election_id = "core_" + str(Z)
-
-        # exact
-        file_name = "experiments/" + experiment_id + "/controllers/orders/" + election_id + "_"+method+".txt"
-        file_controllers = open(file_name, 'r')
-        num_electitons = int(file_controllers.readline())
-        num_winners = int(file_controllers.readline())
-        time = float(file_controllers.readline())
-        winners = []
-        for i in range(num_winners):
-            winner = file_controllers.readline()
-            winners.append(int(winner))
-
-        elections_1, params = el.import_elections(experiment_id, election_id)
-        params['orders'] = num_winners
-
-        #print(orders)
-        if method == "pav":
-            score_1 = win.check_pav_score(copy.deepcopy(elections_1['votes'][0]), params, winners)
-        elif method == "hb":
-            score_1 = win.check_hb_score(copy.deepcopy(elections_1['votes'][0]), params, winners)
-
-        # approx
-        #"""
-        if method == "pav":
-            winners = win.get_winners_approx_pav(copy.deepcopy(elections_1['votes'][0]), params, algorithm)
-        elif method == "hb":
-            winners = win.get_winners_approx_hb(copy.deepcopy(elections_1['votes'][0]), params, algorithm)
-
-        #print(orders)
-        if method == "pav":
-            score_2 = win.check_pav_score(copy.deepcopy(elections_1['votes'][0]), params, winners)
-        elif method == "hb":
-            score_2 = win.check_hb_score(copy.deepcopy(elections_1['votes'][0]), params, winners)
-
-
-        #print(score_1, score_2)
-        output = score_2 / score_1
-
-        if output > 1.:
-            output = 1.
-
-        #print(output)
-
-        file_output.write(str(output)+"\n")
-
-    file_output.close()
-
 
     print("\nDone.")
 
