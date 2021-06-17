@@ -16,7 +16,7 @@ with open(readmePath, "r") as f:
  
 setup(
     name='mapel',
-    version='1.2.1',
+    version='1.2.2',
     license='MIT',
     author='Stanislaw Szufa',
     author_email='s.szufa@gmail.com',
