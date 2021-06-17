@@ -1,5 +1,5 @@
 
-from .voting import elections as el
+from .voting import _elections as el
 from .voting import embedding as emb
 from .voting import metrics as metr
 from .voting import print as pr
@@ -127,3 +127,7 @@ def compute_effective_num_candidates(experiment_id, **kwargs):
 
 def compute_condorcet_existence(experiment_id):
     dev.compute_condorcet_existence(experiment_id)
+
+
+def create_structure(experiment_id):
+    dev.create_structure(experiment_id)

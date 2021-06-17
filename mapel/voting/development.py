@@ -410,12 +410,12 @@ def print_chart_condorcet_existence(experiment_id):
     # plt.plot(X, mallows, label='Mallows')
     # plt.plot(X, norm_mallows, label='Norm-Mallows')
 
-    X = [x for x in range(105, 155, 5)]
+    X = [x for x in range(10, 150+10, 10)]
     # X = [x for x in range(5, 105, 5)]
     # X = [10,20,30,40]
     plt.plot(X, mallows, label='Mallows '+str(model.families[0].param_1))
-    plt.plot(X, norm_mallows, label='Norm-Mallows')
-    plt.plot(X, impartial_culture, label='IC')
+    #plt.plot(X, norm_mallows, label='Norm-Mallows')
+    #plt.plot(X, impartial_culture, label='IC')
 
     plt.xticks(size=14)
     plt.yticks(size=14)
@@ -431,7 +431,8 @@ def print_chart_condorcet_existence(experiment_id):
     plt.show()
 
 
-# SUBELECTIONS
+## PART 3 ## SUBELECTIONS
+
 
 def thread_function(experiment_id, distance_name, all_pairs, model, election_models, specials, thread_ids, results, t, precision, metric_name):
 
@@ -551,4 +552,61 @@ def compute_subelection_weird(experiment_id, distance_name='voter_subelection', 
 
     time_stop = time.time()
     print(time_stop - time_start)
+
+
+### PART X ###
+
+
+def get_borda_score_std(election):
+
+    scores = np.zeros(election.num_candidates)
+
+    vectors = election.votes_to_positionwise_vectors()
+
+    for i in range(election.num_candidates):
+        for j in range(election.num_candidates):
+            scores[i] += vectors[i][j] * (election.num_candidates - j - 1)
+
+    std = np.std(scores)
+    return std
+
+
+def compute_borda_score_std(experiment_id):
+
+    model = obj.Model_xd(experiment_id)
+    scores = []
+
+    for election in model.elections:
+        score = get_borda_score_std(election)
+        scores.append(score)
+
+    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
+                             "borda_score_std.txt")
+    file_scores = open(file_name, 'w')
+    for i in range(model.num_elections):
+        file_scores.write(str(scores[i]) + "\n")
+    file_scores.close()
+
+
+def create_structure(experiment_id):
+
+    path = "experiments/"
+    if not os.path.isdir(path):
+        os.mkdir("experiments/")
+
+    os.mkdir("experiments/"+experiment_id)
+
+    os.mkdir("experiments/"+experiment_id+"/controllers")
+
+    os.mkdir("experiments/"+experiment_id+"/controllers/advanced")
+    os.mkdir("experiments/"+experiment_id+"/controllers/approx")
+    os.mkdir("experiments/"+experiment_id+"/controllers/basic")
+    os.mkdir("experiments/"+experiment_id+"/controllers/distances")
+    os.mkdir("experiments/"+experiment_id+"/controllers/orders")
+    os.mkdir("experiments/"+experiment_id+"/controllers/points")
+    os.mkdir("experiments/"+experiment_id+"/controllers/winners")
+
+    os.mkdir("experiments/"+experiment_id+"/elections")
+
+    os.mkdir("experiments/"+experiment_id+"/elections/soc_original")
 

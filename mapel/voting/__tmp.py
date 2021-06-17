@@ -3,6 +3,7 @@ import os
 import time
 #import concurrent.futures
 import itertools
+import matplotlib.pyplot as plt
 
 from threading import Thread
 import numpy as np
@@ -403,5 +404,235 @@ def compute_distances_from_guardians(experiment_id):
         for i in range(model.num_elections):
             file_scores.write(str(scores[i]) + "\n")
         file_scores.close()
+
+
+
+def paths_for_emd_positionwise(m=10, scale=1.):
+
+    unid = 1/3 * (m*m -1)
+    anid = m*m/4
+    stid = 2/3 * (m*m/4 - 1)
+    anun = 2/3 * (m*m/4 - 1)
+    stun = m*m/4
+    stan = 13/48 * m*m - 1/3
+
+    unid = round(unid*scale, 0)
+    anid = round(anid*scale, 0)-2
+    stid = round(stid*scale, 0)-2
+    anun = round(anun*scale, 0)-2
+    stun = round(stun*scale, 0)-2
+    stan = round(stan*scale, 0)
+
+    total = unid+anid+stid+anun+stun+stan
+
+    print('\nPaths for emd-Positionwise:')
+
+    print('unid: ', unid)
+    print('anid: ', anid)
+    print('stid: ', stid)
+    print('anun: ', anun)
+    print('stun: ', stun)
+    print('stan: ', stan)
+
+    print('total:', total)
+
+
+def paths_for_l1_positionwise(m=10, scale=1.):
+
+    unid = 2*(m-1)
+    anid = m/2
+    stid = 2*(m-2)
+    anun = 2*(m-2)
+    stun = m/2
+    stan = 2*(m-2)
+
+    unid = round(unid*scale, 0)
+    anid = round(anid*scale, 0)-2
+    stid = round(stid*scale, 0)-2
+    anun = round(anun*scale, 0)-2
+    stun = round(stun*scale, 0)-2
+    stan = round(stan*scale, 0)
+
+    total = unid+anid+stid+anun+stun+stan
+
+    print('\nPATHS for emd-Positionwise:')
+
+    print('unid: ', unid)
+    print('anid: ', anid)
+    print('stid: ', stid)
+    print('anun: ', anun)
+    print('stun: ', stun)
+    print('stan: ', stan)
+
+    print('total:', total)
+
+
+def paths_for_emd_bordawise(m=10, scale=1.):
+
+    idun = 1/12 * m * (m*m - 1)
+    stid = 1/48 * m * (m*m + 3*m - 4)
+    stun = 1/16 * m*m * (m - 1)
+
+    idun = round(idun*scale, 0)
+    stid = round(stid*scale, 0)-1
+    stun = round(stun*scale, 0)-2
+
+    total = idun+stid+stun
+
+    print('\nPATHS for emd-Bordawise:')
+
+    print('idun: ', idun)
+    print('stid: ', stid)
+    print('stun: ', stun)
+
+    print('total:', total)
+
+
+def paths_for_l1_bordawise(m=10, scale=1.):
+
+    idun = 1/4 * m * m
+    stid = 1/8 * m * (m - 1)
+    stun = 1/4 * m * (m - 1)
+
+    idun = round(idun*scale, 0)
+    stid = round(stid*scale, 0)-1
+    stun = round(stun*scale, 0)-2
+
+    total = idun+stid+stun
+
+    print('\nPATHS for l1-Bordawise:')
+
+    print('idun: ', idun)
+    print('stid: ', stid)
+    print('stun: ', stun)
+
+    print('total:', total)
+
+
+def paths_for_pairwise(m=10, scale=1.):
+
+    idun = 1/2 * m * (m-1)
+    stid = 1/4 * m * (m-2)
+    stun = 1/4 * m*m
+
+    idun = round(idun*scale, 0)
+    stid = round(stid*scale, 0)-1
+    stun = round(stun*scale, 0)-2
+
+    total = idun+stid+stun
+
+    print('\nPATHS for Pairwise:')
+
+    print('idun: ', idun)
+    print('stid: ', stid)
+    print('stun: ', stun)
+
+    print('total:', total)
+
+
+def precompute_phi_params():
+
+    for special in {0.2}:
+
+        for num_candidates in range(5,105,5):
+            norm_phi = el.phi_mallows_helper(num_candidates, rdis=special)
+
+            with open('mallows_helper.txt', 'a') as file_txt:
+                line = '(' + str(num_candidates) + ', ' + str(special) + '): ' + str(round(norm_phi, 10)) + ',\n'
+                file_txt.write(line)
+
+
+### AFTER 01.06.2021 ###
+
+def single_peaked_special(experiment_id):
+
+    num_sets = 15
+
+    model = obj.Model_xd(experiment_id, distance_name='positionwise', metric_name='emd')
+
+    order = {'identity': 0, 'uniformity': 1, 'antagonism': 2, 'stratification': 3,
+             'walsh_fake': 4, 'conitzer_fake': 5}
+
+    x_values = [10*i for i in range(1, num_sets+1)]
+
+    for name_1 in order:
+        for name_2 in order:
+            if order[name_1] >= order[name_2]:
+                continue
+
+            y_values = []
+            for i in range(num_sets):
+                a = num_sets*order[name_1]+i
+                b = num_sets*order[name_2]+i
+                value = model.distances[a][b] / metr.map_diameter(x_values[i])
+                y_values.append(value)
+
+            plt.plot(x_values, y_values)
+            title = str(name_1) + '-' + str(name_2)
+            plt.yticks([0, 0.25, 0.5, 0.75, 1])
+            plt.title(title)
+
+            file_name = title + ".png"
+            path = os.path.join(os.getcwd(), "images", "single-peaked", file_name)
+            plt.savefig(path, bbox_inches='tight')
+
+            plt.show()
+
+
+def single_peaked_special_double(experiment_id):
+
+    num_sets = 15
+
+    model = obj.Model_xd(experiment_id, distance_name='positionwise', metric_name='emd')
+
+    order = {'identity': 0, 'uniformity': 1, 'antagonism': 2, 'stratification': 3,
+             'walsh_fake': 4, 'conitzer_fake': 5}
+
+    x_values = [10*i for i in range(1, num_sets+1)]
+
+    name_1 = 'walsh_fake'
+    name_2b = 'identity'
+    name_2c = 'uniformity'
+
+    y_values = []
+    for i in range(num_sets):
+        a = num_sets*order[name_1]+i
+        b = num_sets*order[name_2b]+i
+        c = num_sets*order[name_2c]+i
+        value = model.distances[a][b] / metr.map_diameter(x_values[i])
+        value += model.distances[a][c] / metr.map_diameter(x_values[i])
+        y_values.append(value)
+
+    plt.plot(x_values, y_values, label='IDUN')
+
+    name_1 = 'walsh_fake'
+    name_2b = 'antagonism'
+    name_2c = 'stratification'
+
+    y_values = []
+    for i in range(num_sets):
+        a = num_sets*order[name_1]+i
+        b = num_sets*order[name_2b]+i
+        c = num_sets*order[name_2c]+i
+        value = model.distances[a][b] / metr.map_diameter(x_values[i])
+        value += model.distances[a][c] / metr.map_diameter(x_values[i])
+        y_values.append(value)
+
+    plt.plot(x_values, y_values, label='STAN')
+
+
+    plt.yticks([0, 0.25, 0.5, 0.75, 1, 1.25])
+    plt.legend()
+
+    title = 'walsh_vs_all'
+    plt.title(title)
+
+    file_name = title + ".png"
+    path = os.path.join(os.getcwd(), "images", "single-peaked", file_name)
+    plt.savefig(path, bbox_inches='tight')
+
+    plt.show()
+
+
 
 

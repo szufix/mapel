@@ -8,12 +8,14 @@ import os
 
 import numpy as np
 
+from . import _sp
+
 
 class Model:
     """Abstract model of elections."""
 
     def __init__(self, experiment_id, ignore=None, main_order_name="default", raw=False,
-                 distance_name="", metric_name="", num_elections=None):
+                 distance_name='positionwise', metric_name='emd', num_elections=None):
 
         self.experiment_id = experiment_id
 
@@ -141,7 +143,7 @@ class Model:
 class Model_xd(Model):
     """ Multi-dimensional model of elections """
 
-    def __init__(self, experiment_id, distance_name='', metric_name='', raw=False, self_distances=False):
+    def __init__(self, experiment_id, distance_name='positionwise', metric_name='emd', raw=False, self_distances=False):
 
         Model.__init__(self, experiment_id, distance_name=distance_name, metric_name=metric_name, raw=raw)
 
@@ -430,9 +432,9 @@ class Election:
         self.fake = check_if_fake(experiment_id, election_id)
 
         if self.fake:
-            self.fake_model_name, self.fake_param, self.num_voters, self.num_candidates = import_fake_elections(experiment_id, election_id)
+            self.model_name, self.fake_param, self.num_voters, self.num_candidates = import_fake_elections(experiment_id, election_id)
         else:
-            self.votes, self.num_voters, self.num_candidates, self.param = import_soc_elections(experiment_id, election_id)
+            self.votes, self.num_voters, self.num_candidates, self.param, self.model_name = import_soc_elections(experiment_id, election_id)
             self.potes = self.votes_to_potes()
 
     def votes_to_potes(self):
@@ -445,17 +447,19 @@ class Election:
 
     def votes_to_positionwise_vectors(self):
 
+
         vectors = [[0. for _ in range(self.num_candidates)] for _ in range(self.num_candidates)]
 
         if self.fake:
 
-            if self.fake_model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-                vectors = get_fake_vectors_single(self.fake_model_name, self.num_candidates, self.num_voters)
-            elif self.fake_model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-                vectors = get_fake_convex(self.fake_model_name, self.num_candidates, self.num_voters, self.fake_param,
+            if self.model_name in {'identity', 'uniformity', 'antagonism', 'stratification',
+                                        'walsh_fake', 'conitzer_fake'}:
+                vectors = get_fake_vectors_single(self.model_name, self.num_candidates, self.num_voters)
+            elif self.model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+                vectors = get_fake_convex(self.model_name, self.num_candidates, self.num_voters, self.fake_param,
                                           get_fake_vectors_single)
-            elif self.fake_model_name == 'crate':
-                vectors = get_fake_vectors_crate(self.fake_model_name, self.num_candidates, self.num_voters, self.fake_param)
+            elif self.model_name == 'crate':
+                vectors = get_fake_vectors_crate(self.model_name, self.num_candidates, self.num_voters, self.fake_param)
 
         else:
             for i in range(self.num_voters):
@@ -469,6 +473,10 @@ class Election:
             for i in range(self.num_candidates):
                 for j in range(self.num_candidates):
                     vectors[i][j] /= float(self.num_voters)
+
+        # # todo: change to original version
+        # if not self.fake:
+        #     vectors = [*zip(*vectors)]
 
         return vectors
 
@@ -513,10 +521,10 @@ class Election:
 
         if self.fake:
 
-            if self.fake_model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-                matrix = get_fake_matrix_single(self.fake_model_name, self.num_candidates, self.num_voters)
-            elif self.fake_model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-                matrix = get_fake_convex(self.fake_model_name, self.num_candidates, self.num_voters, self.fake_param,
+            if self.model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+                matrix = get_fake_matrix_single(self.model_name, self.num_candidates, self.num_voters)
+            elif self.model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+                matrix = get_fake_convex(self.model_name, self.num_candidates, self.num_voters, self.fake_param,
                                          get_fake_matrix_single)
 
         else:
@@ -568,11 +576,11 @@ class Election:
 
         if self.fake:
 
-            if self.fake_model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-                borda_vector = get_fake_borda_vector(self.fake_model_name, self.num_candidates, self.num_voters)
-            elif self.fake_model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-                borda_vector = get_fake_convex(self.fake_model_name, self.num_candidates, self.num_voters, self.fake_param,
-                                         get_fake_borda_vector)
+            if self.model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+                borda_vector = get_fake_borda_vector(self.model_name, self.num_candidates, self.num_voters)
+            elif self.model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+                borda_vector = get_fake_convex(self.model_name, self.num_candidates, self.num_voters, self.fake_param,
+                                               get_fake_borda_vector)
 
         else:
             c = self.num_candidates
@@ -623,6 +631,7 @@ class Election:
 
         return vector, num_possible_scores
 
+
 def import_soc_elections(experiment_id, election_id):
     file_name = str(election_id) + ".soc"
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", "soc_original", file_name)
@@ -631,9 +640,11 @@ def import_soc_elections(experiment_id, election_id):
     param = 0
     first_line = my_file.readline()
     if first_line[0] != '#':
+        model_name = 'empty'
         num_candidates = int(first_line)
     else:
         first_line = first_line.strip().split()
+        model_name = first_line[1]
         if any(map(str.isdigit, first_line[len(first_line)-1])):
             param = first_line[len(first_line)-1]
         num_candidates = int(my_file.readline())
@@ -656,7 +667,7 @@ def import_soc_elections(experiment_id, election_id):
                 votes[it][l] = int(line[l + 1])
             it += 1
 
-    return votes, num_voters, num_candidates, param
+    return votes, num_voters, num_candidates, param, model_name
 
 
 def get_borda_ranking(votes, num_voters, num_candidates):
@@ -747,6 +758,12 @@ def get_fake_vectors_single(fake_model_name, num_candidates, num_voters):
             for _ in range(num_candidates):
                 vectors[i][i] = 0.5
                 vectors[i][num_candidates - i - 1] = 0.5
+
+    elif fake_model_name == 'walsh_fake':
+        vectors = _sp.walsh(num_candidates)
+
+    elif fake_model_name == 'conitzer_fake':
+        vectors = _sp.conitzer(num_candidates)
 
     return vectors
 

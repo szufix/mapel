@@ -92,6 +92,8 @@ def compute_basic_distance(election_1, election_2, distance_name='', metric_name
         length = election_1.num_candidates
     metric_name = map_metric(metric_name)
     matching_cost = map_matching_cost(distance_name)
+    if election_1.num_candidates != election_2.num_candidates:
+        return -1
     cost_table = matching_cost(election_1, election_2, metric_name)
     objective_value = lp.solve_lp_matching_vector(cost_table, length)
     return objective_value
@@ -170,7 +172,7 @@ def compute_spearman_distance(election_1, election_2, distance_name='spearman', 
 
 # HELPER FUNCTIONS
 def get_matching_cost_positionwise(ele_1, ele_2, metric_name):
-    """ Get mathcing cost for positionwise distances """
+    """ Get matching cost for positionwise distances """
     vectors_1 = ele_1.votes_to_positionwise_vectors()
     vectors_2 = ele_2.votes_to_positionwise_vectors()
     size = ele_1.num_candidates
@@ -194,7 +196,7 @@ def l1(vector_1, vector_2, length):
 
 def l2(vector_1, vector_2, length):
     """ compute L2 metric """
-    return sum([math.pow((vector_1[i] - vector_2[i]), 2) for i in range(length)])
+    return math.pow(sum([math.pow((vector_1[i] - vector_2[i]), 2) for i in range(length)]), 0.5)
 
 
 def chebyshev(vector_1, vector_2, length):
@@ -218,6 +220,11 @@ def emd(vector_1, vector_2, length):
         dirt += abs(surplus)
         vector_1[i + 1] += surplus
     return dirt
+
+
+def hamming_distance(set_1, set_2):
+    """ Compute hamming distance """
+    return len(set_1) + len(set_2) - 2 * len(set_1.intersection(set_2))
 
 
 # SCORING FUNCTIONS
@@ -380,8 +387,8 @@ def single_thread(model, results, thread_ids, t, testing):
     """ Single thread for computing distance """
 
     for i, j in thread_ids:
-        # if t == 0 or (t < 10 and testing):
-        #    print(t, ' : ', i, j)
+        if t == 0 and testing:
+           print(t, ' : ', i, j)
 
         distance = get_distance(model.elections[i], model.elections[j], distance_name=model.distance_name,
                                 metric_name=model.metric_name)

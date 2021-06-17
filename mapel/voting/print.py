@@ -189,7 +189,7 @@ def add_tmp_points_to_picture(ax=None, model=None, ms=None, tmp=None, tmp2=None,
                            alpha=tmp[2] * model.families[k].alpha, s=ms*tmp2[2], marker=model.families[k].marker)
 
 
-def add_mixed_points_to_picture(ax=None, model=None, ms=None, tmp=None, tmp2=None, zorder=None, fuzzy_paths=True):
+def add_mixed_points_to_picture_2d(ax=None, model=None, ms=None, tmp=None, tmp2=None, zorder=None, fuzzy_paths=True):
     tmp=[1,1,1]
     # TEMPORARY VERSION
     ctr = 0
@@ -395,8 +395,13 @@ def add_guardians_to_picture(experiment_id, ax=None, values=None, legend=None, s
         plt.savefig(file_name, bbox_inches='tight')
 
 
-def add_basic_background_to_picture(ax=None, values=None, legend=None, saveas=None):
+def add_basic_background_to_picture(ax=None, values=None, legend=None, saveas=None, xlabel=None, title=None):
     file_name = os.path.join(os.getcwd(), "images", str(saveas))
+
+    if xlabel is not None:
+        plt.xlabel(xlabel, size=14)
+    if title is not None:
+        plt.suptitle(title, fontsize=16)
 
     if values is None and legend:
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -423,10 +428,10 @@ def saveas_tex(saveas=None):
 
 
 # MAIN FUNCTIONS
-def print_2d(experiment_id, num_winners=0, mask=False, mixed=False, fuzzy_paths=True,
+def print_2d(experiment_id, num_winners=0, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
              angle=0, reverse=False, update=False, values=None, attraction_factor=1, metric_name='',
              num_elections=None, secondary_order_name="positionwise_approx_cc", main_order_name="default",
-             distance_name="", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None,
+             distance_name="", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None, title=None,
              saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
              ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
@@ -462,7 +467,7 @@ def print_2d(experiment_id, num_winners=0, mask=False, mixed=False, fuzzy_paths=
     elif tmp:
         add_tmp_points_to_picture(ax=ax, model=model, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder)
     elif mixed:
-        add_mixed_points_to_picture(ax=ax, model=model, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder, fuzzy_paths=fuzzy_paths)
+        add_mixed_points_to_picture_2d(ax=ax, model=model, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder, fuzzy_paths=fuzzy_paths)
     else:
         add_basic_points_to_picture(ax=ax, model=model, ms=ms)
 
@@ -471,10 +476,11 @@ def print_2d(experiment_id, num_winners=0, mask=False, mixed=False, fuzzy_paths=
     elif levels:
         add_levels_to_picture(fig=fig, ax=ax, saveas=saveas, tex=tex)
     else:
-        add_basic_background_to_picture(ax=ax, values=values, legend=legend, saveas=saveas)
+        add_basic_background_to_picture(ax=ax, values=values, legend=legend, saveas=saveas, xlabel=xlabel, title=title)
 
     if guardians:
         add_guardians_to_picture(experiment_id, ax=ax, values=values, legend=legend, saveas=saveas)
+
 
     if tex:
         saveas_tex(saveas=saveas)
@@ -484,7 +490,7 @@ def print_2d(experiment_id, num_winners=0, mask=False, mixed=False, fuzzy_paths=
 
 
 def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None, metric_name='emd',
-             angle=0, reverse=False, update=False, values=None, coloring="purple",
+             angle=0, reverse=False, update=False, values=None, coloring="purple", mixed=False,
              num_elections=None, main_order_name="default", order="", distance_name="positionwise",
              saveas="map_3d", show=True, dot=9, normalizing_func=None, xticklabels=None, cmap=None):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
@@ -512,6 +518,8 @@ def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None, metric_name
         add_advanced_points_to_picture_3d(fig, ax, model, experiment_id,
                                           values=values, ms=ms, cmap=cmap,
                                           normalizing_func=normalizing_func)
+    # elif mixed:
+    #     add_mixed_points_to_picture_3d(ax=ax, model=model, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder, fuzzy_paths=fuzzy_paths)
     else:
         for k in range(model.num_families):
             if model.families[k].show:
@@ -519,7 +527,7 @@ def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None, metric_name
                            color=model.families[k].color, label=model.families[k].label,
                            alpha=model.families[k].alpha, s=dot)
 
-    text_name = str(model.num_voters) + " x " + str(model.num_candidates)
+    # text_name = str(model.num_voters) + " x " + str(model.num_candidates)
     # text = ax.text(0.0, 1.05, text_name, transform=ax.transAxes)
     file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
 

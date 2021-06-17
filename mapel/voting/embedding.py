@@ -15,8 +15,8 @@ import numpy as np
 from . import objects as obj
 
 
-def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="",
-                     random=True, attraction_factor=1., metric_name=''):
+def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="positionwise",
+                     random=True, attraction_factor=1., metric_name='emd'):
     """ Convert multi-dimensional model to two-dimensional model """
 
     model = obj.Model_xd(experiment_id, distance_name=distance_name, metric_name=metric_name)
