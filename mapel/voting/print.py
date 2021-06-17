@@ -10,7 +10,7 @@ import numpy as np
 import scipy.stats as stats
 from PIL import Image
 
-from . import elections as el
+from . import _elections as el
 from . import metrics as metr
 from . import objects as obj
 
@@ -835,69 +835,69 @@ def excel_super(experiment_id, values="", scale="none", metric="positionwise", s
     if show:
         plt.show()
 
-def excel_super_2(experiment_id, values="", scale="none", metric="positionwise", saveas="correlation",
-                            show=True, target='identity', ylabel_text=''):
-    num_elections = 1000
-
-    file_name = os.path.join(os.getcwd(), "experiments", str(experiment_id), "controllers", "advanced",
-                             str(values) + ".txt")
-
-    file_2 = open(file_name, 'r')
-
-    distances = [0. for _ in range(num_elections)]
-
-    if target == 'identity':
-        tag = 'id'
-        xlabel_text = "average distance from ID elections"
-
-        model = obj.Model(experiment_id)
-        x = 0
-        election_2_id = 'guess'
-        election_model = 'identity'
-        distance_name = 'positionwise'
-        metric_type = 'emd'
-        el.generate_elections(experiment_id, election_model=election_model, election_id=election_2_id,
-                              num_voters=model.num_voters, num_candidates=model.num_candidates,
-                              special=x)
-        #election_2 = obj.Election(experiment_id, election_2_id)
-
-        for i in range(model.num_elections):
-            election_1_id = 'core_' + str(i)
-            #election_1 = obj.Election(experiment_id, election_1_id)
-            elections_ids = [election_1_id, election_2_id]
-            distance = metr.get_distance(experiment_id, distance_name, elections_ids, metric_type)
-            #print(distance)
-            distances[i] = distance
-
-
-    plt.hist(distances, bins=12)
-    plt.show()
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    pear = stats.pearsonr(times, distances)
-    pear = round(pear[0], 2)
-    model = obj.Model(experiment_id)
-
-    left = 0
-    for k in range(model.num_families):
-        right = left + model.families[k].size
-        ax.scatter(distances[left:right], times[left:right],
-                   color=model.families[k].color, label=model.families[k].label,
-                   alpha=model.families[k].alpha, s=9, marker=model.families[k].marker)
-        left = right
-
-    title_text = str(model.num_voters) + " voters  x  " + str(model.num_candidates) + " candidates"
-    pear_text = "PCC = " + str(pear)
-    add_text = ax.text(0.7, 0.8, pear_text, transform=ax.transAxes)
-    plt.title(title_text)
-    plt.xlabel(xlabel_text)
-    plt.ylabel(ylabel_text)
-    file_name = os.path.join(os.getcwd(), "images", "correlation", str(saveas) + '_' + tag + ".png")
-    # lgd = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    plt.savefig(file_name, bbox_inches='tight')
-    if show:
-        plt.show()
+# def excel_super_2(experiment_id, values="", scale="none", metric="positionwise", saveas="correlation",
+#                             show=True, target='identity', ylabel_text=''):
+#     num_elections = 1000
+#
+#     file_name = os.path.join(os.getcwd(), "experiments", str(experiment_id), "controllers", "advanced",
+#                              str(values) + ".txt")
+#
+#     file_2 = open(file_name, 'r')
+#
+#     distances = [0. for _ in range(num_elections)]
+#
+#     if target == 'identity':
+#         tag = 'id'
+#         xlabel_text = "average distance from ID elections"
+#
+#         model = obj.Model(experiment_id)
+#         x = 0
+#         election_2_id = 'guess'
+#         election_model = 'identity'
+#         distance_name = 'positionwise'
+#         metric_type = 'emd'
+#         el.generate_elections(experiment_id, election_model=election_model, election_id=election_2_id,
+#                               num_voters=model.num_voters, num_candidates=model.num_candidates,
+#                               special=x)
+#         #election_2 = obj.Election(experiment_id, election_2_id)
+#
+#         for i in range(model.num_elections):
+#             election_1_id = 'core_' + str(i)
+#             #election_1 = obj.Election(experiment_id, election_1_id)
+#             elections_ids = [election_1_id, election_2_id]
+#             distance = metr.get_distance(experiment_id, distance_name, elections_ids, metric_type)
+#             #print(distance)
+#             distances[i] = distance
+#
+#
+#     plt.hist(distances, bins=12)
+#     plt.show()
+#
+#     fig = plt.figure()
+#     ax = fig.add_subplot(111)
+#     pear = stats.pearsonr(times, distances)
+#     pear = round(pear[0], 2)
+#     model = obj.Model(experiment_id)
+#
+#     left = 0
+#     for k in range(model.num_families):
+#         right = left + model.families[k].size
+#         ax.scatter(distances[left:right], times[left:right],
+#                    color=model.families[k].color, label=model.families[k].label,
+#                    alpha=model.families[k].alpha, s=9, marker=model.families[k].marker)
+#         left = right
+#
+#     title_text = str(model.num_voters) + " voters  x  " + str(model.num_candidates) + " candidates"
+#     pear_text = "PCC = " + str(pear)
+#     add_text = ax.text(0.7, 0.8, pear_text, transform=ax.transAxes)
+#     plt.title(title_text)
+#     plt.xlabel(xlabel_text)
+#     plt.ylabel(ylabel_text)
+#     file_name = os.path.join(os.getcwd(), "images", "correlation", str(saveas) + '_' + tag + ".png")
+#     # lgd = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+#     plt.savefig(file_name, bbox_inches='tight')
+#     if show:
+#         plt.show()
 
 # HELPER FUNCTIONS
 def custom_div_cmap(num_colors=101, name='custom_div_cmap',

@@ -2,15 +2,18 @@
 
 import os
 import time
+from threading import Thread
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from . import elections as el
+from . import _elections as el
 from . import metrics as metr
 from . import objects as obj
 from . import winners as win
 import copy
+
+import itertools
 
 
 ## PART 0 ##
@@ -269,39 +272,39 @@ def compute_statistics(experiment_id, method='hb', algorithm='greedy', num_winne
     print("\nDone.")
 
 
-def compute_overlapping_of_winners(experiment_id, num_winners=10):
-
-    model = obj.Model(experiment_id, raw=True)
-
-    file_name = "experiments/" + experiment_id + "/controllers/approx/" + 'overlap' + ".txt"
-    file_output = open(file_name, 'w')
-    num_lines = model.num_elections
-    file_output.write(str(num_lines) + "\n")
-
-    winners_1 = import_winners(experiment_id, method='plurality', algorithm='exact',
-                               num_winners=num_winners, num_elections=model.num_elections)
-    winners_2 = app.import_winners(experiment_id, method='borda', algorithm='exact',
-                               num_winners=num_winners, num_elections=model.num_elections)
-
-    Z = 0
-    for fam in range(model.num_families):
-
-        for _ in range(model.families[fam].size):
-
-            print(Z)
-
-            winners = (set(winners_1[Z])).intersection(set(winners_2[Z]))
-
-            output = len(winners)
-
-            file_output.write(str(output) + "\n")
-
-            Z = Z+1
-
-    file_output.close()
-
-    print("\nDone.")
-
+# def compute_overlapping_of_winners(experiment_id, num_winners=10):
+#
+#     model = obj.Model(experiment_id, raw=True)
+#
+#     file_name = "experiments/" + experiment_id + "/controllers/approx/" + 'overlap' + ".txt"
+#     file_output = open(file_name, 'w')
+#     num_lines = model.num_elections
+#     file_output.write(str(num_lines) + "\n")
+#
+#     winners_1 = import_winners(experiment_id, method='plurality', algorithm='exact',
+#                                num_winners=num_winners, num_elections=model.num_elections)
+#     winners_2 = app.import_winners(experiment_id, method='borda', algorithm='exact',
+#                                num_winners=num_winners, num_elections=model.num_elections)
+#
+#     Z = 0
+#     for fam in range(model.num_families):
+#
+#         for _ in range(model.families[fam].size):
+#
+#             print(Z)
+#
+#             winners = (set(winners_1[Z])).intersection(set(winners_2[Z]))
+#
+#             output = len(winners)
+#
+#             file_output.write(str(output) + "\n")
+#
+#             Z = Z+1
+#
+#     file_output.close()
+#
+#     print("\nDone.")
+#
 
 def print_statistics(experiment_id, method='hb', algorithm='greedy', num_winners=10):
 

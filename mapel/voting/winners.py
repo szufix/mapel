@@ -7,7 +7,7 @@ import time
 
 import numpy as np
 
-from . import elections as el
+from . import _elections as el
 from . import lp as lp
 
 

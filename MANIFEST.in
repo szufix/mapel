@@ -16,8 +16,9 @@ mapel/_tmp.py
 mapel/_workshop.py
 
 
-exclude mapel/voting/_canonical.py
-exclude mapel/voting/_pabulib.py
-exclude mapel/voting/_preflib.py
-exclude mapel/voting/_mapel.py
-exclude mapel/voting/_tmp.py
+exclude mapel/voting/__canonical.py
+exclude mapel/voting/__pabulib.py
+exclude mapel/voting/__preflib.py
+exclude mapel/voting/__mapel.py
+exclude mapel/voting/__tmp.py
+exclude mapel/voting/__sc.py

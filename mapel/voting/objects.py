@@ -8,8 +8,6 @@ import os
 
 import numpy as np
 
-from . import _sp
-
 
 class Model:
     """Abstract model of elections."""
@@ -759,11 +757,11 @@ def get_fake_vectors_single(fake_model_name, num_candidates, num_voters):
                 vectors[i][i] = 0.5
                 vectors[i][num_candidates - i - 1] = 0.5
 
-    elif fake_model_name == 'walsh_fake':
-        vectors = _sp.walsh(num_candidates)
-
-    elif fake_model_name == 'conitzer_fake':
-        vectors = _sp.conitzer(num_candidates)
+    # elif fake_model_name == 'walsh_fake':
+    #     vectors = _sp.walsh(num_candidates)
+    #
+    # elif fake_model_name == 'conitzer_fake':
+    #     vectors = _sp.conitzer(num_candidates)
 
     return vectors
 
