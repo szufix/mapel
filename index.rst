@@ -119,9 +119,7 @@ Exact structure of percomputed experiments::
     ?exp_name?
     ├── controllers     
     │   ├── basic
-    │   │   ├── map.csv                                     #  contains technical details of the experiment
-    │   │   ├── meta.csv                                    #  contains meta details of the experiment
-    │   │   └── matrix.txt                                  #  auxiliary file print_matrix() function
+    │   │   └── map.txt                                  #  contains technical details of the experiment
     │   ├── advanced
     │   │   ├── hb_time.txt (only in testbed_100_100)
     │   │   ├── zip_sizes.txt (only in testbed_100_100)
@@ -641,7 +639,52 @@ Meta information regarding a set of elections.
     self.marker             # char
     self.starting_from      # integer
 
-    
+
+Generating Elections
+=============================
+List of available election models:
+
+::
+
+    impartial_culture       # Impartial Culture
+    iac                     # Impartial Anonymous Culture
+    group-separable         # Group-Separable
+    spoc_conitzer           # SPOC
+    conitzer                # Single-Peaked (by Conitzer)
+    walsh                   # Single-Peaked (by Walsh)
+    1d_interval             # 1D Interval
+    2d_disc                 # 2D Disc
+    3d_cube                 # 3D Cube
+    2d_sphere               # 2D Sphere
+    3d_sphere               # 3D Sphere
+    single-crossing         # Single-Crossing
+    mallows                 # Mallows
+    norm_mallows            # Normalized Mallows
+    urn_model               # Urn
+
+Below we present more detailed elections regarding the election models.
+
+Impartial Models
+-----------------------------
+We provide two parameterless impartial models:
+::
+
+    impartial_culture       # Impartial Culture
+    iac                     # Impartial Anonymous Culture
+
+
+
+Mallows Models
+-----------------------------
+We provide two variants of Mallows models.
+
+
+Urn Model
+-----------------------------
+
+Single-Peaked Models
+-----------------------------
+
 Extras
 =============================
 
