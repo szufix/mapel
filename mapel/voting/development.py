@@ -19,43 +19,6 @@ import itertools
 ## PART 0 ##
 
 
-def compute_highest_borda(experiment_id):
-    """ Compute highest Borda score for all elections in a given experiment """
-
-    model = obj.Model(experiment_id)
-    scores = []
-
-    for election in model.elections:
-        score = metr.get_highest_borda_score(election)
-        scores.append(score)
-        #print(election_id, score)
-
-    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
-                             "highest_borda.txt")
-    file_scores = open(file_name, 'w')
-    for i in range(model.num_elections):
-        file_scores.write(str(scores[i]) + "\n")
-    file_scores.close()
-
-
-def compute_highest_plurality(experiment_id):
-    """ Compute highest Plurality score for all elections in a given experiment """
-
-    model = obj.Model(experiment_id)
-    scores = []
-
-    for election in model.elections:
-        score = metr.get_highest_plurality_score(election)
-        scores.append(score)
-        #print(election_id, score)
-
-    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
-                             "highest_plurality.txt")
-    file_scores = open(file_name, 'w')
-    for i in range(model.num_elections):
-        file_scores.write(str(scores[i]) + "\n")
-    file_scores.close()
-
 
 def compute_lowest_dodgson(experiment_id, clear=True):
     """ Compute lowest Dodgson score for all elections in a given experiment """
@@ -226,7 +189,7 @@ def compute_condorcet_existence(experiment_id):
 ## PART 2 ##
 
 
-def compute_statistics(experiment_id, method='hb', algorithm='greedy', num_winners=10):
+def compute_statistics_tmp(experiment_id, method='hb', algorithm='greedy', num_winners=10):
 
     model = obj.Model(experiment_id)
 
@@ -435,7 +398,7 @@ def print_chart_condorcet_existence(experiment_id):
 
 
 ## PART 3 ## SUBELECTIONS
-
+ 
 
 def thread_function(experiment_id, distance_name, all_pairs, model, election_models, specials, thread_ids, results, t, precision, metric_name):
 
@@ -560,56 +523,30 @@ def compute_subelection_weird(experiment_id, distance_name='voter_subelection', 
 ### PART X ###
 
 
-def get_borda_score_std(election):
-
-    scores = np.zeros(election.num_candidates)
-
-    vectors = election.votes_to_positionwise_vectors()
-
-    for i in range(election.num_candidates):
-        for j in range(election.num_candidates):
-            scores[i] += vectors[i][j] * (election.num_candidates - j - 1)
-
-    std = np.std(scores)
-    return std
-
-
-def compute_borda_score_std(experiment_id):
-
-    model = obj.Model_xd(experiment_id)
-    scores = []
-
-    for election in model.elections:
-        score = get_borda_score_std(election)
-        scores.append(score)
-
-    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
-                             "borda_score_std.txt")
-    file_scores = open(file_name, 'w')
-    for i in range(model.num_elections):
-        file_scores.write(str(scores[i]) + "\n")
-    file_scores.close()
-
-
 def create_structure(experiment_id):
 
-    path = "experiments/"
-    if not os.path.isdir(path):
-        os.mkdir("experiments/")
+    # PREPARE STRUCTURE
 
-    os.mkdir("experiments/"+experiment_id)
+    if not os.path.isdir("experiments/"):
+        os.mkdir(os.path.join(os.getcwd(), "experiments"))
 
-    os.mkdir("experiments/"+experiment_id+"/controllers")
+    os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id))
 
-    os.mkdir("experiments/"+experiment_id+"/controllers/advanced")
-    os.mkdir("experiments/"+experiment_id+"/controllers/approx")
-    os.mkdir("experiments/"+experiment_id+"/controllers/basic")
-    os.mkdir("experiments/"+experiment_id+"/controllers/distances")
-    os.mkdir("experiments/"+experiment_id+"/controllers/orders")
-    os.mkdir("experiments/"+experiment_id+"/controllers/points")
-    os.mkdir("experiments/"+experiment_id+"/controllers/winners")
+    os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "distances"))
+    os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "features"))
+    os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "coordinates"))
+    os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "elections"))
 
-    os.mkdir("experiments/"+experiment_id+"/elections")
+    # PREPARE MAP.CSV FILE
 
-    os.mkdir("experiments/"+experiment_id+"/elections/soc_original")
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "map.csv")
+    with open(path, 'w') as file_csv:
+        file_csv.write("family_size,num_candidates,num_voters,election_model,param_1,param_2,color,alpha,label,marker,show\n")
+        file_csv.write("10,10,100,impartial_culture,0,0,black,1,Impartial Culture,o,t\n")
+        file_csv.write("10,10,100,urn_model,0.1,0,blue,1,Urn model,o,t")
+
+
+
+
+
 

@@ -19,10 +19,6 @@ def prepare_elections(experiment_id, **kwargs):
     el.prepare_elections(experiment_id, **kwargs)
 
 
-def generate_elections(experiment_id, **kwargs):
-    el.generate_elections(experiment_id, **kwargs)
-
-
 ###########################
 ### COMPUTING DISTANCES ###
 ###########################
@@ -131,3 +127,12 @@ def compute_condorcet_existence(experiment_id):
 
 def create_structure(experiment_id):
     dev.create_structure(experiment_id)
+
+
+def get_matrix(experiment_id, **kwargs):
+    return el.get_matrix(experiment_id, **kwargs)
+
+
+def generate_single_election(**kwargs):
+    return el.generate_single_election(**kwargs)
+

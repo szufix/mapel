@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 """ this module is used to generate and import elections"""
 
-from mapel.voting.elections.group_separable import generate_group_separable_election
+from mapel.voting.elections.group_separable import generate_group_separable_election, get_gs_caterpillar_matrix
 from mapel.voting.elections.mallows import generate_mallows_election, \
     phi_mallows_helper
 from mapel.voting.elections.euclidean import generate_elections_1d_simple, \
     generate_elections_2d_simple, generate_elections_nd_simple
 from mapel.voting.elections.single_peaked import generate_conitzer_election, \
-    generate_walsh_election, generate_spoc_conitzer_election
-from mapel.voting.elections.single_crossing import generate_single_crossing_election
+    generate_walsh_election, generate_spoc_conitzer_election, get_walsh_matrix, get_conitzer_matrix
+from mapel.voting.elections.single_crossing import generate_single_crossing_election, get_single_crossing_matrix
 from mapel.voting.elections.impartial import generate_impartial_culture_election, \
     generate_impartial_anonymous_culture_election
 from mapel.voting.elections.guardians import generate_real_antagonism_election, \
     generate_real_identity_election, generate_real_stratification_election, generate_real_uniformity_election
+
 
 import os
 import random as rand
@@ -252,10 +253,10 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
                 #print(model.families[i].size)
                 rand_ids = rand.choices(ids, k=model.families[i].size)
                 for ri in rand_ids:
-                    elections_id = "core_" + str(id_)
-                    tmp_elections_type = election_model + '_' + str(ri)
-                    #print(tmp_elections_type)
-                    generate_elections_preflib(experiment_id, election_model=tmp_elections_type, elections_id=elections_id,
+                    election_id = "core_" + str(id_)
+                    tmp_election_type = election_model + '_' + str(ri)
+                    #print(tmp_election_type)
+                    generate_elections_preflib(experiment_id, election_model=tmp_election_type, elections_id=election_id,
                                                   num_voters=model.families[i].num_voters,
                                                   num_candidates=model.families[i].num_candidates,
                                                   special=param_1,
@@ -312,8 +313,9 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
                     elif election_model == 'urn_model' and copy_param_1 == -2.:
                         param_1 = round(j/10000., 2)
 
-                    elections_id = "core_" + str(id_)
-                    generate_elections(experiment_id, election_model=election_model, election_id=elections_id,
+                    # election_id = "core_" + str(id_)
+                    election_id = election_model + '_' + str(j)
+                    generate_elections(experiment_id, election_model=election_model, election_id=election_id,
                                           num_voters=model.families[i].num_voters,
                                           num_candidates=model.families[i].num_candidates,
                                           special=param_1, second_param=param_2)
@@ -332,7 +334,7 @@ def generate_elections(experiment_id, election_model=None, election_id=None,
     if election_model in  {'identity', 'uniformity', 'antagonism', 'stratification',
                            'unid', 'anid', 'stid', 'anun', 'stun', 'stan',
                            'crate', 'walsh_fake', 'conitzer_fake'}:
-        path = os.path.join("experiments", str(experiment_id), "elections", "soc_original",
+        path = os.path.join("experiments", str(experiment_id), "elections",
                             (str(election_id) + ".soc"))
         file_ = open(path, 'w')
         file_.write('$ fake' + '\n')
@@ -350,79 +352,16 @@ def generate_elections(experiment_id, election_model=None, election_id=None,
 
     else:
 
-        if election_model == 'mallows' and special == 0:
-            special = rand.random()
-        elif election_model == 'norm_mallows' and special == 0:
-            special = phi_mallows_helper(num_candidates)
-        elif election_model == 'norm_mallows' and special >= 0:
-            if (num_candidates, special) in LOOKUP_TABLE:
-                special = LOOKUP_TABLE[(num_candidates, special)]
-            else:
-                special = phi_mallows_helper(num_candidates, rdis=special)
-        elif election_model == 'urn_model' and special == 0:
-            special = gamma.rvs(0.8)
-
-        naked_models = {'impartial_culture': generate_impartial_culture_election,
-                        'iac': generate_impartial_anonymous_culture_election,
-                        'conitzer': generate_conitzer_election,
-                        'spoc_conitzer': generate_spoc_conitzer_election,
-                        'walsh': generate_walsh_election,
-                        'single-crossing': generate_single_crossing_election,
-                        'real_identity': generate_real_identity_election,
-                        'real_uniformity': generate_real_uniformity_election,
-                        'real_antagonism': generate_real_antagonism_election,
-                        'real_stratification': generate_real_stratification_election}
-
-        euclidean_models = {'1d_interval': generate_elections_1d_simple,
-                            '1d_gaussian': generate_elections_1d_simple,
-                            '1d_one_sided_triangle': generate_elections_1d_simple,
-                            '1d_full_triangle': generate_elections_1d_simple,
-                            '1d_two_party': generate_elections_1d_simple,
-                            '2d_disc': generate_elections_2d_simple,
-                            '2d_square': generate_elections_2d_simple,
-                            '2d_gaussian': generate_elections_2d_simple,
-                            '3d_cube': generate_elections_nd_simple,
-                            '4d_cube': generate_elections_nd_simple,
-                            '5d_cube': generate_elections_nd_simple,
-                            '10d_cube': generate_elections_nd_simple,
-                            '15d_cube': generate_elections_nd_simple,
-                            '20d_cube': generate_elections_nd_simple,
-                            '40d_cube': generate_elections_nd_simple,
-                            '2d_sphere': generate_elections_2d_simple,
-                            '3d_sphere': generate_elections_nd_simple,
-                            '4d_sphere': generate_elections_nd_simple,
-                            '5d_sphere': generate_elections_nd_simple,
-                            '4d_ball': generate_elections_nd_simple,
-                            '5d_ball': generate_elections_nd_simple,
-                            '40d_ball': generate_elections_nd_simple,}
-
-        single_param_models = {'urn_model': generate_elections_urn_model,
-                               'group-separable': generate_group_separable_election,}
-
-        double_param_models = {'mallows': generate_mallows_election,
-                               'norm_mallows': generate_mallows_election,}
+        votes = generate_single_election(election_model=election_model,
+                                         num_candidates=num_candidates, num_voters=num_voters,
+                                         param_1=special, param_2=second_param)
 
 
-        if election_model in naked_models:
-            votes = naked_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates)
-
-        elif election_model in euclidean_models:
-            votes = euclidean_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
-                                                            election_model=election_model)
-
-        elif election_model in single_param_models:
-            votes = single_param_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
-                                                            param=special)
-
-        elif election_model in double_param_models:
-            votes = double_param_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
-                                                            param=special, second_param=second_param)
-
-
-        path = os.path.join("experiments", str(experiment_id), "elections", "soc_original",
+        path = os.path.join("experiments", str(experiment_id), "elections",
                             (str(election_id) + ".soc"))
         file_ = open(path, 'w')
 
+        print(election_model)
         if election_model in ["norm_mallows", "mallows", "urn_model"]:
             file_.write("# " + nice_name(election_model) + " " + str(round(special, 5)) + "\n")
         else:
@@ -459,7 +398,7 @@ def generate_elections_preflib(experiment_id, election_model=None, elections_id=
     votes = generate_votes_preflib(election_model, selection_method=selection_method,
                           num_voters=num_voters, num_candidates=num_candidates, folder=folder)
 
-    path = os.path.join("experiments", experiment_id, "elections", "soc_original", elections_id + ".soc")
+    path = os.path.join("experiments", experiment_id, "elections", elections_id + ".soc")
     file_ = open(path, 'w')
 
     file_.write(str(num_candidates) + "\n")
@@ -491,10 +430,10 @@ def generate_elections_preflib(experiment_id, election_model=None, elections_id=
 ########################################################################################################################
 
 
-def generate_elections_urn_model(num_voters=None, num_candidates=None, param=None):
+def generate_elections_urn_model(num_voters=None, num_candidates=None, param_1=None):
     """ helper function: generate polya-eggenberger urn model elections"""
 
-    alpha = param
+    alpha = param_1
 
     votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
 
@@ -615,7 +554,7 @@ def import_election(experiment_id, election_id):
 def import_soc_elections(experiment_id, election_id):
     """ main function: import elections """
 
-    path = "experiments/" + str(experiment_id) + "/elections/soc_original/" + str(election_id) + ".soc"
+    path = "experiments/" + str(experiment_id) + "/elections/" + str(election_id) + ".soc"
     my_file = open(path, 'r')
 
     first_line = my_file.readline()
@@ -668,6 +607,22 @@ def import_approval_elections(experiment_id, elections_id, params):
     elections = {"votes": votes, "candidates": candidates}
 
     return elections, params
+
+
+### MATRICES ###
+
+def get_matrix(election_model=None, num_candidates=None):
+
+    if election_model == 'conitzer':
+        return get_conitzer_matrix(num_candidates)
+    elif election_model == 'walsh':
+        return get_walsh_matrix(num_candidates)
+    elif election_model == 'single-crossing':
+        return get_single_crossing_matrix(num_candidates)
+    elif election_model == 'gs_caterpillar':
+        return get_gs_caterpillar_matrix(num_candidates)
+
+
 
 
 
@@ -738,3 +693,77 @@ def import_approval_elections(experiment_id, elections_id, params):
 #             if p in vote:
 #                 vote.remove(p)
 #     return vote
+
+
+def generate_single_election(election_model=None, num_candidates=None, num_voters=None, param_1=0, param_2=0):
+
+    if election_model == 'mallows' and param_1 == 0:
+        param_1 = rand.random()
+    elif election_model == 'norm_mallows' and param_1 == 0:
+        param_1 = phi_mallows_helper(num_candidates)
+    elif election_model == 'norm_mallows' and param_1 >= 0:
+        if (num_candidates, param_1) in LOOKUP_TABLE:
+            param_1 = LOOKUP_TABLE[(num_candidates, param_1)]
+        else:
+            param_1 = phi_mallows_helper(num_candidates, rdis=param_1)
+    elif election_model == 'urn_model' and param_1 == 0:
+        param_1 = gamma.rvs(0.8)
+
+    naked_models = {'impartial_culture': generate_impartial_culture_election,
+                    'iac': generate_impartial_anonymous_culture_election,
+                    'conitzer': generate_conitzer_election,
+                    'spoc_conitzer': generate_spoc_conitzer_election,
+                    'walsh': generate_walsh_election,
+                    'single-crossing': generate_single_crossing_election,
+                    'real_identity': generate_real_identity_election,
+                    'real_uniformity': generate_real_uniformity_election,
+                    'real_antagonism': generate_real_antagonism_election,
+                    'real_stratification': generate_real_stratification_election}
+
+    euclidean_models = {'1d_interval': generate_elections_1d_simple,
+                        '1d_gaussian': generate_elections_1d_simple,
+                        '1d_one_sided_triangle': generate_elections_1d_simple,
+                        '1d_full_triangle': generate_elections_1d_simple,
+                        '1d_two_party': generate_elections_1d_simple,
+                        '2d_disc': generate_elections_2d_simple,
+                        '2d_square': generate_elections_2d_simple,
+                        '2d_gaussian': generate_elections_2d_simple,
+                        '3d_cube': generate_elections_nd_simple,
+                        '4d_cube': generate_elections_nd_simple,
+                        '5d_cube': generate_elections_nd_simple,
+                        '10d_cube': generate_elections_nd_simple,
+                        '15d_cube': generate_elections_nd_simple,
+                        '20d_cube': generate_elections_nd_simple,
+                        '40d_cube': generate_elections_nd_simple,
+                        '2d_sphere': generate_elections_2d_simple,
+                        '3d_sphere': generate_elections_nd_simple,
+                        '4d_sphere': generate_elections_nd_simple,
+                        '5d_sphere': generate_elections_nd_simple,
+                        '4d_ball': generate_elections_nd_simple,
+                        '5d_ball': generate_elections_nd_simple,
+                        '40d_ball': generate_elections_nd_simple, }
+
+    single_param_models = {'urn_model': generate_elections_urn_model,
+                           'group-separable': generate_group_separable_election, }
+
+    double_param_models = {'mallows': generate_mallows_election,
+                           'norm_mallows': generate_mallows_election, }
+
+    if election_model in naked_models:
+        votes = naked_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates)
+
+    elif election_model in euclidean_models:
+        votes = euclidean_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
+                                                     election_model=election_model)
+
+    elif election_model in single_param_models:
+        votes = single_param_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
+                                                        param_1=param_1)
+
+    elif election_model in double_param_models:
+        votes = double_param_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
+                                                        param_1=param_1, param_2=param_2)
+    else:
+        votes = []
+
+    return votes

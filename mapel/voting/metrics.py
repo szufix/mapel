@@ -12,6 +12,7 @@ from threading import Thread
 from . import lp as lp
 from . import objects as obj
 from time import sleep
+import csv
 
 
 # SUBELECTIONS
@@ -82,9 +83,10 @@ def votes_to_vectors(election):
 
 # DISTANCES
 
-def get_distance(election_1, election_2, distance_name='', metric_name=''):
-    distance_func = map_distance(distance_name)
-    return distance_func(election_1, election_2, distance_name=distance_name, metric_name=metric_name)
+def get_distance(election_1, election_2, distance_name=''):
+    inner_distance, main_distance = distance_name.split('-')
+    distance_func = map_distance(main_distance)
+    return distance_func(election_1, election_2, distance_name=main_distance, metric_name=inner_distance)
 
 
 def compute_basic_distance(election_1, election_2, distance_name='', metric_name=''):
@@ -227,100 +229,7 @@ def hamming_distance(set_1, set_2):
     return len(set_1) + len(set_2) - 2 * len(set_1.intersection(set_2))
 
 
-# SCORING FUNCTIONS
-def get_highest_plurality_score(election):
-    """ compute highest PLURALITY score of a given election"""
 
-    if election.fake:
-        c = election.num_candidates
-        v = election.num_voters
-        vectors = election.votes_to_positionwise_vectors()
-        first = []
-        for i in range(c):
-            first.append(vectors[i][0])
-        return max(first) * v
-
-    scores = [0 for _ in range(election.num_candidates)]
-    for vote in election.votes:
-        scores[vote[0]] += 1
-
-    return max(scores)
-
-
-def get_highest_borda_score(election):
-    """ compute highest BORDA score of a given election"""
-
-    c = election.num_candidates
-    v = election.num_voters
-    vectors = election.votes_to_positionwise_vectors()
-    return sum([vectors[0][i] * (c - i - 1) for i in range(c)]) * v
-
-
-def get_highest_copeland_score(potes, num_voters, num_candidates):
-    """ compute highest COPELAND score of a given election """
-
-    scores = np.zeors([num_candidates])
-
-    for i in range(num_candidates):
-        for j in range(i + 1, num_candidates):
-            result = 0
-            for k in range(num_voters):
-                if potes[k][i] < potes[k][j]:
-                    result += 1
-            if result > num_voters / 2:
-                scores[i] += 1
-                scores[j] -= 1
-            elif result < num_voters / 2:
-                scores[i] -= 1
-                scores[j] += 1
-
-    return max(scores)
-
-
-def get_lowest_dodgson_score(election):
-    """ compute lowest DODGSON score of a given election """
-
-    min_score = math.inf
-
-    for target_id in range(election.num_candidates):
-
-        # PREPARE N
-        unique_potes, N = potes_to_unique_potes(election.potes)
-
-        e = np.zeros([len(N), election.num_candidates, election.num_candidates])
-
-        # PREPARE e
-        for i, p in enumerate(unique_potes):
-            for j in range(election.num_candidates):
-                for k in range(election.num_candidates):
-                    if p[target_id] <= p[k] + j:
-                        e[i][j][k] = 1
-
-        # PREPARE D
-        D = [0 for _ in range(election.num_candidates)]
-        threshold = math.ceil((election.num_voters + 1) / 2.)
-        for k in range(election.num_candidates):
-            diff = 0
-            for i, p in enumerate(unique_potes):
-                if p[target_id] < p[k]:
-                    diff += N[i]
-                if diff >= threshold:
-                    D[k] = 0
-                else:
-                    D[k] = threshold - diff
-        D[target_id] = 0  # always winning
-
-        file_name = str(rand.random()) + '.lp'
-        path = os.path.join(os.getcwd(), "trash", file_name)
-        lp.generate_lp_file_dodgson_score(path, N=N, e=e, D=D)
-        score = lp.solve_lp_dodgson_score(path)
-
-        remove_lp_file(path)
-
-        if score < min_score:
-            min_score = score
-
-    return min_score
 
 
 # OTHER
@@ -377,7 +286,7 @@ def map_diameter(c):
 
 
 def result_backup(experiment_id, result, i, j):
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "distances", "backup.txt")
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "distances", "backup.txt")
     with open(path, 'a') as txtfile:
         txtfile.write(str(i) + ' ' + str(j) + ' ' + str(result) + '\n')
 
@@ -386,27 +295,32 @@ def result_backup(experiment_id, result, i, j):
 def single_thread(model, results, thread_ids, t, testing):
     """ Single thread for computing distance """
 
+    # print("HRE")
+
     for i, j in thread_ids:
         if t == 0 and testing:
            print(t, ' : ', i, j)
 
-        distance = get_distance(model.elections[i], model.elections[j], distance_name=model.distance_name,
-                                metric_name=model.metric_name)
+        # print(model.elections[name_mapping[i]])
+
+        distance = get_distance(model.elections[model.mapping[i]], model.elections[model.mapping[j]],
+                                distance_name=model.distance_name)
         # print(distance)
         results[i][j] = distance
 
+    # print(results)
     print("thread " + str(t) + " is ready :)")
 
 
-def compute_distances(experiment_id, metric_name='', distance_name='',
+def compute_distances(experiment_id, distance_name='',
                       testing=False, num_threads=1, starting_from=0, ending_at=10000):
     """ Compute distance using threads"""
 
     if starting_from == 0 and ending_at == 10000:
-        model = obj.Model(experiment_id, distance_name=distance_name, metric_name=metric_name)
+        model = obj.Model(experiment_id, distance_name=distance_name)
         results = np.zeros([model.num_elections, model.num_elections])
     else:
-        model = obj.Model_xd(experiment_id, distance_name=distance_name, metric_name=metric_name)
+        model = obj.Model_xd(experiment_id, distance_name=distance_name)
         results = np.zeros([model.num_elections, model.num_elections])
         for i in range(model.num_elections):
             for j in range(i + 1, model.num_elections):
@@ -415,7 +329,7 @@ def compute_distances(experiment_id, metric_name='', distance_name='',
                 except:
                     pass
 
-    threads = [None for _ in range(num_threads)]
+    threads = [{} for _ in range(num_threads)]
 
     ids = []
     for i in range(model.num_elections):
@@ -424,6 +338,7 @@ def compute_distances(experiment_id, metric_name='', distance_name='',
                 ids.append((i, j))
 
     num_distances = len(ids)
+
 
     for t in range(num_threads):
         print('thread: ', t)
@@ -439,16 +354,21 @@ def compute_distances(experiment_id, metric_name='', distance_name='',
         threads[t].join()
 
     ctr = 0
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "distances",
-                        str(metric_name) + '-' + str(distance_name) + ".txt")
-    with open(path, 'w') as txtfile:
-        txtfile.write(str(model.num_elections) + '\n')
-        txtfile.write(str(model.num_families) + '\n')
-        txtfile.write(str(int(len(results))) + '\n')
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "distances",
+                        str(distance_name) + ".csv")
+
+    with open(path, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=',')
+        writer.writerow(["election_id_1", "election_id_2", "distance"])
+
         for i in range(model.num_elections):
             for j in range(i + 1, model.num_elections):
-                txtfile.write(str(i) + ' ' + str(j) + ' ' + str(results[i][j]) + '\n')
+                election_id_1 = str(model.mapping[i])
+                election_id_2 = str(model.mapping[j])
+                distance = str(results[i][j])
+                writer.writerow([election_id_1, election_id_2, distance])
                 ctr += 1
+
 
 
 def compute_distances_classic(experiment_id, metric_name='emd', distance_name='positionwise',
@@ -487,7 +407,7 @@ def compute_distances_classic(experiment_id, metric_name='emd', distance_name='p
                 print(i, j, stop - start)
 
     ctr = 0
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "distances",
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "distances",
                         str(distance_name) + ".txt")
     with open(path, 'w') as txt_file:
         txt_file.write(str(model.num_elections) + '\n')

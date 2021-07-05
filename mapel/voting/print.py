@@ -437,7 +437,7 @@ def print_2d(experiment_id, num_winners=0, mask=False, mixed=False, fuzzy_paths=
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
     model = obj.Model_2d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
-                         ignore=ignore, attraction_factor=attraction_factor, metric_name=metric_name)
+                         ignore=ignore, attraction_factor=attraction_factor)
 
     if angle != 0:
         model.rotate(angle)

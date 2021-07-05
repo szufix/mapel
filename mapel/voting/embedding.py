@@ -16,10 +16,10 @@ from . import objects as obj
 
 
 def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="positionwise",
-                     random=True, attraction_factor=1., metric_name='emd'):
+                     random=True, attraction_factor=1.):
     """ Convert multi-dimensional model to two-dimensional model """
 
-    model = obj.Model_xd(experiment_id, distance_name=distance_name, metric_name=metric_name)
+    model = obj.Model_xd(experiment_id, distance_name=distance_name)
     X = np.zeros((model.num_elections, model.num_elections))
 
     if random:
@@ -45,25 +45,33 @@ def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="position
             # END OF TMP
             X[j][i] = X[i][j]
 
+
     dt = [('weight', float)]
     X = X.view(dt)
     G = nx.from_numpy_matrix(X)
 
     print("start spring_layout")
 
-    my_pos = nx.spring_layout(G, iterations=num_iterations, dim=2)
-    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
-                         "points", metric_name + '-' + distance_name + "_2d_a" + str(attraction_factor) + ".csv")
+    # ppp = {0: [0., 0.], 1: [0.01, 0.01], 2: [0., 0.01], 3: [0.01, 0.]}
+    my_pos = nx.spring_layout(G, iterations=num_iterations, dim=2)#, pos=ppp, fixed=[0,1,2,3])
+
+
+    file_name = os.path.join(os.getcwd(), "experiments", experiment_id,
+                         "coordinates", distance_name + "_2d_a" + str(attraction_factor) + ".csv")
 
     with open(file_name, 'w', newline='') as csvfile:
 
         writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(["id", "x", "y"])
+        writer.writerow(["election_id", "x", "y"])
 
-        for i in range(model.num_elections):
-            x = round(my_pos[rev_perm[i]][0], 5)
-            y = round(my_pos[rev_perm[i]][1], 5)
-            writer.writerow([i, x, y])
+        ctr = 0
+        for family in model.families:
+            for j in range(family.size):
+                a = family.election_model + '_' + str(j)
+                x = round(my_pos[rev_perm[ctr]][0], 5)
+                y = round(my_pos[rev_perm[ctr]][1], 5)
+                writer.writerow([a, x, y])
+                ctr += 1
 
 
 def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="positionwise", metric_name='emd',
@@ -95,7 +103,7 @@ def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="position
 
     my_pos = nx.spring_layout(G, iterations=num_iterations, dim=3)
 
-    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
+    file_name = os.path.join(os.getcwd(), "experiments", experiment_id,
                              "points", metric_name + '-' + distance_name + "_3d_a" + str(attraction_factor) + ".csv")
 
     with open(file_name, 'w', newline='') as csvfile:
@@ -151,7 +159,7 @@ def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="position
 #     # my_pos = nx.spring_layout(G, iterations=num_iterations, dim=2)
 #     my_pos = TSNE(n_components=2).fit_transform(X)
 #
-#     file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
+#     file_name = os.path.join(os.getcwd(), "experiments", experiment_id,
 #                              "points", metric_name + '-' + distance_name + "_2d_a" + str(attraction_factor) + ".csv")
 #
 #     with open(file_name, 'w', newline='') as csvfile:
@@ -208,7 +216,7 @@ def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="position
 #     #X_transformed = embedding.fit_transform(X[:number_of_points])
 #     #Y = X_transformed
 #
-#     file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers",
+#     file_name = os.path.join(os.getcwd(), "experiments", experiment_id,
 #                              "points", metric_name + '-' + distance_name + "_2d_a" + str(attraction_factor) + ".csv")
 #
 #     with open(file_name, 'w', newline='') as csvfile:

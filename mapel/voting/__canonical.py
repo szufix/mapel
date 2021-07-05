@@ -588,38 +588,36 @@ def create_structure_test(experiment_id):
         writer.writerow(['15', 'urn_model', '0.2', '0', 'red', '1', 'NoNaMe', 't'])
 
 
+#
+# def rearrange_time_format(experiment_id):
+#
+#     experiment_id = "final"
+#     type = "hb"
+#
+#     num_elections = 860
+#     time_table = []
+#
+#     for i in range(num_elections):
+#         file_name = "experiments/" + experiment_id + "/controllers/orders" + \
+#                     "/core_" + str(i) + "_" + str(type) + ".txt"
+#         file_ = open(file_name, 'r')
+#         spam_line_1 = int(file_.readline())
+#         spam_line_2 = int(file_.readline())
+#         time = float(file_.readline())
+#         time_table.append(time)
+#         file_.close()
+#
+#     file_name = "experiments/" + experiment_id + "/controllers/times/" + experiment_id + "_" + str(type) + ".txt"
+#     file_ = open(file_name, 'w')
+#     file_.write(str(num_elections) + "\n")
+#
+#     for i in range(num_elections):
+#         file_.write(str(time_table[i]) + "\n")
+#
+#     file_.close()
+#
 
-def rearrange_time_format(experiment_id):
 
-    experiment_id = "final"
-    type = "hb"
-
-    num_elections = 860
-    time_table = []
-
-    for i in range(num_elections):
-        file_name = "experiments/" + experiment_id + "/controllers/orders" + \
-                    "/core_" + str(i) + "_" + str(type) + ".txt"
-        file_ = open(file_name, 'r')
-        spam_line_1 = int(file_.readline())
-        spam_line_2 = int(file_.readline())
-        time = float(file_.readline())
-        time_table.append(time)
-        file_.close()
-
-    file_name = "experiments/" + experiment_id + "/controllers/times/" + experiment_id + "_" + str(type) + ".txt"
-    file_ = open(file_name, 'w')
-    file_.write(str(num_elections) + "\n")
-
-    for i in range(num_elections):
-        file_.write(str(time_table[i]) + "\n")
-
-    file_.close()
-
-
-def intro(experiment_id):
-
-    print("intro")
 
 
 # chyba stare
@@ -746,122 +744,122 @@ def print_matrix(experiment_id, scale=10.):
     plt.savefig("matrix_luty.png")
     plt.show()
 
-
-def generate_matrix_arkadii(experiment_id):
-    # IMPORT DISTANCES
-
-    file_name = "experiments/final/controllers/distances/final_core.txt"
-    file_ = open(file_name, 'r')
-
-    num_elections = int(file_.readline())
-    second_line = int(file_.readline())
-    third_line = int(file_.readline())
-
-    matrix_tmp = [[0. for _ in range(second_line)] for _ in range(second_line)]
-    matrix = [[0. for _ in range(second_line)] for _ in range(second_line)]
-
-    quan = [[0 for _ in range(second_line)] for _ in range(second_line)]
-
-    code = [0 for _ in range(num_elections)]
-
-    # ten fragment powinien byc bardziej uniwersalny
-
-    ctr = 0
-    for i in range(13):
-        for j in range(30):
-            code[ctr] = i
-            ctr += 1
-
-    print(ctr)
-
-    for i in range(13, 13 + 8):
-        for j in range(20):
-            code[ctr] = i
-            ctr += 1
-
-    print(ctr)
-    for i in range(13 + 8, 13 + 8 + 7):
-        for j in range(30):
-            code[ctr] = i
-            ctr += 1
-
-    print(ctr)
-    for i in range(13 + 8 + 7, 13 + 8 + 7 + 2):
-        for j in range(20):
-            code[ctr] = i
-            ctr += 1
-
-    print(ctr)
-
-    for i in range(third_line):
-        line = file_.readline().split(' ')
-        # print(code[int(line[0])])
-        a = code[int(line[0])]
-        b = code[int(line[1])]
-        value = float(line[2])
-        matrix_tmp[a][b] += value
-        quan[a][b] += 1
-
-    for i in range(second_line):
-        for j in range(i, second_line):
-            matrix_tmp[i][j] /= float(quan[i][j])
-            matrix_tmp[i][j] /= 10.
-            matrix_tmp[i][j] = int(round(matrix_tmp[i][j], 0))
-            matrix_tmp[j][i] = matrix_tmp[i][j]
-
-    order = [i for i in range(30)]
-
-    for i in range(second_line):
-        for j in range(i, second_line):
-            matrix[i][j] = matrix_tmp[order[i]][order[j]]
-            matrix[j][i] = matrix[i][j]
-
-    print("ok")
-    file_.close()
-
-    fig, ax = plt.subplots()
-
-    ax.matshow(matrix, cmap=plt.cm.Blues, aspect=0.6)
-
-    for i in xrange(30):
-        for j in xrange(30):
-            c = int(matrix[i][j])
-            # if (i < 3 and j > 9) or (j < 3 and i > 9):
-            #    ax.text(i, j, str(c), va='center', ha='center', color="white")
-            # else:
-            ax.text(i, j, str(c), va='center', ha='center')
-
-    ######
-    file_controllers = open("experiments/final/controllers/models/final_core.txt", 'r')
-    num_families = int(file_controllers.readline())
-    family_name = [0 for _ in range(num_families)]
-    family_special = [0 for _ in range(num_families)]
-    family_size = [0 for _ in range(num_families)]
-    family_full_name_tmp = [0 for _ in range(num_families)]
-    family_full_name = [0 for _ in range(num_families)]
-
-    labels = [0 for _ in range(num_families)]
-    colors = [0 for _ in range(num_families)]
-    alphas = [0 for _ in range(num_families)]
-
-    for i in range(num_families):
-        line = file_controllers.readline().rstrip("\n").split(',')
-        family_full_name_tmp[i] = str(line[5])
-
-    for i in range(num_families):
-        family_full_name[i] = family_full_name_tmp[order[i]]
-
-    x_values = family_full_name
-    y_values = family_full_name
-    y_axis = np.arange(0, 30, 1)
-    x_axis = np.arange(0, 30, 1)
-
-    # plt.barh(y_axis, x_values, align='center')
-    plt.yticks(y_axis, y_values)
-    plt.xticks(x_axis, x_values, rotation=60, horizontalalignment='left')
-    plt.savefig("full_matrix.png", bbox_inches="tight")
-    plt.show()
-
+#
+# def generate_matrix_arkadii(experiment_id):
+#     # IMPORT DISTANCES
+#
+#     file_name = "experiments/final/controllers/distances/final_core.txt"
+#     file_ = open(file_name, 'r')
+#
+#     num_elections = int(file_.readline())
+#     second_line = int(file_.readline())
+#     third_line = int(file_.readline())
+#
+#     matrix_tmp = [[0. for _ in range(second_line)] for _ in range(second_line)]
+#     matrix = [[0. for _ in range(second_line)] for _ in range(second_line)]
+#
+#     quan = [[0 for _ in range(second_line)] for _ in range(second_line)]
+#
+#     code = [0 for _ in range(num_elections)]
+#
+#     # ten fragment powinien byc bardziej uniwersalny
+#
+#     ctr = 0
+#     for i in range(13):
+#         for j in range(30):
+#             code[ctr] = i
+#             ctr += 1
+#
+#     print(ctr)
+#
+#     for i in range(13, 13 + 8):
+#         for j in range(20):
+#             code[ctr] = i
+#             ctr += 1
+#
+#     print(ctr)
+#     for i in range(13 + 8, 13 + 8 + 7):
+#         for j in range(30):
+#             code[ctr] = i
+#             ctr += 1
+#
+#     print(ctr)
+#     for i in range(13 + 8 + 7, 13 + 8 + 7 + 2):
+#         for j in range(20):
+#             code[ctr] = i
+#             ctr += 1
+#
+#     print(ctr)
+#
+#     for i in range(third_line):
+#         line = file_.readline().split(' ')
+#         # print(code[int(line[0])])
+#         a = code[int(line[0])]
+#         b = code[int(line[1])]
+#         value = float(line[2])
+#         matrix_tmp[a][b] += value
+#         quan[a][b] += 1
+#
+#     for i in range(second_line):
+#         for j in range(i, second_line):
+#             matrix_tmp[i][j] /= float(quan[i][j])
+#             matrix_tmp[i][j] /= 10.
+#             matrix_tmp[i][j] = int(round(matrix_tmp[i][j], 0))
+#             matrix_tmp[j][i] = matrix_tmp[i][j]
+#
+#     order = [i for i in range(30)]
+#
+#     for i in range(second_line):
+#         for j in range(i, second_line):
+#             matrix[i][j] = matrix_tmp[order[i]][order[j]]
+#             matrix[j][i] = matrix[i][j]
+#
+#     print("ok")
+#     file_.close()
+#
+#     fig, ax = plt.subplots()
+#
+#     ax.matshow(matrix, cmap=plt.cm.Blues, aspect=0.6)
+#
+#     for i in xrange(30):
+#         for j in xrange(30):
+#             c = int(matrix[i][j])
+#             # if (i < 3 and j > 9) or (j < 3 and i > 9):
+#             #    ax.text(i, j, str(c), va='center', ha='center', color="white")
+#             # else:
+#             ax.text(i, j, str(c), va='center', ha='center')
+#
+#     ######
+#     file_controllers = open("experiments/final/controllers/models/final_core.txt", 'r')
+#     num_families = int(file_controllers.readline())
+#     family_name = [0 for _ in range(num_families)]
+#     family_special = [0 for _ in range(num_families)]
+#     family_size = [0 for _ in range(num_families)]
+#     family_full_name_tmp = [0 for _ in range(num_families)]
+#     family_full_name = [0 for _ in range(num_families)]
+#
+#     labels = [0 for _ in range(num_families)]
+#     colors = [0 for _ in range(num_families)]
+#     alphas = [0 for _ in range(num_families)]
+#
+#     for i in range(num_families):
+#         line = file_controllers.readline().rstrip("\n").split(',')
+#         family_full_name_tmp[i] = str(line[5])
+#
+#     for i in range(num_families):
+#         family_full_name[i] = family_full_name_tmp[order[i]]
+#
+#     x_values = family_full_name
+#     y_values = family_full_name
+#     y_axis = np.arange(0, 30, 1)
+#     x_axis = np.arange(0, 30, 1)
+#
+#     # plt.barh(y_axis, x_values, align='center')
+#     plt.yticks(y_axis, y_values)
+#     plt.xticks(x_axis, x_values, rotation=60, horizontalalignment='left')
+#     plt.savefig("full_matrix.png", bbox_inches="tight")
+#     plt.show()
+#
 
 def generate_matrix_selected(experiment_id):
     # IMPORT DISTANCES

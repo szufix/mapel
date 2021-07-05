@@ -17,26 +17,32 @@ def _decompose_tree(n, m, r):
 
     tree = None
 
-    for i in range(len(seq)):
+    seq = cycle_lemma(seq)
 
-        try:
-            tree = _turn_pattern_into_tree(seq)
-        except:
-            pass
+    tree = _turn_pattern_into_tree(seq)
 
-        element = seq.pop(0)
-        seq.append(element)
+    # for i in range(len(seq)):
+    #     print(i)
+    #
+    #     try:
+    #         tree = _turn_pattern_into_tree(seq)
+    #         print('yeah!')
+    #     except:
+    #         pass
+    #
+    #     element = seq.pop(0)
+    #     seq.append(element)
 
     return tree
 
 
-def generate_group_separable_election(num_voters=None, num_candidates=None, param=None):
+def generate_group_separable_election(num_voters=None, num_candidates=None, param_1=0):
     """ Algorithm from: The Complexity of Election Problems with Group-Separable Preferences"""
 
     m = num_candidates
     n = num_voters
 
-    if param == 0:
+    if param_1 == 0:
         func = lambda m, n, j: binom(m - 1, j) * binom(m - 1 + j, m) * (2 ** (n - 1) - 1) ** (j - 1)
         buckets = [func(m, n, j) for j in range(1, m)]
 
@@ -47,7 +53,7 @@ def generate_group_separable_election(num_voters=None, num_candidates=None, para
 
         decomposition_tree = _decompose_tree(m, n, r)
 
-    elif param == 3:
+    elif param_1 == 3:
         decomposition_tree = _caterpillar(m)
 
     all_inner_nodes = get_all_inner_nodes(decomposition_tree)
@@ -127,7 +133,7 @@ class Node:
 
         self.num_leaf_descendants = None
         self.depth = None
-        self.scheme = []
+        self.scheme = {}
         self.vector = []
 
     def __str__(self):
@@ -209,59 +215,53 @@ def _turn_pattern_into_tree(pattern):
     return stack[0]
 
 
-# def cycle_lemma(sequence):
-#
-#     length = len(sequence)
-#
-#     pos = 0
-#     height = 0
-#     min = 0
-#     pos_min = 0
-#     for element in sequence:
-#         print(element)
-#         if 'x' in element:
-#             if height <= min:
-#                 pos_min = pos
-#                 min = height
-#             height += 1
-#         if 'f' in element:
-#             height -= 1
-#         pos += 1
-#     height_chosen = min + 1
-#
-#     print('pos_min:', pos_min)
-#     print('height_chosen:', height_chosen)
-#
-#     pos = 0
-#     height = 0
-#     beginning = 0
-#     for element in sequence:
-#         if 'x' in element:
-#             if height == height_chosen:
-#                 beginning = pos
-#             height += 1
-#         if 'f' in element:
-#             height -= 1
-#         pos += 1
-#
-#     pos = beginning
-#
-#     print('beginning:', beginning)
-#
-#     new_sequence = []
-#
-#     while True:
-#         print(pos)
-#
-#         element = sequence[pos]
-#         new_sequence.append(element)
-#         pos = (pos + 1) % len(sequence)
-#
-#         if pos == beginning:
-#             break
-#
-#     print('seq:', new_sequence)
-#     return new_sequence
+def cycle_lemma(sequence):
+
+    length = len(sequence)
+
+    pos = 0
+    height = 0
+    min = 0
+    pos_min = 0
+    for element in sequence:
+        #print(element)
+        if 'x' in element:
+            if height <= min:
+                pos_min = pos
+                min = height
+            height += 1
+        if 'f' in element:
+            height -= 1
+        pos += 1
+    # height_chosen = min + 1
+
+    # print('pos_min:', pos_min)
+    # print('height_chosen:', height_chosen)
+    #
+    # pos = 0
+    # height = 0
+    # beginning = 0
+    # for element in sequence:
+    #     if 'x' in element:
+    #         if height == height_chosen:
+    #             beginning = pos
+    #         height += 1
+    #     if 'f' in element:
+    #         height -= 1
+    #     pos += 1
+    #
+    # pos = beginning
+    #
+    # print('beginning:', beginning)
+    #
+    # new_sequence = []
+
+    # rotate
+    for _ in range(pos_min):
+        element = sequence.pop(0)
+        sequence.append(element)
+
+    return sequence
 
 
 def _add_num_leaf_descendants(node):
@@ -279,19 +279,30 @@ def _add_num_leaf_descendants(node):
 
 def _add_scheme(node):
 
+    #print(node.name)
+
     for starting_pos in node.scheme:
 
+        #print(len(node.scheme))
         # left to right
         pos = starting_pos
         for child in node.children:
-            child.scheme.append(pos)
+            if pos in child.scheme:
+                child.scheme[pos] += node.scheme[starting_pos]
+                # print('yes', print(node.name))
+                # print(child.scheme[pos])
+            else:
+                child.scheme[pos] = node.scheme[starting_pos]
             pos += child.num_leaf_descendants
 
         # right to left
         pos = starting_pos + node.num_leaf_descendants
         for child in node.children:
             pos -= child.num_leaf_descendants
-            child.scheme.append(pos)
+            if pos in child.scheme:
+                child.scheme[pos] += node.scheme[starting_pos]
+            else:
+                child.scheme[pos] = node.scheme[starting_pos]
 
     # print(node.name, node.scheme)
 
@@ -304,10 +315,12 @@ def _add_scheme(node):
 
 def _construct_vector_from_scheme(node):
 
-    weight = 1. / len(node.scheme)
+    weight = 1. / sum(node.scheme.values())
+
     node.vector = [0 for _ in range(Node.total_num_leaf_descendants)]
-    for i in node.scheme:
-        node.vector[i] += weight
+    for key in node.scheme:
+
+        node.vector[int(key)] += node.scheme[key] * weight
 
     print(node.name, node.vector)
 
@@ -316,7 +329,7 @@ def get_frequency_matrix_from_tree(root):
 
     _add_num_leaf_descendants(root)
 
-    root.scheme = [0]
+    root.scheme = {0: 1}
     Node.total_num_leaf_descendants = root.num_leaf_descendants
 
     _add_scheme(root)
@@ -352,5 +365,11 @@ def _caterpillar(num_leaves):
 #     get_frequency_matrix_from_tree(root)
 
 
+### MATRICES ###
+def get_gs_caterpillar_matrix(num_candidates):
+    return get_frequency_matrix_from_tree(_caterpillar(num_candidates))
 
+# get_gs_caterpillar_matrix(10)
+
+# generate_group_separable_election(num_voters=10, num_candidates=14)
 

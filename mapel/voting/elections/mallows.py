@@ -2,11 +2,11 @@ import random as rand
 import numpy as np
 
 
-def generate_mallows_election(num_voters=None, num_candidates=None, param=None, second_param=None):
+def generate_mallows_election(num_voters=None, num_candidates=None, param_1=None, param_2=None):
     """ helper function: generate mallows elections"""
 
-    PHI = param
-    votes = mallowsProfile(num_candidates, num_voters, PHI, reverse=second_param)
+    PHI = param_1
+    votes = mallowsProfile(num_candidates, num_voters, PHI, reverse=param_2)
 
     return votes
 

@@ -1,11 +1,9 @@
 """ This module contains all the objects """
 
 
-
 import csv
 import math
 import os
-
 import numpy as np
 
 
@@ -13,33 +11,43 @@ class Model:
     """Abstract model of elections."""
 
     def __init__(self, experiment_id, ignore=None, main_order_name="default", raw=False,
-                 distance_name='positionwise', metric_name='emd', num_elections=None):
+                 distance_name='positionwise', num_elections=None):
 
         self.experiment_id = experiment_id
 
         self.distance_name = distance_name
-        self.metric_name = metric_name
 
         self.families = self.import_controllers(ignore=ignore, main_order_name=main_order_name)
 
         if not raw:
-            self.elections = self.add_elections_to_model()
+            self.elections, self.mapping, self.reverse_mapping = self.add_elections_to_model()
 
     def add_elections_to_model(self):
         """ Import elections from a file """
-        elections = []
-        for i in range(self.num_elections):
-            election_id = 'core_' + str(i)
-            election = Election(self.experiment_id, election_id)
-            elections.append(election)
-        return elections
+
+        elections = {}
+        mapping = {}
+        reverse_mapping = {}
+
+        ctr = 0
+        for family in self.families:
+            for j in range(family.size):
+                election_id = family.election_model + '_' + str(j)
+                election = Election(self.experiment_id, election_id)
+                elections[election_id] = election
+
+                mapping[ctr] = election_id
+                reverse_mapping[election_id] = ctr
+                ctr += 1
+
+        return elections, mapping, reverse_mapping
 
     def import_controllers(self, ignore=None, main_order_name="default"):
         """ Import controllers from a file """
 
         families = []
 
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers", "basic", 'map.csv')
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, 'map.csv')
         file_ = open(path, 'r')
 
         header = [h.strip() for h in file_.readline().split(',')]
@@ -101,7 +109,7 @@ class Model:
 
         self.num_families = len(families)
         self.num_elections = sum([families[i].size for i in range(self.num_families)])
-        self.main_order = self.import_order(main_order_name)
+        self.main_order = [i for i in range(self.num_elections)]
 
         if ignore is None:
             ignore = []
@@ -118,70 +126,89 @@ class Model:
         file_.close()
         return families
 
-    def import_order(self, main_order_name):
-        """Import precomputed order of all the elections from a file."""
-
-        if main_order_name == 'default':
-            main_order = [i for i in range(self.num_elections)]
-
-        else:
-            file_name = os.path.join(os.getcwd(), "experiments", self.experiment_id, "results", "orders", main_order_name + ".txt")
-            file_ = open(file_name, 'r')
-            file_.readline()  # skip this line
-            all_elections = int(file_.readline())
-            file_.readline()  # skip this line
-            main_order = []
-
-            for w in range(all_elections):
-                main_order.append(int(file_.readline()))
-
-        return main_order
+    # def import_order(self, main_order_name):
+    #     """Import precomputed order of all the elections from a file."""
+    #
+    #     if main_order_name == 'default':
+    #         main_order = [i for i in range(self.num_elections)]
+    #
+    #     else:
+    #         file_name = os.path.join(os.getcwd(), "experiments", self.experiment_id, "results", "orders", main_order_name + ".txt")
+    #         file_ = open(file_name, 'r')
+    #         file_.readline()  # skip this line
+    #         all_elections = int(file_.readline())
+    #         file_.readline()  # skip this line
+    #         main_order = []
+    #
+    #         for w in range(all_elections):
+    #             main_order.append(int(file_.readline()))
+    #
+    #     return main_order
 
 
 class Model_xd(Model):
     """ Multi-dimensional model of elections """
 
-    def __init__(self, experiment_id, distance_name='positionwise', metric_name='emd', raw=False, self_distances=False):
+    def __init__(self, experiment_id, distance_name='positionwise', raw=False, self_distances=False):
 
-        Model.__init__(self, experiment_id, distance_name=distance_name, metric_name=metric_name, raw=raw)
+        Model.__init__(self, experiment_id, distance_name='emd-positionwise', raw=raw)
 
-        #self.num_points, self.num_distances, self.distances = self.import_distances(experiment_id, metric)
+        #self.num_points, self.num_distances, self.distances = self.import_distances(experiment_id)
         self.num_distances, self.distances, self.std = self.import_distances(experiment_id,
-                                                                   distance_name, metric_name, self_distances=self_distances)
+                                                                   distance_name=distance_name, self_distances=self_distances)
 
     #@staticmethod
-    def import_distances(self, experiment_id, distance_name, metric_name, self_distances=False):
+    def import_distances(self, experiment_id, distance_name=None, self_distances=False):
         """ Import precomputed distances between each pair of elections from a file """
 
-        file_name = str(metric_name) + '-' +  str(distance_name) + '.txt'
-        path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "distances", file_name)
-        file_ = open(path, 'r')
-        num_points = int(file_.readline())
-        file_.readline()  # skip this line
-        num_distances = int(file_.readline())
+        file_name = str(distance_name) + '.csv'
+        path = os.path.join(os.getcwd(), "experiments", experiment_id, "distances", file_name)
+        num_points = self.num_elections
+        num_distances = int(num_points*(num_points-1)/2)
 
         hist_data = [[0 for _ in range(num_points)] for _ in range(num_points)]
         std = [[0. for _ in range(num_points)] for _ in range(num_points)]
 
-        for a in range(num_points):
-            limit = a+1
-            if self_distances:
-                limit = a
-            for b in range(limit, num_points):
-                line = file_.readline()
-                line = line.split(' ')
-                hist_data[a][b] = float(line[2])
+        reversed_name_mapping = {}
+        ctr = 0
+        for family in self.families:
+            for j in range(family.size):
+                election_id = family.election_model + '_' + str(j)
+                reversed_name_mapping[election_id] = ctr
+                ctr += 1
 
-                # tmp correction for discrete distance
-                if distance_name == 'discrete':
-                    hist_data[a][b] = self.families[0].size - hist_data[a][b]   # do poprawy
+        with open(path, 'r', newline='') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=',')
 
+            for row in reader:
 
-                hist_data[b][a] = hist_data[a][b]
+                id_1 = self.reverse_mapping[row['election_id_1']]
+                id_2 = self.reverse_mapping[row['election_id_2']]
 
-                if distance_name == 'voter_subelection':
-                    std[a][b] = float(line[3])
-                    std[b][a] = std[a][b]
+                hist_data[id_1][id_2] = float(row['distance'])
+
+                hist_data[id_2][id_1] = hist_data[id_1][id_2]
+
+        # todo: add self-distances
+        # for a in range(num_points):
+        #     limit = a+1
+        #     if self_distances:
+        #         limit = a
+        #     for b in range(limit, num_points):
+        #         line = file_.readline()
+        #         line = line.split(' ')
+        #         hist_data[a][b] = float(line[2])
+        #
+        #         # tmp correction for discrete distance
+        #         if distance_name == 'discrete':
+        #             hist_data[a][b] = self.families[0].size - hist_data[a][b]   # todo: correct this
+        #
+        #
+        #         hist_data[b][a] = hist_data[a][b]
+        #
+        #         if distance_name == 'voter_subelection':
+        #             std[a][b] = float(line[3])
+        #             std[b][a] = std[a][b]
 
         return num_distances, hist_data, std
 
@@ -190,10 +217,10 @@ class Model_2d(Model):
     """ Two-dimensional model of elections """
 
     def __init__(self, experiment_id, main_order_name="default", distance_name="", ignore=None,
-                 num_elections=None, attraction_factor=1, metric_name=''):
+                 num_elections=None, attraction_factor=1):
 
         Model.__init__(self, experiment_id, ignore=ignore, main_order_name=main_order_name, distance_name=distance_name,
-                       num_elections=num_elections, metric_name=metric_name)
+                       num_elections=num_elections)
 
         self.attraction_factor = attraction_factor
 
@@ -206,17 +233,17 @@ class Model_2d(Model):
         if ignore is None:
             ignore = []
 
-        points = []
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                            "points", self.metric_name + '-' + self.distance_name + "_2d_a" + str(self.attraction_factor) + ".csv")
+        points = {}
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                            "coordinates", self.distance_name + "_2d_a" + str(float(self.attraction_factor)) + ".csv")
 
-        with open(path, 'r', newline='') as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=',')
+        with open(path, 'r', newline='') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=',')
             ctr = 0
             print(path)
             for row in reader:
                 if self.main_order[ctr] < self.num_elections and self.main_order[ctr] not in ignore:
-                    points.append([float(row['x']), float(row['y'])])
+                    points[row['election_id']] = [float(row['x']), float(row['y'])]
                 ctr += 1
 
         return len(points), points
@@ -225,12 +252,12 @@ class Model_2d(Model):
         """ Group all points by their families """
 
         points_by_families = [[[] for _ in range(2)] for _ in range(self.num_points)]
-        ctr = 0
 
+        ctr = 0
         for i in range(self.num_families):
             for j in range(self.families[i].size):
-                points_by_families[i][0].append(self.points[ctr][0])
-                points_by_families[i][1].append(self.points[ctr][1])
+                points_by_families[i][0].append(self.points[self.mapping[ctr]][0])
+                points_by_families[i][1].append(self.points[self.mapping[ctr]][1])
                 ctr += 1
 
         return points_by_families
@@ -264,8 +291,8 @@ class Model_2d(Model):
     def update(self):
         """ Save current coordinates of all the points to the original file"""
 
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                                "points", self.metric_name + '-' + self.distance_name + "_2d_a" + str(self.attraction_factor) + ".csv")
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                "points", self.distance_name + "_2d_a" + str(self.attraction_factor) + ".csv")
 
         with open(path, 'w', newline='') as csvfile:
 
@@ -297,10 +324,10 @@ class Model_3d(Model):
     """ Two-dimensional model of elections """
 
     def __init__(self, experiment_id, main_order_name="default", distance_name="", ignore=None,
-                 num_elections=None, attraction_factor=1, metric_name=''):
+                 num_elections=None, attraction_factor=1):
 
         Model.__init__(self, experiment_id, ignore=ignore, main_order_name=main_order_name, distance_name=distance_name,
-                       num_elections=num_elections, metric_name=metric_name)
+                       num_elections=num_elections)
 
         self.attraction_factor = int(attraction_factor)
 
@@ -314,8 +341,8 @@ class Model_3d(Model):
             ignore = []
 
         points = []
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "controllers",
-                            "points", self.metric_name + '-' + str(self.distance_name) + "_3d_a" + str(self.attraction_factor) + ".csv")
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                            "points", str(self.distance_name) + "_3d_a" + str(self.attraction_factor) + ".csv")
 
         with open(path, 'r', newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
@@ -632,7 +659,7 @@ class Election:
 
 def import_soc_elections(experiment_id, election_id):
     file_name = str(election_id) + ".soc"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", "soc_original", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
 
     param = 0
@@ -669,6 +696,9 @@ def import_soc_elections(experiment_id, election_id):
 
 
 def get_borda_ranking(votes, num_voters, num_candidates):
+
+    # todo: obliczać ranking na podstawie positionwise vectors
+
     points = [0 for _ in range(num_candidates)]
     scoring = [1. for _ in range(num_candidates)]
 
@@ -702,7 +732,7 @@ def get_borda_points(votes, num_voters, num_candidates):
 # NEW 22.11.2020
 def check_if_fake(experiment_id, election_id):
     file_name = str(election_id) + ".soc"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", "soc_original", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     line = my_file.readline().strip()
     if line[0] == '$':
@@ -713,7 +743,7 @@ def check_if_fake(experiment_id, election_id):
 def import_fake_elections(experiment_id, election_id):
 
     file_name = str(election_id) + ".soc"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", "soc_original", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     my_file.readline()  # line with $ fake
 
