@@ -1,6 +1,11 @@
 #!/usr/bin/env python
+from scipy.optimize import linear_sum_assignment
 
-import cplex
+try:
+    import cplex
+except:
+    pass
+
 import numpy as np
 
 
@@ -20,8 +25,8 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name):
             names.append('N' + str(v1) + '_' + str(v2))
             objective.append(1.)
     cp.variables.add(obj=objective,
-                    names=names,
-                    types=[cp.variables.type.binary] * election_1.num_voters * election_2.num_voters)
+                     names=names,
+                     types=[cp.variables.type.binary] * election_1.num_voters * election_2.num_voters)
 
     # FIRST CONSTRAINT FOR VOTERS
     lin_expr = []
@@ -31,8 +36,8 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name):
             ind.append('N' + str(v1) + '_' + str(v2))
         lin_expr.append(cplex.SparsePair(ind=ind, val=[1.0] * election_2.num_voters))
     cp.linear_constraints.add(lin_expr=lin_expr,
-                             senses=['L'] * election_1.num_voters,
-                             rhs=[1.0] * election_1.num_voters,
+                              senses=['L'] * election_1.num_voters,
+                              rhs=[1.0] * election_1.num_voters,
                               names=['C1_' + str(i) for i in range(election_1.num_voters)])
 
     # SECOND CONSTRAINT FOR VOTERS
@@ -43,8 +48,8 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name):
             ind.append('N' + str(v1) + '_' + str(v2))
         lin_expr.append(cplex.SparsePair(ind=ind, val=[1.0] * election_1.num_voters))
     cp.linear_constraints.add(lin_expr=lin_expr,
-                             senses=['L'] * election_2.num_voters,
-                             rhs=[1.0] * election_2.num_voters,
+                              senses=['L'] * election_2.num_voters,
+                              rhs=[1.0] * election_2.num_voters,
                               names=['C2_' + str(i) for i in range(election_2.num_voters)])
 
     # ADD VARIABLES FOR CANDIDATES
@@ -53,7 +58,7 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name):
         for c2 in range(election_2.num_candidates):
             names.append('M' + str(c1) + '_' + str(c2))
     cp.variables.add(names=list(names),
-                    types=[cp.variables.type.binary] * election_1.num_candidates * election_2.num_candidates)
+                     types=[cp.variables.type.binary] * election_1.num_candidates * election_2.num_candidates)
 
     # FIRST CONSTRAINT FOR CANDIDATES
     lin_expr = []
@@ -63,8 +68,8 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name):
             ind.append('M' + str(c1) + '_' + str(c2))
         lin_expr.append(cplex.SparsePair(ind=ind, val=[1.0] * election_2.num_candidates))
     cp.linear_constraints.add(lin_expr=lin_expr,
-                             senses=['E'] * election_1.num_candidates,
-                             rhs=[1.0] * election_1.num_candidates,
+                              senses=['E'] * election_1.num_candidates,
+                              rhs=[1.0] * election_1.num_candidates,
                               names=['C3_' + str(i) for i in range(election_1.num_candidates)])
 
     # SECOND CONSTRAINT FOR CANDIDATES
@@ -75,8 +80,8 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name):
             ind.append('M' + str(c1) + '_' + str(c2))
         lin_expr.append(cplex.SparsePair(ind=ind, val=[1.0] * election_1.num_candidates))
     cp.linear_constraints.add(lin_expr=lin_expr,
-                             senses=['E'] * election_2.num_candidates,
-                             rhs=[1.0] * election_2.num_candidates,
+                              senses=['E'] * election_2.num_candidates,
+                              rhs=[1.0] * election_2.num_candidates,
                               names=['C4_' + str(i) for i in range(election_2.num_candidates)])
 
     # MAIN CONSTRAINT FOR VOTES
@@ -96,11 +101,11 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name):
             val.append(-election_1.num_candidates)
             lin_expr.append(cplex.SparsePair(ind=ind, val=val))
     cp.linear_constraints.add(lin_expr=lin_expr,
-                             senses=['G'] * election_1.num_voters * election_2.num_voters,
-                             rhs=[0.0] * election_1.num_voters * election_2.num_voters,
+                              senses=['G'] * election_1.num_voters * election_2.num_voters,
+                              rhs=[0.0] * election_1.num_voters * election_2.num_voters,
                               names=['C5_' + str(i) for i in range(election_1.num_voters * election_2.num_voters)])
 
-    #cp.write('new.lp')
+    # cp.write('new.lp')
 
     # SOLVE THE ILP
     cp.set_results_stream(None)
@@ -118,9 +123,9 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
     """ LP solver for candidate subelection problem """
 
     # PRECOMPUTING
-    #"""
+    # """
 
-    P = np.zeros([election_1.num_voters, election_2.num_voters,election_1.num_candidates, election_2.num_candidates,
+    P = np.zeros([election_1.num_voters, election_2.num_voters, election_1.num_candidates, election_2.num_candidates,
                   election_1.num_candidates, election_2.num_candidates])
 
     for v in range(election_1.num_voters):
@@ -129,12 +134,14 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
                 for d1 in range(election_2.num_candidates):
                     for c2 in range(election_1.num_candidates):
                         for d2 in range(election_2.num_candidates):
-                            if (election_1.potes[v][c1] > election_1.potes[v][c2] and election_2.potes[u][d1] > election_2.potes[u][d2]) or \
-                                (election_1.potes[v][c1] < election_1.potes[v][c2] and election_2.potes[u][d1] < election_2.potes[u][d2]):
+                            if (election_1.potes[v][c1] > election_1.potes[v][c2] and election_2.potes[u][d1] >
+                                election_2.potes[u][d2]) or \
+                                    (election_1.potes[v][c1] < election_1.potes[v][c2] and election_2.potes[u][d1] <
+                                     election_2.potes[u][d2]):
                                 P[v][u][c1][d1][c2][d2] = 1
 
-    #print(P)
-    #"""
+    # print(P)
+    # """
 
     # CREATE LP FILE
     lp_file = open(lp_file_name, 'w')
@@ -223,7 +230,6 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
         lp_file.write(" <= 1" + "\n")
         ctr_c += 1
 
-
     # FIRST CONSTRAINT FOR P
     for v in range(election_1.num_voters):
         for u in range(election_2.num_voters):
@@ -236,7 +242,7 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
                             if d1 == d2:
                                 continue
 
-                            #if P[v][u][c1][d1][c2][d2] == 1:
+                            # if P[v][u][c1][d1][c2][d2] == 1:
                             lp_file.write("c" + str(ctr_c) + ":")
                             lp_file.write(" P_" + str(v) + "_" + str(u) + "_" +
                                           str(c1) + "_" + str(d1) + "_" + str(c2) + "_" + str(d2))
@@ -260,11 +266,11 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
                             if d1 == d2:
                                 continue
 
-                            #if P[v][u][c1][d1][c2][d2] == 1:
+                            # if P[v][u][c1][d1][c2][d2] == 1:
                             lp_file.write("c" + str(ctr_c) + ":")
                             lp_file.write(" P_" + str(v) + "_" + str(u) + "_" +
                                           str(c1) + "_" + str(d1) + "_" + str(c2) + "_" + str(d2))
-                           # lp_file.write(" + 1")
+                            # lp_file.write(" + 1")
                             lp_file.write(" - 0.34 N_" + str(v) + "_" + str(u))
                             lp_file.write(" - 0.34 M_" + str(c1) + "_" + str(d1))
                             lp_file.write(" - 0.34 M_" + str(c2) + "_" + str(d2))
@@ -284,7 +290,7 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
                             if d1 == d2:
                                 continue
 
-                            #if P[v][u][c1][d1][c2][d2] == 1:
+                            # if P[v][u][c1][d1][c2][d2] == 1:
                             lp_file.write("c" + str(ctr_c) + ":")
                             lp_file.write(" P_" + str(v) + "_" + str(u) + "_" +
                                           str(c1) + "_" + str(d1) + "_" + str(c2) + "_" + str(d2))
@@ -353,7 +359,7 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
                             if d1 == d2:
                                 continue
 
-                            #if P[v][u][c1][d1][c2][d2] == 1:
+                            # if P[v][u][c1][d1][c2][d2] == 1:
                             lp_file.write("P_" + str(v) + "_" + str(u) + "_" +
                                           str(c1) + "_" + str(d1) + "_" + str(c2) + "_" + str(d2) + "\n")
 
@@ -380,7 +386,6 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
         print("Exception raised during solve")
         return
 
-
     ##########################
     ##########################
 
@@ -390,7 +395,7 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
             name = 'M_' + str(i) + '_' + str(j)
             result[i][j] = cp_lp.solution.get_values(name)
 
-    #print('M', result)
+    # print('M', result)
     """
     result_2 = np.zeros([election_1.num_voters, election_1.num_voters])
     for i in range(election_1.num_voters):
@@ -423,15 +428,21 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
     ##########################
     ##########################
 
-
-    #objective_value = cp_lp.solution.get_objective_value()
-    #print('O-V: ', objective_value)
-    #print(sum(sum(result)))
+    # objective_value = cp_lp.solution.get_objective_value()
+    # print('O-V: ', objective_value)
+    # print(sum(sum(result)))
     return sum(sum(result))
 
 
 # FOR METRICS
+
 def solve_lp_matching_vector(cost_table, length):
+    cost_table = np.array(cost_table)
+    row_ind, col_ind = linear_sum_assignment(cost_table)
+    return cost_table[row_ind, col_ind].sum()
+
+
+def solve_lp_matching_vector_with_lp(cost_table, length):
     """ LP solver for vectors' matching """
 
     # print(cost_table)
@@ -449,8 +460,8 @@ def solve_lp_matching_vector(cost_table, length):
             objective.append(cost_table[i][j])
             pos += 1
     cp.variables.add(obj=objective,
-                    names=names,
-                    types=[cp.variables.type.binary] * length ** 2)
+                     names=names,
+                     types=[cp.variables.type.binary] * length ** 2)
 
     # FIRST GROUP OF CONSTRAINTS
     lin_expr = []
@@ -461,8 +472,8 @@ def solve_lp_matching_vector(cost_table, length):
             ind.append('x' + str(pos))
         lin_expr.append(cplex.SparsePair(ind=ind, val=[1.0] * length))
     cp.linear_constraints.add(lin_expr=lin_expr,
-                             senses=['E'] * length,
-                             rhs=[1.0] * length)
+                              senses=['E'] * length,
+                              rhs=[1.0] * length)
 
     # SECOND GROUP OF CONSTRAINTS
     lin_expr = []
@@ -473,8 +484,8 @@ def solve_lp_matching_vector(cost_table, length):
             ind.append('x' + str(pos))
         lin_expr.append(cplex.SparsePair(ind=ind, val=[1.0] * length))
     cp.linear_constraints.add(lin_expr=lin_expr,
-                             senses=['E'] * length,
-                             rhs=[1.0] * length)
+                              senses=['E'] * length,
+                              rhs=[1.0] * length)
 
     # c.write('new.lp')
 
@@ -573,7 +584,6 @@ def solve_lp_matching_interval(cost_table, length_1, length_2):
 
 # DODGSON SCORE
 def generate_lp_file_dodgson_score(lp_file_name, N=None, e=None, D=None):
-
     lp_file = open(lp_file_name, 'w')
     lp_file.write("Minimize\nobj: ")
 
@@ -915,8 +925,8 @@ def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length):
     # [1, 4, 6, 9, 11]
     # [1, 5, 6, 9, 11]
 
-    #print(matrix_1)
-    #print(matrix_2)
+    # print(matrix_1)
+    # print(matrix_2)
 
     lp_file = open(lp_file_name, 'w')
     lp_file.write("Minimize\n")  # obj: ")
@@ -937,7 +947,7 @@ def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length):
 
                     weight = abs(matrix_1[k][i] - matrix_2[l][j])  # **2
 
-                    #print(weight)
+                    # print(weight)
                     lp_file.write(str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
     lp_file.write("\n")
 
@@ -1032,8 +1042,8 @@ def solve_lp_matrix(lp_file_name, matrix_1, matrix_2, length):
     cp_lp.set_results_stream(None)
 
     cp_lp.parameters.threads.set(1)
-    #cp_lp.parameters.mip.tolerances.mipgap = 0.0001
-    #cp_lp.parameters.mip.strategy.probe.set(3)
+    # cp_lp.parameters.mip.tolerances.mipgap = 0.0001
+    # cp_lp.parameters.mip.strategy.probe.set(3)
 
     try:
         cp_lp.solve()
@@ -1066,14 +1076,13 @@ def solve_lp_matrix(lp_file_name, matrix_1, matrix_2, length):
                 print(A)
     """
 
-    #print(cp_lp.solution.get_objective_value())
+    # print(cp_lp.solution.get_objective_value())
     return cp_lp.solution.get_objective_value()
 
 
 # SPEARMAN - old
 
 def generate_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
-
     lp_file = open(lp_file_name, 'w')
     lp_file.write("Minimize\n")  # obj: ")
 
@@ -1110,7 +1119,6 @@ def generate_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
         for l in range(params['voters']):
             for i in range(params['candidates']):
                 for j in range(params['candidates']):
-
                     lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
                     lp_file.write(" - " + "M" + "i" + str(i) + "j" + str(j) + " <= 0" + "\n")
 
@@ -1153,7 +1161,6 @@ def generate_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
             lp_file.write("M" + "i" + str(i) + "j" + str(j))
         lp_file.write(" = 1" + "\n")
 
-
     # IMPORTANT #
     for k in range(params['voters']):
         for i in range(params['candidates']):
@@ -1165,7 +1172,6 @@ def generate_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
                     first = False
                     lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
             lp_file.write(" = 1" + "\n")
-
 
     # IMPORTANT #
     for l in range(params['voters']):
@@ -1199,7 +1205,6 @@ def generate_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
 
 
 def solve_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
-
     cp_lp = cplex.Cplex(lp_file_name)
     cp_lp.set_results_stream(None)
 
@@ -1245,7 +1250,6 @@ def solve_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
 
 
 def spearman_cost(single_votes_1, single_votes_2, params, perm):
-
     pote_1 = [0] * params['candidates']
     pote_2 = [0] * params['candidates']
 
@@ -1264,7 +1268,6 @@ def spearman_cost(single_votes_1, single_votes_2, params, perm):
 
 
 def spearman_cost_per_cand(single_votes_1, single_votes_2, params, perm):
-
     pote_1 = [0] * params['candidates']
     pote_2 = [0] * params['candidates']
 

@@ -428,10 +428,10 @@ def saveas_tex(saveas=None):
 
 
 # MAIN FUNCTIONS
-def print_2d(experiment_id, num_winners=0, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
-             angle=0, reverse=False, update=False, values=None, attraction_factor=1, metric_name='',
-             num_elections=None, secondary_order_name="positionwise_approx_cc", main_order_name="default",
-             distance_name="", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None, title=None,
+def print_2d(experiment_id, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
+             angle=0, reverse=False, update=False, values=None, attraction_factor=1,
+             num_elections=None, main_order_name="default",
+             distance_name="emd-positionwise", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None, title=None,
              saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
              ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """

@@ -15,23 +15,9 @@ def _decompose_tree(n, m, r):
     patterns = _generate_patterns(n, k)
     seq, sizes = _generate_tree(n, k, patterns)
 
-    tree = None
-
     seq = cycle_lemma(seq)
 
     tree = _turn_pattern_into_tree(seq)
-
-    # for i in range(len(seq)):
-    #     print(i)
-    #
-    #     try:
-    #         tree = _turn_pattern_into_tree(seq)
-    #         print('yeah!')
-    #     except:
-    #         pass
-    #
-    #     element = seq.pop(0)
-    #     seq.append(element)
 
     return tree
 
@@ -67,7 +53,7 @@ def generate_group_separable_election(num_voters=None, num_candidates=None, para
             node.reverse = signature[i]
 
         raw_vote = sample_a_vote(decomposition_tree)
-        vote = [candidate.replace('x', '') for candidate in raw_vote]
+        vote = [int(candidate.replace('x', '')) for candidate in raw_vote]
         votes.append(vote)
 
         for i, node in enumerate(all_inner_nodes):
@@ -85,6 +71,15 @@ def get_all_leaves_names(node):
     output = []
     for i in range(len(node.children)):
         output.append(get_all_leaves_names(node.children[i]))
+    return list(chain.from_iterable(output))
+
+
+def get_all_leaves_nodes(node):
+    if node.leaf:
+        return [node]
+    output = []
+    for i in range(len(node.children)):
+        output.append(get_all_leaves_nodes(node.children[i]))
     return list(chain.from_iterable(output))
 
 
@@ -217,14 +212,11 @@ def _turn_pattern_into_tree(pattern):
 
 def cycle_lemma(sequence):
 
-    length = len(sequence)
-
     pos = 0
     height = 0
     min = 0
     pos_min = 0
     for element in sequence:
-        #print(element)
         if 'x' in element:
             if height <= min:
                 pos_min = pos
@@ -233,28 +225,6 @@ def cycle_lemma(sequence):
         if 'f' in element:
             height -= 1
         pos += 1
-    # height_chosen = min + 1
-
-    # print('pos_min:', pos_min)
-    # print('height_chosen:', height_chosen)
-    #
-    # pos = 0
-    # height = 0
-    # beginning = 0
-    # for element in sequence:
-    #     if 'x' in element:
-    #         if height == height_chosen:
-    #             beginning = pos
-    #         height += 1
-    #     if 'f' in element:
-    #         height -= 1
-    #     pos += 1
-    #
-    # pos = beginning
-    #
-    # print('beginning:', beginning)
-    #
-    # new_sequence = []
 
     # rotate
     for _ in range(pos_min):
@@ -279,18 +249,12 @@ def _add_num_leaf_descendants(node):
 
 def _add_scheme(node):
 
-    #print(node.name)
-
     for starting_pos in node.scheme:
 
-        #print(len(node.scheme))
-        # left to right
         pos = starting_pos
         for child in node.children:
             if pos in child.scheme:
                 child.scheme[pos] += node.scheme[starting_pos]
-                # print('yes', print(node.name))
-                # print(child.scheme[pos])
             else:
                 child.scheme[pos] = node.scheme[starting_pos]
             pos += child.num_leaf_descendants
@@ -303,8 +267,6 @@ def _add_scheme(node):
                 child.scheme[pos] += node.scheme[starting_pos]
             else:
                 child.scheme[pos] = node.scheme[starting_pos]
-
-    # print(node.name, node.scheme)
 
     if node.leaf:
         _construct_vector_from_scheme(node)
@@ -322,8 +284,6 @@ def _construct_vector_from_scheme(node):
 
         node.vector[int(key)] += node.scheme[key] * weight
 
-    print(node.name, node.vector)
-
 
 def get_frequency_matrix_from_tree(root):
 
@@ -333,6 +293,17 @@ def get_frequency_matrix_from_tree(root):
     Node.total_num_leaf_descendants = root.num_leaf_descendants
 
     _add_scheme(root)
+
+    nodes = get_all_leaves_nodes(root)
+
+    m = Node.total_num_leaf_descendants
+    array = np.zeros([m, m])
+
+    for i in range(m):
+        for j in range(m):
+            array[j][i] = nodes[i].vector[j]
+
+    return array
 
 
 def _caterpillar(num_leaves):
@@ -357,19 +328,12 @@ def _caterpillar(num_leaves):
     return root
 
 
-# # TESTING ZONE
-# if __name__ == "__main__":
-#
-#     root = _caterpillar(10)
-#
-#     get_frequency_matrix_from_tree(root)
-
-
 ### MATRICES ###
 def get_gs_caterpillar_matrix(num_candidates):
     return get_frequency_matrix_from_tree(_caterpillar(num_candidates))
 
 # get_gs_caterpillar_matrix(10)
 
-# generate_group_separable_election(num_voters=10, num_candidates=14)
+# 10votes = generate_group_separable_election(num_voters=10, num_candidates=14)
+# print(votes)
 

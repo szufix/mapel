@@ -765,5 +765,6 @@ def generate_single_election(election_model=None, num_candidates=None, num_voter
                                                         param_1=param_1, param_2=param_2)
     else:
         votes = []
+        print("No such election model!")
 
     return votes

@@ -99,7 +99,7 @@ def analytical(num_candidates):
         matrix[i][i] += sums[i]
         matrix[i][num_candidates-i-1] -= i
 
-    return matrix
+    return matrix.transpose()
 
 # print(get_single_crossing_matrix(10))
 # print(analytical(10))

@@ -312,7 +312,7 @@ def single_thread(model, results, thread_ids, t, testing):
     print("thread " + str(t) + " is ready :)")
 
 
-def compute_distances(experiment_id, distance_name='',
+def compute_distances(experiment_id, distance_name='emd-positionwise',
                       testing=False, num_threads=1, starting_from=0, ending_at=10000):
     """ Compute distance using threads"""
 

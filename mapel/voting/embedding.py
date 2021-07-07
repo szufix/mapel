@@ -15,7 +15,7 @@ import numpy as np
 from . import objects as obj
 
 
-def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="positionwise",
+def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="emd-positionwise",
                      random=True, attraction_factor=1.):
     """ Convert multi-dimensional model to two-dimensional model """
 

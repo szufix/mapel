@@ -11,7 +11,7 @@ class Model:
     """Abstract model of elections."""
 
     def __init__(self, experiment_id, ignore=None, main_order_name="default", raw=False,
-                 distance_name='positionwise', num_elections=None):
+                 distance_name='emd-positionwise', num_elections=None):
 
         self.experiment_id = experiment_id
 
@@ -216,7 +216,7 @@ class Model_xd(Model):
 class Model_2d(Model):
     """ Two-dimensional model of elections """
 
-    def __init__(self, experiment_id, main_order_name="default", distance_name="", ignore=None,
+    def __init__(self, experiment_id, main_order_name="default", distance_name="emd-positionwise", ignore=None,
                  num_elections=None, attraction_factor=1):
 
         Model.__init__(self, experiment_id, ignore=ignore, main_order_name=main_order_name, distance_name=distance_name,
@@ -323,7 +323,7 @@ class Model_2d(Model):
 class Model_3d(Model):
     """ Two-dimensional model of elections """
 
-    def __init__(self, experiment_id, main_order_name="default", distance_name="", ignore=None,
+    def __init__(self, experiment_id, main_order_name="default", distance_name="emd-positionwise", ignore=None,
                  num_elections=None, attraction_factor=1):
 
         Model.__init__(self, experiment_id, ignore=ignore, main_order_name=main_order_name, distance_name=distance_name,

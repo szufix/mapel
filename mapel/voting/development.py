@@ -530,6 +530,9 @@ def create_structure(experiment_id):
     if not os.path.isdir("experiments/"):
         os.mkdir(os.path.join(os.getcwd(), "experiments"))
 
+    if not os.path.isdir("images/"):
+        os.mkdir(os.path.join(os.getcwd(), "images"))
+
     os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id))
 
     os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "distances"))
