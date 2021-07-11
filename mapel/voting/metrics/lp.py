@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from scipy.optimize import linear_sum_assignment
 
 try:
     import cplex
@@ -10,7 +9,7 @@ import numpy as np
 
 
 # FOR SUBELECTIONS
-def solve_lp_voter_subelection(election_1, election_2, metric_name):
+def solve_lp_voter_subelection(election_1, election_2, metric_name='l1'):
     """ LP solver for voter subelection problem """
 
     cp = cplex.Cplex()
@@ -119,7 +118,7 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name):
     return objective_value
 
 
-def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_param=1):
+def solve_lp_candidate_subelections(lp_file_name, election_1, election_2):
     """ LP solver for candidate subelection problem """
 
     # PRECOMPUTING
@@ -435,11 +434,6 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2, magic_
 
 
 # FOR METRICS
-
-def solve_lp_matching_vector(cost_table, length):
-    cost_table = np.array(cost_table)
-    row_ind, col_ind = linear_sum_assignment(cost_table)
-    return cost_table[row_ind, col_ind].sum()
 
 
 def solve_lp_matching_vector_with_lp(cost_table, length):
@@ -921,15 +915,10 @@ def generate_lp_file_matching_matrix_half(lp_file_name, matrix_1, matrix_2, leng
 """
 
 
-def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length):
-    # [1, 4, 6, 9, 11]
-    # [1, 5, 6, 9, 11]
-
-    # print(matrix_1)
-    # print(matrix_2)
+def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length, inner_distance):
 
     lp_file = open(lp_file_name, 'w')
-    lp_file.write("Minimize\n")  # obj: ")
+    lp_file.write("Minimize\n")
 
     first = True
     for k in range(length):
@@ -944,10 +933,7 @@ def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length):
                     if not first:
                         lp_file.write(" + ")
                     first = False
-
-                    weight = abs(matrix_1[k][i] - matrix_2[l][j])  # **2
-
-                    # print(weight)
+                    weight = inner_distance(matrix_1[k][i], matrix_2[l][j])
                     lp_file.write(str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
     lp_file.write("\n")
 
@@ -1282,3 +1268,11 @@ def spearman_cost_per_cand(single_votes_1, single_votes_2, params, perm):
         cand_diff[i] = float(abs(pote_1[i] - pote_2[i]))
 
     return cand_diff
+
+import os
+def remove_lp_file(path):
+    """ Safely remove lp file """
+    try:
+        os.remove(path)
+    except:
+        pass

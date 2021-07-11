@@ -12,34 +12,34 @@ import os
 import networkx as nx
 import numpy as np
 
-from . import objects as obj
+from .objects.Experiment import Experiment, Experiment_xd, Experiment_2D, Experiment_3D
 
 
 def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="emd-positionwise",
                      random=True, attraction_factor=1.):
-    """ Convert multi-dimensional model to two-dimensional model """
+    """ Convert multi-dimensional experiment to two-dimensional experiment """
 
-    model = obj.Model_xd(experiment_id, distance_name=distance_name)
-    X = np.zeros((model.num_elections, model.num_elections))
+    experiment = Experiment_xd(experiment_id, distance_name=distance_name)
+    X = np.zeros((experiment.num_elections, experiment.num_elections))
 
     if random:
-        perm = np.random.permutation(model.num_elections)
+        perm = np.random.permutation(experiment.num_elections)
     else:
-        perm = [i for i in range(model.num_elections)]
+        perm = [i for i in range(experiment.num_elections)]
 
-    rev_perm = [0 for _ in range(model.num_elections)]
-    for i in range(model.num_elections):
+    rev_perm = [0 for _ in range(experiment.num_elections)]
+    for i in range(experiment.num_elections):
         rev_perm[perm[i]] = int(i)
 
-    for i in range(model.num_elections):
-        for j in range(i + 1, model.num_elections):
-            model.distances[j][i] = model.distances[i][j]
+    for i in range(experiment.num_elections):
+        for j in range(i + 1, experiment.num_elections):
+            experiment.distances[j][i] = experiment.distances[i][j]
 
-    for i in range(model.num_elections):
-        for j in range(i + 1, model.num_elections):
-            if model.distances[perm[i]][perm[j]] == 0:
-                model.distances[perm[i]][perm[j]] = 0.01
-            X[i][j] = 1. / model.distances[perm[i]][perm[j]]
+    for i in range(experiment.num_elections):
+        for j in range(i + 1, experiment.num_elections):
+            if experiment.distances[perm[i]][perm[j]] == 0:
+                experiment.distances[perm[i]][perm[j]] = 0.01
+            X[i][j] = 1. / experiment.distances[perm[i]][perm[j]]
             # TMP ROCK IT
             X[i][j] = X[i][j] ** attraction_factor
             # END OF TMP
@@ -65,7 +65,7 @@ def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="emd-posi
         writer.writerow(["election_id", "x", "y"])
 
         ctr = 0
-        for family in model.families:
+        for family in experiment.families:
             for j in range(family.size):
                 a = family.election_model + '_' + str(j)
                 x = round(my_pos[rev_perm[ctr]][0], 5)
@@ -74,26 +74,26 @@ def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="emd-posi
                 ctr += 1
 
 
-def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="positionwise", metric_name='emd',
-                                                                                                attraction_factor=1.):
-    """ Convert multi-dimensional model to three-dimensional model """
+def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="emd-positionwise",
+                                                                  attraction_factor=1.):
+    """ Convert multi-dimensional experiment to three-dimensional experiment """
 
-    model = obj.Model_xd(experiment_id, distance_name=distance_name, metric_name=metric_name)
-    X = np.zeros((model.num_elections, model.num_elections))
-    perm = np.random.permutation(model.num_elections)
+    experiment = Experiment_xd(experiment_id, distance_name=distance_name)
+    X = np.zeros((experiment.num_elections, experiment.num_elections))
+    perm = np.random.permutation(experiment.num_elections)
 
-    rev_perm = [0 for _ in range(model.num_elections)]
-    for i in range(model.num_elections):
+    rev_perm = [0 for _ in range(experiment.num_elections)]
+    for i in range(experiment.num_elections):
         rev_perm[perm[i]] = int(i)
-    for i in range(model.num_elections):
-        for j in range(i + 1, model.num_elections):
-            model.distances[j][i] = model.distances[i][j]
+    for i in range(experiment.num_elections):
+        for j in range(i + 1, experiment.num_elections):
+            experiment.distances[j][i] = experiment.distances[i][j]
 
-    for i in range(model.num_elections):
-        for j in range(i + 1, model.num_elections):
-            if model.distances[perm[i]][perm[j]] == 0:
-                model.distances[perm[i]][perm[j]] = 0.01
-            X[i][j] = 1. / model.distances[perm[i]][perm[j]]
+    for i in range(experiment.num_elections):
+        for j in range(i + 1, experiment.num_elections):
+            if experiment.distances[perm[i]][perm[j]] == 0:
+                experiment.distances[perm[i]][perm[j]] = 0.01
+            X[i][j] = 1. / experiment.distances[perm[i]][perm[j]]
             X[i][j] = X[i][j]**attraction_factor
             X[j][i] = X[i][j]
 
@@ -104,14 +104,14 @@ def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="position
     my_pos = nx.spring_layout(G, iterations=num_iterations, dim=3)
 
     file_name = os.path.join(os.getcwd(), "experiments", experiment_id,
-                             "points", metric_name + '-' + distance_name + "_3d_a" + str(attraction_factor) + ".csv")
+                             "points",  distance_name + "_3d_a" + str(attraction_factor) + ".csv")
 
     with open(file_name, 'w', newline='') as csvfile:
 
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(["id", "x", "y", "z"])
 
-        for i in range(model.num_elections):
+        for i in range(experiment.num_elections):
             x = round(my_pos[rev_perm[i]][0], 5)
             y = round(my_pos[rev_perm[i]][1], 5)
             z = round(my_pos[rev_perm[i]][2], 5)

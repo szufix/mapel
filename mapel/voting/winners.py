@@ -8,7 +8,7 @@ import time
 import numpy as np
 
 from . import _elections as el
-from . import lp as lp
+from .metrics import lp as lp
 
 
 def generate_winners(experiment_id, num_winners, rule, utopia_type, elections_id, ballot="ordinal"):
@@ -205,9 +205,6 @@ def get_winners_scoring(params, votes, candidates, scoring):
 
 
 def get_winners_borda_owa(params, votes, candidates, owa):
-
-    #print(votes)
-
     rand_name = str(rand.random())
     lp_file_name = str(rand_name + ".lp")
     lp.generate_lp_file_borda_owa(owa, lp_file_name, params, votes)

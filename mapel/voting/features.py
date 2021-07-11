@@ -1,23 +1,16 @@
 #!/usr/bin/env python
 
 import os
-import time
-from threading import Thread
 
-import matplotlib.pyplot as plt
 import numpy as np
 import random as rand
 import math
 
-from . import _elections as el
-from . import metrics as metr
 from . import objects as obj
-from . import winners as win
+from .metrics import lp
+from . import development as dev
 
-import copy
-
-import itertools
-
+from .objects.Experiment import Experiment, Experiment_xd, Experiment_2D, Experiment_3D
 
 ### MAPPING ###
 def get_feature(name):
@@ -32,11 +25,12 @@ def get_feature(name):
 
 
 ### MAIN FUNCTION ###
+
 def compute_feature(experiment_id, name=None):
-    model = obj.Model_xd(experiment_id)
+    experiment = Experiment_xd(experiment_id)
     values = []
 
-    for election in model.elections:
+    for election in experiment.elections:
         statistic = get_feature(name)
         value = statistic(election)
         values.append(value)
@@ -44,7 +38,7 @@ def compute_feature(experiment_id, name=None):
     file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced", str(name) + '.txt')
 
     file_scores = open(file_name, 'w')
-    for i in range(model.num_elections):
+    for i in range(experiment.num_elections):
         file_scores.write(str(values[i]) + "\n")
     file_scores.close()
 
@@ -62,6 +56,7 @@ def borda_std(election):
     return std
 
 
+# def separation_2(election):
 # def separation_2(election):
 #
 #     if election.fake:
@@ -90,7 +85,7 @@ def separation(election):
 
     half = int(election.num_candidates / 2)
 
-    ranking = obj.get_borda_ranking(election.votes, election.num_voters, election.num_candidates)
+    ranking = dev.get_borda_ranking(election.votes, election.num_voters, election.num_candidates)
     first_half = ranking[0:half]
 
     distance = 0
@@ -166,6 +161,22 @@ def highest_copeland_score(potes, num_voters, num_candidates):
     return max(scores)
 
 
+def potes_to_unique_potes(potes):
+    """ Remove repetitions from potes (positional votes) """
+    unique_potes = []
+    N = []
+    for pote in potes:
+        flag_new = True
+        for i, p in enumerate(unique_potes):
+            if list(pote) == list(p):
+                N[i] += 1
+                flag_new = False
+        if flag_new:
+            unique_potes.append(pote)
+            N.append(1)
+    return unique_potes, N
+
+
 def lowest_dodgson_score(election):
     """ compute lowest DODGSON score of a given election """
 
@@ -204,9 +215,24 @@ def lowest_dodgson_score(election):
         lp.generate_lp_file_dodgson_score(path, N=N, e=e, D=D)
         score = lp.solve_lp_dodgson_score(path)
 
-        remove_lp_file(path)
+        lp.remove_lp_file(path)
 
         if score < min_score:
             min_score = score
 
     return min_score
+
+
+def get_effective_num_candidates(election, mode='Borda'):
+    """ Compute effective number of candidates """
+
+    c = election.num_candidates
+    vectors = election.votes_to_positionwise_vectors()
+
+    if mode == 'Borda':
+        scores = [sum([vectors[j][i] * (c - i - 1) for i in range(c)]) / (c * (c - 1) / 2) for j in range(c)]
+    elif mode == 'Plurality':
+        scores = [sum([vectors[j][i] for i in range(1)]) for j in range(c)]
+
+    return 1. / sum([x * x for x in scores])
+

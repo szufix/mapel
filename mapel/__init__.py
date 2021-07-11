@@ -1,7 +1,7 @@
 
 from .voting import _elections as el
 from .voting import embedding as emb
-from .voting import metrics as metr
+from .voting import _metrics as metr
 from .voting import print as pr
 from .voting import development as dev
 
@@ -41,11 +41,11 @@ def convert_xd_to_3d(experiment, **kwargs):
     emb.convert_xd_to_3d(experiment, **kwargs)
 
 
-def convert_using_tsne(experiment, **kwargs):
-    emb.convert_using_tsne(experiment, **kwargs)
-
-def convert_using_mds(experiment, **kwargs):
-    emb.convert_using_mds(experiment, **kwargs)
+# def convert_using_tsne(experiment, **kwargs):
+#     emb.convert_using_tsne(experiment, **kwargs)
+#
+# def convert_using_mds(experiment, **kwargs):
+#     emb.convert_using_mds(experiment, **kwargs)
 
 
 ################

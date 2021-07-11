@@ -11,16 +11,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 from skopt import gp_minimize
 
-from . import elections as el
-from . import metrics as metr
-from . import objects as obj
-from . import winners as win
+from mapel.voting import elections as el
+from mapel.voting import metrics as metr
+from mapel.voting import objects as obj
+from mapel.voting import winners as win
 import copy
 
 
 def compute_approx(experiment_id, method='hb', algorithm='greedy', num_winners=10):
 
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
 
     file_name = "experiments/" + experiment_id + "/controllers/approx/" + method + "_" + algorithm + ".txt"
     file_output = open(file_name, 'w')
@@ -122,7 +122,7 @@ def merge_segments(experiment_id, num_segments):
 
 def prepare_elections_extended(experiment_id):
 
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
 
     id_ = 800
     for i in range(30, model.num_families):
@@ -161,7 +161,7 @@ def prepare_elections_extended(experiment_id):
 
 def prepare_elections_unid(experiment_id):
 
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
 
     id_ = 900
     #for i in range(35, model.num_families):
@@ -2400,7 +2400,7 @@ def convert_to_soc(experiment, num_elections=None, name=None):
 
 def prepare_approx_cc_order(name, limit=200):
 
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(file_name, "experiments", str(name), "controllers", "orders", "positionwise_approx_cc.txt")
     file_ = open(file_name, 'r')
 
@@ -2412,11 +2412,11 @@ def prepare_approx_cc_order(name, limit=200):
 
         target = str(file_.readline().replace("\n", ""))
 
-        src = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        src = os.path.join(src, "experiments", str(name), "elections", "soc_original", "core_" + str(target) + ".soc")
+        src = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
+        src = os.path.join(src, "experiments", str(name), "../elections", "soc_original", "core_" + str(target) + ".soc")
 
-        dst = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
-        dst = os.path.join(dst, "experiments", str(name), "elections", "soc_positionwise_approx_cc", "core_" + str(i) + ".soc")
+        dst = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
+        dst = os.path.join(dst, "experiments", str(name), "../elections", "soc_positionwise_approx_cc", "core_" + str(i) + ".soc")
 
         copyfile(src, dst)
 
@@ -2424,7 +2424,7 @@ def prepare_approx_cc_order(name, limit=200):
 def show_new_ilp(name, metric="bordawise"):
 
     name = "example_100_100"
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(file_name, "experiments", str(name), "controllers", "times", "final_core_hb.txt")
     file_ = open(file_name, 'r')
 
@@ -2435,7 +2435,7 @@ def show_new_ilp(name, metric="bordawise"):
     target = [i for i in range(0,30)]
 
     name = "example_100_100"
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(file_name, "experiments", str(name), "controllers", "distances", "bordawise.txt")
     file_ = open(file_name, 'r')
 
@@ -2499,7 +2499,7 @@ def show_new_ilp(name, metric="bordawise"):
     plt.title(title_text)
     plt.xlabel("average distance from IC elections")
     plt.ylabel("log ( time )")
-    core = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    core = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(core, "images", str(exp_name) + "_map.png")
     lgd = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.savefig(file_name, bbox_extra_artists=(lgd, add_text), bbox_inches='tight')
@@ -2509,7 +2509,7 @@ def show_new_ilp(name, metric="bordawise"):
 def show_new_zip(name):
 
     name = "example_100_100"
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(file_name, "experiments", str(name), "controllers", "zip_size.txt")
     file_ = open(file_name, 'r')
 
@@ -2520,7 +2520,7 @@ def show_new_zip(name):
     target = [i for i in range(0,30)]
 
     name = "example_100_100"
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(file_name, "experiments", str(name), "controllers", "distances", "positionwise.txt")
     file_ = open(file_name, 'r')
 
@@ -2581,7 +2581,7 @@ def show_new_zip(name):
     plt.title(title_text)
     plt.xlabel("average distance from IC elections")
     plt.ylabel("normalized zip size")
-    core = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    core = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(core, "images", str(exp_name) + "_zip.png")
     lgd = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.savefig(file_name, bbox_extra_artists=(lgd, add_text), bbox_inches='tight')
@@ -2591,7 +2591,7 @@ def show_new_zip(name):
 def show_new_approx_removal(name):
 
     name = "example_100_100"
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(file_name, "experiments", str(name), "controllers", "approx", "final_core_hb_removal_dis.txt")
     file_ = open(file_name, 'r')
 
@@ -2602,7 +2602,7 @@ def show_new_approx_removal(name):
     target = [i for i in range(0,30)]
 
     name = "example_100_100"
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(file_name, "experiments", str(name), "controllers", "distances", "positionwise.txt")
     file_ = open(file_name, 'r')
 
@@ -2666,7 +2666,7 @@ def show_new_approx_removal(name):
     plt.title(title_text)
     plt.xlabel("average distance from IC elections")
     plt.ylabel("REMOVAL")
-    core = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    core = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(core, "images", str(exp_name) + "_removal.png")
     lgd = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.savefig(file_name, bbox_extra_artists=(lgd, add_text), bbox_inches='tight')
@@ -2676,7 +2676,7 @@ def show_new_approx_removal(name):
 def show_new_approx_greedy(name):
 
     name = "example_100_100"
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(file_name, "experiments", str(name), "controllers", "approx", "final_core_hb_greedy_dis.txt")
     file_ = open(file_name, 'r')
 
@@ -2688,7 +2688,7 @@ def show_new_approx_greedy(name):
     target = [i for i in range(0, 30)]
 
     name = "example_100_100"
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(file_name, "experiments", str(name), "controllers", "distances", "positionwise.txt")
     file_ = open(file_name, 'r')
 
@@ -2751,7 +2751,7 @@ def show_new_approx_greedy(name):
     plt.title(title_text)
     plt.xlabel("average distance from IC elections")
     plt.ylabel("GREEDY")
-    core = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    core = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(core, "images", str(exp_name) + "_greedy.png")
     lgd = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.savefig(file_name, bbox_extra_artists=(lgd, add_text), bbox_inches='tight')
@@ -2798,7 +2798,7 @@ def compute_cloud_distance(experiment_id, x=-1, num_clouds=100, cloud_size=1, me
 
     for T1 in range(num_clouds * cloud_size):
         file_name = "guess_" + str(T1) + '.soc'
-        path = os.path.join(os.getcwd(), 'experiments', experiment_id, 'elections', 'soc_original', file_name)
+        path = os.path.join(os.getcwd(), 'experiments', experiment_id, '../elections', 'soc_original', file_name)
         try:
             os.remove(path)
         except:
@@ -2835,7 +2835,7 @@ def approx_real_data(exp_name, method, num_candidates):
 
 def import_params(experiment_id, method, num_candidates):
 
-    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+    file_name = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..')
     file_name = os.path.join(file_name, "experiments", experiment_id, "controllers", "params", method + ".txt")
     file_ = open(file_name, 'r')
     params = []

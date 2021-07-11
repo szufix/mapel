@@ -8,17 +8,19 @@ include LICENSE.txt
 include requirements.txt
 
 
-mapel/MAIN.py
-mapel/tmp.py
-mapel/workshop.py
-mapel/_MAIN.py
-mapel/_tmp.py
-mapel/_workshop.py
+exclude mapel/MAIN.py
+exclude mapel/tmp.py
+exclude mapel/workshop.py
+exclude mapel/_MAIN.py
+exclude mapel/_tmp.py
+exclude mapel/_workshop.py
+exclude mapel/main.py
+exclude mapel/testing.py
 
 
-exclude mapel/voting/__canonical.py
-exclude mapel/voting/__pabulib.py
-exclude mapel/voting/__preflib.py
-exclude mapel/voting/__mapel.py
-exclude mapel/voting/__tmp.py
-exclude mapel/voting/__sc.py
+exclude mapel/voting/not_in_the_package/__canonical.py
+exclude mapel/voting/not_in_the_package/__pabulib.py
+exclude mapel/voting/not_in_the_package/__preflib.py
+exclude mapel/voting/not_in_the_package/__mapel.py
+exclude mapel/voting/not_in_the_package/__tmp.py
+exclude mapel/voting/not_in_the_package/__sc.py

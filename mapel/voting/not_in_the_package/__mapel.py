@@ -2,9 +2,9 @@ import math
 import os
 
 import matplotlib.pyplot as plt
-from . import canonical as can
-from . import metrics as metr
-from . import print as pr
+from mapel.voting import canonical as can
+from mapel.voting import metrics as metr
+from mapel.voting import print as pr
 
 
 def hello():

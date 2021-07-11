@@ -13,7 +13,7 @@ from mapel.voting.elections.impartial import generate_impartial_culture_election
     generate_impartial_anonymous_culture_election
 from mapel.voting.elections.guardians import generate_real_antagonism_election, \
     generate_real_identity_election, generate_real_stratification_election, generate_real_uniformity_election
-
+from mapel.voting.elections.urn_model import generate_urn_model_election
 
 import os
 import random as rand
@@ -22,17 +22,13 @@ from collections import Counter
 import numpy as np
 from scipy.stats import gamma
 
-from . import objects as obj
+from .objects.Election import Election
+from .objects.Experiment import Experiment, Experiment_xd, Experiment_2D, Experiment_3D
 
-
-LIST_OF_PREFLIB_ELECTIONS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
-                             'tshirt', 'cities_survey', 'aspen', 'ers',
-                             'marble', 'cycling_tdf', 'cycling_gdi', 'ice_races',
-                             'grenoble'}
+import mapel.voting.elections.preflib as preflib
 
 
 def nice_name(name):
-
     return {
         '1d_interval': '1D_Interval',
         '1d_gaussian': '1D_Gaussian',
@@ -78,96 +74,79 @@ def nice_name(name):
     }.get(name)
 
 
-LOOKUP_TABLE = {(5, 0.5): 0.50417,
-                (10, 0.5): 0.65345,
-                (15, 0.5): 0.73378,
-                (20, 0.5): 0.78389,
-                (25, 0.5): 0.81814,
-                (30, 0.5): 0.84302,
-                (35, 0.5): 0.86191,
-                (40, 0.5): 0.87674,
-                (45, 0.5): 0.8887,
-                (50, 0.5): 0.89854,
-                (55, 0.5): 0.90679,
-                (60, 0.5): 0.91379,
-                (65, 0.5): 0.91982,
-                (70, 0.5): 0.92505,
-                (75, 0.5): 0.92965,
-                (80, 0.5): 0.93371,
-                (85, 0.5): 0.93733,
-                (90, 0.5): 0.94058,
-                (95, 0.5): 0.94351,
-                (100, 0.5): 0.94616,
+def generate_single_election(election_model=None, num_candidates=None, num_voters=None, param_1=0, param_2=0):
 
-                (5, 0.75): 0.73407,
-                (10, 0.75): 0.82952,
-                (15, 0.75): 0.87458,
-                (20, 0.75): 0.9008,
-                (25, 0.75): 0.91795,
-                (30, 0.75): 0.93005,
-                (35, 0.75): 0.93904,
-                (40, 0.75): 0.94598,
-                (45, 0.75): 0.9515,
-                (50, 0.75): 0.956,
-                (55, 0.75): 0.95973,
-                (60, 0.75): 0.96288,
-                (65, 0.75): 0.96558,
-                (70, 0.75): 0.96791,
-                (75, 0.75): 0.96994,
-                (80, 0.75): 0.97173,
-                (85, 0.75): 0.97332,
-                (90, 0.75): 0.97474,
-                (95, 0.75): 0.97602,
-                (100, 0.75): 0.97717,
+    if election_model == 'mallows' and param_1 == 0:
+        param_1 = rand.random()
+    elif election_model == 'norm_mallows' and param_1 == 0:
+        param_1 = phi_mallows_helper(num_candidates)
+    elif election_model == 'norm_mallows' and param_1 >= 0:
+        # if (num_candidates, param_1) in LOOKUP_TABLE:
+        #     param_1 = LOOKUP_TABLE[(num_candidates, param_1)]
+        # else:
+        param_1 = phi_mallows_helper(num_candidates, rdis=param_1)
+    elif election_model == 'urn_model' and param_1 == 0:
+        param_1 = gamma.rvs(0.8)
 
-                # NEW
-                (10, 0.9): 0.9301369856,
-                (20, 0.9): 0.960527289,
-                (30, 0.9): 0.972493169,
-                (40, 0.9): 0.9788919858,
-                (50, 0.9): 0.9828755937,
-                (60, 0.9): 0.985594312,
-                (70, 0.9): 0.9875680461,
-                (80, 0.9): 0.9890661082,
-                (90, 0.9): 0.9902419615,
-                (100, 0.9): 0.9911894651,
-                (110, 0.9): 0.9919692496,
-                (120, 0.9): 0.9926222263,
-                (130, 0.9): 0.9931770014,
-                (140, 0.9): 0.9936541785,
-                (150, 0.9): 0.9940689741,
+    naked_models = {'impartial_culture': generate_impartial_culture_election,
+                    'iac': generate_impartial_anonymous_culture_election,
+                    'conitzer': generate_conitzer_election,
+                    'spoc_conitzer': generate_spoc_conitzer_election,
+                    'walsh': generate_walsh_election,
+                    'single-crossing': generate_single_crossing_election,
+                    'real_identity': generate_real_identity_election,
+                    'real_uniformity': generate_real_uniformity_election,
+                    'real_antagonism': generate_real_antagonism_election,
+                    'real_stratification': generate_real_stratification_election}
 
-                (10, 0.95): 0.964589542,
-                (20, 0.95): 0.9801654616,
-                (30, 0.95): 0.9862247902,
-                (40, 0.95): 0.989448283,
-                (50, 0.95): 0.9914492248,
-                (60, 0.95): 0.9928122517,
-                (70, 0.95): 0.9938004798,
-                (80, 0.95): 0.9945498142,
-                (90, 0.95): 0.9951375388,
-                (100, 0.95): 0.9956108463,
-                (110, 0.95): 0.9960001847,
-                (120, 0.95): 0.9963260786,
-                (130, 0.95): 0.9966028676,
-                (140, 0.95): 0.9968408726,
-                (150, 0.95): 0.9970477116,
+    euclidean_models = {'1d_interval': generate_elections_1d_simple,
+                        '1d_gaussian': generate_elections_1d_simple,
+                        '1d_one_sided_triangle': generate_elections_1d_simple,
+                        '1d_full_triangle': generate_elections_1d_simple,
+                        '1d_two_party': generate_elections_1d_simple,
+                        '2d_disc': generate_elections_2d_simple,
+                        '2d_square': generate_elections_2d_simple,
+                        '2d_gaussian': generate_elections_2d_simple,
+                        '3d_cube': generate_elections_nd_simple,
+                        '4d_cube': generate_elections_nd_simple,
+                        '5d_cube': generate_elections_nd_simple,
+                        '10d_cube': generate_elections_nd_simple,
+                        '15d_cube': generate_elections_nd_simple,
+                        '20d_cube': generate_elections_nd_simple,
+                        '40d_cube': generate_elections_nd_simple,
+                        '2d_sphere': generate_elections_2d_simple,
+                        '3d_sphere': generate_elections_nd_simple,
+                        '4d_sphere': generate_elections_nd_simple,
+                        '5d_sphere': generate_elections_nd_simple,
+                        '4d_ball': generate_elections_nd_simple,
+                        '5d_ball': generate_elections_nd_simple,
+                        '40d_ball': generate_elections_nd_simple, }
 
-                (10, 0.99): 0.9928254408,
-                (20, 0.99): 0.9960077199,
-                (30, 0.99): 0.9972344025,
-                (40, 0.99): 0.9978844379,
-                (50, 0.99): 0.9982870544,
-                (60, 0.99): 0.9985609271,
-                (70, 0.99): 0.9987592959,
-                (80, 0.99): 0.9989096017,
-                (90, 0.99): 0.9990274248,
-                (100, 0.99): 0.9991222683,
-                (110, 0.99): 0.9992002574,
-                (120, 0.99): 0.9992655184,
-                (130, 0.99): 0.999320932,
-                (140, 0.99): 0.9993685707,
-                (150, 0.99): 0.9994099636,}
+    single_param_models = {'urn_model': generate_urn_model_election,
+                           'group-separable': generate_group_separable_election, }
+
+    double_param_models = {'mallows': generate_mallows_election,
+                           'norm_mallows': generate_mallows_election, }
+
+    if election_model in naked_models:
+        votes = naked_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates)
+
+    elif election_model in euclidean_models:
+        votes = euclidean_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
+                                                     election_model=election_model)
+
+    elif election_model in single_param_models:
+        votes = single_param_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
+                                                        param_1=param_1)
+
+    elif election_model in double_param_models:
+        votes = double_param_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
+                                                        param_1=param_1, param_2=param_2)
+    else:
+        votes = []
+        print("No such election model!")
+
+    return votes
 
 
 
@@ -175,23 +154,22 @@ LOOKUP_TABLE = {(5, 0.5): 0.50417,
 def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=1000000):
     """ Prepare elections for a given experiment """
 
-    model = obj.Model(experiment_id, raw=True)
+    experiment = Experiment(experiment_id, raw=True)
     id_ = 0
 
-    for i in range(model.num_families):
+    for i in range(experiment.num_families):
 
-        print('family:', model.families[i].label)
+        print('family:', experiment.families[i].label)
 
-        election_model = model.families[i].election_model
-        param_1 = model.families[i].param_1
-        param_2 = model.families[i].param_2
+        election_model = experiment.families[i].election_model
+        param_1 = experiment.families[i].param_1
+        param_2 = experiment.families[i].param_2
         copy_param_1 = param_1
 
-        #print(election_model)
         if starting_from <= id_ < ending_at:
 
             # PREFLIB
-            if election_model in LIST_OF_PREFLIB_ELECTIONS:
+            if election_model in preflib.LIST_OF_PREFLIB_ELECTIONS:
 
                 selection_method = 'random'
 
@@ -250,15 +228,14 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
                 else:
                     ids = []
 
-                #print(model.families[i].size)
-                rand_ids = rand.choices(ids, k=model.families[i].size)
+                rand_ids = rand.choices(ids, k=experiment.families[i].size)
                 for ri in rand_ids:
                     election_id = "core_" + str(id_)
                     tmp_election_type = election_model + '_' + str(ri)
-                    #print(tmp_election_type)
-                    generate_elections_preflib(experiment_id, election_model=tmp_election_type, elections_id=election_id,
-                                                  num_voters=model.families[i].num_voters,
-                                                  num_candidates=model.families[i].num_candidates,
+
+                    preflib.generate_elections_preflib(experiment_id, election_model=tmp_election_type, elections_id=election_id,
+                                                  num_voters=experiment.families[i].num_voters,
+                                                  num_candidates=experiment.families[i].num_candidates,
                                                   special=param_1,
                                                   folder=folder, selection_method=selection_method)
                     id_ += 1
@@ -296,17 +273,17 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
                     """
                 #print(len(base))
 
-                for j in range(model.families[i].size):
+                for j in range(experiment.families[i].size):
 
                     if election_model in {'unid', 'stan', 'anid', 'stid', 'anun', 'stun'}:
                         if copy_param_1 == 0:    # with both
-                            param_1 = j / (model.families[i].size - 1)
+                            param_1 = j / (experiment.families[i].size - 1)
                         elif copy_param_1 == 1:   # without first (which is last)
-                            param_1 = j / model.families[i].size
+                            param_1 = j / experiment.families[i].size
                         elif copy_param_1 == 2:   # without second (which is first)
-                            param_1 = (j+1) / model.families[i].size
+                            param_1 = (j+1) / experiment.families[i].size
                         elif copy_param_1 == 4:   # without both
-                            param_1 = (j+1) / (model.families[i].size + 1)
+                            param_1 = (j+1) / (experiment.families[i].size + 1)
                         #print(param_1)
                     elif election_model in {'crate'}:
                         param_1 = base[j]
@@ -316,13 +293,13 @@ def prepare_elections(experiment_id, folder=None, starting_from=0, ending_at=100
                     # election_id = "core_" + str(id_)
                     election_id = election_model + '_' + str(j)
                     generate_elections(experiment_id, election_model=election_model, election_id=election_id,
-                                          num_voters=model.families[i].num_voters,
-                                          num_candidates=model.families[i].num_candidates,
+                                          num_voters=experiment.families[i].num_voters,
+                                          num_candidates=experiment.families[i].num_candidates,
                                           special=param_1, second_param=param_2)
                     id_ += 1
 
         else:
-            id_ += model.families[i].size
+            id_ += experiment.families[i].size
 
 
 # GENERATE
@@ -390,165 +367,17 @@ def generate_elections(experiment_id, election_model=None, election_id=None,
 
         file_.close()
 
-# GENERATE
-def generate_elections_preflib(experiment_id, election_model=None, elections_id=None,
-                       num_voters=None, num_candidates=None, special=None, folder=None, selection_method='random'):
-    """ main function: generate elections"""
 
-    votes = generate_votes_preflib(election_model, selection_method=selection_method,
-                          num_voters=num_voters, num_candidates=num_candidates, folder=folder)
-
-    path = os.path.join("experiments", experiment_id, "elections", elections_id + ".soc")
-    file_ = open(path, 'w')
-
-    file_.write(str(num_candidates) + "\n")
-
-    for i in range(num_candidates):
-        file_.write(str(i) + ', c' + str(i) + "\n")
-
-    c = Counter(map(tuple, votes))
-    counted_votes = [[count, list(row)] for row, count in c.items()]
-    counted_votes = sorted(counted_votes, reverse=True)
-
-    file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' + str(len(counted_votes)) + "\n")
-
-    for i in range(len(counted_votes)):
-        file_.write(str(counted_votes[i][0]) + ', ')
-        for j in range(num_candidates):
-            file_.write(str(counted_votes[i][1][j]))
-            if j < num_candidates - 1:
-                file_.write(", ")
-            else:
-                file_.write("\n")
-
-    file_.close()
 
 
 ########################################################################################################################
 
-
-########################################################################################################################
-
-
-def generate_elections_urn_model(num_voters=None, num_candidates=None, param_1=None):
-    """ helper function: generate polya-eggenberger urn model elections"""
-
-    alpha = param_1
-
-    votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
-
-    urn_size = 1.
-    for j in range(num_voters):
-        rho = rand.uniform(0, urn_size)
-        if rho <= 1.:
-            votes[j] = np.random.permutation(num_candidates)
-        else:
-            votes[j] = votes[rand.randint(0, j - 1)]
-        urn_size += alpha
-
-    return votes
-
-
-
-
-
-
-# REAL
-def generate_votes_preflib(elections_model, num_voters=None, num_candidates=None, folder=None,
-                           selection_method=None):
-    """ Generate votes based on elections from Preflib """
-
-    #print(elections_model)
-    long_name = str(elections_model)
-    file_name = 'real_data/' + folder + '/' + long_name + '.txt'
-    file_votes = open(file_name, 'r')
-    original_num_voters = int(file_votes.readline())
-    if original_num_voters == 0:
-        return [0, 0, 0]
-    original_num_candidates = int(file_votes.readline())
-    choice = [x for x in range(original_num_voters)]
-    rand.shuffle(choice)
-
-    votes = np.zeros([num_voters, original_num_candidates], dtype=int)
-    original_votes = np.zeros([original_num_voters, original_num_candidates], dtype=int)
-
-    for j in range(original_num_voters):
-        value = file_votes.readline().strip().split(',')
-        for k in range(original_num_candidates):
-            original_votes[j][k] = int(value[k])
-
-    file_votes.close()
-
-    for j in range(num_voters):
-        r = rand.randint(0, original_num_voters-1)
-        for k in range(original_num_candidates):
-            votes[j][k] = original_votes[r][k]
-
-    for i in range(num_voters):
-        if len(votes[i]) != len(set(votes[i])):
-            print('wrong data')
-
-
-    # REMOVE SURPLUS CANDIDATES
-    if num_candidates < original_num_candidates:
-        new_votes = []
-
-        # NEW 17.12.2020
-        if selection_method == 'random':
-            selected_candidates = rand.sample([j for j in range(original_num_candidates)], num_candidates)
-        elif selection_method == 'borda':
-            scores = get_borda_scores(original_votes, original_num_voters, original_num_candidates)
-            order_by_score = [x for _, x in sorted(zip(scores, [i for i in range(original_num_candidates)]), reverse=True)]
-            selected_candidates = order_by_score[0:num_candidates]
-        elif selection_method == 'freq':
-            freq = import_freq(elections_model)
-            #print(freq)
-            selected_candidates = freq[0:num_candidates]
-        else:
-            raise NameError('No such selection method!')
-
-
-        mapping = {}
-        for j in range(num_candidates):
-            mapping[str(selected_candidates[j])] = j
-        for j in range(num_voters):
-            vote = []
-            for k in range(original_num_candidates):
-                cand = votes[j][k]
-                if cand in selected_candidates:
-                    vote.append(mapping[str(cand)])
-            if len(vote) != len(set(vote)):
-                print(vote)
-            new_votes.append(vote)
-        return new_votes
-    else:
-        return votes
-
-
-def import_freq(elections_model):
-    path = 'real_data/freq/' + elections_model + '.txt'
-    with open(path, 'r', newline='') as txt_file:
-        line = txt_file.readline().strip().split(',')
-        line = line[0:len(line)-1]
-        for i in range(len(line)):
-            line[i] = int(line[i])
-    return line
-
-
-def get_borda_scores(votes, num_voters, num_candidates):
-
-    scores = [0 for _ in range(num_candidates)]
-    for i in range(num_voters):
-        for j in range(num_candidates):
-            scores[votes[i][j]] += num_candidates - j - 1
-
-    return scores
 
 
 # IMPORT
 def import_election(experiment_id, election_id):
     """ main function: import single election """
-    return obj.Election(experiment_id, election_id)
+    return Election(experiment_id, election_id)
 
 
 def import_soc_elections(experiment_id, election_id):
@@ -584,29 +413,6 @@ def import_soc_elections(experiment_id, election_id):
     return votes, num_voters, num_candidates
 
 
-def import_approval_elections(experiment_id, elections_id, params):
-    file_votes = open("experiments/" + experiment_id + "/elections/votes/" + str(elections_id) + ".txt", 'r')
-    votes = [[[] for _ in range(params['voters'])] for _ in
-             range(params['elections'])]
-    for i in range(params['elections']):
-        for j in range(params['voters']):
-            line = file_votes.readline().rstrip().split(" ")
-            if line == ['']:
-                votes[i][j] = []
-            else:
-                for k in range(len(line)):
-                    votes[i][j].append(int(line[k]))
-    file_votes.close()
-
-    # empty candidates
-    candidates = [[0 for _ in range(params['candidates'])] for _ in range(params['elections'])]
-    for i in range(params['elections']):
-        for j in range(params['candidates']):
-            candidates[i][j] = 0
-
-    elections = {"votes": votes, "candidates": candidates}
-
-    return elections, params
 
 
 ### MATRICES ###
@@ -622,149 +428,3 @@ def get_matrix(election_model=None, num_candidates=None):
     elif election_model == 'gs_caterpillar':
         return get_gs_caterpillar_matrix(num_candidates)
 
-
-
-
-
-
-# PROBABLY NOT USED AT ALL
-
-# def some_f(ops, i):
-#     if i == 1.:
-#         return 1.
-#     mapping = [1., i - 1.]
-#     return mapping[ops]
-#
-
-#
-# def get_vector(type, num_candidates):
-#     if type == "uniform":
-#         return [1.] * num_candidates
-#     elif type == "linear":
-#         return [(num_candidates - x) for x in range(num_candidates)]
-#     elif type == "linear_low":
-#         return [(float(num_candidates) - float(x)) / float(num_candidates) for x in range(num_candidates)]
-#     elif type == "square":
-#         return [(float(num_candidates) - float(x)) ** 2 / float(num_candidates) ** 2 for x in
-#                 range(num_candidates)]
-#     elif type == "square_low":
-#         return [(num_candidates - x) ** 2 for x in range(num_candidates)]
-#     elif type == "cube":
-#         return [(float(num_candidates) - float(x)) ** 3 / float(num_candidates) ** 3 for x in
-#                 range(num_candidates)]
-#     elif type == "cube_low":
-#         return [(num_candidates - x) ** 3 for x in range(num_candidates)]
-#     elif type == "split_2":
-#         values = [1.] * num_candidates
-#         for i in range(num_candidates / 2):
-#             values[i] = 10.
-#         return values
-#     elif type == "split_4":
-#         size = num_candidates / 4
-#         values = [1.] * num_candidates
-#         for i in range(size):
-#             values[i] = 1000.
-#         for i in range(size, 2 * size):
-#             values[i] = 100.
-#         for i in range(2 * size, 3 * size):
-#             values[i] = 10.
-#         return values
-#     else:
-#         return type
-#
-# def get_num_changes(num_candidates, PHI):
-#     power = [pow(PHI, n) for n in range(0, num_candidates + 1)]
-#     intervals = [sum(power[0:n]) for n in range(num_candidates + 2)]
-#     answer = np.searchsorted(intervals, (rand.uniform(0, sum(power))), side='left')
-#     return answer - 1
-#
-#
-# def mallowsAlternativeVote(base, num_candidates, PHI):
-#     # num_changes = get_num_changes(num_candidates, PHI)
-#     num_changes = int(PHI * num_candidates)
-#     places = rand.sample([c for c in range(num_candidates)], num_changes)
-#     vote = list(base)
-#     for p in places:
-#         r = rand.randint(0, 1)
-#         if r == 1:  # ma byc
-#             if p not in vote:
-#                 vote.append(p)
-#         else:  # ma nie byc
-#             if p in vote:
-#                 vote.remove(p)
-#     return vote
-
-
-def generate_single_election(election_model=None, num_candidates=None, num_voters=None, param_1=0, param_2=0):
-
-    if election_model == 'mallows' and param_1 == 0:
-        param_1 = rand.random()
-    elif election_model == 'norm_mallows' and param_1 == 0:
-        param_1 = phi_mallows_helper(num_candidates)
-    elif election_model == 'norm_mallows' and param_1 >= 0:
-        if (num_candidates, param_1) in LOOKUP_TABLE:
-            param_1 = LOOKUP_TABLE[(num_candidates, param_1)]
-        else:
-            param_1 = phi_mallows_helper(num_candidates, rdis=param_1)
-    elif election_model == 'urn_model' and param_1 == 0:
-        param_1 = gamma.rvs(0.8)
-
-    naked_models = {'impartial_culture': generate_impartial_culture_election,
-                    'iac': generate_impartial_anonymous_culture_election,
-                    'conitzer': generate_conitzer_election,
-                    'spoc_conitzer': generate_spoc_conitzer_election,
-                    'walsh': generate_walsh_election,
-                    'single-crossing': generate_single_crossing_election,
-                    'real_identity': generate_real_identity_election,
-                    'real_uniformity': generate_real_uniformity_election,
-                    'real_antagonism': generate_real_antagonism_election,
-                    'real_stratification': generate_real_stratification_election}
-
-    euclidean_models = {'1d_interval': generate_elections_1d_simple,
-                        '1d_gaussian': generate_elections_1d_simple,
-                        '1d_one_sided_triangle': generate_elections_1d_simple,
-                        '1d_full_triangle': generate_elections_1d_simple,
-                        '1d_two_party': generate_elections_1d_simple,
-                        '2d_disc': generate_elections_2d_simple,
-                        '2d_square': generate_elections_2d_simple,
-                        '2d_gaussian': generate_elections_2d_simple,
-                        '3d_cube': generate_elections_nd_simple,
-                        '4d_cube': generate_elections_nd_simple,
-                        '5d_cube': generate_elections_nd_simple,
-                        '10d_cube': generate_elections_nd_simple,
-                        '15d_cube': generate_elections_nd_simple,
-                        '20d_cube': generate_elections_nd_simple,
-                        '40d_cube': generate_elections_nd_simple,
-                        '2d_sphere': generate_elections_2d_simple,
-                        '3d_sphere': generate_elections_nd_simple,
-                        '4d_sphere': generate_elections_nd_simple,
-                        '5d_sphere': generate_elections_nd_simple,
-                        '4d_ball': generate_elections_nd_simple,
-                        '5d_ball': generate_elections_nd_simple,
-                        '40d_ball': generate_elections_nd_simple, }
-
-    single_param_models = {'urn_model': generate_elections_urn_model,
-                           'group-separable': generate_group_separable_election, }
-
-    double_param_models = {'mallows': generate_mallows_election,
-                           'norm_mallows': generate_mallows_election, }
-
-    if election_model in naked_models:
-        votes = naked_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates)
-
-    elif election_model in euclidean_models:
-        votes = euclidean_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
-                                                     election_model=election_model)
-
-    elif election_model in single_param_models:
-        votes = single_param_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
-                                                        param_1=param_1)
-
-    elif election_model in double_param_models:
-        votes = double_param_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
-                                                        param_1=param_1, param_2=param_2)
-    else:
-        votes = []
-        print("No such election model!")
-
-    return votes

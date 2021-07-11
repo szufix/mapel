@@ -12,12 +12,12 @@ from PIL import Image
 
 from . import _elections as el
 from . import metrics as metr
-from . import objects as obj
 
+from .objects.Experiment import Experiment, Experiment_xd, Experiment_2D, Experiment_3D
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
-def get_values_from_file(model, experiment_id, values, normalizing_func=None, marker_func=None):
+def get_values_from_file(experiment, experiment_id, values, normalizing_func=None, marker_func=None):
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
                         str(values) + ".txt")
 
@@ -25,7 +25,7 @@ def get_values_from_file(model, experiment_id, values, normalizing_func=None, ma
     _max = 0
     values = []
     with open(path, 'r') as txtfile:
-        for _ in range(model.num_elections):
+        for _ in range(experiment.num_elections):
             values.append(float(txtfile.readline()))
     _min = min(values)
     _max = max(values)
@@ -38,8 +38,8 @@ def get_values_from_file(model, experiment_id, values, normalizing_func=None, ma
         markers = []
 
         ctr = 0
-        for k in range(model.num_families):
-            for _ in range(model.families[k].size):
+        for k in range(experiment.num_families):
+            for _ in range(experiment.families[k].size):
 
                 shade = float(txtfile.readline())
                 if normalizing_func is not None:
@@ -48,13 +48,13 @@ def get_values_from_file(model, experiment_id, values, normalizing_func=None, ma
                     shade = (shade-_min) / (_max-_min)
                 shades.append(shade)
 
-                marker = model.families[k].marker
+                marker = experiment.families[k].marker
                 if marker_func is not None:
                     marker = marker_func(shade)
                 markers.append(marker)
 
-                xx.append(model.points[model.main_order[ctr]][0])
-                yy.append(model.points[model.main_order[ctr]][1])
+                xx.append(experiment.points[experiment.main_order[ctr]][0])
+                yy.append(experiment.points[experiment.main_order[ctr]][1])
 
                 ctr += 1
 
@@ -65,7 +65,7 @@ def get_values_from_file(model, experiment_id, values, normalizing_func=None, ma
         return xx, yy, shades, markers, _min, _max
 
 
-def get_values_from_file_3d(model, experiment_id, values, normalizing_func):
+def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func):
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
                         str(values) + ".txt")
 
@@ -73,7 +73,7 @@ def get_values_from_file_3d(model, experiment_id, values, normalizing_func):
     _max = 0
     values = []
     with open(path, 'r') as txtfile:
-        for _ in range(model.num_elections):
+        for _ in range(experiment.num_elections):
             values.append(float(txtfile.readline()))
     _min = min(values)
     _max = max(values)
@@ -87,8 +87,8 @@ def get_values_from_file_3d(model, experiment_id, values, normalizing_func):
         markers = []
 
         ctr = 0
-        for k in range(model.num_families):
-            for _ in range(model.families[k].size):
+        for k in range(experiment.num_families):
+            for _ in range(experiment.families[k].size):
 
                 shade = float(txtfile.readline())
                 if normalizing_func is not None:
@@ -97,12 +97,12 @@ def get_values_from_file_3d(model, experiment_id, values, normalizing_func):
                     shade = (shade-_min) / (_max-_min)
                 shades.append(shade)
 
-                marker = model.families[k].marker
+                marker = experiment.families[k].marker
                 markers.append(marker)
 
-                xx.append(model.points[model.main_order[ctr]][0])
-                yy.append(model.points[model.main_order[ctr]][1])
-                zz.append(model.points[model.main_order[ctr]][2])
+                xx.append(experiment.points[experiment.main_order[ctr]][0])
+                yy.append(experiment.points[experiment.main_order[ctr]][1])
+                zz.append(experiment.points[experiment.main_order[ctr]][2])
 
                 ctr += 1
         xx = np.asarray(xx)
@@ -113,9 +113,9 @@ def get_values_from_file_3d(model, experiment_id, values, normalizing_func):
         return xx, yy, zz, shades, markers, _min, _max
 
 
-def add_advanced_points_to_picture(fig=None, ax=None, model=None, experiment_id=None, values=None, normalizing_func=None,
+def add_advanced_points_to_picture(fig=None, ax=None, experiment=None, experiment_id=None, values=None, normalizing_func=None,
                                    marker_func=None, xticklabels=None, ms=None, cmap=None, ticks=None):
-    xx, yy, shades, markers, _min, _max = get_values_from_file(model, experiment_id, values, normalizing_func, marker_func)
+    xx, yy, shades, markers, _min, _max = get_values_from_file(experiment, experiment_id, values, normalizing_func, marker_func)
     unique_markers = set(markers)
     images = []
 
@@ -141,10 +141,10 @@ def add_advanced_points_to_picture(fig=None, ax=None, model=None, experiment_id=
         cb.ax.set_xticklabels(xticklabels)
 
 
-def add_advanced_points_to_picture_3d(fig, ax, model, experiment_id,
+def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
                                       values=None, cmap=None, ms=None,
                                       normalizing_func=None):
-    xx, yy, zz, shades, markers, _min, _max = get_values_from_file_3d(model, experiment_id, values, normalizing_func)
+    xx, yy, zz, shades, markers, _min, _max = get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
     unique_markers = set(markers)
     images = []
 
@@ -154,13 +154,13 @@ def add_advanced_points_to_picture_3d(fig, ax, model, experiment_id,
             [ax.scatter(xx[masks], yy[masks], zz[masks], c=shades[masks], vmin=0, vmax=1, cmap=cmap, marker=um, s=ms)])
 
 
-def add_basic_points_to_picture(ax=None, model=None, ms=None):
+def add_basic_points_to_picture(ax=None, experiment=None, ms=None):
     # TEMPORARY VERSION
-    for k in range(model.num_families):
-        if model.families[k].show:
-            ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1],
-                       color=model.families[k].color, label=model.families[k].label,
-                       alpha=model.families[k].alpha, s=ms, marker=model.families[k].marker)
+    for k in range(experiment.num_families):
+        if experiment.families[k].show:
+            ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1],
+                       color=experiment.families[k].color, label=experiment.families[k].label,
+                       alpha=experiment.families[k].alpha, s=ms, marker=experiment.families[k].marker)
 
 LIST_OF_PREFLIB_ELECTIONS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
                              'tshirt', 'cities_survey', 'aspen', 'ers',
@@ -168,91 +168,91 @@ LIST_OF_PREFLIB_ELECTIONS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
                              'grenoble'}
 
 
-def add_tmp_points_to_picture(ax=None, model=None, ms=None, tmp=None, tmp2=None, zorder=None):
+def add_tmp_points_to_picture(ax=None, experiment=None, ms=None, tmp=None, tmp2=None, zorder=None):
     # TEMPORARY VERSION
-    for k in range(model.num_families):
-        if model.families[k].show:
+    for k in range(experiment.num_families):
+        if experiment.families[k].show:
 
-            if model.families[k].election_model in {'identity', 'uniformity', 'antagonism', 'chess',
+            if experiment.families[k].election_experiment in {'identity', 'uniformity', 'antagonism', 'chess',
                                           'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1], zorder=zorder[0],
-                           color=model.families[k].color, label=model.families[k].label,
-                           alpha=tmp[0] * model.families[k].alpha, s=ms*tmp2[0], marker=model.families[k].marker)
+                ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1], zorder=zorder[0],
+                           color=experiment.families[k].color, label=experiment.families[k].label,
+                           alpha=tmp[0] * experiment.families[k].alpha, s=ms*tmp2[0], marker=experiment.families[k].marker)
 
-            elif model.families[k].election_model in LIST_OF_PREFLIB_ELECTIONS:
-                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1], zorder=zorder[1],
-                           color=model.families[k].color, label=model.families[k].label,
-                           alpha=tmp[1] * model.families[k].alpha, s=ms*tmp2[1], marker=model.families[k].marker)
+            elif experiment.families[k].election_experiment in LIST_OF_PREFLIB_ELECTIONS:
+                ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1], zorder=zorder[1],
+                           color=experiment.families[k].color, label=experiment.families[k].label,
+                           alpha=tmp[1] * experiment.families[k].alpha, s=ms*tmp2[1], marker=experiment.families[k].marker)
             else:
-                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1],
-                           color=model.families[k].color, label=model.families[k].label, zorder=zorder[2],
-                           alpha=tmp[2] * model.families[k].alpha, s=ms*tmp2[2], marker=model.families[k].marker)
+                ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1],
+                           color=experiment.families[k].color, label=experiment.families[k].label, zorder=zorder[2],
+                           alpha=tmp[2] * experiment.families[k].alpha, s=ms*tmp2[2], marker=experiment.families[k].marker)
 
 
-def add_mixed_points_to_picture_2d(ax=None, model=None, ms=None, tmp=None, tmp2=None, zorder=None, fuzzy_paths=True):
+def add_mixed_points_to_picture_2d(ax=None, experiment=None, ms=None, tmp=None, tmp2=None, zorder=None, fuzzy_paths=True):
     tmp=[1,1,1]
     # TEMPORARY VERSION
     ctr = 0
-    for k in range(model.num_families):
-        if model.families[k].show:
+    for k in range(experiment.num_families):
+        if experiment.families[k].show:
 
-            if model.families[k].election_model in {'identity', 'uniformity', 'antagonism', 'stratification',
+            if experiment.families[k].election_experiment in {'identity', 'uniformity', 'antagonism', 'stratification',
                                           'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
                 zorder = 0
-                if model.families[k].election_model == 'unid':
+                if experiment.families[k].election_experiment == 'unid':
                     zorder = 1
 
                 t_ms = ms
                 if fuzzy_paths:
                     t_ms *= 10
-                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1], zorder=zorder,
-                           color=model.families[k].color, label=model.families[k].label,
-                           alpha=1*model.families[k].alpha, s=t_ms, marker='o', linewidth=0)
-                ctr += model.families[k].size
+                ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1], zorder=zorder,
+                           color=experiment.families[k].color, label=experiment.families[k].label,
+                           alpha=1*experiment.families[k].alpha, s=t_ms, marker='o', linewidth=0)
+                ctr += experiment.families[k].size
 
-            elif model.families[k].election_model in {'real_identity','real_uniformity','real_antagonism','real_stratification'}:
-                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1], zorder=5,
-                           color=model.families[k].color, label=model.families[k].label,
-                           alpha=model.families[k].alpha, s=ms*5, marker=model.families[k].marker)
-                ctr += model.families[k].size
+            elif experiment.families[k].election_experiment in {'real_identity','real_uniformity','real_antagonism','real_stratification'}:
+                ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1], zorder=5,
+                           color=experiment.families[k].color, label=experiment.families[k].label,
+                           alpha=experiment.families[k].alpha, s=ms*5, marker=experiment.families[k].marker)
+                ctr += experiment.families[k].size
 
-            elif model.families[k].election_model in LIST_OF_PREFLIB_ELECTIONS:
-                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1], zorder=2,
-                           color=model.families[k].color, label=model.families[k].label,
-                           alpha=model.families[k].alpha, s=ms, marker=model.families[k].marker)
-                ctr += model.families[k].size
+            elif experiment.families[k].election_experiment in LIST_OF_PREFLIB_ELECTIONS:
+                ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1], zorder=2,
+                           color=experiment.families[k].color, label=experiment.families[k].label,
+                           alpha=experiment.families[k].alpha, s=ms, marker=experiment.families[k].marker)
+                ctr += experiment.families[k].size
 
-            elif model.families[k].election_model in {'norm_mallows', 'mallows', 'urn_model'}:
-                for i in range(model.families[k].size):
-                    param = float(model.elections[ctr].param)
+            elif experiment.families[k].election_experiment in {'norm_mallows', 'mallows', 'urn_experiment'}:
+                for i in range(experiment.families[k].size):
+                    param = float(experiment.elections[ctr].param)
                     if param > 1:
                         param = 1
 
-                    if model.families[k].election_model in {'norm_mallows', 'mallows'}:
+                    if experiment.families[k].election_experiment in {'norm_mallows', 'mallows'}:
                         my_cmap = custom_div_cmap(num_colors=11, colors=["cyan", "blue"],
                                                   name='my_custom_m')
                         #print(param)
-                    elif model.families[k].election_model in {'urn_model'}:
+                    elif experiment.families[k].election_experiment in {'urn_experiment'}:
                         my_cmap = custom_div_cmap(num_colors=11, colors=["gold", "orange", "red"],
                                                   name='my_custom_u')
 
                     if i == 0:
-                        ax.scatter(model.points_by_families[k][0][i], model.points_by_families[k][1][i],
-                                   zorder=2, label=model.families[k].label,
+                        ax.scatter(experiment.points_by_families[k][0][i], experiment.points_by_families[k][1][i],
+                                   zorder=2, label=experiment.families[k].label,
                                    cmap=my_cmap, vmin=0, vmax=1, alpha=0.5,
-                                   c=param * tmp[2] * model.families[k].alpha,
-                                   s=ms * tmp2[2], marker=model.families[k].marker)
+                                   c=param * tmp[2] * experiment.families[k].alpha,
+                                   s=ms * tmp2[2], marker=experiment.families[k].marker)
                     else:
 
-                        ax.scatter(model.points_by_families[k][0][i], model.points_by_families[k][1][i], zorder=2,
+                        ax.scatter(experiment.points_by_families[k][0][i], experiment.points_by_families[k][1][i], zorder=2,
                                    cmap=my_cmap, vmin=0, vmax=1, alpha=0.5,
-                                   c=param * tmp[2] * model.families[k].alpha, s=ms*tmp2[2], marker=model.families[k].marker)
+                                   c=param * tmp[2] * experiment.families[k].alpha, s=ms*tmp2[2], marker=experiment.families[k].marker)
                     ctr += 1
             else:
-                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1],
-                           color=model.families[k].color, label=model.families[k].label, zorder=2,
-                           alpha=tmp[2] * model.families[k].alpha, s=ms*tmp2[2], marker=model.families[k].marker)
-                ctr += model.families[k].size
+                ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1],
+                           color=experiment.families[k].color, label=experiment.families[k].label, zorder=2,
+                           alpha=tmp[2] * experiment.families[k].alpha, s=ms*tmp2[2], marker=experiment.families[k].marker)
+                ctr += experiment.families[k].size
 
 
 def add_mask_to_picture(fig=None, ax=None, black=None, saveas=None, tex=None):
@@ -409,7 +409,7 @@ def add_basic_background_to_picture(ax=None, values=None, legend=None, saveas=No
     else:
         plt.savefig(file_name, bbox_inches='tight')
     """
-    text_name = str(model.num_voters) + " x " + str(model.num_candidates)
+    text_name = str(experiment.num_voters) + " x " + str(experiment.num_candidates)
     text = ax.text(0.0, 1.05, text_name, transform=ax.transAxes)
     file_name = os.path.join(os.getcwd(), "images", str(saveas))
     if values is None and legend == True:
@@ -436,17 +436,17 @@ def print_2d(experiment_id, mask=False, mixed=False, fuzzy_paths=True, xlabel=No
              ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
-    model = obj.Model_2d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
+    experiment = Experiment_2d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
                          ignore=ignore, attraction_factor=attraction_factor)
 
     if angle != 0:
-        model.rotate(angle)
+        experiment.rotate(angle)
 
     if reverse:
-        model.reverse()
+        experiment.reverse()
 
     if update:
-        model.update()
+        experiment.update()
 
     if cmap is None:
         cmap = custom_div_cmap()
@@ -461,15 +461,15 @@ def print_2d(experiment_id, mask=False, mixed=False, fuzzy_paths=True, xlabel=No
     plt.axis('off')
 
     if values is not None:
-        add_advanced_points_to_picture(fig=fig, ax=ax, model=model, experiment_id=experiment_id, values=values,
+        add_advanced_points_to_picture(fig=fig, ax=ax, experiment=experiment, experiment_id=experiment_id, values=values,
                                        normalizing_func=normalizing_func, marker_func=marker_func,
                                        xticklabels=xticklabels, ms=ms, cmap=cmap, ticks=ticks)
     elif tmp:
-        add_tmp_points_to_picture(ax=ax, model=model, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder)
+        add_tmp_points_to_picture(ax=ax, experiment=experiment, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder)
     elif mixed:
-        add_mixed_points_to_picture_2d(ax=ax, model=model, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder, fuzzy_paths=fuzzy_paths)
+        add_mixed_points_to_picture_2d(ax=ax, experiment=experiment, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder, fuzzy_paths=fuzzy_paths)
     else:
-        add_basic_points_to_picture(ax=ax, model=model, ms=ms)
+        add_basic_points_to_picture(ax=ax, experiment=experiment, ms=ms)
 
     if mask:
         add_mask_to_picture(fig=fig, ax=ax, black=black, saveas=saveas, tex=tex)
@@ -495,16 +495,16 @@ def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None, metric_name
              saveas="map_3d", show=True, dot=9, normalizing_func=None, xticklabels=None, cmap=None):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
-    model = obj.Model_3d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
+    experiment = Experiment_3d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
                          ignore=ignore, attraction_factor=attraction_factor, metric_name=metric_name)
     if angle != 0:
-        model.rotate(angle)
+        experiment.rotate(angle)
 
     if reverse:
-        model.reverse()
+        experiment.reverse()
 
     if update:
-        model.update()
+        experiment.update()
 
     if cmap is None:
         cmap = custom_div_cmap()
@@ -515,19 +515,19 @@ def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None, metric_name
     plt.axis('off')
 
     if values is not None:
-        add_advanced_points_to_picture_3d(fig, ax, model, experiment_id,
+        add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
                                           values=values, ms=ms, cmap=cmap,
                                           normalizing_func=normalizing_func)
     # elif mixed:
-    #     add_mixed_points_to_picture_3d(ax=ax, model=model, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder, fuzzy_paths=fuzzy_paths)
+    #     add_mixed_points_to_picture_3d(ax=ax, experiment=experiment, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder, fuzzy_paths=fuzzy_paths)
     else:
-        for k in range(model.num_families):
-            if model.families[k].show:
-                ax.scatter(model.points_by_families[k][0], model.points_by_families[k][1], model.points_by_families[k][2],
-                           color=model.families[k].color, label=model.families[k].label,
-                           alpha=model.families[k].alpha, s=dot)
+        for k in range(experiment.num_families):
+            if experiment.families[k].show:
+                ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1], experiment.points_by_families[k][2],
+                           color=experiment.families[k].color, label=experiment.families[k].label,
+                           alpha=experiment.families[k].alpha, s=dot)
 
-    # text_name = str(model.num_voters) + " x " + str(model.num_candidates)
+    # text_name = str(experiment.num_voters) + " x " + str(experiment.num_candidates)
     # text = ax.text(0.0, 1.05, text_name, transform=ax.transAxes)
     file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
 
@@ -543,24 +543,24 @@ def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None, metric_name
 
 def print_matrix(experiment_id, scale=1., distance_name='', metric_name='', saveas="matrix", show=True,
                  self_distances=False, yticks='left'):
-    """Print the matrix with average distances between each pair of models """
+    """Print the matrix with average distances between each pair of experiments """
 
-    model = obj.Model_xd(experiment_id, distance_name=distance_name, metric_name=metric_name, raw=True, self_distances=self_distances)
-    matrix = np.zeros([model.num_families, model.num_families])
-    quantities = np.zeros([model.num_families, model.num_families])
+    experiment = Experiment_xd(experiment_id, distance_name=distance_name, metric_name=metric_name, raw=True, self_distances=self_distances)
+    matrix = np.zeros([experiment.num_families, experiment.num_families])
+    quantities = np.zeros([experiment.num_families, experiment.num_families])
 
-    mapping = [i for i in range(model.num_families) for _ in range(model.families[i].size)]
+    mapping = [i for i in range(experiment.num_families) for _ in range(experiment.families[i].size)]
 
-    for i in range(model.num_elections):
+    for i in range(experiment.num_elections):
         limit = i + 1
         if self_distances:
             limit = i
-        for j in range(limit, model.num_elections):
-            matrix[mapping[i]][mapping[j]] += model.distances[i][j]
+        for j in range(limit, experiment.num_elections):
+            matrix[mapping[i]][mapping[j]] += experiment.distances[i][j]
             quantities[mapping[i]][mapping[j]] += 1
 
-    for i in range(model.num_families):
-        for j in range(i, model.num_families):
+    for i in range(experiment.num_families):
+        for j in range(i, experiment.num_families):
             matrix[i][j] /= float(quantities[i][j])
             matrix[i][j] *= scale
             matrix[i][j] = int(round(matrix[i][j], 0))
@@ -577,8 +577,8 @@ def print_matrix(experiment_id, scale=1., distance_name='', metric_name='', save
 
     for i in range(num_families_new):
         line = str(file_.readline().replace("\n", "").replace(" ", "").lower())
-        for j in range(model.num_families):
-            if model.families[j].label.replace(" ", "").lower() == line:
+        for j in range(experiment.num_families):
+            if experiment.families[j].label.replace(" ", "").lower() == line:
                 order[i] = j
 
     fig, ax = plt.subplots()
@@ -588,7 +588,7 @@ def print_matrix(experiment_id, scale=1., distance_name='', metric_name='', save
         for i in range(num_families_new):
             for j in range(num_families_new):
                 c = int(matrix[order[i]][order[j]])
-                std = int(round(model.std[i][j] * scale, 0))
+                std = int(round(experiment.std[i][j] * scale, 0))
                 matrix_new[i][j] = c
                 color = "black"
                 if c >= 75:
@@ -611,7 +611,7 @@ def print_matrix(experiment_id, scale=1., distance_name='', metric_name='', save
 
     labels_new = []
     for i in range(num_families_new):
-        labels_new.append(model.families[order[i]].label)
+        labels_new.append(experiment.families[order[i]].label)
 
     ax.matshow(matrix_new, cmap=plt.cm.Blues)
 
@@ -684,38 +684,38 @@ def print_param_vs_distance(experiment_id, values="", scale="none", metric="posi
     x = 0
     election_2_id = 'guess'
 
-    model = obj.Model(experiment_id)
+    experiment = Experiment(experiment_id)
 
     distances = [0. for _ in range(num_elections)]
 
     if target == 'uniformity':
         tag = 'un'
         xlabel_text = "average distance from UN elections"
-        election_model = 'uniformity'
+        election_experiment = 'uniformity'
 
     elif target == 'antagonism':
         tag = 'an'
         xlabel_text = "average distance from AN elections"
-        election_model = 'antagonism'
+        election_experiment = 'antagonism'
 
     elif target == 'stratification':
         tag = 'st'
         xlabel_text = "average distance from ST elections"
-        election_model = 'stratification'
+        election_experiment = 'stratification'
 
     else:  #target == 'identity':
         tag = 'id'
         xlabel_text = "average distance from ID elections"
-        election_model = 'identity'
+        election_experiment = 'identity'
 
-    el.generate_elections(experiment_id, election_model=election_model, election_id=election_2_id,
-                          num_voters=model.num_voters, num_candidates=model.num_candidates,
+    el.generate_elections(experiment_id, election_experiment=election_experiment, election_id=election_2_id,
+                          num_voters=experiment.num_voters, num_candidates=experiment.num_candidates,
                           special=x)
-    election_2 = obj.Election(experiment_id, election_2_id)
+    election_2 = Election(experiment_id, election_2_id)
 
-    for i in range(model.num_elections):
+    for i in range(experiment.num_elections):
         election_1_id = 'core_' + str(i)
-        election_1 = obj.Election(experiment_id, election_1_id)
+        election_1 = Election(experiment_id, election_1_id)
         distances[i] = metr.get_distance(election_1, election_2, distance_name=distance_name, metric_name=metric_name)
 
     fig = plt.figure()
@@ -731,17 +731,17 @@ def print_param_vs_distance(experiment_id, values="", scale="none", metric="posi
 
     pear = stats.pearsonr(times, distances)
     pear = round(pear[0], 2)
-    model = obj.Model_xd(experiment_id, metric)
+    experiment = experiment_xd(experiment_id, metric)
 
     left = 0
-    for k in range(model.num_families):
-        right = left + model.families[k].size
+    for k in range(experiment.num_families):
+        right = left + experiment.families[k].size
         ax.scatter(distances[left:right], times[left:right],
-                   color=model.families[k].color, label=model.families[k].label,
-                   alpha=model.families[k].alpha, s=9, marker=model.families[k].marker)
+                   color=experiment.families[k].color, label=experiment.families[k].label,
+                   alpha=experiment.families[k].alpha, s=9, marker=experiment.families[k].marker)
         left = right
 
-    title_text = str(model.num_voters) + " voters  x  " + str(model.num_candidates) + " candidates"
+    title_text = str(experiment.num_voters) + " voters  x  " + str(experiment.num_candidates) + " candidates"
     pear_text = "PCC = " + str(pear)
     add_text = ax.text(0.7, 0.8, pear_text, transform=ax.transAxes)
     plt.title(title_text)
@@ -769,17 +769,17 @@ def excel_super(experiment_id, values="", scale="none", metric="positionwise", s
         tag = 'un'
         xlabel_text = "Distance from UN elections"
 
-        model = obj.Model(experiment_id)
+        experiment = Experiment(experiment_id)
         x = 0
         election_2_id = 'guess'
-        election_model = 'uniformity'
+        election_experiment = 'uniformity'
         distance_name = 'positionwise'
         metric_type = 'emd'
-        el.generate_elections(experiment_id, election_model=election_model, election_id=election_2_id,
-                              num_voters=model.num_voters, num_candidates=model.num_candidates,
+        el.generate_elections(experiment_id, election_experiment=election_experiment, election_id=election_2_id,
+                              num_voters=experiment.num_voters, num_candidates=experiment.num_candidates,
                               special=x)
 
-        for i in range(model.num_elections):
+        for i in range(experiment.num_elections):
 
             election_1_id = 'core_' + str(i)
             elections_ids = [election_1_id, election_2_id]
@@ -789,20 +789,20 @@ def excel_super(experiment_id, values="", scale="none", metric="positionwise", s
         tag = 'id'
         xlabel_text = "average distance from ID elections"
 
-        model = obj.Model(experiment_id)
+        experiment = Experiment(experiment_id)
         x = 0
         election_2_id = 'guess'
-        election_model = 'identity'
+        election_experiment = 'identity'
         distance_name = 'positionwise'
         metric_type = 'emd'
-        el.generate_elections(experiment_id, election_model=election_model, election_id=election_2_id,
-                              num_voters=model.num_voters, num_candidates=model.num_candidates,
+        el.generate_elections(experiment_id, election_experiment=election_experiment, election_id=election_2_id,
+                              num_voters=experiment.num_voters, num_candidates=experiment.num_candidates,
                               special=x)
-        #election_2 = obj.Election(experiment_id, election_2_id)
+        #election_2 = oElection(experiment_id, election_2_id)
 
-        for i in range(model.num_elections):
+        for i in range(experiment.num_elections):
             election_1_id = 'core_' + str(i)
-            #election_1 = obj.Election(experiment_id, election_1_id)
+            #election_1 = Election(experiment_id, election_1_id)
             elections_ids = [election_1_id, election_2_id]
             distances[i] = metr.get_distance(experiment_id, distance_name, elections_ids, metric_type)
 
@@ -813,17 +813,17 @@ def excel_super(experiment_id, values="", scale="none", metric="positionwise", s
     ax = fig.add_subplot(111)
     pear = stats.pearsonr(times, distances)
     pear = round(pear[0], 2)
-    model = obj.Model(experiment_id)
+    experiment = Experiment(experiment_id)
 
     left = 0
-    for k in range(model.num_families):
-        right = left + model.families[k].size
+    for k in range(experiment.num_families):
+        right = left + experiment.families[k].size
         ax.scatter(distances[left:right], times[left:right],
-                   color=model.families[k].color, label=model.families[k].label,
-                   alpha=model.families[k].alpha, s=9, marker=model.families[k].marker)
+                   color=experiment.families[k].color, label=experiment.families[k].label,
+                   alpha=experiment.families[k].alpha, s=9, marker=experiment.families[k].marker)
         left = right
 
-    title_text = str(model.num_voters) + " voters  x  " + str(model.num_candidates) + " candidates"
+    title_text = str(experiment.num_voters) + " voters  x  " + str(experiment.num_candidates) + " candidates"
     pear_text = "PCC = " + str(pear)
     add_text = ax.text(0.7, 0.8, pear_text, transform=ax.transAxes)
     plt.title(title_text)
@@ -850,18 +850,18 @@ def excel_super(experiment_id, values="", scale="none", metric="positionwise", s
 #         tag = 'id'
 #         xlabel_text = "average distance from ID elections"
 #
-#         model = obj.Model(experiment_id)
+#         experiment = obj.experiment(experiment_id)
 #         x = 0
 #         election_2_id = 'guess'
-#         election_model = 'identity'
+#         election_experiment = 'identity'
 #         distance_name = 'positionwise'
 #         metric_type = 'emd'
-#         el.generate_elections(experiment_id, election_model=election_model, election_id=election_2_id,
-#                               num_voters=model.num_voters, num_candidates=model.num_candidates,
+#         el.generate_elections(experiment_id, election_experiment=election_experiment, election_id=election_2_id,
+#                               num_voters=experiment.num_voters, num_candidates=experiment.num_candidates,
 #                               special=x)
 #         #election_2 = obj.Election(experiment_id, election_2_id)
 #
-#         for i in range(model.num_elections):
+#         for i in range(experiment.num_elections):
 #             election_1_id = 'core_' + str(i)
 #             #election_1 = obj.Election(experiment_id, election_1_id)
 #             elections_ids = [election_1_id, election_2_id]
@@ -877,17 +877,17 @@ def excel_super(experiment_id, values="", scale="none", metric="positionwise", s
 #     ax = fig.add_subplot(111)
 #     pear = stats.pearsonr(times, distances)
 #     pear = round(pear[0], 2)
-#     model = obj.Model(experiment_id)
+#     experiment = obj.experiment(experiment_id)
 #
 #     left = 0
-#     for k in range(model.num_families):
-#         right = left + model.families[k].size
+#     for k in range(experiment.num_families):
+#         right = left + experiment.families[k].size
 #         ax.scatter(distances[left:right], times[left:right],
-#                    color=model.families[k].color, label=model.families[k].label,
-#                    alpha=model.families[k].alpha, s=9, marker=model.families[k].marker)
+#                    color=experiment.families[k].color, label=experiment.families[k].label,
+#                    alpha=experiment.families[k].alpha, s=9, marker=experiment.families[k].marker)
 #         left = right
 #
-#     title_text = str(model.num_voters) + " voters  x  " + str(model.num_candidates) + " candidates"
+#     title_text = str(experiment.num_voters) + " voters  x  " + str(experiment.num_candidates) + " candidates"
 #     pear_text = "PCC = " + str(pear)
 #     add_text = ax.text(0.7, 0.8, pear_text, transform=ax.transAxes)
 #     plt.title(title_text)
@@ -1109,7 +1109,7 @@ def add_mask_100_100(fig, ax, black=False):
 
 def print_clustering(experiment_id, magic=1, q=0):
     #"""
-    model = obj.Model_xd(experiment_id)
+    experiment = obj.experiment_xd(experiment_id)
 
     guardians = ['identity', 'uniformity', 'antagonism', 'chess']
     distances = {}
@@ -1120,14 +1120,14 @@ def print_clustering(experiment_id, magic=1, q=0):
         file_ = open(path, 'r')
 
         distances[guardian] = []
-        for i in range(model.num_elections):
+        for i in range(experiment.num_elections):
             distance = float(file_.readline().strip())
             distances[guardian].append(distance)
 
     path = os.path.join("experiments", str(experiment_id), "controllers", "advanced", 'guardians.txt')
     file_ = open(path, 'w')
 
-    for i in range(model.num_elections):
+    for i in range(experiment.num_elections):
         order = [0,1,2,3]
         values = [distances['identity'][i], distances['uniformity'][i], distances['antagonism'][i], distances['chess'][i]]
         order = [x for _, x in sorted(zip(values, order))]
@@ -1158,7 +1158,7 @@ def print_clustering(experiment_id, magic=1, q=0):
 
 def print_clustering_bis(experiment_id, magic=1, q=0):
     #"""
-    model = obj.Model_xd(experiment_id)
+    experiment = obj.experiment_xd(experiment_id)
 
     guardians = ['identity', 'uniformity', 'antagonism', 'chess']
     distances = {}
@@ -1169,14 +1169,14 @@ def print_clustering_bis(experiment_id, magic=1, q=0):
         file_ = open(path, 'r')
 
         distances[guardian] = []
-        for i in range(model.num_elections):
+        for i in range(experiment.num_elections):
             distance = float(file_.readline().strip())
             distances[guardian].append(distance)
 
     path = os.path.join("experiments", str(experiment_id), "controllers", "advanced", 'guardians.txt')
     file_ = open(path, 'w')
 
-    for i in range(model.num_elections):
+    for i in range(experiment.num_elections):
         order = [1000, 100, 10, 1]
         values = [distances['identity'][i], distances['uniformity'][i], distances['antagonism'][i], distances['chess'][i]]
         order = [x for _, x in sorted(zip(values, order))]
@@ -1223,7 +1223,7 @@ def print_clustering_bis(experiment_id, magic=1, q=0):
 
 def print_clustering_bis_3d(experiment_id, magic=1, q=0):
     #"""
-    model = obj.Model_xd(experiment_id)
+    experiment = obj.Experiment_xd(experiment_id)
 
     def normalizing_func(shade):
         shade = int(shade)

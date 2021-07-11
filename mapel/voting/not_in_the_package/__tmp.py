@@ -8,14 +8,14 @@ import matplotlib.pyplot as plt
 from threading import Thread
 import numpy as np
 
-from . import elections as el
-from . import metrics as metr
-from . import objects as obj
+from mapel.voting import elections as el
+from mapel.voting import metrics as metr
+from mapel.voting import objects as obj
 
 
 # TO BE UPDATED
 def compute_highest_copeland_map(experiment_id):
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
 
     file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
                              "highest_copeland.txt")
@@ -36,7 +36,7 @@ def compute_highest_copeland_map(experiment_id):
 
 
 def compute_highest_borda1m_map(experiment_id):
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
     scores = []
 
     for i in range(model.num_elections):
@@ -56,7 +56,7 @@ def compute_highest_borda1m_map(experiment_id):
 
 
 def compute_levels(experiment_id, election_model='identity'):
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
 
     # election_model = 'identity'
     num_voters = 100
@@ -105,7 +105,7 @@ def compute_distance_from_diameter(experiment_id, metric='positionwise'):
 
 
 def compute_distance_from_unid(experiment_id):
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
 
     num_elections = 1
     x = 'x'
@@ -148,7 +148,7 @@ def compute_distance_from_unid(experiment_id):
 
 
 def compute_distance_from_dwa_sery(experiment_id):
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
 
     num_elections = 1
     x = 'x'
@@ -192,7 +192,7 @@ def compute_distance_from_dwa_sery(experiment_id):
 
 
 def compute_distance_from_cztery_sery(experiment_id):
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
 
     num_elections = 1
     x = 'x'
@@ -256,7 +256,7 @@ def compute_distance_from_cztery_sery(experiment_id):
 
 
 def compute_distance_from_chess(experiment_id):
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
 
     num_elections = 1
     x = 'x'
@@ -304,7 +304,7 @@ def compute_distance_from_random_point(experiment_id, rand_id=-1, nice_name=''):
 
 
 def compute_distance_from_ant(experiment_id):
-    model = obj.Model(experiment_id)
+    model = obj.Experiment(experiment_id)
 
     num_elections = 1
     x = 'x'
@@ -380,7 +380,7 @@ def compute_distances_from_guardians(experiment_id):
 
     for guardian in guardians:
 
-        model = obj.Model(experiment_id)
+        model = obj.Experiment(experiment_id)
 
         election_model = guardian
         election_2_id = 'guess'
@@ -634,5 +634,28 @@ def single_peaked_special_double(experiment_id):
     plt.show()
 
 
+def import_approval_elections(experiment_id, elections_id, params):
+    file_votes = open("experiments/" + experiment_id + "/elections/votes/" + str(elections_id) + ".txt", 'r')
+    votes = [[[] for _ in range(params['voters'])] for _ in
+             range(params['elections'])]
+    for i in range(params['elections']):
+        for j in range(params['voters']):
+            line = file_votes.readline().rstrip().split(" ")
+            if line == ['']:
+                votes[i][j] = []
+            else:
+                for k in range(len(line)):
+                    votes[i][j].append(int(line[k]))
+    file_votes.close()
+
+    # empty candidates
+    candidates = [[0 for _ in range(params['candidates'])] for _ in range(params['elections'])]
+    for i in range(params['elections']):
+        for j in range(params['candidates']):
+            candidates[i][j] = 0
+
+    elections = {"votes": votes, "candidates": candidates}
+
+    return elections, params
 
 
