@@ -1642,7 +1642,7 @@ def approx_sushi(experiment_id, method):
             elections_id_a = "core_" + str(T)
             ele_1 = obj.Elections(experiment_id, elections_id_a)
 
-            vectors = ele_1.votes_to_positionwise_vectors()
+            vectors = ele_1.votes_to_positionwise_matrix()
             W = []; Q = []; R = []; S = []
 
             for v in vectors:
@@ -1702,7 +1702,7 @@ def approx_sushi(experiment_id, method):
             elections_id_a = "core_" + str(T)
             ele_1 = obj.Elections(experiment_id, elections_id_a)
 
-            vectors = ele_1.votes_to_positionwise_vectors()
+            vectors = ele_1.votes_to_positionwise_matrix()
             W = []
             for v in vectors:
                 w = 0
@@ -1785,7 +1785,7 @@ def approx_netflix_training(experiment_id, method, size):
             elections_id_a = "core_" + str(T)
             ele_1 = obj.Elections(experiment_id, elections_id_a)
 
-            vectors = ele_1.votes_to_positionwise_vectors()
+            vectors = ele_1.votes_to_positionwise_matrix()
             W = []; Q = []; R = []; S = []
 
             for v in vectors:
@@ -1849,7 +1849,7 @@ def approx_netflix_training(experiment_id, method, size):
             elections_id_a = "core_" + str(T)
             ele_1 = obj.Elections(experiment_id, elections_id_a)
 
-            vectors = ele_1.votes_to_positionwise_vectors()
+            vectors = ele_1.votes_to_positionwise_matrix()
             W = []
             for v in vectors:
                 w = 0
@@ -1933,7 +1933,7 @@ def approx_formula(experiment_id, method, num_candidates):
             elections_id_a = "core_" + str(T)
             ele_1 = obj.Elections(experiment_id, elections_id_a)
 
-            vectors = ele_1.votes_to_positionwise_vectors()
+            vectors = ele_1.votes_to_positionwise_matrix()
             W = []; Q = []; R = []; S = []
 
             for v in vectors:
@@ -1990,7 +1990,7 @@ def approx_formula(experiment_id, method, num_candidates):
             elections_id_a = "core_" + str(T)
             ele_1 = obj.Elections(experiment_id, elections_id_a)
 
-            vectors = ele_1.votes_to_positionwise_vectors()
+            vectors = ele_1.votes_to_positionwise_matrix()
             W = []
             for v in vectors:
                 w = 0

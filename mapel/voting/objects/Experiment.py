@@ -31,7 +31,7 @@ class Experiment:
 
         for family_id in self.families:
             for j in range(self.families[family_id].size):
-                election_id = self.families[family_id].election_model + '_' + str(j)
+                election_id = family_id + '_' + str(j)
                 election = Election(self.experiment_id, election_id)
                 elections[election_id] = election
 
@@ -96,11 +96,18 @@ class Experiment:
             if row['show'].strip() != 't':
                 show = False
 
+            family_id = election_model + '_' + str(num_candidates) + '_' + str(num_voters)
+            if election_model in {'urn_model', 'norm-mallows', 'mallows'} and param_1 != 0:
+                family_id += '_' + str(float(param_1))
+            if election_model in {'norm-mallows', 'mallows'} and param_2 != 0:
+                family_id += '__' + str(float(param_2))
+
             # families.append(Family(election_model=election_model, param_1=param_1, param_2=param_2, label=label,
             #                        color=color, alpha=alpha, show=show, size=size, marker=marker,
             #                        starting_from=starting_from,
             #                        num_candidates=num_candidates, num_voters=num_voters))
-            families[election_model] = Family(election_model=election_model, param_1=param_1, param_2=param_2, label=label,
+            families[family_id] = Family(election_model=election_model, family_id=family_id,
+                                              param_1=param_1, param_2=param_2, label=label,
                                    color=color, alpha=alpha, show=show, size=size, marker=marker,
                                    starting_from=starting_from,
                                    num_candidates=num_candidates, num_voters=num_voters)
@@ -170,7 +177,7 @@ class Experiment_xD(Experiment):
 
         for family_id in self.families:
             for j in range(self.families[family_id].size):
-                election_id = self.families[family_id].election_model + '_' + str(j)
+                election_id = family_id + '_' + str(j)
                 hist_data[election_id] = {}
 
         with open(path, 'r', newline='') as csv_file:

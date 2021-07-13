@@ -10,10 +10,11 @@ import numpy as np
 import scipy.stats as stats
 from PIL import Image
 
-from . import _elections as el
-from . import metrics as metr
+from mapel.voting import _elections as el
+from mapel.voting import metrics as metr
 
-from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
+from mapel.voting.objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
+
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
@@ -158,7 +159,6 @@ def add_basic_points_to_picture(ax=None, experiment=None, ms=None):
     # TEMPORARY VERSION
     for family_id in experiment.families:
         if experiment.families[family_id].show:
-            print(experiment.points_by_families)
             ax.scatter(experiment.points_by_families[family_id][0], experiment.points_by_families[family_id][1],
                        color=experiment.families[family_id].color, label=experiment.families[family_id].label,
                        alpha=experiment.families[family_id].alpha, s=ms, marker=experiment.families[family_id].marker)

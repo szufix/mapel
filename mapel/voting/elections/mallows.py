@@ -2,6 +2,7 @@ import random as rand
 import numpy as np
 
 
+
 def generate_mallows_election(num_voters=None, num_candidates=None, param_1=None, param_2=None):
     """ helper function: generate mallows elections"""
 

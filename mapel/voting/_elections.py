@@ -27,64 +27,20 @@ from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experi
 
 import mapel.voting.elections.preflib as preflib
 
-
-def nice_name(name):
-    return {
-        '1d_interval': '1D_Interval',
-        '1d_gaussian': '1D_Gaussian',
-        '2d_disc': '2D_Disc',
-        '2d_square': '2D_Square',
-        '2d_gaussian': '2D_Gaussian',
-        '3d_cube': '3D_Cube',
-        '4d_cube': '4D_Cube',
-        '5d_cube': '5D_Cube',
-        '10d_cube': '10D_Cube',
-        '20d_cube': '20D_Cube',
-        '2d_sphere': '2D_Sphere',
-        '3d_sphere': '3D_Sphere',
-        '4d_sphere': '4D_Sphere',
-        '5d_sphere': '5D_Sphere',
-        'impartial_culture': 'Impartial_Culture',
-        'iac': 'Impartial_Anonymous_Culture',
-        'urn_model': 'Urn_Model',
-        'conitzer': 'Single-Peaked_(by_Conitzer)',
-        'spoc_conitzer': 'SPOC',
-        'walsh': 'Single-Peaked_(by_Walsh)',
-        'mallows': 'Mallows',
-        'norm_mallows': 'Norm_Mallows',
-        'single-crossing': 'Single-Crossing',
-        'didi': 'DiDi',
-        'pl': 'Plackett-Luce',
-        'netflix': 'Netflix',
-        'sushi': 'Sushi',
-        'formula': 'Formula',
-        'meath': 'Meath',
-        'dublin_north': 'North_Dublin',
-        'dublin_west': 'West_Dublin',
-        'identity': 'Identity',
-        'antagonism': 'Antagonism',
-        'uniformity': 'Uniformity',
-        'stratification': 'Stratification',
-        'unid': "UNID",
-        'real_identity': 'Real_Identity',
-        'real_uniformity': 'Real_Uniformity',
-        'real_antagonism': 'Real_Antagonism',
-        'real_stratification': 'Real_Stratification',
-        'group-separable': 'Group-Separable',
-    }.get(name)
+from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS
 
 
 def generate_votes(election_model=None, num_candidates=None, num_voters=None, param_1=0, param_2=0):
-    if election_model == 'mallows' and param_1 == 0:
+    if election_model == 'mallows' and int(param_1) == 0:
         param_1 = rand.random()
-    elif election_model == 'norm_mallows' and param_1 == 0:
+    elif election_model == 'norm-mallows' and int(param_1) == 0:
         param_1 = phi_mallows_helper(num_candidates)
-    elif election_model == 'norm_mallows' and param_1 >= 0:
+    elif election_model == 'norm-mallows' and param_1 >= 0:
         # if (num_candidates, param_1) in LOOKUP_TABLE:
         #     param_1 = LOOKUP_TABLE[(num_candidates, param_1)]
         # else:
         param_1 = phi_mallows_helper(num_candidates, rdis=param_1)
-    elif election_model == 'urn_model' and param_1 == 0:
+    elif election_model == 'urn_model' and int(param_1) == 0:
         param_1 = gamma.rvs(0.8)
 
     naked_models = {'impartial_culture': generate_impartial_culture_election,
@@ -125,7 +81,7 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None, pa
                            'group-separable': generate_group_separable_election, }
 
     double_param_models = {'mallows': generate_mallows_election,
-                           'norm_mallows': generate_mallows_election, }
+                           'norm-mallows': generate_mallows_election, }
 
     if election_model in naked_models:
         votes = naked_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates)
@@ -143,7 +99,7 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None, pa
                                                         param_1=param_1, param_2=param_2)
     else:
         votes = []
-        print("No such election model!")
+        print("No such election model!", election_model)
 
     return votes
 
@@ -152,15 +108,17 @@ def prepare_elections(experiment_id):
     """ Prepare elections for a given experiment """
     experiment = Experiment(experiment_id, raw=True)
 
-    for election_model in experiment.families:
-        param_1 = experiment.families[election_model].param_1
-        param_2 = experiment.families[election_model].param_2
+    for family_id in experiment.families:
+        param_1 = experiment.families[family_id].param_1
+        param_2 = experiment.families[family_id].param_2
 
-        if election_model in preflib.LIST_OF_PREFLIB_ELECTIONS:
+        election_model = experiment.families[family_id].election_model
+        if election_model in preflib.LIST_OF_PREFLIB_MODELS:
             prepare_preflib_family(experiment_id, experiment=experiment, election_model=election_model,
                                    param_1=param_1)
         else:
             prepare_statistical_culture_family(experiment_id, experiment=experiment, election_model=election_model,
+                                               family_id=family_id,
                                                param_1=param_1, param_2=param_2)
 
 
@@ -177,13 +135,13 @@ def extend_elections(experiment_id, folder=None, starting_from=0, ending_at=1000
 
         if starting_from <= id_ < ending_at:
 
-            if election_model in preflib.LIST_OF_PREFLIB_ELECTIONS:
+            if election_model in preflib.LIST_OF_PREFLIB_MODELS:
                 prepare_preflib_family(experiment_id, experiment=experiment, election_model=election_model,
-                                       family_id=family_id, param_1=param_1, id_=id_, folder=folder)
+                                       param_1=param_1, id_=id_, folder=folder)
             else:
                 prepare_statistical_culture_family(experiment_id, experiment=experiment,
                                                    election_model=election_model,
-                                                   family_id=family_id, param_1=param_1, param_2=param_2)
+                                                param_1=param_1, param_2=param_2)
 
         id_ += experiment.families[family_id].size
 
@@ -193,9 +151,7 @@ def generate_elections(experiment_id, election_model=None, election_id=None,
                        num_candidates=None, num_voters=None, special=None, second_param=None):
     """ main function: generate elections """
 
-    if election_model in {'identity', 'uniformity', 'antagonism', 'stratification',
-                          'unid', 'anid', 'stid', 'anun', 'stun', 'stan',
-                          'crate', 'walsh_fake', 'conitzer_fake'}:
+    if election_model in LIST_OF_FAKE_MODELS:
         path = os.path.join("experiments", str(experiment_id), "elections",
                             (str(election_id) + ".soc"))
         file_ = open(path, 'w')
@@ -203,12 +159,6 @@ def generate_elections(experiment_id, election_model=None, election_id=None,
         file_.write(str(num_voters) + '\n')
         file_.write(str(num_candidates) + '\n')
         file_.write(str(election_model) + '\n')
-        # if election_model == 'crate':
-        #     file_.write(str(round(special[0], 5)) + '\n')
-        #     file_.write(str(round(special[1], 5)) + '\n')
-        #     file_.write(str(round(special[2], 5)) + '\n')
-        #     file_.write(str(round(special[3], 5)) + '\n')
-        # else:
         file_.write(str(round(special, 5)) + '\n')
         file_.close()
 
@@ -222,11 +172,12 @@ def generate_elections(experiment_id, election_model=None, election_id=None,
                             (str(election_id) + ".soc"))
         file_ = open(path, 'w')
 
-        print(election_model)
-        if election_model in ["norm_mallows", "mallows", "urn_model"]:
-            file_.write("# " + nice_name(election_model) + " " + str(round(special, 5)) + "\n")
+        if election_model in ["norm-mallows", "mallows", "urn_model", 'group-separable']:
+            file_.write("# " + NICE_NAME[election_model] + " " + str(round(special, 5)) + "\n")
+        elif election_model in NICE_NAME:
+            file_.write("# " + NICE_NAME[election_model] + "\n")
         else:
-            file_.write("# " + nice_name(election_model) + "\n")
+            file_.write("# " + election_model + "\n")
 
         file_.write(str(num_candidates) + "\n")
 
@@ -336,26 +287,26 @@ def prepare_preflib_family(experiment_id, experiment=None, election_model=None,
         id_ += 1
 
 
-def prepare_statistical_culture_family(experiment_id, experiment=None, election_model=None,
+def prepare_statistical_culture_family(experiment_id, experiment=None, election_model=None, family_id=None,
                                        param_1=None, param_2=None):
     copy_param_1 = param_1
 
-    for j in range(experiment.families[election_model].size):
+    for j in range(experiment.families[family_id].size):
 
         if election_model in {'unid', 'stan', 'anid', 'stid', 'anun', 'stun'}:
             if copy_param_1 == 0:  # with both
-                param_1 = j / (experiment.families[election_model].size - 1)
+                param_1 = j / (experiment.families[family_id].size - 1)
             elif copy_param_1 == 1:  # without first (which is last)
-                param_1 = j / experiment.families[election_model].size
+                param_1 = j / experiment.families[family_id].size
             elif copy_param_1 == 2:  # without second (which is first)
-                param_1 = (j + 1) / experiment.families[election_model].size
+                param_1 = (j + 1) / experiment.families[family_id].size
             elif copy_param_1 == 4:  # without both
-                param_1 = (j + 1) / (experiment.families[election_model].size + 1)
+                param_1 = (j + 1) / (experiment.families[family_id].size + 1)
         elif election_model == 'urn_model' and copy_param_1 == -2.:
             param_1 = round(j / 10000., 2)
 
-        election_id = election_model + '_' + str(j)
+        election_id = family_id + '_' + str(j)
         generate_elections(experiment_id, election_model=election_model, election_id=election_id,
-                           num_voters=experiment.families[election_model].num_voters,
-                           num_candidates=experiment.families[election_model].num_candidates,
+                           num_voters=experiment.families[family_id].num_voters,
+                           num_candidates=experiment.families[family_id].num_candidates,
                            special=param_1, second_param=param_2)

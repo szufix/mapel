@@ -46,7 +46,7 @@ def compute_feature(experiment_id, name=None):
 def borda_std(election):
     scores = np.zeros(election.num_candidates)
 
-    vectors = election.votes_to_positionwise_vectors()
+    vectors = election.votes_to_positionwise_matrix()
 
     for i in range(election.num_candidates):
         for j in range(election.num_candidates):
@@ -115,7 +115,7 @@ def highest_borda_score(election):
     """ Compute highest BORDA score of a given election """
     c = election.num_candidates
     v = election.num_voters
-    vectors = election.votes_to_positionwise_vectors()
+    vectors = election.votes_to_positionwise_matrix()
     # return sum([vectors[0][i] * (c - i - 1) for i in range(c)]) * v
     # todo: rewrite this function
     return -1
@@ -127,7 +127,7 @@ def highest_plurality_score(election):
     if election.fake:
         c = election.num_candidates
         v = election.num_voters
-        vectors = election.votes_to_positionwise_vectors()
+        vectors = election.votes_to_positionwise_matrix()
         first = []
         for i in range(c):
             first.append(vectors[i][0])
@@ -227,7 +227,7 @@ def get_effective_num_candidates(election, mode='Borda'):
     """ Compute effective number of candidates """
 
     c = election.num_candidates
-    vectors = election.votes_to_positionwise_vectors()
+    vectors = election.votes_to_positionwise_matrix()
 
     if mode == 'Borda':
         scores = [sum([vectors[j][i] * (c - i - 1) for i in range(c)]) / (c * (c - 1) / 2) for j in range(c)]

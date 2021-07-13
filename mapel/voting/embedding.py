@@ -57,9 +57,9 @@ def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="emd-posi
         writer.writerow(["election_id", "x", "y"])
 
         ctr = 0
-        for family_id in experiment.families:
-            for j in range(experiment.families[family_id].size):
-                a = experiment.families[family_id].election_model + '_' + str(j)
+        for election_model_id in experiment.families:
+            for j in range(experiment.families[election_model_id].size):
+                a = election_model_id + '_' + str(j)
                 x = round(my_pos[ctr][0], 5)
                 y = round(my_pos[ctr][1], 5)
                 writer.writerow([a, x, y])

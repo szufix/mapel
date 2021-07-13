@@ -3,10 +3,11 @@
 class Family:
     """ Family of elections: a set of elections from the same election model """
 
-    def __init__(self, election_model="none", param_1=0., param_2=0., size=0, label="none",
+    def __init__(self, election_model="none", family_id='none', param_1=0., param_2=0., size=0, label="none",
                  color="black", alpha=1., show=True, marker='o', starting_from=0,
                  num_candidates=None, num_voters=None):
 
+        self.family_id = family_id
         self.election_model = election_model
         self.param_1 = param_1
         self.param_2 = param_2

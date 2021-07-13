@@ -41,45 +41,45 @@ def generate_single_crossing_election(num_voters=None, num_candidates=None):
     return votes
 
 
+# def get_single_crossing_matrix_slow(num_candidates):
+#
+#     # GENERATE DOMAIN
+#
+#     domain_size = int(num_candidates * (num_candidates - 1) / 2 + 1)
+#
+#     domain = [[i for i in range(num_candidates)] for _ in range(domain_size)]
+#
+#     for line in range(1, domain_size):
+#
+#         poss = []
+#         for i in range(num_candidates - 1):
+#             if domain[line - 1][i] < domain[line - 1][i + 1]:
+#                 poss.append([domain[line - 1][i], domain[line - 1][i + 1]])
+#
+#         r = 0  # first swap
+#
+#         for i in range(num_candidates):
+#
+#             domain[line][i] = domain[line - 1][i]
+#
+#             if domain[line][i] == poss[r][0]:
+#                 domain[line][i] = poss[r][1]
+#
+#             elif domain[line][i] == poss[r][1]:
+#                 domain[line][i] = poss[r][0]
+#
+#     # GENERATE MATRIX
+#
+#     matrix = np.zeros([num_candidates, num_candidates])
+#
+#     for i in range(domain_size):
+#         for j in range(num_candidates):
+#             matrix[domain[i][j]][j] += 1
+#
+#     return matrix
+
+
 def get_single_crossing_matrix(num_candidates):
-
-    # GENERATE DOMAIN
-
-    domain_size = int(num_candidates * (num_candidates - 1) / 2 + 1)
-
-    domain = [[i for i in range(num_candidates)] for _ in range(domain_size)]
-
-    for line in range(1, domain_size):
-
-        poss = []
-        for i in range(num_candidates - 1):
-            if domain[line - 1][i] < domain[line - 1][i + 1]:
-                poss.append([domain[line - 1][i], domain[line - 1][i + 1]])
-
-        r = 0  # first swap
-
-        for i in range(num_candidates):
-
-            domain[line][i] = domain[line - 1][i]
-
-            if domain[line][i] == poss[r][0]:
-                domain[line][i] = poss[r][1]
-
-            elif domain[line][i] == poss[r][1]:
-                domain[line][i] = poss[r][0]
-
-    # GENERATE MATRIX
-
-    matrix = np.zeros([num_candidates, num_candidates])
-
-    for i in range(domain_size):
-        for j in range(num_candidates):
-            matrix[domain[i][j]][j] += 1
-
-    return matrix
-
-
-def analytical(num_candidates):
 
     matrix = np.zeros([num_candidates, num_candidates])
 
@@ -99,7 +99,9 @@ def analytical(num_candidates):
         matrix[i][i] += sums[i]
         matrix[i][num_candidates-i-1] -= i
 
-    return matrix.transpose()
+    for i in range(num_candidates):
+        denominator = sum(matrix[i])
+        for j in range(num_candidates):
+            matrix[i][j] /= denominator
 
-# print(get_single_crossing_matrix(10))
-# print(analytical(10))
+    return matrix.transpose()

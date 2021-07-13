@@ -9,10 +9,7 @@ import numpy as np
 from scipy.stats import gamma
 
 
-LIST_OF_PREFLIB_ELECTIONS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
-                             'tshirt', 'cities_survey', 'aspen', 'ers',
-                             'marble', 'cycling_tdf', 'cycling_gdi', 'ice_races',
-                             'grenoble'}
+from mapel.voting.glossary import LIST_OF_PREFLIB_MODELS
 
 # GENERATE
 def generate_elections_preflib(experiment_id, election_model=None, elections_id=None,

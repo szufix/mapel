@@ -18,6 +18,71 @@ from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experi
 from .objects.Election import Election
 from .metrics.inner_distances import l2
 
+
+
+
+def create_structure(experiment_id):
+
+    # PREPARE STRUCTURE
+
+    if not os.path.isdir("experiments/"):
+        os.mkdir(os.path.join(os.getcwd(), "experiments"))
+
+    if not os.path.isdir("images/"):
+        os.mkdir(os.path.join(os.getcwd(), "images"))
+
+    if not os.path.isdir("trash/"):
+        os.mkdir(os.path.join(os.getcwd(), "trash"))
+
+    try:
+        os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id))
+
+        os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "distances"))
+        os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "features"))
+        os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "coordinates"))
+        os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "elections"))
+        os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "matrices"))
+
+        # PREPARE MAP.CSV FILE
+
+        path = os.path.join(os.getcwd(), "experiments", experiment_id, "map.csv")
+        with open(path, 'w') as file_csv:
+            file_csv.write("family_size,num_candidates,num_voters,election_model,param_1,param_2,color,alpha,label,marker,show\n")
+            file_csv.write("3,10,100,impartial_culture,0,0,black,1,Impartial Culture,o,t\n")
+            file_csv.write("3,10,100,iac,0,0,black,0.7,IAC,o,t\n")
+            file_csv.write("3,10,100,conitzer,0,0,limegreen,1,SP by Conitzer,o,t\n")
+            file_csv.write("3,10,100,walsh,0,0,olivedrab,1,SP by Walsh,o,t\n")
+            file_csv.write("3,10,100,spoc_conitzer,0,0,DarkRed,0.7,SPOC,o,t\n")
+            file_csv.write("3,10,100,group-separable,0,0,blue,1,Group-Separable,o,t\n")
+            file_csv.write("3,10,100,single-crossing,0,0,purple,0.6,Single-Crossing,o,t\n")
+            file_csv.write("3,10,100,1d_interval,0,0,DarkGreen,1,1D Interval,o,t\n")
+            file_csv.write("3,10,100,2d_disc,0,0,Green,1,2D Disc,o,t\n")
+            file_csv.write("3,10,100,3d_cube,0,0,ForestGreen,0.7,3D Cube ,o,t\n")
+            file_csv.write("3,10,100,2d_sphere,0,0,black,0.2,2D Sphere,o,t\n")
+            file_csv.write("3,10,100,3d_sphere,0,0,black,0.4,3D Sphere,o,t\n")
+            file_csv.write("3,10,100,urn_model,0.1,0,yellow,1,Urn model 0.1,o,t\n")
+            file_csv.write("3,10,100,norm-mallows,0.5,0,blue,1,Norm-Mallows 0.5,o,t\n")
+            file_csv.write("3,10,100,urn_model,0,0,orange,1,Urn model (gamma),o,t\n")
+            file_csv.write("3,10,100,norm-mallows,0,0,cyan,1,Norm-Mallows (uniform),o,t\n")
+            file_csv.write("1,10,100,identity,0,0,blue,1,Identity,x,t\n")
+            file_csv.write("1,10,100,uniformity,0,0,black,1,Uniformity,x,t\n")
+            file_csv.write("1,10,100,antagonism,0,0,red,1,Antagonism,x,t\n")
+            file_csv.write("1,10,100,stratification,0,0,green,1,Stratification,x,t\n")
+            file_csv.write("1,10,100,walsh_matrix,0,0,olivedrab,1,Walsh Matrix,x,t\n")
+            file_csv.write("1,10,100,conitzer_matrix,0,0,limegreen,1,Conitzer Matrix,x,t\n")
+            file_csv.write("1,10,100,single-crossing_matrix,0,0,purple,0.6,Single-Crossing Matrix,x,t\n")
+            file_csv.write("1,10,100,gs_caterpillar_matrix,0,0,green,1,GS Caterpillar Matrix,x,t")
+            file_csv.write("3,10,100,unid,4,0,blue,1,UNID,3,f\n")
+            file_csv.write("3,10,100,anid,4,0,black,1,ANID,3,f\n")
+            file_csv.write("3,10,100,stid,4,0,black,1,STID,3,f\n")
+            file_csv.write("3,10,100,stan,4,0,black,1,STAN,3,f\n")
+            file_csv.write("3,10,100,stun,4,0,black,1,stun,3,f\n")
+            file_csv.write("3,10,100,stan,4,0,red,1,stan,3,f\n")
+    except:
+        print("Experiment already exists!")
+
+###############################################################################
+
 ## PART 0 ##
 
 def compute_lowest_dodgson(experiment_id, clear=True):
@@ -524,33 +589,6 @@ def compute_subelection_weird(experiment_id, distance_name='voter_subelection', 
 ### PART X ###
 
 
-def create_structure(experiment_id):
-
-    # PREPARE STRUCTURE
-
-    if not os.path.isdir("experiments/"):
-        os.mkdir(os.path.join(os.getcwd(), "experiments"))
-
-    if not os.path.isdir("images/"):
-        os.mkdir(os.path.join(os.getcwd(), "images"))
-
-    if not os.path.isdir("trash/"):
-        os.mkdir(os.path.join(os.getcwd(), "trash"))
-
-    os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id))
-
-    os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "distances"))
-    os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "features"))
-    os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "coordinates"))
-    os.mkdir(os.path.join(os.getcwd(), "experiments", experiment_id, "elections"))
-
-    # PREPARE MAP.CSV FILE
-
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "map.csv")
-    with open(path, 'w') as file_csv:
-        file_csv.write("family_size,num_candidates,num_voters,election_model,param_1,param_2,color,alpha,label,marker,show\n")
-        file_csv.write("10,10,100,impartial_culture,0,0,black,1,Impartial Culture,o,t\n")
-        file_csv.write("10,10,100,urn_model,0.1,0,blue,1,Urn model,o,t")
 
 
 import math

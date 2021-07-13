@@ -20,6 +20,10 @@ def prepare_elections(experiment_id, **kwargs):
     el.prepare_elections(experiment_id, **kwargs)
 
 
+def prepare_matrices(experiment_id, **kwargs):
+    mat.prepare_matrices(experiment_id, **kwargs)
+
+
 ###########################
 ### COMPUTING DISTANCES ###
 ###########################
