@@ -1221,35 +1221,3 @@ def print_clustering_bis(experiment_id, magic=1, q=0):
                 normalizing_func=normalizing_func, xticklabels=xticklabels, cmap=custom_map, black=True, levels=True)
 
 
-def print_clustering_bis_3d(experiment_id, magic=1, q=0):
-    #"""
-    experiment = obj.Experiment_xD(experiment_id)
-
-    def normalizing_func(shade):
-        shade = int(shade)
-        if shade == 11: # CH-AN
-            shade = 0
-        elif shade == 101:   # CH-UN
-            shade = 1/5
-        elif shade == 1001: # CH-ID
-            shade = 2/5
-        elif shade == 1010: # AN-ID
-            shade = 3/5
-        elif shade == 1100: # UN-ID
-            shade = 4/5
-        elif shade == 110: # AN-UN
-            shade = 1
-        return shade
-
-    def reversed_func(arg):
-        arg *= 25
-        return arg
-
-    #[print(reversed_func(i)) for i in [0., 0.25, 0.5, 0.75, 1.]]
-
-    custom_map = custom_div_cmap(colors=["black", "green", "red", "orange", "purple", "blue"], num_colors=6)
-
-    print_3d(experiment_id, saveas="distances/_miodzio" + str(q), ms=16, values="guardians",
-                normalizing_func=normalizing_func, cmap=custom_map)
-
-
