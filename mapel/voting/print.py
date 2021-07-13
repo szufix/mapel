@@ -13,7 +13,7 @@ from PIL import Image
 from . import _elections as el
 from . import metrics as metr
 
-from .objects.Experiment import Experiment, Experiment_xd, Experiment_2D, Experiment_3D
+from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
@@ -156,11 +156,12 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
 
 def add_basic_points_to_picture(ax=None, experiment=None, ms=None):
     # TEMPORARY VERSION
-    for k in range(experiment.num_families):
-        if experiment.families[k].show:
-            ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1],
-                       color=experiment.families[k].color, label=experiment.families[k].label,
-                       alpha=experiment.families[k].alpha, s=ms, marker=experiment.families[k].marker)
+    for family_id in experiment.families:
+        if experiment.families[family_id].show:
+            print(experiment.points_by_families)
+            ax.scatter(experiment.points_by_families[family_id][0], experiment.points_by_families[family_id][1],
+                       color=experiment.families[family_id].color, label=experiment.families[family_id].label,
+                       alpha=experiment.families[family_id].alpha, s=ms, marker=experiment.families[family_id].marker)
 
 LIST_OF_PREFLIB_ELECTIONS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
                              'tshirt', 'cities_survey', 'aspen', 'ers',
@@ -430,13 +431,12 @@ def saveas_tex(saveas=None):
 # MAIN FUNCTIONS
 def print_2d(experiment_id, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
              angle=0, reverse=False, update=False, values=None, attraction_factor=1,
-             num_elections=None, main_order_name="default",
              distance_name="emd-positionwise", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None, title=None,
              saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
              ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
-    experiment = Experiment_2d(experiment_id, num_elections=num_elections, main_order_name=main_order_name, distance_name=distance_name,
+    experiment = Experiment_2D(experiment_id, distance_name=distance_name,
                          ignore=ignore, attraction_factor=attraction_factor)
 
     if angle != 0:
@@ -545,7 +545,7 @@ def print_matrix(experiment_id, scale=1., distance_name='', metric_name='', save
                  self_distances=False, yticks='left'):
     """Print the matrix with average distances between each pair of experiments """
 
-    experiment = Experiment_xd(experiment_id, distance_name=distance_name, metric_name=metric_name, raw=True, self_distances=self_distances)
+    experiment = Experiment_xD(experiment_id, distance_name=distance_name, metric_name=metric_name, raw=True, self_distances=self_distances)
     matrix = np.zeros([experiment.num_families, experiment.num_families])
     quantities = np.zeros([experiment.num_families, experiment.num_families])
 
@@ -1223,7 +1223,7 @@ def print_clustering_bis(experiment_id, magic=1, q=0):
 
 def print_clustering_bis_3d(experiment_id, magic=1, q=0):
     #"""
-    experiment = obj.Experiment_xd(experiment_id)
+    experiment = obj.Experiment_xD(experiment_id)
 
     def normalizing_func(shade):
         shade = int(shade)

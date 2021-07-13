@@ -4,6 +4,7 @@ from .voting import embedding as emb
 from .voting import _metrics as metr
 from .voting import print as pr
 from .voting import development as dev
+from .voting import matrices as mat
 
 
 def hello():
@@ -129,10 +130,20 @@ def create_structure(experiment_id):
     dev.create_structure(experiment_id)
 
 
-def get_matrix(experiment_id, **kwargs):
-    return el.get_matrix(experiment_id, **kwargs)
+# def get_matrix(experiment_id, **kwargs):
+#     return el.get_matrix(experiment_id, **kwargs)
 
 
-def generate_single_election(**kwargs):
-    return el.generate_single_election(**kwargs)
+# On OVERLEAF :)
+def generate_votes(**kwargs):
+    return el.generate_votes(**kwargs)
+
+
+def generate_positionwise_matrix(**kwargs):
+    return mat.generate_positionwise_matrix(**kwargs)
+
+
+def get_positionwise_matrix(votes):
+    return mat.get_positionwise_matrix(votes)
+
 

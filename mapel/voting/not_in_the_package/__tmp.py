@@ -658,4 +658,32 @@ def import_approval_elections(experiment_id, elections_id, params):
 
     return elections, params
 
-
+#
+# if election_model == 'crate':
+                #     my_size = 9
+                #     # with_edge
+                #     for p in range(my_size):
+                #         for q in range(my_size):
+                #             for r in range(my_size):
+                #                 a = p / (my_size - 1)
+                #                 b = q / (my_size - 1)
+                #                 c = r / (my_size - 1)
+                #                 d = 1 - a - b - c
+                #                 tmp = [a, b, c, d]
+                #                 if d >= 0 and sum(tmp) == 1:
+                #                     base.append(tmp)
+                #     # without_edge
+                #     """
+                #     for p in range(1, my_size-1):
+                #         for q in range(1, my_size-1):
+                #             for r in range(1, my_size-1):
+                #                 a = p / (my_size - 1)
+                #                 b = q / (my_size - 1)
+                #                 c = r / (my_size - 1)
+                #                 d = 1 - a - b - c
+                #                 tmp = [a, b, c, d]
+                #                 if d >= 0 and sum(tmp) == 1:
+                #                     #print(tmp)
+                #                     base.append(tmp)
+                #     """
+                # #print(len(base))

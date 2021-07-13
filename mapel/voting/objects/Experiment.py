@@ -29,9 +29,9 @@ class Experiment:
 
         elections = {}
 
-        for family in self.families:
-            for j in range(family.size):
-                election_id = family.election_model + '_' + str(j)
+        for family_id in self.families:
+            for j in range(self.families[family_id].size):
+                election_id = self.families[family_id].election_model + '_' + str(j)
                 election = Election(self.experiment_id, election_id)
                 elections[election_id] = election
 
@@ -40,7 +40,7 @@ class Experiment:
     def import_controllers(self, ignore=None):
         """ Import controllers from a file """
 
-        families = []
+        families = {}
 
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, 'map.csv')
         file_ = open(path, 'r')
@@ -96,27 +96,31 @@ class Experiment:
             if row['show'].strip() != 't':
                 show = False
 
-            families.append(Family(election_model=election_model, param_1=param_1, param_2=param_2, label=label,
+            # families.append(Family(election_model=election_model, param_1=param_1, param_2=param_2, label=label,
+            #                        color=color, alpha=alpha, show=show, size=size, marker=marker,
+            #                        starting_from=starting_from,
+            #                        num_candidates=num_candidates, num_voters=num_voters))
+            families[election_model] = Family(election_model=election_model, param_1=param_1, param_2=param_2, label=label,
                                    color=color, alpha=alpha, show=show, size=size, marker=marker,
                                    starting_from=starting_from,
-                                   num_candidates=num_candidates, num_voters=num_voters))
+                                   num_candidates=num_candidates, num_voters=num_voters)
             starting_from += size
 
         self.num_families = len(families)
-        self.num_elections = sum([families[i].size for i in range(self.num_families)])
+        self.num_elections = sum([families[family_id].size for family_id in families])
         self.main_order = [i for i in range(self.num_elections)]
 
         if ignore is None:
             ignore = []
 
         ctr = 0
-        for i in range(self.num_families):
+        for family_id in families:
             resize = 0
-            for j in range(families[i].size):
+            for j in range(families[family_id].size):
                 if self.main_order[ctr] >= self.num_elections or self.main_order[ctr] in ignore:
                     resize += 1
                 ctr += 1
-            families[i].size -= resize
+            families[family_id].size -= resize
 
         file_.close()
         return families
@@ -141,7 +145,7 @@ class Experiment:
     #     return main_order
 
 
-class Experiment_xd(Experiment):
+class Experiment_xD(Experiment):
     """ Multi-dimensional map of elections """
 
     def __init__(self, experiment_id, distance_name='positionwise', raw=False, self_distances=False):
@@ -164,9 +168,9 @@ class Experiment_xd(Experiment):
         hist_data = {}
         std = [[0. for _ in range(num_points)] for _ in range(num_points)]
 
-        for family in self.families:
-            for j in range(family.size):
-                election_id = family.election_model + '_' + str(j)
+        for family_id in self.families:
+            for j in range(self.families[family_id].size):
+                election_id = self.families[family_id].election_model + '_' + str(j)
                 hist_data[election_id] = {}
 
         with open(path, 'r', newline='') as csv_file:
@@ -202,14 +206,14 @@ class Experiment_xd(Experiment):
         return num_distances, hist_data, std
 
 
-class Experiment_2D(Experiment):
+class Experiment_2D(Experiment_xD):
     """ Two-dimensional model of elections """
 
     def __init__(self, experiment_id, distance_name="emd-positionwise", ignore=None, attraction_factor=1):
 
-        Experiment.__init__(self, experiment_id, ignore=ignore, distance_name=distance_name)
+        Experiment_xD.__init__(self, experiment_id, distance_name=distance_name)
 
-        self.attraction_factor = attraction_factor
+        self.attraction_factor = float(attraction_factor)
 
         self.num_points, self.points, = self.import_points(ignore=ignore)
         self.points_by_families = self.compute_points_by_families()
@@ -238,15 +242,15 @@ class Experiment_2D(Experiment):
     def compute_points_by_families(self):
         """ Group all points by their families """
 
-        points_by_families = [[[] for _ in range(2)] for _ in range(self.num_points)]
+        points_by_families = {}
 
-        # todo: update this function
-        ctr = 0
-        for i in range(self.num_families):
-            for j in range(self.families[i].size):
-                points_by_families[i][0].append(self.points[self.mapping[ctr]][0])
-                points_by_families[i][1].append(self.points[self.mapping[ctr]][1])
-                ctr += 1
+        for family_id in self.families:
+            points_by_families[family_id] = [[] for _ in range(2)]
+
+            for i in range(self.families[family_id].size):
+                election_id = family_id + '_' + str(i)
+                points_by_families[family_id][0].append(self.points[election_id][0])
+                points_by_families[family_id][1].append(self.points[election_id][1])
 
         return points_by_families
 
@@ -345,7 +349,7 @@ class Experiment_3D(Experiment):
     def compute_points_by_families(self):
         """ Group all points by their families """
 
-        points_by_families = [[[] for _ in range(3)] for _ in range(self.num_points)]
+        points_by_families = [[[] for _ in range(3)] for _ in range(self.num_families)]
         ctr = 0
 
         for i in range(self.num_families):

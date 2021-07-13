@@ -14,9 +14,9 @@ from . import features
 import copy
 
 import itertools
-from .objects.Experiment import Experiment, Experiment_xd, Experiment_2D, Experiment_3D
+from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
 from .objects.Election import Election
-
+from .metrics.inner_distances import l2
 
 ## PART 0 ##
 
@@ -166,7 +166,7 @@ def compute_effective_num_candidates(experiment_id, clear=True):
         file_scores = open(file_name, 'w')
         file_scores.close()
 
-    experiment = Experiment_xd(experiment_id, distance_name='swap')
+    experiment = Experiment_xD(experiment_id, distance_name='swap')
 
     for election in experiment.elections:
 
@@ -584,15 +584,13 @@ def map_diameter(c):
 
 def result_backup(experiment_id, result, i, j):
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "distances", "backup.txt")
-    with open(path, 'a') as txtfile:
-        txtfile.write(str(i) + ' ' + str(j) + ' ' + str(result) + '\n')
-
-
+    with open(path, 'a') as txt_file:
+        txt_file.write(str(i) + ' ' + str(j) + ' ' + str(result) + '\n')
 
 
 def get_borda_ranking(votes, num_voters, num_candidates):
 
-    # todo: obliczać ranking na podstawie positionwise vectors
+    # todo: compute ranking based on positionwise vectors
 
     points = [0 for _ in range(num_candidates)]
     scoring = [1. for _ in range(num_candidates)]
@@ -610,4 +608,36 @@ def get_borda_ranking(votes, num_voters, num_candidates):
     return ordered_candidates
 
 
+### DISTORTION SECTION ###
+def compute_distortion(experiment_id, attraction_factor=1):
+    experiment = Experiment_2D(experiment_id, attraction_factor=attraction_factor)
+    X = []
+    A = []
+    B = []
+
+    for i, election_id_1 in enumerate(experiment.elections):
+        for j, election_id_2 in enumerate(experiment.elections):
+            if i < j:
+                true_distance = experiment.distances[election_id_1][election_id_2]
+                embedded_distance = l2(experiment.points[election_id_1], experiment.points[election_id_2], 1)
+                proportion = float(true_distance) / float(embedded_distance)
+                X.append(proportion)
+                A.append(true_distance)
+                B.append(embedded_distance)
+
+    plt.scatter(A,B)
+    plt.show()
+
+    for i in [1, 0.99, 0.95, 0.9]:
+        X = sorted(X)
+        X = X[0:int(i*len(X))]
+        X = [X[i]/X[int(len(X)/2)] for i in range(len(X))]  # normalize by median
+        #X = [math.log(X[i]) for i in range(len(X))] # use log scale
+        plt.plot(X)
+        plt.title(i)
+        plt.ylabel('(true_distance / embedded_distance) / median')
+        plt.xlabel('meaningless')
+        name = 'images/' + str(i)+'_' + str(attraction_factor) + '.png'
+        plt.savefig(name)
+        plt.show()
 

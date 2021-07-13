@@ -6,7 +6,7 @@ import numpy as np
 
 from threading import Thread
 
-from .objects.Experiment import Experiment, Experiment_xd, Experiment_2D, Experiment_3D
+from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
 
 from time import sleep
 import csv
@@ -64,7 +64,7 @@ def compute_distances(experiment_id, distance_name='emd-positionwise',
         for election_id in experiment.elections:
             distances[election_id] = {}
     else:
-        experiment = Experiment_xd(experiment_id, distance_name=distance_name)
+        experiment = Experiment_xD(experiment_id, distance_name=distance_name)
         distances = {}
         for election_id in experiment.elections:
             distances[election_id] = {}

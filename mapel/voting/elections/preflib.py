@@ -136,3 +136,5 @@ def get_borda_scores(votes, num_voters, num_candidates):
             scores[votes[i][j]] += num_candidates - j - 1
 
     return scores
+
+

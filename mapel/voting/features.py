@@ -10,7 +10,7 @@ from . import objects as obj
 from .metrics import lp
 from . import development as dev
 
-from .objects.Experiment import Experiment, Experiment_xd, Experiment_2D, Experiment_3D
+from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
 
 ### MAPPING ###
 def get_feature(name):
@@ -27,7 +27,7 @@ def get_feature(name):
 ### MAIN FUNCTION ###
 
 def compute_feature(experiment_id, name=None):
-    experiment = Experiment_xd(experiment_id)
+    experiment = Experiment_xD(experiment_id)
     values = []
 
     for election in experiment.elections:

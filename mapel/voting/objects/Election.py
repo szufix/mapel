@@ -8,18 +8,24 @@ import numpy as np
 
 class Election:
 
-    def __init__(self, experiment_id, election_id):
+    def __init__(self, experiment_id, election_id, votes=None):
 
         self.experiment_id = experiment_id
         self.election_id = election_id
 
-        self.fake = check_if_fake(experiment_id, election_id)
-
-        if self.fake:
-            self.model_name, self.fake_param, self.num_voters, self.num_candidates = import_fake_elections(experiment_id, election_id)
+        if votes is not None:
+            self.votes = votes
+            self.num_candidates = len(votes[0])
+            self.num_voters = len(votes)
+            self.election_model = "virtual"
         else:
-            self.votes, self.num_voters, self.num_candidates, self.param, self.model_name = import_soc_elections(experiment_id, election_id)
-            self.potes = self.votes_to_potes()
+            self.fake = check_if_fake(experiment_id, election_id)
+            if self.fake:
+                self.election_model, self.fake_param, self.num_voters, self.num_candidates = import_fake_elections(experiment_id, election_id)
+            else:
+                self.votes, self.num_voters, self.num_candidates, self.param, self.election_model = import_soc_elections(experiment_id, election_id)
+
+        self.potes = self.votes_to_potes()
 
     def votes_to_potes(self):
         """ Prepare positional votes """
@@ -33,16 +39,15 @@ class Election:
 
         vectors = [[0. for _ in range(self.num_candidates)] for _ in range(self.num_candidates)]
 
-        if self.fake:
-
-            if self.model_name in {'identity', 'uniformity', 'antagonism', 'stratification',
-                                        'walsh_fake', 'conitzer_fake'}:
-                vectors = get_fake_vectors_single(self.model_name, self.num_candidates, self.num_voters)
-            elif self.model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-                vectors = get_fake_convex(self.model_name, self.num_candidates, self.num_voters, self.fake_param,
-                                          get_fake_vectors_single)
-            elif self.model_name == 'crate':
-                vectors = get_fake_vectors_crate(self.model_name, self.num_candidates, self.num_voters, self.fake_param)
+        # REPETITION OF CODE FORM 'matrices.py'
+        if self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification',
+                                    'walsh_fake', 'conitzer_fake'}:
+            vectors = get_fake_vectors_single(self.election_model, self.num_candidates, self.num_voters)
+        elif self.election_model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+            vectors = get_fake_convex(self.election_model, self.num_candidates, self.num_voters, self.fake_param,
+                                      get_fake_vectors_single)
+        elif self.election_model == 'crate':
+            vectors = get_fake_vectors_crate(self.election_model, self.num_candidates, self.num_voters, self.fake_param)
 
         else:
             for i in range(self.num_voters):
@@ -104,10 +109,10 @@ class Election:
 
         if self.fake:
 
-            if self.model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-                matrix = get_fake_matrix_single(self.model_name, self.num_candidates, self.num_voters)
-            elif self.model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-                matrix = get_fake_convex(self.model_name, self.num_candidates, self.num_voters, self.fake_param,
+            if self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+                matrix = get_fake_matrix_single(self.election_model, self.num_candidates, self.num_voters)
+            elif self.election_model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+                matrix = get_fake_convex(self.election_model, self.num_candidates, self.num_voters, self.fake_param,
                                          get_fake_matrix_single)
 
         else:
@@ -159,10 +164,10 @@ class Election:
 
         if self.fake:
 
-            if self.model_name in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-                borda_vector = get_fake_borda_vector(self.model_name, self.num_candidates, self.num_voters)
-            elif self.model_name in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-                borda_vector = get_fake_convex(self.model_name, self.num_candidates, self.num_voters, self.fake_param,
+            if self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+                borda_vector = get_fake_borda_vector(self.election_model, self.num_candidates, self.num_voters)
+            elif self.election_model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+                borda_vector = get_fake_convex(self.election_model, self.num_candidates, self.num_voters, self.fake_param,
                                                get_fake_borda_vector)
 
         else:
@@ -410,7 +415,6 @@ def crate_combination(base_1, base_2, base_3, base_4, length=0, alpha=None):
     return vectors
 
 
-
 def import_soc_elections(experiment_id, election_id):
     file_name = str(election_id) + ".soc"
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
@@ -447,3 +451,4 @@ def import_soc_elections(experiment_id, election_id):
             it += 1
 
     return votes, num_voters, num_candidates, param, model_name
+
