@@ -15,7 +15,9 @@ mapel/workshop.py
 mapel/_MAIN.py
 mapel/_tmp.py
 mapel/_workshop.py
-mapel/testing.py
+mapel/main.py
+mapel/_main.py
+mapel/_testing.py
 
 
 
