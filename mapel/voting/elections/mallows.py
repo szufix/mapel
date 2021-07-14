@@ -13,6 +13,8 @@ def calculateExpectedNumberSwaps(num_candidates,phi):
 def phi_from_relphi(num_candidates,relphi=None):
     if relphi is None:
         relphi = rand.random()
+    if relphi==1:
+        return 1
     exp_abs=relphi*(num_candidates*(num_candidates-1))/4
     low=0
     high=1
