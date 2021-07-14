@@ -9,7 +9,7 @@ import numpy as np
 from mapel.voting.elections.group_separable import get_gs_caterpillar_vectors
 from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
 from mapel.voting.elections.single_crossing import get_single_crossing_vectors
-from mapel.voting.elections.mallows import get_mallows_matrix
+from mapel.voting.elections.mallows import get_mallows_vectors
 
 from mapel.voting.glossary import LIST_OF_FAKE_MODELS
 
@@ -67,9 +67,9 @@ class Election:
         elif self.election_model == 'single-crossing_matrix':
             vectors = get_single_crossing_vectors(self.num_candidates)
         elif self.election_model == 'gs_caterpillar_matrix':
-            vectors=get_gs_caterpillar_matrix(self.num_candidates)
+            vectors=get_gs_caterpillar_vectors(self.num_candidates)
         elif self.election_model == 'norm-mallows_matrix':
-            vectors=get_mallows_matrix(self.num_candidates, self.fake_param)
+            vectors=get_mallows_vectors(self.num_candidates, self.fake_param)
         elif self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
             vectors = get_fake_vectors_single(self.election_model, self.num_candidates, self.num_voters)
         elif self.election_model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:

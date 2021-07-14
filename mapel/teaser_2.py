@@ -64,6 +64,9 @@ if __name__ == "__main__":
                                                                     num_candidates=num_candidates,
                                                                     num_voters=num_voters)
 
+    dict_with_votes['gs_cat'] = mapel.generate_votes(election_model='gs_caterpillar_matrix',
+                                                                    num_candidates=num_candidates,
+                                                                    num_voters=num_voters)
     group_by = {'cyan': Walsh_city,
                 'blue': ['Walsh(matrix)'],
                 'orange': Conitzer_city,
@@ -72,7 +75,8 @@ if __name__ == "__main__":
                 'darkblue': ['ID'],
                 'black': ['UN'],
                 'red': ['AN'],
-                'green': ['ST']}
+                'green': ['ST'],
+                'lime': ['gs_cat']}
 
     distances = mapel.compute_distances_between_votes(dict_with_votes)
     coordinates = mapel.embed(distances, algorithm='mds', attraction_factor=1)
