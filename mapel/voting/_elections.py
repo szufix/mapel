@@ -93,7 +93,7 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None, pa
         votes = double_param_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
                                                         param_1=param_1, param_2=param_2)
     elif election_model in LIST_OF_FAKE_MODELS:
-        votes = [election_model, num_candidates, num_voters]
+        votes = [election_model, num_candidates, num_voters, param_1, param_2]
     else:
         votes = []
         print("No such election model!", election_model)

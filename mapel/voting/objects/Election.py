@@ -28,6 +28,8 @@ class Election:
                 self.election_model = votes[0]
                 self.num_candidates = votes[1]
                 self.num_voters = votes[2]
+                self.fake_param = votes[3]
+
             else:
                 self.votes = votes
                 self.num_candidates = len(votes[0])
