@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
-from mapel.voting.elections.group_separable import get_gs_caterpillar_matrix
-from mapel.voting.elections.single_peaked import get_walsh_matrix, get_conitzer_matrix
-from mapel.voting.elections.single_crossing import get_single_crossing_matrix
+
+from mapel.voting.elections.group_separable import get_gs_caterpillar_vectors
+from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
+from mapel.voting.elections.single_crossing import get_single_crossing_vectors
+
 from . import _elections as el
 
 from .objects.Election import Election, get_fake_vectors_single, get_fake_convex
 from .objects.Experiment import Experiment
 
+import numpy as np
 import os
 import csv
 
@@ -33,26 +36,25 @@ def prepare_matrices(experiment_id):
 def generate_positionwise_matrix(election_model=None, num_candidates=None, num_voters=100, param_1=None, param_2=None):
     # todo: there is a repetition of this code in Election file
 
-    # EXACT -- STATISTICAL CULTURES
-    if election_model == 'conitzer':
-        return get_conitzer_matrix(num_candidates)
-    elif election_model == 'walsh':
-        return get_walsh_matrix(num_candidates)
-    elif election_model == 'single-crossing':
-        return get_single_crossing_matrix(num_candidates)
-    elif election_model == 'gs_caterpillar':
-        return get_gs_caterpillar_matrix(num_candidates)
-    # EXACT -- PATHS
-    elif election_model in {'identity', 'uniformity', 'antagonism', 'stratification',
-                            'walsh_fake', 'conitzer_fake'}:
-        return get_fake_vectors_single(election_model, num_candidates, num_voters)
+    if election_model == 'conitzer_matrix':
+        vectors = get_conitzer_vectors(num_candidates)
+    elif election_model == 'walsh_matrix':
+        vectors = get_walsh_vectors(num_candidates)
+    elif election_model == 'single-crossing_matrix':
+        vectors = get_single_crossing_vectors(num_candidates)
+    elif election_model == 'gs_caterpillar_matrix':
+        vectors = get_gs_caterpillar_vectors(num_candidates)
+    elif election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+        vectors = get_fake_vectors_single(election_model, num_candidates, num_voters)
     elif election_model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-        return get_fake_convex(election_model, num_candidates, num_voters, param_1, get_fake_vectors_single)
-    # APPROXIMATION
+        vectors = get_fake_convex(election_model, num_candidates, num_voters, param_1,
+                                  get_fake_vectors_single)
     else:
         votes = el.generate_votes(election_model=election_model, num_candidates=num_candidates,
                                   num_voters=num_voters, param_1=param_1, param_2=param_2)
         return get_positionwise_matrix(votes)
+
+    return vectors.transpose()
 
 
 def get_positionwise_matrix(votes):

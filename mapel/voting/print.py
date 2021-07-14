@@ -1221,7 +1221,7 @@ def print_clustering_bis(experiment_id, magic=1, q=0):
                 normalizing_func=normalizing_func, xticklabels=xticklabels, cmap=custom_map, black=True, levels=True)
 
 
-def print_map(coordinates, group_by=None):
+def print_map(coordinates, group_by=None, saveas=None):
     if group_by is None:
 
         for election_id in coordinates:
@@ -1239,5 +1239,10 @@ def print_map(coordinates, group_by=None):
                 Y.append(coordinates[election_id][1])
             plt.scatter(X,Y,label=group_by[color][0], color=color)
         plt.legend()
+        if saveas is not None:
+            file_name = saveas + ".png"
+            path = os.path.join(os.getcwd(), file_name)
+            plt.savefig(path, bbox_inches='tight')
         plt.show()
+
 

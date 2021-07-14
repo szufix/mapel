@@ -78,8 +78,10 @@ def generate_single_crossing_election(num_voters=None, num_candidates=None):
 #
 #     return matrix
 
-
 def get_single_crossing_matrix(num_candidates):
+    return get_single_crossing_vectors(num_candidates).transpose()
+
+def get_single_crossing_vectors(num_candidates):
 
     matrix = np.zeros([num_candidates, num_candidates])
 
@@ -104,4 +106,4 @@ def get_single_crossing_matrix(num_candidates):
         for j in range(num_candidates):
             matrix[i][j] /= denominator
 
-    return matrix.transpose()
+    return matrix
