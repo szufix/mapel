@@ -113,6 +113,10 @@ def prepare_elections(experiment_id):
     """ Prepare elections for a given experiment """
     experiment = Experiment(experiment_id, raw=True)
 
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections")
+    for file_name in os.listdir(path):
+        os.remove(os.path.join(path, file_name))
+
     for family_id in experiment.families:
         param_1 = experiment.families[family_id].param_1
         param_2 = experiment.families[family_id].param_2

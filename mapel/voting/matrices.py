@@ -15,6 +15,11 @@ import csv
 def prepare_matrices(experiment_id):
     """ compute positionwise matrices and store them in the /matrices folder """
     experiment = Experiment(experiment_id)
+
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "matrices")
+    for file_name in os.listdir(path):
+        os.remove(os.path.join(path, file_name))
+
     for election_id in experiment.elections:
         matrix = experiment.elections[election_id].votes_to_positionwise_matrix()
         path = os.path.join(os.getcwd(), "experiments", experiment_id,
