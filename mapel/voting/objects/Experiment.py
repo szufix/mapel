@@ -97,7 +97,7 @@ class Experiment:
                 show = False
 
             family_id = election_model + '_' + str(num_candidates) + '_' + str(num_voters)
-            if election_model in {'urn_model', 'norm-mallows', 'mallows'} and param_1 != 0:
+            if election_model in {'urn_model', 'norm-mallows', 'mallows','norm-mallows_matrix'} and param_1 != 0:
                 family_id += '_' + str(float(param_1))
             if election_model in {'norm-mallows', 'mallows'} and param_2 != 0:
                 family_id += '__' + str(float(param_2))

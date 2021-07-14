@@ -53,4 +53,5 @@ LIST_OF_PREFLIB_MODELS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
 LIST_OF_FAKE_MODELS = {'identity', 'uniformity', 'antagonism', 'stratification',
                           'unid', 'anid', 'stid', 'anun', 'stun', 'stan',
                           'crate', 'walsh_matrix', 'conitzer_matrix',
-                          'single-crossing_matrix', 'gs_caterpillar_matrix'}
+                          'single-crossing_matrix', 'gs_caterpillar_matrix',
+                          'norm-mallows_matrix'}
