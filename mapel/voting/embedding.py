@@ -32,6 +32,8 @@ def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="emd-posi
                     experiment.distances[election_1_id][election_2_id] = 0.01
                 if algorithm == 'spring':
                     X[i][j] = 1. / experiment.distances[election_1_id][election_2_id]
+                else:
+                    X[i][j] = experiment.distances[election_1_id][election_2_id]
                 X[i][j] = X[i][j] ** attraction_factor
                 X[j][i] = X[i][j]
 
@@ -181,6 +183,8 @@ def embed(distances, attraction_factor=1, algorithm='spring', num_iterations=100
                     distances[election_1_id][election_2_id] = 0.01
                 if algorithm == 'spring':
                     X[i][j] = 1. / distances[election_1_id][election_2_id]
+                else:
+                    X[i][j] = distances[election_1_id][election_2_id]
                 X[i][j] = X[i][j] ** attraction_factor
                 X[j][i] = X[i][j]
 

@@ -3,7 +3,7 @@ import mapel
 if __name__ == "__main__":
     num_candidates = 10
     num_voters = 100
-    city_size = 50
+    city_size = 10
 
     Conitzer_city = []
     Walsh_city = []
@@ -33,5 +33,5 @@ if __name__ == "__main__":
                 'red': ['Conitzer(matrix)']}
 
     distances = mapel.compute_distances_between_votes(dict_with_votes)
-    coordinates = mapel.embed(distances)
+    coordinates = mapel.embed(distances, algorithm='mds')
     mapel.print_map(coordinates, group_by=group_by, saveas='cities')
