@@ -3,7 +3,7 @@
 
 from mapel.voting.elections.group_separable import generate_group_separable_election, get_gs_caterpillar_matrix
 from mapel.voting.elections.mallows import generate_mallows_election, \
-    phi_mallows_helper
+    phi_from_relphi
 from mapel.voting.elections.euclidean import generate_elections_1d_simple, \
     generate_elections_2d_simple, generate_elections_nd_simple
 from mapel.voting.elections.single_peaked import generate_conitzer_election, \
@@ -34,12 +34,7 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None, pa
     if election_model == 'mallows' and int(param_1) == 0:
         param_1 = rand.random()
     elif election_model == 'norm-mallows' and int(param_1) == 0:
-        param_1 = phi_mallows_helper(num_candidates)
-    elif election_model == 'norm-mallows' and param_1 >= 0:
-        # if (num_candidates, param_1) in LOOKUP_TABLE:
-        #     param_1 = LOOKUP_TABLE[(num_candidates, param_1)]
-        # else:
-        param_1 = phi_mallows_helper(num_candidates, rdis=param_1)
+        param_1 = phi_from_relphi(num_candidates)
     elif election_model == 'urn_model' and int(param_1) == 0:
         param_1 = gamma.rvs(0.8)
 
@@ -165,6 +160,8 @@ def generate_elections(experiment_id, election_model=None, election_id=None,
         file_.write(str(num_candidates) + '\n')
         file_.write(str(election_model) + '\n')
         file_.write(str(round(special, 5)) + '\n')
+        if election_model=='norm-mallows_matrix':
+            file_.write(str(round(second_param, 5)) + '\n')
         file_.close()
 
     else:
@@ -295,6 +292,9 @@ def prepare_preflib_family(experiment_id, experiment=None, election_model=None,
 def prepare_statistical_culture_family(experiment_id, experiment=None, election_model=None, family_id=None,
                                        param_1=None, param_2=None):
     copy_param_1 = param_1
+    if election_model == 'norm-mallows' and param_1 >= 0:
+        param_1 = phi_from_relphi(experiment.families[family_id].num_candidates, relphi=param_1)
+
 
     for j in range(experiment.families[family_id].size):
 
@@ -307,6 +307,8 @@ def prepare_statistical_culture_family(experiment_id, experiment=None, election_
                 param_1 = (j + 1) / experiment.families[family_id].size
             elif copy_param_1 == 4:  # without both
                 param_1 = (j + 1) / (experiment.families[family_id].size + 1)
+        if election_model == 'norm-mallows_matrix':
+            param_2 = (j + 1) / experiment.families[family_id].size
         elif election_model == 'urn_model' and copy_param_1 == -2.:
             param_1 = round(j / 10000., 2)
 

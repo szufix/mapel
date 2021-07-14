@@ -8,6 +8,7 @@ import numpy as np
 from mapel.voting.elections.group_separable import get_gs_caterpillar_matrix
 from mapel.voting.elections.single_peaked import get_walsh_matrix, get_conitzer_matrix
 from mapel.voting.elections.single_crossing import get_single_crossing_matrix
+from mapel.voting.elections.mallows import get_mallows_matrix
 
 from mapel.voting.glossary import LIST_OF_FAKE_MODELS
 
@@ -64,6 +65,8 @@ class Election:
             return get_single_crossing_matrix(self.num_candidates)
         elif self.election_model == 'gs_caterpillar_matrix':
             return get_gs_caterpillar_matrix(self.num_candidates)
+        elif self.election_model == 'norm-mallows_matrix':
+            return get_mallows_matrix(self.num_candidates, self.fake_param)
         elif self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
             return get_fake_vectors_single(self.election_model, self.num_candidates, self.num_voters)
         elif self.election_model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
@@ -271,6 +274,8 @@ def import_fake_elections(experiment_id, election_id):
     if fake_model_name == 'crate':
         fake_param = [float(my_file.readline().strip()), float(my_file.readline().strip()),
                       float(my_file.readline().strip()), float(my_file.readline().strip())]
+    elif fake_model_name == 'norm-mallows_matrix':
+        fake_param = [float(my_file.readline().strip()), float(my_file.readline().strip())]
     else:
         fake_param = float(my_file.readline().strip())
 
