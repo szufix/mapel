@@ -166,3 +166,35 @@ def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="emd-posi
             y = round(my_pos[rev_perm[i]][1], 5)
             z = round(my_pos[rev_perm[i]][2], 5)
             writer.writerow([i, x, y, z])
+
+
+def embed(distances, attraction_factor=1, algorithm='spring', num_iterations=1000):
+    num_elections = len(distances)
+
+    X = np.zeros((num_elections, num_elections))
+
+    for i, election_1_id in enumerate(distances):
+        for j, election_2_id in enumerate(distances):
+            if i < j:
+                if distances[election_1_id][election_2_id] == 0:
+                    distances[election_1_id][election_2_id] = 0.01
+                X[i][j] = 1. / distances[election_1_id][election_2_id]
+                X[i][j] = X[i][j] ** attraction_factor
+                X[j][i] = X[i][j]
+
+    dt = [('weight', float)]
+    X = X.view(dt)
+    G = nx.from_numpy_matrix(X)
+
+    if algorithm == 'spring':
+        my_pos = nx.spring_layout(G, iterations=num_iterations, dim=2)
+    elif algorithm == 'mds':
+        my_pos = MDS(n_components=2).fit_transform(X)
+    elif algorithm == 'tsne':
+        my_pos = TSNE(n_components=2).fit_transform(X)
+
+    points = {}
+    for i, election_id in enumerate(distances):
+        points[election_id] = [my_pos[i][0], my_pos[i][1]]
+
+    return points

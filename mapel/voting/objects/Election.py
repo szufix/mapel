@@ -9,6 +9,9 @@ from mapel.voting.elections.group_separable import get_gs_caterpillar_matrix
 from mapel.voting.elections.single_peaked import get_walsh_matrix, get_conitzer_matrix
 from mapel.voting.elections.single_crossing import get_single_crossing_matrix
 
+from mapel.voting.glossary import LIST_OF_FAKE_MODELS
+
+
 class Election:
 
     def __init__(self, experiment_id, election_id, votes=None):
@@ -17,11 +20,18 @@ class Election:
         self.election_id = election_id
 
         if votes is not None:
-            self.votes = votes
-            self.num_candidates = len(votes[0])
-            self.num_voters = len(votes)
-            self.election_model = "virtual"
-            self.potes = self.votes_to_potes()
+            if str(votes[0]) in LIST_OF_FAKE_MODELS:
+                self.fake = True
+                self.votes = votes[0]
+                self.election_model = votes[0]
+                self.num_candidates = votes[1]
+                self.num_voters = votes[2]
+            else:
+                self.votes = votes
+                self.num_candidates = len(votes[0])
+                self.num_voters = len(votes)
+                self.election_model = "virtual"
+                self.potes = self.votes_to_potes()
         else:
             self.fake = check_if_fake(experiment_id, election_id)
             if self.fake:

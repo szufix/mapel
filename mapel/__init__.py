@@ -33,6 +33,14 @@ def compute_distances(experiment_id, **kwargs):
     metr.compute_distances(experiment_id, **kwargs)
 
 
+def compute_distances_between_votes(*args):
+    return metr.compute_distances_between_votes(*args)
+
+
+# def compute_distances_between_matrices(*args):
+#     metr.compute_distances_between_matrices(*args)
+#
+
 #################
 ### EMBEDDING ###
 #################
@@ -45,6 +53,9 @@ def convert_xd_to_2d(experiment, **kwargs):
 def convert_xd_to_3d(experiment, **kwargs):
     emb.convert_xd_to_3d(experiment, **kwargs)
 
+
+def embed(distances, **kwargs):
+    return emb.embed(distances, **kwargs)
 
 # def convert_using_tsne(experiment, **kwargs):
 #     emb.convert_using_tsne(experiment, **kwargs)
@@ -74,6 +85,8 @@ def print_param_vs_distance(experiment_id, **kwargs):
     pr.print_param_vs_distance(experiment_id, **kwargs)
 
 
+def print_map(coordinates, **kwargs):
+    pr.print_map(coordinates, **kwargs)
 
 ######################
 ### COMPUTE SCORES ###

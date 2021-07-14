@@ -1221,3 +1221,23 @@ def print_clustering_bis(experiment_id, magic=1, q=0):
                 normalizing_func=normalizing_func, xticklabels=xticklabels, cmap=custom_map, black=True, levels=True)
 
 
+def print_map(coordinates, group_by=None):
+    if group_by is None:
+
+        for election_id in coordinates:
+            plt.scatter(coordinates[election_id][0], coordinates[election_id][1], label=election_id)
+        plt.legend()
+        plt.show()
+
+    else:
+
+        for color in group_by:
+            X = []
+            Y = []
+            for election_id in group_by[color]:
+                X.append(coordinates[election_id][0])
+                Y.append(coordinates[election_id][1])
+            plt.scatter(X,Y,label=group_by[color][0], color=color)
+        plt.legend()
+        plt.show()
+

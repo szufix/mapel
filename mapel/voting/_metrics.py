@@ -7,11 +7,14 @@ import numpy as np
 from threading import Thread
 
 from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
+from .objects.Election import Election
 
 from time import sleep
 import csv
 
 from .metrics import main_distances as md
+
+from mapel.voting.matrices import get_positionwise_matrix
 
 
 # MAIN FUNCTIONS
@@ -111,3 +114,25 @@ def compute_distances(experiment_id, distance_name='emd-positionwise',
                 if i < j:
                     distance = str(distances[election_1][election_2])
                     writer.writerow([election_1, election_2, distance])
+
+### NEW 13.07.2021 ###
+
+
+def compute_distances_between_votes(dict_with_votes, distance_name='emd-positionwise'):
+    elections = {}
+    for election_id in dict_with_votes:
+        elections[election_id] = Election("virtual", "virtual", votes=dict_with_votes[election_id])
+
+    distances = {}
+    for election_id in elections:
+        distances[election_id] = {}
+
+    for i, election_id_1 in enumerate(elections):
+        for j, election_id_2 in enumerate(elections):
+            if i < j:
+                distance = get_distance(elections[election_id_1],
+                                        elections[election_id_2],
+                                        distance_name=distance_name)
+                distances[election_id_1][election_id_2] = distance
+                distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
+    return distances
