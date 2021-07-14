@@ -99,7 +99,7 @@ def calculateZ(m, phi):
 
 #mat[i][j] is the probability with which candidate i ends up in position j
 def mallowsMatrix(num_candidates,relphi,pos):
-    mat = [[0 for i in range(num_candidates)] for j in range(num_candidates)]
+    mat = np.zeros([num_candidates,num_candidates])
     phi = phi_from_relphi(num_candidates,relphi)
     Z = calculateZ(num_candidates, phi)
     for i in range(num_candidates):
@@ -119,10 +119,10 @@ def get_mallows_matrix(num_candidates, fake_param):
             #print(path)
             pos = pickle.load(file)
     except FileNotFoundError:
-        print("Mallows matrix only supported for up to 50 candidates")
+        print("Mallows matrix only supported for up to 30 candidates")
     #print(pos)
     mat1 = mallowsMatrix(num_candidates, relphi, pos)
-    res = [[0 for i in range(num_candidates)] for j in range(num_candidates)]
+    res = np.zeros([num_candidates,num_candidates])
     for i in range(num_candidates):
         for j in range(num_candidates):
             res[i][j] = weight * mat1[i][j] + (1 - weight) * mat1[i][num_candidates - 1 - j]

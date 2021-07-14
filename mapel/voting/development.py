@@ -71,13 +71,13 @@ def create_structure(experiment_id):
             file_csv.write("1,10,100,walsh_matrix,0,0,olivedrab,1,Walsh Matrix,x,t\n")
             file_csv.write("1,10,100,conitzer_matrix,0,0,limegreen,1,Conitzer Matrix,x,t\n")
             file_csv.write("1,10,100,single-crossing_matrix,0,0,purple,0.6,Single-Crossing Matrix,x,t\n")
-            file_csv.write("1,10,100,gs_caterpillar_matrix,0,0,green,1,GS Caterpillar Matrix,x,t")
+            file_csv.write("1,10,100,gs_caterpillar_matrix,0,0,green,1,GS Caterpillar Matrix,x,t\n")
             file_csv.write("3,10,100,unid,4,0,blue,1,UNID,3,f\n")
             file_csv.write("3,10,100,anid,4,0,black,1,ANID,3,f\n")
             file_csv.write("3,10,100,stid,4,0,black,1,STID,3,f\n")
             file_csv.write("3,10,100,stan,4,0,black,1,STAN,3,f\n")
-            file_csv.write("3,10,100,stun,4,0,black,1,stun,3,f\n")
-            file_csv.write("3,10,100,stan,4,0,red,1,stan,3,f\n")
+            file_csv.write("3,10,100,stun,4,0,black,1,STUN,3,f\n")
+            file_csv.write("3,10,100,stan,4,0,red,1,STAN,3,f\n")
     except:
         print("Experiment already exists!")
 

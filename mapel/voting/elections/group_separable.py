@@ -301,7 +301,7 @@ def get_frequency_matrix_from_tree(root):
 
     for i in range(m):
         for j in range(m):
-            array[j][i] = nodes[i].vector[j]
+            array[i][j] = nodes[i].vector[j]
 
     return array
 
@@ -330,6 +330,9 @@ def _caterpillar(num_leaves):
 
 ### MATRICES ###
 def get_gs_caterpillar_matrix(num_candidates):
+    return get_gs_caterpillar_vectors(num_candidates).transpose()
+
+def get_gs_caterpillar_vectors(num_candidates):
     return get_frequency_matrix_from_tree(_caterpillar(num_candidates))
 
 # get_gs_caterpillar_matrix(10)

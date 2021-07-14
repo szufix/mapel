@@ -5,9 +5,10 @@ import math
 import os
 import numpy as np
 
-from mapel.voting.elections.group_separable import get_gs_caterpillar_matrix
-from mapel.voting.elections.single_peaked import get_walsh_matrix, get_conitzer_matrix
-from mapel.voting.elections.single_crossing import get_single_crossing_matrix
+
+from mapel.voting.elections.group_separable import get_gs_caterpillar_vectors
+from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
+from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 from mapel.voting.elections.mallows import get_mallows_matrix
 
 from mapel.voting.glossary import LIST_OF_FAKE_MODELS
@@ -52,25 +53,25 @@ class Election:
                 potes[i][self.votes[i][j]] = j
         return potes
 
-    def votes_to_positionwise_matrix(self):
 
-        matrix = [[0. for _ in range(self.num_candidates)] for _ in range(self.num_candidates)]
+    def votes_to_positionwise_vectors(self):
 
-        # todo: REPETITION OF CODE FROM 'matrices.py'
+        vectors = np.zeros([self.num_candidates,self.num_candidates])
+
         if self.election_model == 'conitzer_matrix':
-            return get_conitzer_matrix(self.num_candidates)
+            vectors = get_conitzer_vectors(self.num_candidates)
         elif self.election_model == 'walsh_matrix':
-            return get_walsh_matrix(self.num_candidates)
+            vectors = get_walsh_vectors(self.num_candidates)
         elif self.election_model == 'single-crossing_matrix':
-            return get_single_crossing_matrix(self.num_candidates)
+            vectors = get_single_crossing_vectors(self.num_candidates)
         elif self.election_model == 'gs_caterpillar_matrix':
-            return get_gs_caterpillar_matrix(self.num_candidates)
+            vectors=get_gs_caterpillar_matrix(self.num_candidates)
         elif self.election_model == 'norm-mallows_matrix':
-            return get_mallows_matrix(self.num_candidates, self.fake_param)
+            vectors=get_mallows_matrix(self.num_candidates, self.fake_param)
         elif self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-            return get_fake_vectors_single(self.election_model, self.num_candidates, self.num_voters)
+            vectors = get_fake_vectors_single(self.election_model, self.num_candidates, self.num_voters)
         elif self.election_model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-            return get_fake_convex(self.election_model, self.num_candidates, self.num_voters, self.fake_param,
+            vectors = get_fake_convex(self.election_model, self.num_candidates, self.num_voters, self.fake_param,
                                       get_fake_vectors_single)
         else:
             for i in range(self.num_voters):
@@ -79,17 +80,21 @@ class Election:
                     vote = self.votes[i][j]
                     if vote == -1:
                         continue
-                    matrix[vote][pos] += 1
+                    vectors[vote][pos] += 1
                     pos += 1
             for i in range(self.num_candidates):
                 for j in range(self.num_candidates):
-                    matrix[i][j] /= float(self.num_voters)
+                    vectors[i][j] /= float(self.num_voters)
 
-        # # todo: change to original version
-        # if not self.fake:
-        #     vectors = [*zip(*vectors)]
+            # # todo: change to original version
+            # if not self.fake:
+            #     vectors = [*zip(*vectors)]
 
-        return matrix
+        # return matrix.transpose()
+        return vectors
+
+    def votes_to_positionwise_matrix(self):
+        return self.votes_to_positionwise_vectors().transpose()
 
     def votes_to_viper_vectors(self):
 
