@@ -106,7 +106,7 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None, pa
 
 def prepare_elections(experiment_id):
     """ Prepare elections for a given experiment """
-    experiment = Experiment(experiment_id, raw=True)
+    experiment = Experiment(experiment_id)
 
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections")
     for file_name in os.listdir(path):

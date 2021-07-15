@@ -430,7 +430,7 @@ def saveas_tex(saveas=None):
 
 # MAIN FUNCTIONS
 def print_2d(experiment_id, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
-             angle=0, reverse=False, update=False, values=None, attraction_factor=1,
+             angle=0, reverse=False, update=False, values=None, attraction_factor=1, axis=True,
              distance_name="emd-positionwise", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None, title=None,
              saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
              ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
@@ -458,7 +458,9 @@ def print_2d(experiment_id, mask=False, mixed=False, fuzzy_paths=True, xlabel=No
     #import matplotlib.gridspec as gridspec
     #gs = gridspec.GridSpec(2, 1, height_ratios=[10, 1])
     ax = fig.add_subplot()
-    plt.axis('off')
+
+    if not axis:
+        plt.axis('off')
 
     if values is not None:
         add_advanced_points_to_picture(fig=fig, ax=ax, experiment=experiment, experiment_id=experiment_id, values=values,

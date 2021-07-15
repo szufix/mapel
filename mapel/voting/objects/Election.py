@@ -16,10 +16,11 @@ from mapel.voting.glossary import LIST_OF_FAKE_MODELS
 
 class Election:
 
-    def __init__(self, experiment_id, election_id, votes=None):
+    def __init__(self, experiment_id, election_id, votes=None, with_matrix=False):
 
         self.experiment_id = experiment_id
         self.election_id = election_id
+
 
         if votes is not None:
             if str(votes[0]) in LIST_OF_FAKE_MODELS:
@@ -47,6 +48,26 @@ class Election:
 
                 self.potes = self.votes_to_potes()
 
+        if with_matrix:
+            self.matrix = self.import_matrix()
+            self.vectors = self.matrix.transpose()
+        else:
+            self.matrix = None
+            self.vectors = None
+
+    def import_matrix(self):
+
+        file_name = self.election_id + '.csv'
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, 'matrices', file_name)
+        matrix = np.zeros([self.num_candidates, self.num_candidates])
+
+        with open(path, 'r', newline='') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=',')
+            for i, row in enumerate(reader):
+                for j, candidate_id in enumerate(row):
+                    matrix[i][j] = row[candidate_id]
+        return matrix
+
     def votes_to_potes(self):
         """ Prepare positional votes """
         potes = np.zeros([self.num_voters, self.num_candidates])
@@ -55,6 +76,11 @@ class Election:
                 potes[i][self.votes[i][j]] = j
         return potes
 
+    def get_vectors(self):
+        if self.vectors is not None:
+            return self.vectors
+        else:
+            return self.votes_to_positionwise_vectors()
 
     def votes_to_positionwise_vectors(self):
 
@@ -93,6 +119,10 @@ class Election:
             #     vectors = [*zip(*vectors)]
 
         # return matrix.transpose()
+
+        self.vectors = vectors
+        self.matrix = self.vectors.transpose()
+
         return vectors
 
     def votes_to_positionwise_matrix(self):

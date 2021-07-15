@@ -35,9 +35,9 @@ def compute_feature(experiment_id, name=None):
         value = statistic(election)
         values.append(value)
 
-    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced", str(name) + '.txt')
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced", str(name) + '.txt')
 
-    file_scores = open(file_name, 'w')
+    file_scores = open(path, 'w')
     for i in range(experiment.num_elections):
         file_scores.write(str(values[i]) + "\n")
     file_scores.close()
@@ -56,7 +56,6 @@ def borda_std(election):
     return std
 
 
-# def separation_2(election):
 # def separation_2(election):
 #
 #     if election.fake:

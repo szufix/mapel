@@ -19,8 +19,6 @@ from .objects.Election import Election
 from .metrics.inner_distances import l2
 
 
-
-
 def create_structure(experiment_id):
 
     # PREPARE STRUCTURE

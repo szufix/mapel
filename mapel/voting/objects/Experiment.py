@@ -13,7 +13,7 @@ from .Family import Family
 class Experiment:
     """Abstract set of elections."""
 
-    def __init__(self, experiment_id, ignore=None, raw=False, distance_name='emd-positionwise'):
+    def __init__(self, experiment_id, ignore=None, with_elections=False, with_matrices=False, distance_name='emd-positionwise'):
 
         self.experiment_id = experiment_id
 
@@ -21,10 +21,11 @@ class Experiment:
 
         self.families = self.import_controllers(ignore=ignore)
 
-        if not raw:
-            self.elections = self.add_elections_to_experiment()
+        if with_elections:
+            self.elections = self.add_elections_to_experiment(with_matrices=with_matrices)
 
-    def add_elections_to_experiment(self):
+
+    def add_elections_to_experiment(self, with_matrices=False):
         """ Import elections from a file """
 
         elections = {}
@@ -32,10 +33,39 @@ class Experiment:
         for family_id in self.families:
             for j in range(self.families[family_id].size):
                 election_id = family_id + '_' + str(j)
-                election = Election(self.experiment_id, election_id)
+                election = Election(self.experiment_id, election_id, with_matrix=with_matrices)
                 elections[election_id] = election
 
         return elections
+
+    # def add_matrices_to_experiment(self):
+    #     """ Import elections from a file """
+    #
+    #     matrices = {}
+    #     vectors = {}
+    #
+    #     for family_id in self.families:
+    #         for j in range(self.families[family_id].size):
+    #             election_id = family_id + '_' + str(j)
+    #             matrix = self.import_matrix(election_id)
+    #             matrices[election_id] = matrix
+    #             vectors[election_id] = matrix.transpose()
+    #
+    #     return matrices, vectors
+
+    # def import_matrix(self, election_id):
+    #
+    #     file_name = election_id + '.csv'
+    #     path = os.path.join(os.getcwd(), "experiments", self.experiment_id, 'matrices', file_name)
+    #     num_candidates = self.elections[election_id].num_candidates
+    #     matrix = np.zeros([num_candidates, num_candidates])
+    #
+    #     with open(path, 'r', newline='') as csv_file:
+    #         reader = csv.DictReader(csv_file, delimiter=',')
+    #         for i, row in enumerate(reader):
+    #             for j, candidate_id in enumerate(row):
+    #                 matrix[i][j] = row[candidate_id]
+    #     return matrix
 
     def import_controllers(self, ignore=None):
         """ Import controllers from a file """
@@ -155,9 +185,9 @@ class Experiment:
 class Experiment_xD(Experiment):
     """ Multi-dimensional map of elections """
 
-    def __init__(self, experiment_id, distance_name='positionwise', raw=False, self_distances=False):
+    def __init__(self, experiment_id, distance_name='positionwise', self_distances=False):
 
-        Experiment.__init__(self, experiment_id, distance_name='emd-positionwise', raw=raw)
+        Experiment.__init__(self, experiment_id, distance_name='emd-positionwise', with_elections=True, with_matrices=True)
 
         #self.num_points, self.num_distances, self.distances = self.import_distances(experiment_id)
         self.num_distances, self.distances, self.std = self.import_distances(experiment_id,

@@ -57,7 +57,53 @@ def single_thread(experiment, distances, thread_ids, t):
     print("thread " + str(t) + " is ready :)")
 
 
-def compute_distances(experiment_id, distance_name='emd-positionwise',
+def compute_distances(experiment_id, distance_name='emd-positionwise', num_threads=1):
+    """ Compute distances between elections (using threads)"""
+
+    experiment = Experiment(experiment_id, distance_name=distance_name, with_elections=True, with_matrices=True)
+    distances = {}
+    for election_id in experiment.elections:
+        distances[election_id] = {}
+
+    threads = [{} for _ in range(num_threads)]
+
+    ids = []
+    for i, election_1 in enumerate(experiment.elections):
+        for j, election_2 in enumerate(experiment.elections):
+            if i < j:
+                ids.append((election_1, election_2))
+
+    num_distances = len(ids)
+
+    for t in range(num_threads):
+        print('thread: ', t)
+        sleep(0.1)
+        start = int(t * num_distances / num_threads)
+        stop = int((t + 1) * num_distances / num_threads)
+        thread_ids = ids[start:stop]
+
+        threads[t] = Thread(target=single_thread, args=(experiment, distances, thread_ids, t))
+        threads[t].start()
+
+    for t in range(num_threads):
+        threads[t].join()
+
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "distances",
+                        str(distance_name) + ".csv")
+
+    with open(path, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=',')
+        writer.writerow(["election_id_1", "election_id_2", "distance"])
+
+        for i, election_1 in enumerate(experiment.elections):
+            for j, election_2 in enumerate(experiment.elections):
+                if i < j:
+                    distance = str(distances[election_1][election_2])
+                    writer.writerow([election_1, election_2, distance])
+
+
+# NEEDS UPDATE #
+def extend_distances(experiment_id, distance_name='emd-positionwise',
                       num_threads=1, starting_from=0, ending_at=10000):
     """ Compute distance using threads"""
 

@@ -32,8 +32,8 @@ def generate_group_separable_election(num_voters=None, num_candidates=None, para
         func = lambda m, n, j: binom(m - 1, j) * binom(m - 1 + j, m) * (2 ** (n - 1) - 1) ** (j - 1)
         buckets = [func(m, n, j) for j in range(1, m)]
 
-        denoimnator = sum(buckets)
-        buckets = [buckets[i]/denoimnator for i in range(len(buckets))]
+        denominator = sum(buckets)
+        buckets = [buckets[i]/denominator for i in range(len(buckets))]
 
         r = np.random.choice(len(buckets), 1, p=buckets)[0]
 
@@ -340,3 +340,4 @@ def get_gs_caterpillar_vectors(num_candidates):
 # 10votes = generate_group_separable_election(num_voters=10, num_candidates=14)
 # print(votes)
 
+# generate_group_separable_election(num_voters=100,num_candidates=40)
