@@ -10,10 +10,29 @@ from .voting import matrices as mat
 def hello():
     print("Hello!")
 
+#####################
+### ONLINE CODING ###
+#####################
+
+
+def generate_election(**kwargs):
+    return el.generate_election(**kwargs)
+
+
+def generate_experiment(**kwargs):
+    return dev.generate_experiment(**kwargs)
+
+
+def get_empty_experiment():
+    return dev.get_empty_experiment()
+
 
 #########################
 ### PREPARE ELECTIONS ###
 #########################
+
+
+
 
 
 def prepare_elections(experiment_id, **kwargs):
@@ -154,6 +173,7 @@ def create_structure(experiment_id):
 # On OVERLEAF :)
 def generate_votes(**kwargs):
     return el.generate_votes(**kwargs)
+
 
 
 def generate_positionwise_matrix(**kwargs):

@@ -104,6 +104,12 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None, pa
     return votes
 
 
+def generate_election(**kwargs):
+    votes = generate_votes(**kwargs)
+    election = Election("virtual", "virtual", votes=votes)
+    return election
+
+
 def prepare_elections(experiment_id):
     """ Prepare elections for a given experiment """
     experiment = Experiment(experiment_id)
@@ -126,6 +132,7 @@ def prepare_elections(experiment_id):
                                                param_1=param_1, param_2=param_2)
 
 
+# needs update
 def extend_elections(experiment_id, folder=None, starting_from=0, ending_at=1000000):
     """ Prepare elections for a given experiment """
     experiment = Experiment(experiment_id, raw=True)

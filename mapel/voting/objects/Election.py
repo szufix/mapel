@@ -21,7 +21,6 @@ class Election:
         self.experiment_id = experiment_id
         self.election_id = election_id
 
-
         if votes is not None:
             if str(votes[0]) in LIST_OF_FAKE_MODELS:
                 self.fake = True
@@ -52,8 +51,7 @@ class Election:
             self.matrix = self.import_matrix()
             self.vectors = self.matrix.transpose()
         else:
-            self.matrix = None
-            self.vectors = None
+            self.votes_to_positionwise_vectors()
 
     def import_matrix(self):
 

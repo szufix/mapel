@@ -19,6 +19,17 @@ from .objects.Election import Election
 from .metrics.inner_distances import l2
 
 
+def get_empty_experiment():
+    return Experiment("virtual", import_controllers=False)
+
+
+def generate_experiment(elections=None):
+
+    experiment = Experiment("virtual", elections=elections, import_controllers=False)
+
+    return experiment
+
+
 def create_structure(experiment_id):
 
     # PREPARE STRUCTURE
@@ -73,7 +84,7 @@ def create_structure(experiment_id):
             file_csv.write("3,10,100,unid,4,0,blue,1,UNID,3,f\n")
             file_csv.write("3,10,100,anid,4,0,black,1,ANID,3,f\n")
             file_csv.write("3,10,100,stid,4,0,black,1,STID,3,f\n")
-            file_csv.write("3,10,100,stan,4,0,black,1,STAN,3,f\n")
+            file_csv.write("3,10,100,anun,4,0,black,1,ANUN,3,f\n")
             file_csv.write("3,10,100,stun,4,0,black,1,STUN,3,f\n")
             file_csv.write("3,10,100,stan,4,0,red,1,STAN,3,f\n")
     except:
@@ -645,7 +656,7 @@ def get_borda_ranking(votes, num_voters, num_candidates):
 
 
 ### DISTORTION SECTION ###
-def compute_distortion(experiment_id, attraction_factor=1):
+def compute_distortion(experiment_id, attraction_factor=1, saveas='tmp'):
     experiment = Experiment_2D(experiment_id, attraction_factor=attraction_factor)
     X = []
     A = []
@@ -654,26 +665,106 @@ def compute_distortion(experiment_id, attraction_factor=1):
     for i, election_id_1 in enumerate(experiment.elections):
         for j, election_id_2 in enumerate(experiment.elections):
             if i < j:
+                m = experiment.elections[election_id_1].num_candidates
                 true_distance = experiment.distances[election_id_1][election_id_2]
+                true_distance /= map_diameter(m)
+
                 embedded_distance = l2(experiment.points[election_id_1], experiment.points[election_id_2], 1)
+                embedded_distance /= l2(experiment.points['identity_10_100_0'], experiment.points['uniformity_10_100_0'], 1)
+                # print(true_distance, embedded_distance)
                 proportion = float(true_distance) / float(embedded_distance)
                 X.append(proportion)
                 A.append(true_distance)
                 B.append(embedded_distance)
 
-    plt.scatter(A,B)
+    plt.scatter(A, B)
+    plt.xlabel('true_distance/diameter')
+    plt.ylabel('embedded_distance/diameter')
+    name = 'images/' + saveas + '.png'
+    plt.savefig(name)
     plt.show()
 
-    for i in [1, 0.99, 0.95, 0.9]:
-        X = sorted(X)
-        X = X[0:int(i*len(X))]
-        X = [X[i]/X[int(len(X)/2)] for i in range(len(X))]  # normalize by median
-        #X = [math.log(X[i]) for i in range(len(X))] # use log scale
-        plt.plot(X)
-        plt.title(i)
-        plt.ylabel('(true_distance / embedded_distance) / median')
-        plt.xlabel('meaningless')
-        name = 'images/' + str(i)+'_' + str(attraction_factor) + '.png'
-        plt.savefig(name)
-        plt.show()
+    # for i in [1, 0.99, 0.95, 0.9]:
+    #     X = sorted(X)
+    #     X = X[0:int(i*len(X))]
+    #     X = [X[i] for i in range(len(X))]  # normalize by median
+    #     #X = [math.log(X[i]) for i in range(len(X))] # use log scale
+    #     plt.plot(X)
+    #     plt.title(i)
+    #     plt.ylabel('true_distance/diameter / embedded_distance/diameter')
+    #     plt.xlabel('meaningless')
+    #     name = 'images/' + str(i)+'_' + str(attraction_factor) + '.png'
+    #     plt.savefig(name)
+    #     plt.show()
+
+def compute_distortion_tmp(experiment_id, attraction_factor=1, saveas='tmp'):
+    experiment = Experiment_2D(experiment_id, attraction_factor=attraction_factor)
+    X = []
+    A = []
+    B = []
+
+    id_x = []
+    id_y = []
+    un_x = []
+    un_y = []
+    an_x = []
+    an_y = []
+    st_x = []
+    st_y = []
+
+    for i, election_id_1 in enumerate(experiment.elections):
+        for j, election_id_2 in enumerate(experiment.elections):
+            if i < j:
+                m = experiment.elections[election_id_1].num_candidates
+                true_distance = experiment.distances[election_id_1][election_id_2]
+                true_distance /= map_diameter(m)
+
+                embedded_distance = l2(experiment.points[election_id_1], experiment.points[election_id_2], 1)
+                embedded_distance /= l2(experiment.points['identity_10_100_0'], experiment.points['uniformity_10_100_0'], 1)
+                # print(true_distance, embedded_distance)
+                proportion = float(true_distance) / float(embedded_distance)
+                X.append(proportion)
+                A.append(true_distance)
+                B.append(embedded_distance)
+
+                if election_id_1 == 'identity_10_100_0' or election_id_2 == 'identity_10_100_0':
+                    id_x.append(true_distance)
+                    id_y.append(embedded_distance)
+
+                if election_id_1 == 'uniformity_10_100_0' or election_id_2 == 'uniformity_10_100_0':
+                    un_x.append(true_distance)
+                    un_y.append(embedded_distance)
+
+                if election_id_1 == 'stratification_10_100_0' or election_id_2 == 'stratification_10_100_0':
+                    st_x.append(true_distance)
+                    st_y.append(embedded_distance)
+
+                if election_id_1 == 'antagonism_10_100_0' or election_id_2 == 'antagonism_10_100_0':
+                    an_x.append(true_distance)
+                    an_y.append(embedded_distance)
+
+
+    plt.scatter(id_x, id_y, color='blue', label='ID')
+    plt.scatter(un_x, un_y, color='black', label='UN')
+    # plt.scatter(st_x, st_y, color='green', label='ST')
+    # plt.scatter(an_x, an_y, color='red', label='AN')
+    plt.legend()
+    plt.xlabel('true_distance/diameter')
+    plt.ylabel('embedded_distance/diameter')
+    name = 'images/' + saveas + '.png'
+    plt.savefig(name)
+    plt.show()
+
+    # for i in [1, 0.99, 0.95, 0.9]:
+    #     X = sorted(X)
+    #     X = X[0:int(i*len(X))]
+    #     X = [X[i] for i in range(len(X))]  # normalize by median
+    #     #X = [math.log(X[i]) for i in range(len(X))] # use log scale
+    #     plt.plot(X)
+    #     plt.title(i)
+    #     plt.ylabel('true_distance/diameter / embedded_distance/diameter')
+    #     plt.xlabel('meaningless')
+    #     name = 'images/' + str(i)+'_' + str(attraction_factor) + '.png'
+    #     plt.savefig(name)
+    #     plt.show()
 

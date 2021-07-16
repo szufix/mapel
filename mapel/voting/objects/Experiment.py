@@ -5,7 +5,6 @@ import math
 import os
 import numpy as np
 
-
 from .Election import Election
 from .Family import Family
 
@@ -13,17 +12,28 @@ from .Family import Family
 class Experiment:
     """Abstract set of elections."""
 
-    def __init__(self, experiment_id, ignore=None, with_elections=False, with_matrices=False, distance_name='emd-positionwise'):
+    def __init__(self, experiment_id, ignore=None, elections=None, with_matrices=False,
+                 distance_name='emd-positionwise', import_controllers=True):
 
         self.experiment_id = experiment_id
 
         self.distance_name = distance_name
 
-        self.families = self.import_controllers(ignore=ignore)
+        if import_controllers:
+            self.families = self.import_controllers(ignore=ignore)
 
-        if with_elections:
-            self.elections = self.add_elections_to_experiment(with_matrices=with_matrices)
+        if elections is not None:
+            if elections == 'import':
+                self.elections = self.add_elections_to_experiment(with_matrices=with_matrices)
+            else:
+                self.elections = elections
 
+        self.distances = None
+
+    def compute_distances(self):
+        # todo: merge with Experiment xD
+        # todo: metge it with compute_distances function from _metrics
+        pass
 
     def add_elections_to_experiment(self, with_matrices=False):
         """ Import elections from a file """
@@ -127,7 +137,7 @@ class Experiment:
                 show = False
 
             family_id = election_model + '_' + str(num_candidates) + '_' + str(num_voters)
-            if election_model in {'urn_model', 'norm-mallows', 'mallows','norm-mallows_matrix'} and param_1 != 0:
+            if election_model in {'urn_model', 'norm-mallows', 'mallows', 'norm-mallows_matrix'} and param_1 != 0:
                 family_id += '_' + str(float(param_1))
             if election_model in {'norm-mallows', 'mallows'} and param_2 != 0:
                 family_id += '__' + str(float(param_2))
@@ -137,10 +147,10 @@ class Experiment:
             #                        starting_from=starting_from,
             #                        num_candidates=num_candidates, num_voters=num_voters))
             families[family_id] = Family(election_model=election_model, family_id=family_id,
-                                              param_1=param_1, param_2=param_2, label=label,
-                                   color=color, alpha=alpha, show=show, size=size, marker=marker,
-                                   starting_from=starting_from,
-                                   num_candidates=num_candidates, num_voters=num_voters)
+                                         param_1=param_1, param_2=param_2, label=label,
+                                         color=color, alpha=alpha, show=show, size=size, marker=marker,
+                                         starting_from=starting_from,
+                                         num_candidates=num_candidates, num_voters=num_voters)
             starting_from += size
 
         self.num_families = len(families)
@@ -187,20 +197,22 @@ class Experiment_xD(Experiment):
 
     def __init__(self, experiment_id, distance_name='positionwise', self_distances=False):
 
-        Experiment.__init__(self, experiment_id, distance_name='emd-positionwise', with_elections=True, with_matrices=True)
+        Experiment.__init__(self, experiment_id, distance_name='emd-positionwise', elections='import',
+                            with_matrices=True)
 
-        #self.num_points, self.num_distances, self.distances = self.import_distances(experiment_id)
+        # self.num_points, self.num_distances, self.distances = self.import_distances(experiment_id)
         self.num_distances, self.distances, self.std = self.import_distances(experiment_id,
-                                                                   distance_name=distance_name, self_distances=self_distances)
+                                                                             distance_name=distance_name,
+                                                                             self_distances=self_distances)
 
-    #@staticmethod
+    # @staticmethod
     def import_distances(self, experiment_id, distance_name=None, self_distances=False):
         """ Import precomputed distances between each pair of elections from a file """
 
         file_name = str(distance_name) + '.csv'
         path = os.path.join(os.getcwd(), "experiments", experiment_id, "distances", file_name)
         num_points = self.num_elections
-        num_distances = int(num_points*(num_points-1)/2)
+        num_distances = int(num_points * (num_points - 1) / 2)
 
         hist_data = {}
         std = [[0. for _ in range(num_points)] for _ in range(num_points)]
@@ -281,6 +293,8 @@ class Experiment_2D(Experiment_xD):
 
         points_by_families = {}
 
+        print(self.points)
+
         for family_id in self.families:
             points_by_families[family_id] = [[] for _ in range(2)]
 
@@ -304,7 +318,8 @@ class Experiment_2D(Experiment_xD):
         """ Rotate all the points by a given angle """
 
         for i in range(self.num_points):
-            self.points[i][0], self.points[i][1] = self.rotate_point(0.5, 0.5, angle, self.points[i][0], self.points[i][1])
+            self.points[i][0], self.points[i][1] = self.rotate_point(0.5, 0.5, angle, self.points[i][0],
+                                                                     self.points[i][1])
 
         self.points_by_families = self.compute_points_by_families()
 
@@ -321,10 +336,9 @@ class Experiment_2D(Experiment_xD):
         """ Save current coordinates of all the points to the original file"""
 
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "points", self.distance_name + "_2d_a" + str(self.attraction_factor) + ".csv")
+                            "points", self.distance_name + "_2d_a" + str(self.attraction_factor) + ".csv")
 
         with open(path, 'w', newline='') as csvfile:
-
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(["id", "x", "y"])
 
@@ -411,7 +425,8 @@ class Experiment_3D(Experiment):
         """ Rotate all the points by a given angle """
 
         for i in range(self.num_points):
-            self.points[i][0], self.points[i][1] = self.rotate_point(0.5, 0.5, angle, self.points[i][0], self.points[i][1])
+            self.points[i][0], self.points[i][1] = self.rotate_point(0.5, 0.5, angle, self.points[i][0],
+                                                                     self.points[i][1])
 
         self.points_by_families = self.compute_points_by_families()
 

@@ -60,7 +60,7 @@ def single_thread(experiment, distances, thread_ids, t):
 def compute_distances(experiment_id, distance_name='emd-positionwise', num_threads=1):
     """ Compute distances between elections (using threads)"""
 
-    experiment = Experiment(experiment_id, distance_name=distance_name, with_elections=True, with_matrices=True)
+    experiment = Experiment(experiment_id, distance_name=distance_name, elections='import', with_matrices=True)
     distances = {}
     for election_id in experiment.elections:
         distances[election_id] = {}
