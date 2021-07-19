@@ -302,11 +302,6 @@ def compute_lacknerwise_distances_between_elections_by_segments(segment, num_seg
                                                                 distance_name="lacknerwise", metric_type="l2")
 
 
-def compute_lacknerwise_distances(experiment_id):
-    compute_distances_between_elections(experiment_id, distance_name="lacknerwise", metric_type="l2")
-
-
-
 
 def generate_votes_from_distances(experiment_id, num_points=800):
 
@@ -472,24 +467,6 @@ def compute_canonical_order(experiment_id, method, num_winners):
     return 0
 
 
-def create_structure(experiment_id):
-
-    os.mkdir("experiments/"+experiment_id)
-
-    os.mkdir("experiments/"+experiment_id+"/controllers")
-    os.mkdir("experiments/"+experiment_id+"/controllers/params")
-    os.mkdir("experiments/"+experiment_id+"/controllers/advanced")
-    os.mkdir("experiments/"+experiment_id+"/controllers/basic")
-
-    os.mkdir("experiments/"+experiment_id+"/elections")
-    os.mkdir("experiments/"+experiment_id+"/elections/soc_positionwise_approx_cc")
-    os.mkdir("experiments/"+experiment_id+"/elections/soc_original")
-
-    os.mkdir("experiments/"+experiment_id+"/controllers")
-    os.mkdir("experiments/"+experiment_id+"/controllers/distances")
-    os.mkdir("experiments/"+experiment_id+"/controllers/times")
-    os.mkdir("experiments/"+experiment_id+"/controllers/orders")
-    os.mkdir("experiments/"+experiment_id+"/controllers/points")
 
 
 def get_num_candidates(experiment_id, short_id, folder):
@@ -512,80 +489,7 @@ def get_num_voters(experiment_id, short_id, folder):
     return num_voter
 
 
-def create_structure_with_controllers(experiment_id, short_id, num_candidates):
 
-    os.mkdir("experiments/"+experiment_id)
-
-    os.mkdir("experiments/"+experiment_id+"/controllers")
-    os.mkdir("experiments/"+experiment_id+"/controllers/params")
-    #os.mkdir("experiments/"+experiment_id+"/controllers/advanced")
-    os.mkdir("experiments/"+experiment_id+"/controllers/basic")
-
-    os.mkdir("experiments/"+experiment_id+"/elections")
-    #os.mkdir("experiments/"+experiment_id+"/elections/soc_positionwise_approx_cc")
-    os.mkdir("experiments/"+experiment_id+"/elections/soc_original")
-
-    os.mkdir("experiments/"+experiment_id+"/results")
-    os.mkdir("experiments/"+experiment_id+"/results/distances")
-    #os.mkdir("experiments/"+experiment_id+"/results/times")
-    #os.mkdir("experiments/"+experiment_id+"/results/orders")
-    #os.mkdir("experiments/"+experiment_id+"/results/points")
-
-    path = os.path.join(os.getcwd(), 'experiments', experiment_id, 'controllers', 'basic', 'meta.csv')
-    with open(path, 'w', newline='') as csvfile:
-
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(['key', 'value'])
-        writer.writerow(['num_voters', str(100)])
-        writer.writerow(['num_candidates', str(num_candidates)])
-        writer.writerow(['num_families', str(1)])
-        writer.writerow(['num_elections', str(100)])
-
-    path = os.path.join(os.getcwd(), 'experiments', experiment_id, 'controllers', 'basic', 'map.csv')
-    with open(path, 'w', newline='') as csvfile:
-
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(['family_size', 'election_model', 'param_1', 'param_2', 'color', 'alpha', 'nice_name', 'show'])
-        writer.writerow(['100', short_id, '0', '0', 'black', '1', 'NoNaMe', 't'])
-
-    return num_candidates
-
-
-def create_structure_test(experiment_id):
-
-    os.mkdir("experiments/"+experiment_id)
-
-    os.mkdir("experiments/"+experiment_id+"/controllers")
-    os.mkdir("experiments/"+experiment_id+"/controllers/params")
-    os.mkdir("experiments/"+experiment_id+"/controllers/basic")
-
-    os.mkdir("experiments/"+experiment_id+"/elections")
-    os.mkdir("experiments/"+experiment_id+"/elections/soc_original")
-
-    os.mkdir("experiments/"+experiment_id+"/controllers")
-    os.mkdir("experiments/"+experiment_id+"/controllers/distances")
-    os.mkdir("experiments/"+experiment_id+"/controllers/times")
-    os.mkdir("experiments/"+experiment_id+"/controllers/orders")
-    os.mkdir("experiments/"+experiment_id+"/controllers/points")
-    os.mkdir("experiments/"+experiment_id+"/controllers/scores")
-
-    path = os.path.join(os.getcwd(), 'experiments', experiment_id, 'controllers', 'basic', 'meta.csv')
-    with open(path, 'w', newline='') as csvfile:
-
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(['key', 'value'])
-        writer.writerow(['num_voters', '100'])
-        writer.writerow(['num_candidates', '10'])
-        writer.writerow(['num_families', '2'])
-        writer.writerow(['num_elections', '30'])
-
-    path = os.path.join(os.getcwd(), 'experiments', experiment_id, 'controllers', 'basic', 'map.csv')
-    with open(path, 'w', newline='') as csvfile:
-
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(['family_size', 'election_model', 'param_1', 'param_2', 'color', 'alpha', 'nice_name', 'show'])
-        writer.writerow(['15', 'impartial_culture', '0', '0', 'black', '1', 'NoNaMe', 't'])
-        writer.writerow(['15', 'urn_model', '0.2', '0', 'red', '1', 'NoNaMe', 't'])
 
 
 #

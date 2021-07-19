@@ -1,25 +1,22 @@
 import mapel
 
 if __name__ == "__main__":
-    num_candidates = 10
-    num_voters = 100
 
-    dict_with_votes = {'IC': mapel.generate_votes(election_model='impartial_culture',
-                                                  num_candidates=num_candidates, num_voters=num_voters),
-                       'UN': mapel.generate_votes(election_model='uniformity',
-                                                  num_candidates=num_candidates, num_voters=num_voters),
-                       'ID': mapel.generate_votes(election_model='identity',
-                                                  num_candidates=num_candidates, num_voters=num_voters),
-                       'AN': mapel.generate_votes(election_model='antagonism',
-                                                  num_candidates=num_candidates, num_voters=num_voters),
-                       'ST': mapel.generate_votes(election_model='stratification',
-                                                  num_candidates=num_candidates, num_voters=num_voters),
-                       'gs_cat': mapel.generate_votes(election_model='gs_caterpillar_matrix',
-                                                  num_candidates=num_candidates, num_voters=num_voters),
-                       'Wal': mapel.generate_votes(election_model='walsh',
-                                                  num_candidates=num_candidates, num_voters=num_voters),
-                       }
+    experiment = mapel.prepare_experiment()
 
-    distances = mapel.compute_distances_between_votes(dict_with_votes)
-    coordinates = mapel.embed(distances)
-    mapel.print_map(coordinates)
+    experiment.set_default_num_candidates(8)
+    experiment.set_default_num_voters(50)
+
+    experiment.add_election(election_model='identity', election_id='id')
+
+    experiment.add_family(election_model='impartial_culture', size=20, color='blue')
+
+    experiment.add_family(election_model='1d_interval', size=20, color='green')
+
+    experiment.compute_distances()
+    experiment.embed()
+    experiment.print_map()
+
+
+
+

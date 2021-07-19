@@ -5,6 +5,7 @@ from .voting import _metrics as metr
 from .voting import print as pr
 from .voting import development as dev
 from .voting import matrices as mat
+from .voting import features
 
 
 def hello():
@@ -23,8 +24,12 @@ def generate_experiment(**kwargs):
     return dev.generate_experiment(**kwargs)
 
 
-def get_empty_experiment():
-    return dev.get_empty_experiment()
+def prepare_experiment(**kwargs):
+    return dev.prepare_experiment(**kwargs)
+
+
+# def generate_family(**kwargs):
+#     return el.generate_family(**kwargs)
 
 
 #########################
@@ -184,3 +189,5 @@ def get_positionwise_matrix(votes):
     return mat.get_positionwise_matrix(votes)
 
 
+def compute_feature(experiment_id, name, **kwargs):
+    features.compute_feature(experiment_id, name, **kwargs)
