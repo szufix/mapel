@@ -40,13 +40,17 @@ import numpy as np
 class Experiment:
     """Abstract set of elections."""
 
-    def __init__(self, ignore=None, elections=None, with_matrices=False,
+    def __init__(self, ignore=None, elections=None, distances=None, with_matrices=False, coordinates=None,
                  distance_name='emd-positionwise', import_controllers=True, experiment_id=None):
 
         self.distance_name = distance_name
         self.elections = {}
         self.default_num_candidate = 10
         self.default_num_voters = 100
+
+        self.families = None
+        self.distances = None
+        self.points_by_families =None
 
         if experiment_id is None:
             self.store = False
@@ -63,9 +67,18 @@ class Experiment:
             else:
                 self.elections = elections
 
-        self.distances = None
-        self.coordinates = None
-        self.families = None
+        if distances is not None:
+            if distances == 'import':
+                self.distances = self.add_distances_to_experiment()
+            else:
+                self.distances = distances
+
+        if coordinates is not None:
+            if coordinates == 'import':
+                self.coordinates = self.add_coordinates_to_experiment()
+            else:
+                self.coordinates = coordinates
+
 
     def set_default_num_candidates(self, num_candidates):
         self.default_num_candidates = num_candidates
@@ -151,6 +164,7 @@ class Experiment:
 
     def prepare_elections(self):
         """ Prepare elections for a given experiment """
+
 
         if self.elections is None:
             self.elections = {}
@@ -298,7 +312,15 @@ class Experiment:
 
         return elections
 
-    def embed(self, attraction_factor=1, algorithm='spring', num_iterations=1000):
+    def add_distances_to_experiment(self):
+        distances = self.import_my_distances()
+        return distances
+
+    def add_coordinates_to_experiment(self):
+        coordinates = self.import_cooridnates()
+        return coordinates
+
+    def embed(self, attraction_factor=1, algorithm='spring', num_iterations=1000, distance_name='emd-positionwise'):
         num_elections = len(self.distances)
 
         X = np.zeros((num_elections, num_elections))
@@ -329,6 +351,25 @@ class Experiment:
         points = {}
         for i, election_id in enumerate(self.distances):
             points[election_id] = [my_pos[i][0], my_pos[i][1]]
+
+        # todo: store to file
+        if self.store:
+            file_name = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                     "coordinates", distance_name + "_2d_a" + str(float(attraction_factor)) + ".csv")
+
+            with open(file_name, 'w', newline='') as csvfile:
+
+                writer = csv.writer(csvfile, delimiter=',')
+                writer.writerow(["election_id", "x", "y"])
+
+                ctr = 0
+                for election_model_id in self.families:
+                    for j in range(self.families[election_model_id].size):
+                        a = election_model_id + '_' + str(j)
+                        x = round(my_pos[ctr][0], 5)
+                        y = round(my_pos[ctr][1], 5)
+                        writer.writerow([a, x, y])
+                        ctr += 1
 
         self.coordinates = points
 
@@ -491,8 +532,8 @@ class Experiment:
             if 'alpha' in row.keys():
                 alpha = float(row['alpha'])
 
-            if 'family_size' in row.keys():
-                size = int(row['family_size'])
+            if 'size' in row.keys():
+                size = int(row['size'])
 
             if 'marker' in row.keys():
                 marker = str(row['marker']).strip()
@@ -513,10 +554,6 @@ class Experiment:
             if election_model in {'norm-mallows', 'mallows'} and param_2 != 0:
                 family_id += '__' + str(float(param_2))
 
-            # families.append(Family(election_model=election_model, param_1=param_1, param_2=param_2, label=label,
-            #                        color=color, alpha=alpha, show=show, size=size, marker=marker,
-            #                        starting_from=starting_from,
-            #                        num_candidates=num_candidates, num_voters=num_voters))
             families[family_id] = Family(election_model=election_model, family_id=family_id,
                                          param_1=param_1, param_2=param_2, label=label,
                                          color=color, alpha=alpha, show=show, size=size, marker=marker,
@@ -576,7 +613,7 @@ class Experiment:
         with open(path, 'r', newline='') as csv_file:
             reader = csv.DictReader(csv_file, delimiter=',')
             ctr = 0
-            print(path)
+            # print(path)
             for row in reader:
                 if self.main_order[ctr] < self.num_elections and self.main_order[ctr] not in ignore:
                     points[row['election_id']] = [float(row['x']), float(row['y'])]
@@ -584,19 +621,42 @@ class Experiment:
 
         return len(points), points
 
+    def import_cooridnates(self, ignore=None):
+        """ Import from a file precomputed coordinates of all the points -- each point refer to one election """
+
+        if ignore is None:
+            ignore = []
+
+        points = {}
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                            "coordinates", self.distance_name + "_2d_a" + str(float(self.attraction_factor)) + ".csv")
+
+        with open(path, 'r', newline='') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=',')
+            ctr = 0
+            # print(path)
+            for row in reader:
+                if self.main_order[ctr] < self.num_elections and self.main_order[ctr] not in ignore:
+                    points[row['election_id']] = [float(row['x']), float(row['y'])]
+                ctr += 1
+
+        return points
+
     def compute_points_by_families(self):
         """ Group all points by their families """
 
-        points_by_families = {}
-
         COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
+
+        if self.points_by_families is None:
+            points_by_families = {}
+
 
         ### NEW ###
         if self.families is None:
             self.families = {}
             for i, election_id in enumerate(self.elections):
                 ele = self.elections[election_id]
-                print(ele)
+                # print(ele)
                 election_model = ele.election_model
                 family_id = election_model
                 # param_1 = 0
@@ -625,9 +685,12 @@ class Experiment:
         ### ### ###
         else:
             for family_id in self.families:
+                # print(family_id)
                 points_by_families[family_id] = [[] for _ in range(2)]
 
                 for i in range(self.families[family_id].size):
+                    # print(i)
+                    # print(self.coordinates)
                     election_id = family_id + '_' + str(i)
                     points_by_families[family_id][0].append(self.coordinates[election_id][0])
                     points_by_families[family_id][1].append(self.coordinates[election_id][1])
@@ -646,7 +709,7 @@ class Experiment:
     def rotate(self, angle):
         """ Rotate all the points by a given angle """
 
-        for i in range(self.num_points):
+        for i in range(self.num_elections):
             self.coordinates[i][0], self.coordinates[i][1] = self.rotate_point(0.5, 0.5, angle, self.coordinates[i][0],
                                                                                self.coordinates[i][1])
 
@@ -655,7 +718,7 @@ class Experiment:
     def reverse(self):
         """ Reverse all the points"""
 
-        for i in range(self.num_points):
+        for i in range(self.num_elections):
             self.coordinates[i][0] = self.coordinates[i][0]
             self.coordinates[i][1] = -self.coordinates[i][1]
 
@@ -671,7 +734,7 @@ class Experiment:
             writer = csv.writer(csvfile, delimiter=',')
             writer.writerow(["id", "x", "y"])
 
-            for i in range(self.num_points):
+            for i in range(self.num_elections):
                 x = round(self.coordinates[i][0], 5)
                 y = round(self.coordinates[i][1], 5)
                 writer.writerow([i, x, y])
@@ -691,7 +754,79 @@ class Experiment:
 
         return px, py
 
+    def import_distances(self, self_distances=False, distance_name='emd-positionwise'):
+        """ Import precomputed distances between each pair of elections from a file """
 
+        file_name = str(distance_name) + '.csv'
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
+        num_points = self.num_elections
+        num_distances = int(num_points * (num_points - 1) / 2)
+
+        hist_data = {}
+        std = [[0. for _ in range(num_points)] for _ in range(num_points)]
+
+        for family_id in self.families:
+            for j in range(self.families[family_id].size):
+                election_id = family_id + '_' + str(j)
+                hist_data[election_id] = {}
+
+        with open(path, 'r', newline='') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=',')
+
+            for row in reader:
+                election_id_1 = row['election_id_1']
+                election_id_2 = row['election_id_2']
+                hist_data[election_id_1][election_id_2] = float(row['distance'])
+                hist_data[election_id_2][election_id_1] = hist_data[election_id_1][election_id_2]
+
+        # todo: add self-distances
+        # for a in range(num_points):
+        #     limit = a+1
+        #     if self_distances:
+        #         limit = a
+        #     for b in range(limit, num_points):
+        #         line = file_.readline()
+        #         line = line.split(' ')
+        #         hist_data[a][b] = float(line[2])
+        #
+        #         # tmp correction for discrete distance
+        #         if distance_name == 'discrete':
+        #             hist_data[a][b] = self.families[0].size - hist_data[a][b]   # todo: correct this
+        #
+        #
+        #         hist_data[b][a] = hist_data[a][b]
+        #
+        #         if distance_name == 'voter_subelection':
+        #             std[a][b] = float(line[3])
+        #             std[b][a] = std[a][b]
+
+        return num_distances, hist_data, std
+
+
+    def import_my_distances(self, self_distances=False, distance_name='emd-positionwise'):
+        """ Import precomputed distances between each pair of elections from a file """
+
+        file_name = str(distance_name) + '.csv'
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
+        distances = {}
+
+        for family_id in self.families:
+            for j in range(self.families[family_id].size):
+                election_id = family_id + '_' + str(j)
+                distances[election_id] = {}
+
+        with open(path, 'r', newline='') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=',')
+
+            for row in reader:
+                election_id_1 = row['election_id_1']
+                election_id_2 = row['election_id_2']
+                distances[election_id_1][election_id_2] = float(row['distance'])
+                distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
+        return distances
+
+
+# DEPRICATED
 class Experiment_xd(Experiment):
     """ Multi-dimensional map of elections """
 
@@ -754,7 +889,7 @@ class Experiment_xd(Experiment):
 
         return num_distances, hist_data, std
 
-
+# DEPRICATED
 class Experiment_2d(Experiment_xd):
     """ Two-dimensional model of elections """
 
@@ -862,7 +997,7 @@ class Experiment_2d(Experiment_xd):
 
         return px, py
 
-
+# DEPRICATED
 class Experiment_3d(Experiment):
     """ Two-dimensional model of elections """
 

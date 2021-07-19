@@ -19,8 +19,9 @@ from .objects.Election import Election
 from .metrics.inner_distances import l2
 
 
-def prepare_experiment(experiment_id=None, elections=None):
-    return Experiment("virtual", import_controllers=False, experiment_id=experiment_id, elections=elections)
+def prepare_experiment(experiment_id=None, elections=None, distances=None, coordinates=None):
+    return Experiment("virtual", import_controllers=False, experiment_id=experiment_id,
+                      elections=elections, distances=distances, coordinates=coordinates)
 
 
 def generate_experiment(elections=None):

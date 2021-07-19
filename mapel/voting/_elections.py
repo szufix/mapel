@@ -147,7 +147,11 @@ def generate_election(**kwargs):
 def generate_elections(experiment=None, election_model=None, election_id=None,
                        num_candidates=None, num_voters=None, param_1=None, param_2=None):
     """ main function: generate elections """
-
+    experiment.elections[election_id] = generate_election(election_model=election_model,
+                                                          num_candidates=num_candidates,
+                                                          num_voters=num_voters,
+                                                          param_1=param_1,
+                                                          param_2=param_2)
     if experiment.store:
 
         if election_model in LIST_OF_FAKE_MODELS:
@@ -165,9 +169,11 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
 
         else:
 
-            votes = generate_votes(election_model=election_model,
-                                   num_candidates=num_candidates, num_voters=num_voters,
-                                   param_1=param_1, param_2=param_2)
+            # votes = generate_votes(election_model=election_model,
+            #                        num_candidates=num_candidates, num_voters=num_voters,
+            #                        param_1=param_1, param_2=param_2)
+
+            votes = experiment.elections[election_id].votes
 
             if experiment.store:
                 path = os.path.join("experiments", str(experiment.experiment_id), "elections",
@@ -203,13 +209,6 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
 
                 file_.close()
 
-    else:
-
-        experiment.elections[election_id] = generate_election(election_model=election_model,
-                                                              num_candidates=num_candidates,
-                                                              num_voters=num_voters,
-                                                              param_1=param_1,
-                                                              param_2=param_2)
 
 
 ########################################################################################################################
