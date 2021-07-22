@@ -13,13 +13,13 @@ from PIL import Image
 from mapel.voting import _elections as el
 from mapel.voting import metrics as metr
 
-from mapel.voting.objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
+# from mapel.voting.objects.Experiment import Experiment, Experiment_xd, Experiment_2d, Experiment_3d
 
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
 def get_values_from_file(experiment, experiment_id, values, normalizing_func=None, marker_func=None):
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "features",
                         str(values) + ".txt")
 
     _min = 0
@@ -39,8 +39,11 @@ def get_values_from_file(experiment, experiment_id, values, normalizing_func=Non
         markers = []
 
         ctr = 0
-        for k in range(experiment.num_families):
-            for _ in range(experiment.families[k].size):
+        # print(experiment.families)
+        for family_id in experiment.families:
+            # print(k)
+            for k in range(experiment.families[family_id].size):
+                election_id = family_id + '_' + str(k)
 
                 shade = float(txtfile.readline())
                 if normalizing_func is not None:
@@ -49,13 +52,13 @@ def get_values_from_file(experiment, experiment_id, values, normalizing_func=Non
                     shade = (shade-_min) / (_max-_min)
                 shades.append(shade)
 
-                marker = experiment.families[k].marker
+                marker = experiment.families[family_id].marker
                 if marker_func is not None:
                     marker = marker_func(shade)
                 markers.append(marker)
 
-                xx.append(experiment.points[experiment.main_order[ctr]][0])
-                yy.append(experiment.points[experiment.main_order[ctr]][1])
+                xx.append(experiment.points[election_id][0])
+                yy.append(experiment.points[election_id][1])
 
                 ctr += 1
 
@@ -430,14 +433,14 @@ def saveas_tex(saveas=None):
 
 # MAIN FUNCTIONS
 def print_2d(experiment_id, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
-             angle=0, reverse=False, update=False, values=None, attraction_factor=1,
+             angle=0, reverse=False, update=False, values=None, attraction_factor=1, axis=False,
              distance_name="emd-positionwise", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None, title=None,
              saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
              ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
-    experiment = Experiment_2D(experiment_id, distance_name=distance_name,
-                         ignore=ignore, attraction_factor=attraction_factor)
+    experiment = Experiment_2d(experiment_id, distance_name=distance_name,
+                               ignore=ignore, attraction_factor=attraction_factor)
 
     if angle != 0:
         experiment.rotate(angle)
@@ -458,7 +461,9 @@ def print_2d(experiment_id, mask=False, mixed=False, fuzzy_paths=True, xlabel=No
     #import matplotlib.gridspec as gridspec
     #gs = gridspec.GridSpec(2, 1, height_ratios=[10, 1])
     ax = fig.add_subplot()
-    plt.axis('off')
+
+    if not axis:
+        plt.axis('off')
 
     if values is not None:
         add_advanced_points_to_picture(fig=fig, ax=ax, experiment=experiment, experiment_id=experiment_id, values=values,
@@ -545,7 +550,7 @@ def print_matrix(experiment_id, scale=1., distance_name='', metric_name='', save
                  self_distances=False, yticks='left'):
     """Print the matrix with average distances between each pair of experiments """
 
-    experiment = Experiment_xD(experiment_id, distance_name=distance_name, metric_name=metric_name, raw=True, self_distances=self_distances)
+    experiment = Experiment_xd(experiment_id, distance_name=distance_name, metric_name=metric_name, raw=True, self_distances=self_distances)
     matrix = np.zeros([experiment.num_families, experiment.num_families])
     quantities = np.zeros([experiment.num_families, experiment.num_families])
 
@@ -710,7 +715,7 @@ def print_param_vs_distance(experiment_id, values="", scale="none", metric="posi
 
     el.generate_elections(experiment_id, election_experiment=election_experiment, election_id=election_2_id,
                           num_voters=experiment.num_voters, num_candidates=experiment.num_candidates,
-                          special=x)
+                          param_1=x)
     election_2 = Election(experiment_id, election_2_id)
 
     for i in range(experiment.num_elections):
@@ -777,7 +782,7 @@ def excel_super(experiment_id, values="", scale="none", metric="positionwise", s
         metric_type = 'emd'
         el.generate_elections(experiment_id, election_experiment=election_experiment, election_id=election_2_id,
                               num_voters=experiment.num_voters, num_candidates=experiment.num_candidates,
-                              special=x)
+                              param_1=x)
 
         for i in range(experiment.num_elections):
 
@@ -797,7 +802,7 @@ def excel_super(experiment_id, values="", scale="none", metric="positionwise", s
         metric_type = 'emd'
         el.generate_elections(experiment_id, election_experiment=election_experiment, election_id=election_2_id,
                               num_voters=experiment.num_voters, num_candidates=experiment.num_candidates,
-                              special=x)
+                              param_1=x)
         #election_2 = oElection(experiment_id, election_2_id)
 
         for i in range(experiment.num_elections):
@@ -1221,28 +1226,5 @@ def print_clustering_bis(experiment_id, magic=1, q=0):
                 normalizing_func=normalizing_func, xticklabels=xticklabels, cmap=custom_map, black=True, levels=True)
 
 
-def print_map(coordinates, group_by=None, saveas=None):
-    if group_by is None:
-
-        for election_id in coordinates:
-            plt.scatter(coordinates[election_id][0], coordinates[election_id][1], label=election_id)
-        plt.legend()
-        plt.show()
-
-    else:
-
-        for color in group_by:
-            X = []
-            Y = []
-            for election_id in group_by[color]:
-                X.append(coordinates[election_id][0])
-                Y.append(coordinates[election_id][1])
-            plt.scatter(X,Y,label=group_by[color][0], color=color)
-        plt.legend()
-        if saveas is not None:
-            file_name = saveas + ".png"
-            path = os.path.join(os.getcwd(), file_name)
-            plt.savefig(path, bbox_inches='tight')
-        plt.show()
 
 

@@ -13,6 +13,8 @@ def calculateExpectedNumberSwaps(num_candidates,phi):
 def phi_from_relphi(num_candidates,relphi=None):
     if relphi is None:
         relphi = rand.random()
+    if relphi==1:
+        return 1
     exp_abs=relphi*(num_candidates*(num_candidates-1))/4
     low=0
     high=1
@@ -73,28 +75,28 @@ def generate_mallows_election(num_voters, num_candidates,param_1, param_2):
     return V
 
 def calculateZpoly(m):
-	res = [1]
-	for i in range(1, m + 1):
-		mult = [1] * i
-		res2 = [0] * (len(res) + len(mult) - 1)
-		for o1, i1 in enumerate(res):
-			for o2, i2 in enumerate(mult):
-				res2[o1 + o2] += i1 * i2
-		res = res2
-	return res
+    res = [1]
+    for i in range(1, m + 1):
+        mult = [1] * i
+        res2 = [0] * (len(res) + len(mult) - 1)
+        for o1, i1 in enumerate(res):
+            for o2, i2 in enumerate(mult):
+                res2[o1 + o2] += i1 * i2
+        res = res2
+    return res
 
 
 def evaluatePolynomial(coeff, x):
-	res = 0
-	for i, c in enumerate(coeff):
-		res += c * (x ** i)
-	return res
+    res = 0
+    for i, c in enumerate(coeff):
+        res += c * (x ** i)
+    return res
 
 
 def calculateZ(m, phi):
-	coeff = calculateZpoly(m)
-	# print(coeff)
-	return evaluatePolynomial(coeff, phi)
+    coeff = calculateZpoly(m)
+    # print(coeff)
+    return evaluatePolynomial(coeff, phi)
 
 
 #mat[i][j] is the probability with which candidate i ends up in position j
@@ -131,3 +133,6 @@ def get_mallows_matrix(num_candidates, fake_param,normalize=True):
             res[i][j] = weight * mat1[i][j] + (1 - weight) * mat1[i][num_candidates - 1 - j]
     return res
 
+
+def get_mallows_vectors(num_candidates, fake_param):
+    return get_mallows_vectors(num_candidates, fake_param).transpose()

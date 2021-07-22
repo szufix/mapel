@@ -15,14 +15,12 @@ except:
 import networkx as nx
 import numpy as np
 
-from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
-
 
 def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="emd-positionwise",
                      attraction_factor=1., algorithm='spring'):
     """ Convert multi-dimensional experiment to two-dimensional experiment """
 
-    experiment = Experiment_xD(experiment_id, distance_name=distance_name)
+    experiment = Experiment_xd(experiment_id, distance_name=distance_name)
     X = np.zeros((experiment.num_elections, experiment.num_elections))
 
     for i, election_1_id in enumerate(experiment.elections):
@@ -131,7 +129,7 @@ def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="emd-posi
                                                                   attraction_factor=1.):
     """ Convert multi-dimensional experiment to three-dimensional experiment """
 
-    experiment = Experiment_xD(experiment_id, distance_name=distance_name)
+    experiment = Experiment_xd(experiment_id, distance_name=distance_name)
     X = np.zeros((experiment.num_elections, experiment.num_elections))
     perm = np.random.permutation(experiment.num_elections)
 

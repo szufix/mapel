@@ -23,7 +23,7 @@ import numpy as np
 from scipy.stats import gamma
 
 from .objects.Election import Election
-from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
+# from .objects.Family import Family
 
 import mapel.voting.elections.preflib as preflib
 
@@ -104,108 +104,111 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None, pa
     return votes
 
 
-def prepare_elections(experiment_id):
-    """ Prepare elections for a given experiment """
-    experiment = Experiment(experiment_id, raw=True)
-
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections")
-    for file_name in os.listdir(path):
-        os.remove(os.path.join(path, file_name))
-
-    for family_id in experiment.families:
-        param_1 = experiment.families[family_id].param_1
-        param_2 = experiment.families[family_id].param_2
-
-        election_model = experiment.families[family_id].election_model
-        if election_model in preflib.LIST_OF_PREFLIB_MODELS:
-            prepare_preflib_family(experiment_id, experiment=experiment, election_model=election_model,
-                                   param_1=param_1)
-        else:
-            prepare_statistical_culture_family(experiment_id, experiment=experiment, election_model=election_model,
-                                               family_id=family_id,
-                                               param_1=param_1, param_2=param_2)
+def generate_election(**kwargs):
+    votes = generate_votes(**kwargs)
+    election = Election("virtual", "virtual", votes=votes)
+    return election
 
 
-def extend_elections(experiment_id, folder=None, starting_from=0, ending_at=1000000):
-    """ Prepare elections for a given experiment """
-    experiment = Experiment(experiment_id, raw=True)
+# def generate_family(**kwargs):
+#
+#     votes = generate_votes(**kwargs)
+#     election = Family("virtual", "virtual", votes=votes)
+#     return election
 
-    id_ = 0
 
-    for family_id in experiment.families:
-        election_model = experiment.families[family_id].election_model
-        param_1 = experiment.families[family_id].param_1
-        param_2 = experiment.families[family_id].param_2
-
-        if starting_from <= id_ < ending_at:
-
-            if election_model in preflib.LIST_OF_PREFLIB_MODELS:
-                prepare_preflib_family(experiment_id, experiment=experiment, election_model=election_model,
-                                       param_1=param_1, id_=id_, folder=folder)
-            else:
-                prepare_statistical_culture_family(experiment_id, experiment=experiment,
-                                                   election_model=election_model,
-                                                param_1=param_1, param_2=param_2)
-
-        id_ += experiment.families[family_id].size
+# deprecated
+# needs update
+# def extend_elections(experiment_id, folder=None, starting_from=0, ending_at=1000000):
+#     """ Prepare elections for a given experiment """
+#     experiment = Experiment(experiment_id, raw=True)
+#
+#     id_ = 0
+#
+#     for family_id in experiment.families:
+#         election_model = experiment.families[family_id].election_model
+#         param_1 = experiment.families[family_id].param_1
+#         param_2 = experiment.families[family_id].param_2
+#
+#         if starting_from <= id_ < ending_at:
+#
+#             if election_model in preflib.LIST_OF_PREFLIB_MODELS:
+#                 prepare_preflib_family(experiment_id, experiment=experiment, election_model=election_model,
+#                                        param_1=param_1, id_=id_, folder=folder)
+#             else:
+#                 prepare_statistical_culture_family(experiment_id, experiment=experiment,
+#                                                    election_model=election_model,
+#                                                 param_1=param_1, param_2=param_2)
+#
+#         id_ += experiment.families[family_id].size
 
 
 # GENERATE
-def generate_elections(experiment_id, election_model=None, election_id=None,
-                       num_candidates=None, num_voters=None, special=None, second_param=None):
+def generate_elections(experiment=None, election_model=None, election_id=None,
+                       num_candidates=None, num_voters=None, param_1=None, param_2=None):
     """ main function: generate elections """
+    experiment.elections[election_id] = generate_election(election_model=election_model,
+                                                          num_candidates=num_candidates,
+                                                          num_voters=num_voters,
+                                                          param_1=param_1,
+                                                          param_2=param_2)
+    if experiment.store:
 
-    if election_model in LIST_OF_FAKE_MODELS:
-        path = os.path.join("experiments", str(experiment_id), "elections",
-                            (str(election_id) + ".soc"))
-        file_ = open(path, 'w')
-        file_.write('$ fake' + '\n')
-        file_.write(str(num_voters) + '\n')
-        file_.write(str(num_candidates) + '\n')
-        file_.write(str(election_model) + '\n')
-        file_.write(str(round(special, 5)) + '\n')
-        if election_model=='norm-mallows_matrix':
-            file_.write(str(round(second_param, 5)) + '\n')
-        file_.close()
+        if election_model in LIST_OF_FAKE_MODELS:
+            path = os.path.join("experiments", str(experiment.experiment_id), "elections",
+                                (str(election_id) + ".soc"))
+            file_ = open(path, 'w')
+            file_.write('$ fake' + '\n')
+            file_.write(str(num_voters) + '\n')
+            file_.write(str(num_candidates) + '\n')
+            file_.write(str(election_model) + '\n')
+            file_.write(str(round(param_1, 5)) + '\n')
+            if election_model == 'norm-mallows_matrix':
+                file_.write(str(round(param_2, 5)) + '\n')
+            file_.close()
 
-    else:
-
-        votes = generate_votes(election_model=election_model,
-                               num_candidates=num_candidates, num_voters=num_voters,
-                               param_1=special, param_2=second_param)
-
-        path = os.path.join("experiments", str(experiment_id), "elections",
-                            (str(election_id) + ".soc"))
-        file_ = open(path, 'w')
-
-        if election_model in ["norm-mallows", "mallows", "urn_model", 'group-separable']:
-            file_.write("# " + NICE_NAME[election_model] + " " + str(round(special, 5)) + "\n")
-        elif election_model in NICE_NAME:
-            file_.write("# " + NICE_NAME[election_model] + "\n")
         else:
-            file_.write("# " + election_model + "\n")
 
-        file_.write(str(num_candidates) + "\n")
+            # votes = generate_votes(election_model=election_model,
+            #                        num_candidates=num_candidates, num_voters=num_voters,
+            #                        param_1=param_1, param_2=param_2)
 
-        for i in range(num_candidates):
-            file_.write(str(i) + ', c' + str(i) + "\n")
+            votes = experiment.elections[election_id].votes
 
-        c = Counter(map(tuple, votes))
-        counted_votes = [[count, list(row)] for row, count in c.items()]
-        counted_votes = sorted(counted_votes, reverse=True)
+            if experiment.store:
+                path = os.path.join("experiments", str(experiment.experiment_id), "elections",
+                                    (str(election_id) + ".soc"))
+                file_ = open(path, 'w')
 
-        file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' + str(len(counted_votes)) + "\n")
-
-        for i in range(len(counted_votes)):
-            file_.write(str(counted_votes[i][0]) + ', ')
-            for j in range(num_candidates):
-                file_.write(str(int(counted_votes[i][1][j])))
-                if j < num_candidates - 1:
-                    file_.write(", ")
+                if election_model in ["norm-mallows", "mallows", "urn_model", 'group-separable']:
+                    file_.write("# " + NICE_NAME[election_model] + " " + str(round(param_1, 5)) + "\n")
+                elif election_model in NICE_NAME:
+                    file_.write("# " + NICE_NAME[election_model] + "\n")
                 else:
-                    file_.write("\n")
+                    file_.write("# " + election_model + "\n")
 
-        file_.close()
+                file_.write(str(num_candidates) + "\n")
+
+                for i in range(num_candidates):
+                    file_.write(str(i) + ', c' + str(i) + "\n")
+
+                c = Counter(map(tuple, votes))
+                counted_votes = [[count, list(row)] for row, count in c.items()]
+                counted_votes = sorted(counted_votes, reverse=True)
+
+                file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' + str(len(counted_votes)) + "\n")
+
+                for i in range(len(counted_votes)):
+                    file_.write(str(counted_votes[i][0]) + ', ')
+                    for j in range(num_candidates):
+                        file_.write(str(int(counted_votes[i][1][j])))
+                        if j < num_candidates - 1:
+                            file_.write(", ")
+                        else:
+                            file_.write("\n")
+
+                file_.close()
+
 
 
 ########################################################################################################################
@@ -293,12 +296,11 @@ def prepare_preflib_family(experiment_id, experiment=None, election_model=None,
         id_ += 1
 
 
-def prepare_statistical_culture_family(experiment_id, experiment=None, election_model=None, family_id=None,
+def prepare_statistical_culture_family(experiment=None, election_model=None, family_id=None,
                                        param_1=None, param_2=None):
     copy_param_1 = param_1
     if election_model == 'norm-mallows' and param_1 >= 0:
         param_1 = phi_from_relphi(experiment.families[family_id].num_candidates, relphi=param_1)
-
 
     for j in range(experiment.families[family_id].size):
 
@@ -317,7 +319,7 @@ def prepare_statistical_culture_family(experiment_id, experiment=None, election_
             param_1 = round(j / 10000., 2)
 
         election_id = family_id + '_' + str(j)
-        generate_elections(experiment_id, election_model=election_model, election_id=election_id,
+        generate_elections(experiment=experiment, election_model=election_model, election_id=election_id,
                            num_voters=experiment.families[family_id].num_voters,
                            num_candidates=experiment.families[family_id].num_candidates,
-                           special=param_1, second_param=param_2)
+                           param_1=param_1, param_2=param_2)

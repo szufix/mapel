@@ -10,7 +10,8 @@ from . import objects as obj
 from .metrics import lp
 from . import development as dev
 
-from .objects.Experiment import Experiment, Experiment_xD, Experiment_2D, Experiment_3D
+from .objects.Experiment import Experiment, Experiment_xd, Experiment_2d, Experiment_3d
+from .metrics.inner_distances import l2
 
 ### MAPPING ###
 def get_feature(name):
@@ -21,23 +22,26 @@ def get_feature(name):
             'highest_plurality_score': highest_plurality_score,
             'highest_copeland_score': highest_copeland_score,
             'lowest_dodgson_score': lowest_dodgson_score,
+            'avg_distortion_from_guardians': avg_distortion_from_guardians,
+            'worst_distortion_from_guardians': worst_distortion_from_guardians,
             }.get(name)
 
 
 ### MAIN FUNCTION ###
 
-def compute_feature(experiment_id, name=None):
-    experiment = Experiment_xD(experiment_id)
+def compute_feature(experiment_id, name=None, attraction_factor=1):
+    experiment = Experiment_2d(experiment_id, attraction_factor=attraction_factor)
     values = []
 
-    for election in experiment.elections:
+    for election_id in experiment.elections:
         statistic = get_feature(name)
-        value = statistic(election)
+        value = statistic(experiment, election_id)
         values.append(value)
 
-    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced", str(name) + '.txt')
 
-    file_scores = open(file_name, 'w')
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "features", str(name) + '.txt')
+
+    file_scores = open(path, 'w')
     for i in range(experiment.num_elections):
         file_scores.write(str(values[i]) + "\n")
     file_scores.close()
@@ -56,7 +60,6 @@ def borda_std(election):
     return std
 
 
-# def separation_2(election):
 # def separation_2(election):
 #
 #     if election.fake:
@@ -236,3 +239,46 @@ def get_effective_num_candidates(election, mode='Borda'):
 
     return 1. / sum([x * x for x in scores])
 
+########################################################################
+def map_diameter(c):
+    """ Compute the diameter """
+    return 1 / 3 * (c + 1) * (c - 1)
+
+def distortion_from_guardians(experiment, election_id):
+    values = np.array([])
+    election_id_1 = election_id
+
+    for election_id_2 in experiment.elections:
+        if election_id_2 in {'identity_10_100_0', 'uniformity_10_100_0', 'antagonism_10_100_0', 'stratification_10_100_0'}:
+            if election_id_1 != election_id_2:
+                m = experiment.elections[election_id_1].num_candidates
+                true_distance = experiment.distances[election_id_1][election_id_2]
+                true_distance /= map_diameter(m)
+                embedded_distance = l2(experiment.points[election_id_1], experiment.points[election_id_2], 2)
+                if election_id_2 == 'antagonism_10_100_0':
+                    print(election_id_1, election_id_2, embedded_distance)
+                    print(experiment.points[election_id_1], experiment.points[election_id_2])
+                embedded_distance /= l2(experiment.points['identity_10_100_0'],
+                                        experiment.points['uniformity_10_100_0'], 2)
+                ratio = float(true_distance) / float(embedded_distance)
+                values = np.append(values, ratio)
+
+
+                if ratio > 1000:
+                    print(election_id_1, election_id_2, ratio)
+                    print(experiment.distances[election_id_1][election_id_2])
+                    print(true_distance)
+                    print(l2(experiment.points[election_id_1], experiment.points[election_id_2], 1))
+                    print(embedded_distance)
+                # print(ratio, values)
+
+    return values
+
+def avg_distortion_from_guardians(experiment, election_id):
+    values = distortion_from_guardians(experiment, election_id)
+    # print('values', values)
+    return np.mean(values)
+
+def worst_distortion_from_guardians(experiment, election_id):
+    values = distortion_from_guardians(experiment, election_id)
+    return np.max(values)
