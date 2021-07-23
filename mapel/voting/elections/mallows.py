@@ -135,4 +135,4 @@ def get_mallows_matrix(num_candidates, fake_param,normalize=True):
 
 
 def get_mallows_vectors(num_candidates, fake_param):
-    return get_mallows_vectors(num_candidates, fake_param).transpose()
+    return get_mallows_matrix(num_candidates, fake_param).transpose()
