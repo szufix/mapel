@@ -1,13 +1,13 @@
 .idea/
 
 # Stas local files:
-mapel/images/
-mapel/experiments/
+images/
+experiments/
 mapel/raw_data/
 mapel/real_data/
 mapel/_past/
 mapel/_past_recent/
-mapel/trash/
+trash/
 
 mapel/MAIN.py
 mapel/tmp.py

@@ -1,4 +1,4 @@
-import __init__ as mapel
+import mapel
 
 if __name__ == "__main__":
 

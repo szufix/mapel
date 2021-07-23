@@ -1,11 +1,11 @@
 
-from voting import _elections as el
-from voting import embedding as emb
-from voting import _metrics as metr
-from voting import print as pr
-from voting import development as dev
-from voting import matrices as mat
-from voting import features
+from mapel.voting import _elections as el
+from mapel.voting import embedding as emb
+from mapel.voting import _metrics as metr
+from mapel.voting import print as pr
+from mapel.voting import development as dev
+from mapel.voting import matrices as mat
+from mapel.voting import features
 
 
 def hello():
