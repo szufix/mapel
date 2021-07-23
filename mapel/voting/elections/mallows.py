@@ -100,9 +100,12 @@ def calculateZ(m, phi):
 
 
 #mat[i][j] is the probability with which candidate i ends up in position j
-def mallowsMatrix(num_candidates,relphi,pos):
+def mallowsMatrix(num_candidates,lphi,pos,normalize=True):
     mat = np.zeros([num_candidates,num_candidates])
-    phi = phi_from_relphi(num_candidates,relphi)
+    if normalize:
+        phi = phi_from_relphi(num_candidates,lphi)
+    else:
+        phi=lphi
     Z = calculateZ(num_candidates, phi)
     for i in range(num_candidates):
         for j in range(num_candidates):
@@ -112,8 +115,8 @@ def mallowsMatrix(num_candidates,relphi,pos):
     return mat
 
 
-def get_mallows_matrix(num_candidates, fake_param):
-    relphi=fake_param[1]
+def get_mallows_matrix(num_candidates, fake_param,normalize=True):
+    lphi=fake_param[1]
     weight=fake_param[0]
     try:
         path = os.path.join(os.getcwd(), 'mapel','voting', 'elections', 'mallows_positionmatrices',str(num_candidates) + "_matrix.txt")
@@ -123,7 +126,7 @@ def get_mallows_matrix(num_candidates, fake_param):
     except FileNotFoundError:
         print("Mallows matrix only supported for up to 30 candidates")
     #print(pos)
-    mat1 = mallowsMatrix(num_candidates, relphi, pos)
+    mat1 = mallowsMatrix(num_candidates, lphi, pos,normalize)
     res = np.zeros([num_candidates,num_candidates])
     for i in range(num_candidates):
         for j in range(num_candidates):
@@ -132,4 +135,4 @@ def get_mallows_matrix(num_candidates, fake_param):
 
 
 def get_mallows_vectors(num_candidates, fake_param):
-    return get_mallows_vectors(num_candidates, fake_param).transpose()
+    return get_mallows_matrix(num_candidates, fake_param).transpose()
