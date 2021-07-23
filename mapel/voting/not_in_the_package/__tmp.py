@@ -12,6 +12,69 @@ from mapel.voting import elections as el
 from mapel.voting import metrics as metr
 from mapel.voting import objects as obj
 
+# KIND OF A BACKUP
+def print_map(self, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
+              angle=0, reverse=False, update=False, feature=None, attraction_factor=1, axis=False,
+              distance_name="emd-positionwise", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None,
+              title=None,
+              saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
+              ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
+    """ Print the two-dimensional embedding of multi-dimensional map of the elections """
+
+    self.compute_points_by_families()
+
+    if angle != 0:
+        self.rotate(angle)
+
+    if reverse:
+        self.reverse()
+
+    if update:
+        self.update()
+
+    if cmap is None:
+        cmap = pr.custom_div_cmap()
+
+    if feature is not None:
+        fig = plt.figure(figsize=(6.4, 4.8 + 0.48))
+    else:
+        fig = plt.figure()
+    ax = fig.add_subplot()
+
+    if not axis:
+        plt.axis('off')
+
+    # COLORING
+    if feature is not None:
+        pr.color_map_by_feature(fig=fig, ax=ax, experiment=self, experiment_id=self.experiment_id,
+                                feature=feature, normalizing_func=normalizing_func, marker_func=marker_func,
+                                xticklabels=xticklabels, ms=ms, cmap=cmap, ticks=ticks)
+    elif tmp:
+        pr.ijcai_2021_coloring_1(ax=ax, experiment=self, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder)
+    elif mixed:
+        pr.ijcai_2021_coloring_2(ax=ax, experiment=self, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder,
+                                 fuzzy_paths=fuzzy_paths)
+    else:
+        pr.basic_coloring(ax=ax, experiment=self, ms=ms)
+
+    # BACKGROUND
+    if mask:
+        pr.mask_background(fig=fig, ax=ax, black=black, saveas=saveas, tex=tex)
+    elif levels:
+        pr.level_background(fig=fig, ax=ax, saveas=saveas, tex=tex)
+    else:
+        pr.basic_background(ax=ax, values=feature, legend=legend, saveas=saveas, xlabel=xlabel,
+                            title=title)
+
+    if guardians:
+        pr.add_guardians_to_picture(self.experiment_id, ax=ax, values=feature, legend=legend, saveas=saveas)
+
+    if tex:
+        pr.saveas_tex(saveas=saveas)
+
+    if show:
+        plt.show()
+
 
 # TO BE UPDATED
 def compute_highest_copeland_map(experiment_id):

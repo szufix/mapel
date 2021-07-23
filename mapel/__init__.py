@@ -1,11 +1,11 @@
 
-from .voting import _elections as el
-from .voting import embedding as emb
-from .voting import _metrics as metr
-from .voting import print as pr
-from .voting import development as dev
-from .voting import matrices as mat
-from .voting import features
+from voting import _elections as el
+from voting import embedding as emb
+from voting import _metrics as metr
+from voting import print as pr
+from voting import development as dev
+from voting import matrices as mat
+from voting import features
 
 
 def hello():

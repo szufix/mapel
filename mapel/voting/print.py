@@ -117,9 +117,9 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
         return xx, yy, zz, shades, markers, _min, _max
 
 
-def add_advanced_points_to_picture(fig=None, ax=None, experiment=None, experiment_id=None, values=None, normalizing_func=None,
-                                   marker_func=None, xticklabels=None, ms=None, cmap=None, ticks=None):
-    xx, yy, shades, markers, _min, _max = get_values_from_file(experiment, experiment_id, values, normalizing_func, marker_func)
+def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None, normalizing_func=None,
+                         marker_func=None, xticklabels=None, ms=None, cmap=None, ticks=None):
+    xx, yy, shades, markers, _min, _max = get_values_from_file(experiment, experiment.experiment_id, feature, normalizing_func, marker_func)
     unique_markers = set(markers)
     images = []
 
@@ -158,13 +158,14 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
             [ax.scatter(xx[masks], yy[masks], zz[masks], c=shades[masks], vmin=0, vmax=1, cmap=cmap, marker=um, s=ms)])
 
 
-def add_basic_points_to_picture(ax=None, experiment=None, ms=None):
-    # TEMPORARY VERSION
+def basic_coloring(experiment=None, ax=None, ms=None):
     for family_id in experiment.families:
         if experiment.families[family_id].show:
             ax.scatter(experiment.points_by_families[family_id][0], experiment.points_by_families[family_id][1],
                        color=experiment.families[family_id].color, label=experiment.families[family_id].label,
                        alpha=experiment.families[family_id].alpha, s=ms, marker=experiment.families[family_id].marker)
+
+
 
 LIST_OF_PREFLIB_ELECTIONS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
                              'tshirt', 'cities_survey', 'aspen', 'ers',
@@ -172,7 +173,7 @@ LIST_OF_PREFLIB_ELECTIONS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
                              'grenoble'}
 
 
-def add_tmp_points_to_picture(ax=None, experiment=None, ms=None, tmp=None, tmp2=None, zorder=None):
+def ijcai_2021_coloring_1(ax=None, experiment=None, ms=None, tmp=None, tmp2=None, zorder=None):
     # TEMPORARY VERSION
     for k in range(experiment.num_families):
         if experiment.families[k].show:
@@ -193,17 +194,17 @@ def add_tmp_points_to_picture(ax=None, experiment=None, ms=None, tmp=None, tmp2=
                            alpha=tmp[2] * experiment.families[k].alpha, s=ms*tmp2[2], marker=experiment.families[k].marker)
 
 
-def add_mixed_points_to_picture_2d(ax=None, experiment=None, ms=None, tmp=None, tmp2=None, zorder=None, fuzzy_paths=True):
+def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None, tmp2=None, zorder=None, fuzzy_paths=True):
     tmp=[1,1,1]
     # TEMPORARY VERSION
     ctr = 0
-    for k in range(experiment.num_families):
+    for k in experiment.families:
         if experiment.families[k].show:
 
-            if experiment.families[k].election_experiment in {'identity', 'uniformity', 'antagonism', 'stratification',
+            if experiment.families[k].election_model in {'identity', 'uniformity', 'antagonism', 'stratification',
                                           'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
                 zorder = 0
-                if experiment.families[k].election_experiment == 'unid':
+                if experiment.families[k].election_model == 'unid':
                     zorder = 1
 
                 t_ms = ms
@@ -214,29 +215,29 @@ def add_mixed_points_to_picture_2d(ax=None, experiment=None, ms=None, tmp=None, 
                            alpha=1*experiment.families[k].alpha, s=t_ms, marker='o', linewidth=0)
                 ctr += experiment.families[k].size
 
-            elif experiment.families[k].election_experiment in {'real_identity','real_uniformity','real_antagonism','real_stratification'}:
+            elif experiment.families[k].election_model in {'real_identity','real_uniformity','real_antagonism','real_stratification'}:
                 ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1], zorder=5,
                            color=experiment.families[k].color, label=experiment.families[k].label,
                            alpha=experiment.families[k].alpha, s=ms*5, marker=experiment.families[k].marker)
                 ctr += experiment.families[k].size
 
-            elif experiment.families[k].election_experiment in LIST_OF_PREFLIB_ELECTIONS:
+            elif experiment.families[k].election_model in LIST_OF_PREFLIB_ELECTIONS:
                 ax.scatter(experiment.points_by_families[k][0], experiment.points_by_families[k][1], zorder=2,
                            color=experiment.families[k].color, label=experiment.families[k].label,
                            alpha=experiment.families[k].alpha, s=ms, marker=experiment.families[k].marker)
                 ctr += experiment.families[k].size
 
-            elif experiment.families[k].election_experiment in {'norm_mallows', 'mallows', 'urn_experiment'}:
+            elif experiment.families[k].election_model in {'norm_mallows', 'mallows', 'urn_experiment'}:
                 for i in range(experiment.families[k].size):
                     param = float(experiment.elections[ctr].param)
                     if param > 1:
                         param = 1
 
-                    if experiment.families[k].election_experiment in {'norm_mallows', 'mallows'}:
+                    if experiment.families[k].election_model in {'norm_mallows', 'mallows'}:
                         my_cmap = custom_div_cmap(num_colors=11, colors=["cyan", "blue"],
                                                   name='my_custom_m')
                         #print(param)
-                    elif experiment.families[k].election_experiment in {'urn_experiment'}:
+                    elif experiment.families[k].election_model in {'urn_experiment'}:
                         my_cmap = custom_div_cmap(num_colors=11, colors=["gold", "orange", "red"],
                                                   name='my_custom_u')
 
@@ -259,7 +260,7 @@ def add_mixed_points_to_picture_2d(ax=None, experiment=None, ms=None, tmp=None, 
                 ctr += experiment.families[k].size
 
 
-def add_mask_to_picture(fig=None, ax=None, black=None, saveas=None, tex=None):
+def mask_background(fig=None, ax=None, black=None, saveas=None, tex=None):
     fig.set_size_inches(10, 10)
     corners = [[-1, 1, 1, -1], [1, 1, -1, -1]]
     ax.scatter(corners[0], corners[1], alpha=0)
@@ -281,7 +282,7 @@ def add_mask_to_picture(fig=None, ax=None, black=None, saveas=None, tex=None):
         tikzplotlib.save(path)
 
 
-def add_levels_to_picture(fig=None, ax=None, saveas=None, tex=None):
+def level_background(fig=None, ax=None, saveas=None, tex=None):
     fig.set_size_inches(10, 10)
 
     # corners = [[-1, 1, 1, -1], [1, 1, -1, -1]]
@@ -399,7 +400,7 @@ def add_guardians_to_picture(experiment_id, ax=None, values=None, legend=None, s
         plt.savefig(file_name, bbox_inches='tight')
 
 
-def add_basic_background_to_picture(ax=None, values=None, legend=None, saveas=None, xlabel=None, title=None):
+def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None, title=None):
     file_name = os.path.join(os.getcwd(), "images", str(saveas))
 
     if xlabel is not None:
@@ -466,22 +467,22 @@ def print_2d(experiment_id, mask=False, mixed=False, fuzzy_paths=True, xlabel=No
         plt.axis('off')
 
     if values is not None:
-        add_advanced_points_to_picture(fig=fig, ax=ax, experiment=experiment, experiment_id=experiment_id, values=values,
-                                       normalizing_func=normalizing_func, marker_func=marker_func,
-                                       xticklabels=xticklabels, ms=ms, cmap=cmap, ticks=ticks)
+        color_map_by_feature(fig=fig, ax=ax, experiment=experiment, experiment_id=experiment_id, feature=values,
+                             normalizing_func=normalizing_func, marker_func=marker_func,
+                             xticklabels=xticklabels, ms=ms, cmap=cmap, ticks=ticks)
     elif tmp:
-        add_tmp_points_to_picture(ax=ax, experiment=experiment, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder)
+        ijcai_2021_coloring_1(ax=ax, experiment=experiment, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder)
     elif mixed:
-        add_mixed_points_to_picture_2d(ax=ax, experiment=experiment, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder, fuzzy_paths=fuzzy_paths)
+        ijcai_2021_coloring_2(ax=ax, experiment=experiment, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder, fuzzy_paths=fuzzy_paths)
     else:
-        add_basic_points_to_picture(ax=ax, experiment=experiment, ms=ms)
+        basic_coloring(ax=ax, experiment=experiment, ms=ms)
 
     if mask:
-        add_mask_to_picture(fig=fig, ax=ax, black=black, saveas=saveas, tex=tex)
+        mask_background(fig=fig, ax=ax, black=black, saveas=saveas, tex=tex)
     elif levels:
-        add_levels_to_picture(fig=fig, ax=ax, saveas=saveas, tex=tex)
+        level_background(fig=fig, ax=ax, saveas=saveas, tex=tex)
     else:
-        add_basic_background_to_picture(ax=ax, values=values, legend=legend, saveas=saveas, xlabel=xlabel, title=title)
+        basic_background(ax=ax, values=values, legend=legend, saveas=saveas, xlabel=xlabel, title=title)
 
     if guardians:
         add_guardians_to_picture(experiment_id, ax=ax, values=values, legend=legend, saveas=saveas)

@@ -50,7 +50,7 @@ class Experiment:
 
         self.families = None
         self.distances = None
-        self.points_by_families =None
+        self.points_by_families = None
 
         if experiment_id is None:
             self.store = False
@@ -78,7 +78,6 @@ class Experiment:
                 self.coordinates = self.add_coordinates_to_experiment()
             else:
                 self.coordinates = coordinates
-
 
     def set_default_num_candidates(self, num_candidates):
         self.default_num_candidates = num_candidates
@@ -164,7 +163,6 @@ class Experiment:
 
     def prepare_elections(self):
         """ Prepare elections for a given experiment """
-
 
         if self.elections is None:
             self.elections = {}
@@ -343,7 +341,7 @@ class Experiment:
 
         if algorithm == 'spring':
             my_pos = nx.spring_layout(G, iterations=num_iterations, dim=2)
-        elif algorithm in {'mds', 'MDS'} :
+        elif algorithm in {'mds', 'MDS'}:
             my_pos = MDS(n_components=2).fit_transform(X)
         elif algorithm in {'tsne', 'TSNE'}:
             my_pos = TSNE(n_components=2).fit_transform(X)
@@ -397,13 +395,19 @@ class Experiment:
                 plt.savefig(path, bbox_inches='tight')
             plt.show()
 
-    def print_map(self, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
-                  angle=0, reverse=False, update=False, values=None, attraction_factor=1, axis=False,
-                  distance_name="emd-positionwise", guardians=False, tmp2=[1, 1, 1], zorder=[1, 1, 1], ticks=None,
-                  title=None,
-                  saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
-                  ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
+    def print_map(self, dim='2d', **kwargs):
         """ Print the two-dimensional embedding of multi-dimensional map of the elections """
+        if dim == '2d':
+            self.print_map_2d(**kwargs)
+        elif dim == '3d':
+            self.print_map_3d(**kwargs)
+
+    def print_map_2d(self, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
+                     angle=0, reverse=False, update=False, feature=None, attraction_factor=1, axis=False,
+                     distance_name="emd-positionwise", guardians=False, ticks=None,
+                     title=None,
+                     saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
+                     ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
 
         self.compute_points_by_families()
 
@@ -419,46 +423,82 @@ class Experiment:
         if cmap is None:
             cmap = pr.custom_div_cmap()
 
-        if values is not None:
+        if feature is not None:
             fig = plt.figure(figsize=(6.4, 4.8 + 0.48))
         else:
             fig = plt.figure()
-        # import matplotlib.gridspec as gridspec
-        # gs = gridspec.GridSpec(2, 1, height_ratios=[10, 1])
         ax = fig.add_subplot()
 
         if not axis:
             plt.axis('off')
 
-        if values is not None:
-            pr.add_advanced_points_to_picture(fig=fig, ax=ax, experiment=self, experiment_id=self.experiment_id,
-                                              values=values,
-                                              normalizing_func=normalizing_func, marker_func=marker_func,
-                                              xticklabels=xticklabels, ms=ms, cmap=cmap, ticks=ticks)
-        elif tmp:
-            pr.add_tmp_points_to_picture(ax=ax, experiment=self, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder)
-        elif mixed:
-            pr.add_mixed_points_to_picture_2d(ax=ax, experiment=self, ms=ms, tmp=tmp, tmp2=tmp2, zorder=zorder,
-                                              fuzzy_paths=fuzzy_paths)
+        # COLORING
+        if feature is not None:
+            pr.color_map_by_feature(experiment=self, fig=fig, ax=ax, feature=feature,
+                                    normalizing_func=normalizing_func, marker_func=marker_func,
+                                    xticklabels=xticklabels, ms=ms, cmap=cmap, ticks=ticks)
         else:
-            pr.add_basic_points_to_picture(ax=ax, experiment=self, ms=ms)
+            pr.basic_coloring(experiment=self, ax=ax, ms=ms)
 
-        if mask:
-            pr.add_mask_to_picture(fig=fig, ax=ax, black=black, saveas=saveas, tex=tex)
-        elif levels:
-            pr.add_levels_to_picture(fig=fig, ax=ax, saveas=saveas, tex=tex)
-        else:
-            pr.add_basic_background_to_picture(ax=ax, values=values, legend=legend, saveas=saveas, xlabel=xlabel,
-                                               title=title)
-
-        if guardians:
-            pr.add_guardians_to_picture(self.experiment_id, ax=ax, values=values, legend=legend, saveas=saveas)
+        # BACKGROUND
+        pr.basic_background(ax=ax, values=feature, legend=legend, saveas=saveas, xlabel=xlabel,
+                            title=title)
 
         if tex:
             pr.saveas_tex(saveas=saveas)
 
         if show:
             plt.show()
+
+    def print_map_3d(self, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
+                     angle=0, reverse=False, update=False, feature=None, attraction_factor=1, axis=False,
+                     distance_name="emd-positionwise", guardians=False,  ticks=None,
+                     title=None,
+                     saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
+                     ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
+
+        self.compute_points_by_families()
+
+        # if angle != 0:
+        #     self.rotate(angle)
+
+        # if reverse:
+        #     self.reverse()
+
+        # if update:
+        #     self.update()
+
+        if cmap is None:
+            cmap = pr.custom_div_cmap()
+
+        if feature is not None:
+            fig = plt.figure(figsize=(6.4, 4.8 + 0.48))
+        else:
+            fig = plt.figure()
+        ax = fig.add_subplot()
+
+        if not axis:
+            plt.axis('off')
+
+        # COLORING
+        if feature is not None:
+            pr.color_map_by_feature(experiment=self, fig=fig, ax=ax, feature=feature,
+                                    normalizing_func=normalizing_func, marker_func=marker_func,
+                                    xticklabels=xticklabels, ms=ms, cmap=cmap, ticks=ticks)
+        else:
+            pr.basic_coloring(experiment=self, ax=ax, ms=ms)
+
+        # BACKGROUND
+        pr.basic_background(ax=ax, values=feature, legend=legend, saveas=saveas, xlabel=xlabel,
+                            title=title)
+
+        if tex:
+            pr.saveas_tex(saveas=saveas)
+
+        if show:
+            plt.show()
+
+
 
     # def add_matrices_to_experiment(self):
     #     """ Import elections from a file """
@@ -634,7 +674,6 @@ class Experiment:
         with open(path, 'r', newline='') as csv_file:
             reader = csv.DictReader(csv_file, delimiter=',')
             ctr = 0
-            # print(path)
             for row in reader:
                 if self.main_order[ctr] < self.num_elections and self.main_order[ctr] not in ignore:
                     points[row['election_id']] = [float(row['x']), float(row['y'])]
@@ -649,7 +688,6 @@ class Experiment:
 
         if self.points_by_families is None:
             points_by_families = {}
-
 
         ### NEW ###
         if self.families is None:
@@ -802,7 +840,6 @@ class Experiment:
 
         return num_distances, hist_data, std
 
-
     def import_my_distances(self, self_distances=False, distance_name='emd-positionwise'):
         """ Import precomputed distances between each pair of elections from a file """
 
@@ -888,6 +925,7 @@ class Experiment_xd(Experiment):
         #             std[b][a] = std[a][b]
 
         return num_distances, hist_data, std
+
 
 # DEPRICATED
 class Experiment_2d(Experiment_xd):
@@ -996,6 +1034,7 @@ class Experiment_2d(Experiment_xd):
         py = y_new + cy
 
         return px, py
+
 
 # DEPRICATED
 class Experiment_3d(Experiment):

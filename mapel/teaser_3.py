@@ -3,7 +3,7 @@ import mapel
 if __name__ == "__main__":
 
     # VARIANT 1
-    experiment = mapel.prepare_experiment(experiment_id='kangaroo')
+    experiment = mapel.prepare_experiment(experiment_id='dodo')
     experiment.prepare_elections()
     experiment.compute_distances()
     experiment.embed()

@@ -16,7 +16,7 @@ import csv
 
 from .metrics import main_distances as md
 
-from mapel.voting.matrices import get_positionwise_matrix
+# from mapel.voting.matrices import get_positionwise_matrix
 
 
 # MAIN FUNCTIONS
