@@ -8,7 +8,7 @@ if __name__ == "__main__":
     # experiment.compute_distances()
     # experiment.embed()
     # experiment.compute_feature('highest_borda_score')
-    cmap = mapel.custom_div_cmap(colors=["blue", "purple", "black"], num_colors=11)
+    cmap = mapel.custom_div_cmap(colors=["orange", "red", "purple", "black"], num_colors=11)
     experiment.print_map(feature='highest_borda_score', cmap=cmap)
 
     # VARIANT 2
