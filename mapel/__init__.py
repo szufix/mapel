@@ -191,3 +191,7 @@ def get_positionwise_matrix(votes):
 
 def compute_feature(experiment_id, name, **kwargs):
     features.compute_feature(experiment_id, name, **kwargs)
+
+
+def custom_div_cmap(**kwargs):
+    return pr.custom_div_cmap(**kwargs)

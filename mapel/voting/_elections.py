@@ -104,9 +104,10 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None, pa
     return votes
 
 
-def generate_election(**kwargs):
-    votes = generate_votes(**kwargs)
-    election = Election("virtual", "virtual", votes=votes)
+def generate_election(election_model=None, num_candidates=None, num_voters=None, param_1=0, param_2=0):
+    votes = generate_votes(election_model=election_model, num_candidates=num_candidates,
+                           num_voters=num_voters, param_1=param_1, param_2=param_2)
+    election = Election("virtual", "virtual", votes=votes, election_model=election_model)
     return election
 
 
@@ -152,6 +153,7 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
                                                           num_voters=num_voters,
                                                           param_1=param_1,
                                                           param_2=param_2)
+
     if experiment.store:
 
         if election_model in LIST_OF_FAKE_MODELS:
@@ -208,7 +210,6 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
                             file_.write("\n")
 
                 file_.close()
-
 
 
 ########################################################################################################################
@@ -302,6 +303,8 @@ def prepare_statistical_culture_family(experiment=None, election_model=None, fam
     if election_model == 'norm-mallows' and param_1 >= 0:
         param_1 = phi_from_relphi(experiment.families[family_id].num_candidates, relphi=param_1)
 
+    keys = []
+
     for j in range(experiment.families[family_id].size):
 
         if election_model in {'unid', 'stan', 'anid', 'stid', 'anun', 'stun'}:
@@ -318,8 +321,16 @@ def prepare_statistical_culture_family(experiment=None, election_model=None, fam
         elif election_model == 'urn_model' and copy_param_1 == -2.:
             param_1 = round(j / 10000., 2)
 
-        election_id = family_id + '_' + str(j)
+        if experiment.families[family_id].single_election:
+            election_id = family_id
+        else:
+            election_id = family_id + '_' + str(j)
+
         generate_elections(experiment=experiment, election_model=election_model, election_id=election_id,
                            num_voters=experiment.families[family_id].num_voters,
                            num_candidates=experiment.families[family_id].num_candidates,
                            param_1=param_1, param_2=param_2)
+
+        keys.append(election_id)
+
+    return keys

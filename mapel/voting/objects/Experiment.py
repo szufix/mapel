@@ -5,6 +5,7 @@ from .Election import Election
 from .Family import Family
 
 import mapel.voting._elections as _elections
+import mapel.voting.features as features
 
 from threading import Thread
 from time import sleep
@@ -35,6 +36,7 @@ except:
 
 import networkx as nx
 import numpy as np
+
 
 
 class Experiment:
@@ -79,6 +81,8 @@ class Experiment:
             else:
                 self.coordinates = coordinates
 
+        self.features = {}
+
     def set_default_num_candidates(self, num_candidates):
         self.default_num_candidates = num_candidates
 
@@ -95,7 +99,7 @@ class Experiment:
         if num_voters is None:
             num_voters = self.default_num_voters
 
-        self.add_family(election_model=election_model,
+        return self.add_family(election_model=election_model,
                         param_1=param_1, param_2=param_2,
                         size=1,
                         label=label,
@@ -105,11 +109,12 @@ class Experiment:
                         starting_from=starting_from,
                         num_candidates=num_candidates,
                         num_voters=num_voters,
-                        family_id=election_id)
+                        family_id=election_id,
+                        single_election=True)[0]
 
     def add_family(self, election_model="none", param_1=0., param_2=0., size=1, label=None,
                    color="black", alpha=1., show=True, marker='o', starting_from=0,
-                   num_candidates=None, num_voters=None, family_id=None):
+                   num_candidates=None, num_voters=None, family_id=None, single_election=False):
         """ Only add the Family; the Elections will be generated later"""
 
         if num_candidates is None:
@@ -123,26 +128,27 @@ class Experiment:
 
         if family_id is None:
             family_id = election_model + '_' + str(num_candidates) + '_' + str(num_voters)
+            if election_model in {'urn_model', 'norm-mallows', 'mallows', 'norm-mallows_matrix'} and param_1 != 0:
+                family_id += '_' + str(float(param_1))
+            if election_model in {'norm-mallows', 'mallows'} and param_2 != 0:
+                family_id += '__' + str(float(param_2))
 
         if label is None:
             label = family_id
-
-        if election_model in {'urn_model', 'norm-mallows', 'mallows', 'norm-mallows_matrix'} and param_1 != 0:
-            family_id += '_' + str(float(param_1))
-        if election_model in {'norm-mallows', 'mallows'} and param_2 != 0:
-            family_id += '__' + str(float(param_2))
 
         self.families[family_id] = Family(election_model=election_model, family_id=family_id,
                                           param_1=param_1, param_2=param_2, label=label,
                                           color=color, alpha=alpha, show=show, size=size, marker=marker,
                                           starting_from=starting_from,
-                                          num_candidates=num_candidates, num_voters=num_voters)
+                                          num_candidates=num_candidates, num_voters=num_voters,
+                                          single_election=single_election)
 
         self.num_families = len(self.families)
         self.num_elections = sum([self.families[family_id].size for family_id in self.families])
         self.main_order = [i for i in range(self.num_elections)]
 
-        self.generate_family_elections(family_id)
+        return self.generate_family_elections(family_id)
+
 
     def generate_family_elections(self, family_id):
         param_1 = self.families[family_id].param_1
@@ -156,7 +162,7 @@ class Experiment:
             _elections.prepare_preflib_family(experiment=self, election_model=election_model,
                                               param_1=param_1)
         else:
-            _elections.prepare_statistical_culture_family(experiment=self,
+           return _elections.prepare_statistical_culture_family(experiment=self,
                                                           election_model=election_model,
                                                           family_id=family_id,
                                                           param_1=param_1, param_2=param_2)
@@ -303,10 +309,15 @@ class Experiment:
         elections = {}
 
         for family_id in self.families:
-            for j in range(self.families[family_id].size):
-                election_id = family_id + '_' + str(j)
+            if self.families[family_id].size == 1:
+                election_id = family_id
                 election = Election(self.experiment_id, election_id, with_matrix=with_matrices)
                 elections[election_id] = election
+            else:
+                for j in range(self.families[family_id].size):
+                    election_id = family_id + '_' + str(j)
+                    election = Election(self.experiment_id, election_id, with_matrix=with_matrices)
+                    elections[election_id] = election
 
         return elections
 
@@ -406,8 +417,10 @@ class Experiment:
                      angle=0, reverse=False, update=False, feature=None, attraction_factor=1, axis=False,
                      distance_name="emd-positionwise", guardians=False, ticks=None,
                      title=None,
-                     saveas="map_2d", show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
+                     saveas=False, show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
                      ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
+
+        print(cmap)
 
         self.compute_points_by_families()
 
@@ -729,11 +742,38 @@ class Experiment:
                 for i in range(self.families[family_id].size):
                     # print(i)
                     # print(self.coordinates)
-                    election_id = family_id + '_' + str(i)
+                    if self.families[family_id].single_election:
+                        election_id = family_id
+                    else:
+                        election_id = family_id + '_' + str(i)
                     points_by_families[family_id][0].append(self.coordinates[election_id][0])
                     points_by_families[family_id][1].append(self.coordinates[election_id][1])
 
         self.points_by_families = points_by_families
+
+    def compute_feature(self, name=None, attraction_factor=1):
+
+        # values = []
+        feature_dict = {}
+
+        for election_id in self.elections:
+            feature = features.get_feature(name)
+            election = self.elections[election_id]
+            print(election_id, election)
+            value = feature(election)
+            # values.append(value)
+            feature_dict[election_id] = value
+
+        if self.store:
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "features", str(name) + '.csv')
+            with open(path, 'w', newline='') as csv_file:
+                writer = csv.writer(csv_file, delimiter=',')
+                writer.writerow(["election_id", "value"])
+                for key in feature_dict:
+                    writer.writerow([key, feature_dict[key]])
+
+        self.features[name] = feature_dict
+        return feature_dict
 
     def get_distance(self, i, j):
         """ Compute Euclidean distance in two-dimensional space"""

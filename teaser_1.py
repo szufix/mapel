@@ -16,8 +16,8 @@ if __name__ == "__main__":
     experiment.compute_distances()
 
     experiment.embed()
-    experiment.print_map(title='My First Map', saveas='tmp', ms=30, legend=True,
-                         mixed=True)
+
+    experiment.print_map(title='My First Map', ms=30, legend=True)
 
 
 

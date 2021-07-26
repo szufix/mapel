@@ -16,10 +16,15 @@ from mapel.voting.glossary import LIST_OF_FAKE_MODELS
 
 class Election:
 
-    def __init__(self, experiment_id, election_id, votes=None, with_matrix=False):
+    def __init__(self, experiment_id, election_id, votes=None, with_matrix=False, election_model=None):
 
         self.experiment_id = experiment_id
         self.election_id = election_id
+
+        if election_model in LIST_OF_FAKE_MODELS:
+            self.fake = True
+        else:
+            self.fake = False
 
         if votes is not None:
             if str(votes[0]) in LIST_OF_FAKE_MODELS:
@@ -79,6 +84,12 @@ class Election:
             return self.vectors
         else:
             return self.votes_to_positionwise_vectors()
+
+    def get_matrix(self):
+        if self.matrix is not None:
+            return self.matrix
+        else:
+            return self.votes_to_positionwise_matrix()
 
     def votes_to_positionwise_vectors(self):
 

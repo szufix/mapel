@@ -13,6 +13,7 @@ from . import development as dev
 from .objects.Experiment import Experiment, Experiment_xd, Experiment_2d, Experiment_3d
 from .metrics.inner_distances import l2
 
+
 ### MAPPING ###
 def get_feature(name):
     return {'borda_std': borda_std,
@@ -25,26 +26,6 @@ def get_feature(name):
             'avg_distortion_from_guardians': avg_distortion_from_guardians,
             'worst_distortion_from_guardians': worst_distortion_from_guardians,
             }.get(name)
-
-
-### MAIN FUNCTION ###
-
-def compute_feature(experiment_id, name=None, attraction_factor=1):
-    experiment = Experiment_2d(experiment_id, attraction_factor=attraction_factor)
-    values = []
-
-    for election_id in experiment.elections:
-        statistic = get_feature(name)
-        value = statistic(experiment, election_id)
-        values.append(value)
-
-
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "features", str(name) + '.txt')
-
-    file_scores = open(path, 'w')
-    for i in range(experiment.num_elections):
-        file_scores.write(str(values[i]) + "\n")
-    file_scores.close()
 
 
 def borda_std(election):
@@ -113,34 +94,18 @@ def both(election):
 
 
 # SCORING FUNCTIONS
-
 def highest_borda_score(election):
     """ Compute highest BORDA score of a given election """
     c = election.num_candidates
-    v = election.num_voters
-    vectors = election.votes_to_positionwise_matrix()
-    # return sum([vectors[0][i] * (c - i - 1) for i in range(c)]) * v
-    # todo: rewrite this function
-    return -1
+    vectors = election.get_vectors()
+    borda = [sum([vectors[i][pos]*(c-pos-1) for pos in range(c)]) for i in range(c)]
+    return max(borda) * election.num_voters
 
 
 def highest_plurality_score(election):
     """ compute highest PLURALITY score of a given election"""
-
-    if election.fake:
-        c = election.num_candidates
-        v = election.num_voters
-        vectors = election.votes_to_positionwise_matrix()
-        first = []
-        for i in range(c):
-            first.append(vectors[i][0])
-        return max(first) * v
-
-    scores = [0 for _ in range(election.num_candidates)]
-    for vote in election.votes:
-        scores[vote[0]] += 1
-
-    return max(scores)
+    first_pos = election.get_matrix()[0]
+    return max(first_pos) * election.num_voters
 
 
 def highest_copeland_score(potes, num_voters, num_candidates):

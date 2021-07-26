@@ -4,6 +4,9 @@ if __name__ == "__main__":
 
     experiment = mapel.prepare_experiment()
 
+    experiment.set_default_num_voters(50)
+    experiment.set_default_num_candidates(6)
+
     city_size = 20
 
     # cities
@@ -29,4 +32,6 @@ if __name__ == "__main__":
 
     experiment.compute_distances()
     experiment.embed(algorithm='mds')
-    experiment.print_map()
+
+    experiment.compute_feature(name='highest_borda_score')
+    experiment.print_map(feature='highest_borda_score')

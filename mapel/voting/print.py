@@ -12,13 +12,84 @@ from PIL import Image
 
 from mapel.voting import _elections as el
 from mapel.voting import metrics as metr
+import csv
 
 # from mapel.voting.objects.Experiment import Experiment, Experiment_xd, Experiment_2d, Experiment_3d
 
+def get_values_from_csv_file(experiment, feature):
+    path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
+                        "features", feature + ".csv")
+
+    values = {}
+    with open(path, 'r', newline='') as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=',')
+
+        for row in reader:
+            election_id = row['election_id']
+            value = row['value']
+            values[election_id] = float(value)
+
+    return values
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
-def get_values_from_file(experiment, experiment_id, values, normalizing_func=None, marker_func=None):
+def get_values_from_file(experiment, feature, normalizing_func=None, marker_func=None):
+
+    if isinstance(feature, str):
+        if feature in experiment.features:
+            values = experiment.features[feature]
+
+        else:
+            values = get_values_from_csv_file(experiment, feature)
+    else:
+        values = feature
+
+    _min = 0
+    _max = 0
+    # print(values)
+    _min = min(values.values())
+    _max = max(values.values())
+
+    shades = []
+    xx = []
+    yy = []
+    markers = []
+
+    ctr = 0
+
+    for family_id in experiment.families:
+
+        for k in range(experiment.families[family_id].size):
+            if experiment.families[family_id].single_election:
+                election_id = family_id
+            else:
+                election_id = family_id + '_' + str(k)
+
+            shade = values[election_id]
+            if normalizing_func is not None:
+                shade = normalizing_func(shade)
+            else:
+                shade = (shade-_min) / (_max-_min)
+            shades.append(shade)
+
+            marker = experiment.families[family_id].marker
+            if marker_func is not None:
+                marker = marker_func(shade)
+            markers.append(marker)
+
+            xx.append(experiment.coordinates[election_id][0])
+            yy.append(experiment.coordinates[election_id][1])
+
+            ctr += 1
+
+    xx = np.asarray(xx)
+    yy = np.asarray(yy)
+    shades = np.asarray(shades)
+    markers = np.asarray(markers)
+    return xx, yy, shades, markers, _min, _max
+
+
+def get_values_from_file_old(experiment, experiment_id, values, normalizing_func=None, marker_func=None):
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "features",
                         str(values) + ".txt")
 
@@ -119,7 +190,7 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
 
 def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None, normalizing_func=None,
                          marker_func=None, xticklabels=None, ms=None, cmap=None, ticks=None):
-    xx, yy, shades, markers, _min, _max = get_values_from_file(experiment, experiment.experiment_id, feature, normalizing_func, marker_func)
+    xx, yy, shades, markers, _min, _max = get_values_from_file(experiment, feature, normalizing_func, marker_func)
     unique_markers = set(markers)
     images = []
 

@@ -5,7 +5,7 @@ class Family:
 
     def __init__(self, election_model="none", family_id='none', param_1=0., param_2=0., size=1, label="none",
                  color="black", alpha=1., show=True, marker='o', starting_from=0,
-                 num_candidates=None, num_voters=None):
+                 num_candidates=None, num_voters=None, single_election=False):
 
         self.family_id = family_id
         self.election_model = election_model
@@ -20,3 +20,4 @@ class Family:
         self.starting_from = starting_from
         self.num_candidates = num_candidates
         self.num_voters = num_voters
+        self.single_election = single_election
