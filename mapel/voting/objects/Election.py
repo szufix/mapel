@@ -16,10 +16,14 @@ from mapel.voting.glossary import LIST_OF_FAKE_MODELS
 
 class Election:
 
-    def __init__(self, experiment_id, election_id, votes=None, with_matrix=False, election_model=None):
+    def __init__(self, experiment_id, election_id, votes=None, with_matrix=False, election_model=None,
+                 num_voters=None, num_candidates=None):
 
         self.experiment_id = experiment_id
         self.election_id = election_id
+
+        self.num_voters = num_voters
+        self.num_candidates = num_candidates
 
         if election_model in LIST_OF_FAKE_MODELS:
             self.fake = True

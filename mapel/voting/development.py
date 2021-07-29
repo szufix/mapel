@@ -14,9 +14,11 @@ from . import features
 import copy
 
 import itertools
-from .objects.Experiment import Experiment, Experiment_xd, Experiment_2d, Experiment_3d
+from .objects.Experiment import Experiment
 from .objects.Election import Election
 from .metrics.inner_distances import l2
+
+import mapel.voting._metrics as metr
 
 
 def prepare_experiment(experiment_id=None, elections=None, distances=None, coordinates=None):
@@ -416,9 +418,10 @@ def print_chart_condorcet_existence(experiment_id):
 ## PART 3 ## SUBELECTIONS
  
 
-def thread_function(experiment_id, distance_name, all_pairs, model, election_models, specials, thread_ids, results, t, precision, metric_name):
+def thread_function(experiment, distance_name, all_pairs, election_models, specials,
+                    num_voters, num_candidates, thread_ids, results, t, precision):
 
-    for i, j in thread_ids:
+    for election_id_1, election_id_2 in thread_ids:
 
         result = 0
         local_ctr = 0
@@ -426,74 +429,89 @@ def thread_function(experiment_id, distance_name, all_pairs, model, election_mod
             if t == 1:
                 print("ctr: ", local_ctr)
                 local_ctr += 1
-            election_id_1 = "tmp_" + str(i) + '_' + str(j) + '_1'
-            election_id_2 = "tmp_" + str(i) + '_' + str(j) + '_2'
 
-            el.generate_elections(experiment_id, election_model=election_models[i], election_id=election_id_1,
-                                  num_candidates=model.num_candidates, num_voters=model.num_voters, param_1=specials[i])
-            el.generate_elections(experiment_id, election_model=election_models[j], election_id=election_id_2,
-                                  num_candidates=model.num_candidates, num_voters=model.num_voters, param_1=specials[j])
+            election_1 = el.generate_elections(experiment=experiment, election_model=election_models[election_id_1], election_id=election_id_1,
+                                  num_candidates=num_candidates, num_voters=num_voters, param_1=specials[election_id_1])
+            election_2 = el.generate_elections(experiment=experiment, election_model=election_models[election_id_2], election_id=election_id_2,
+                                  num_candidates=num_candidates, num_voters=num_voters, param_1=specials[election_id_2])
 
-            election_1 = Election(experiment_id, election_id_1)
-            election_2 = Election(experiment_id, election_id_2)
-
-            distance = metr.get_distance(election_1, election_2, distance_name=distance_name, metric_name=metric_name)
+            distance = metr.get_distance(election_1, election_2, distance_name=distance_name)
 
             # delete tmp files
 
-            file_name_1 = str(election_id_1) + ".soc"
-            path_1 = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", "soc_original", file_name_1)
-            os.remove(path_1)
+            # todo: verify if we need this
+            if experiment.store:
+                file_name_1 = str(election_id_1) + ".soc"
+                path_1 = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "elections", "soc_original", file_name_1)
+                os.remove(path_1)
 
-            file_name_2 = str(election_id_2) + ".soc"
-            path_2 = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", "soc_original", file_name_2)
-            os.remove(path_2)
+                file_name_2 = str(election_id_2) + ".soc"
+                path_2 = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "elections", "soc_original", file_name_2)
+                os.remove(path_2)
 
-            all_pairs[i][j][p] = round(distance, 5)
+            all_pairs[election_id_1][election_id_2][p] = round(distance, 5)
             result += distance
 
-        results[i][j] = result / precision
-    print("thread " + str(t) + " is ready :)")
+        results[election_id_1][election_id_2] = result / precision
+        results[election_id_2][election_id_1] = results[election_id_1][election_id_2]
+    # print("thread " + str(t) + " is ready :)")
 
 
-def compute_subelection_weird(experiment_id, distance_name='voter_subelection', metric_name=0, num_threads=1, precision=10):
+def compute_subelection_weird(experiment, distance_name='l1-voter_subelection', metric_name=0, num_threads=1,
+                              precision=10, self_distances=False, num_voters=None, num_candidates=None):
+    if num_candidates is None:
+        num_candidates = experiment.default_num_candidates
+    if num_voters is None:
+        num_voters = experiment.default_num_voters
 
     time_start = time.time()
-    print("hello")
-
-    experiment = Experiment(experiment_id, raw=True)
 
     num_distances = experiment.num_families * (experiment.num_families+1) / 2
 
-    results = np.zeros([experiment.num_elections, experiment.num_elections])
     threads = [None for _ in range(num_threads)]
 
-    election_models = []
-    specials = []
+    election_models = {}
+    params_1 = {}
 
-    for i in range(experiment.num_families):
-        for j in range(experiment.families[i].size):
-            election_models.append(experiment.families[i].election_model)
-            specials.append(experiment.families[i].param_1)
+    for family_id in experiment.families:
+        for election_id in experiment.families[family_id].election_ids:
+            election_models[election_id] = experiment.families[family_id].election_model
+            params_1[election_id] = experiment.families[family_id].param_1
 
-    ids = [[(i, j) for j in range(i, experiment.num_families)] for i in range(experiment.num_families)]
-    ids = list(itertools.chain(*ids))
+    ids = []
+    for i, election_1 in enumerate(experiment.elections):
+        for j, election_2 in enumerate(experiment.elections):
+            if i == j:
+                if self_distances:
+                    ids.append((election_1, election_2))
+            elif i < j:
+                ids.append((election_1, election_2))
 
-    all_pairs = np.zeros([experiment.num_elections, experiment.num_elections, precision])
+    # all_pairs = np.zeros([experiment.num_elections, experiment.num_elections, precision])
+    all_pairs = {}
+    std = {}
+    results = {}
+    for i, election_1 in enumerate(experiment.elections):
+        all_pairs[election_1] = {}
+        std[election_1] = {}
+        results[election_1] = {}
+        for j, election_2 in enumerate(experiment.elections):
+            if i == j:
+                if self_distances:
+                    all_pairs[election_1][election_2] = [0 for _ in range(precision)]
+            elif i < j:
+                all_pairs[election_1][election_2] = [0 for _ in range(precision)]
 
     for t in range(num_threads):
-
 
         start = int(t * num_distances / num_threads)
         stop = int((t+1) * num_distances / num_threads)
         thread_ids = ids[start:stop]
         print('t: ', t)
-        #print(thread_ids)
 
-
-        threads[t] = Thread(target=thread_function, args=(experiment_id, distance_name, all_pairs,
-                                                          experiment, election_models, specials,
-                                                          thread_ids, results, t, precision, metric_name))
+        threads[t] = Thread(target=thread_function, args=(experiment, distance_name, all_pairs,
+                                                          election_models, params_1, num_voters, num_candidates,
+                                                          thread_ids, results, t, precision))
         threads[t].start()
 
     #"""
@@ -501,36 +519,41 @@ def compute_subelection_weird(experiment_id, distance_name='voter_subelection', 
         threads[t].join()
     #"""
     #print(results)
+    # print(all_pairs)
 
-    # compute STD
-    std = np.zeros([experiment.num_elections, experiment.num_elections])
-    for i in range(experiment.num_elections):
-        for j in range(experiment.num_elections):
-                std[i][j] = round(np.std(all_pairs[i][j]), 5)
+    # COMPUTE STD
+    for i, election_1 in enumerate(experiment.elections):
+        for j, election_2 in enumerate(experiment.elections):
+            if i == j:
+                if self_distances:
+                    value = float(np.std(np.array(all_pairs[election_1][election_2])))
+                    std[election_1][election_2] = round(value, 5)
+            elif i < j:
+                value = float(np.std(np.array(all_pairs[election_1][election_2])))
+                std[election_1][election_2] = round(value, 5)
 
-    ctr = 0
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "distances",
-                        str(metric_name) + '-' + str(distance_name) + ".txt")
-    with open(path, 'w') as txtfile:
-        txtfile.write(str(experiment.num_elections) + '\n')
-        txtfile.write(str(experiment.num_families) + '\n')
-        txtfile.write(str(int(num_distances)) + '\n')
-        for i in range(experiment.num_elections):
-            for j in range(i, experiment.num_elections):
-                txtfile.write(str(i) + ' ' + str(j) + ' ' + str(results[i][j]) + ' ' + str(std[i][j]) + '\n')
-                ctr += 1
-
-    ctr = 0
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "distances",
-                        str(metric_name) + '-' + str(distance_name) + "_all_pairs.txt")
-    with open(path, 'w') as txtfile:
-        for i in range(experiment.num_elections):
-            for j in range(i, experiment.num_elections):
-                for p in range(precision):
-                    txtfile.write(str(i) + ' ' + str(j) + ' ' + str(p) + ' ' + str(all_pairs[i][j][p]) + '\n')
+    if experiment.store:
+        ctr = 0
+        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "controllers", "distances",
+                            str(metric_name) + '-' + str(distance_name) + ".txt")
+        with open(path, 'w') as txtfile:
+            txtfile.write(str(experiment.num_elections) + '\n')
+            txtfile.write(str(experiment.num_families) + '\n')
+            txtfile.write(str(int(num_distances)) + '\n')
+            for i in range(experiment.num_elections):
+                for j in range(i, experiment.num_elections):
+                    txtfile.write(str(i) + ' ' + str(j) + ' ' + str(results[i][j]) + ' ' + str(std[i][j]) + '\n')
                     ctr += 1
 
-
+        ctr = 0
+        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "controllers", "distances",
+                            str(metric_name) + '-' + str(distance_name) + "_all_pairs.txt")
+        with open(path, 'w') as txtfile:
+            for i in range(experiment.num_elections):
+                for j in range(i, experiment.num_elections):
+                    for p in range(precision):
+                        txtfile.write(str(i) + ' ' + str(j) + ' ' + str(p) + ' ' + str(all_pairs[i][j][p]) + '\n')
+                        ctr += 1
 
     time_stop = time.time()
     print(time_stop - time_start)
@@ -597,8 +620,8 @@ def get_borda_ranking(votes, num_voters, num_candidates):
 
 
 ### DISTORTION SECTION ###
-def compute_distortion(experiment_id, attraction_factor=1, saveas='tmp'):
-    experiment = Experiment_2d(experiment_id, attraction_factor=attraction_factor)
+def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
+    # experiment = Experiment_2d(experiment_id, attraction_factor=attraction_factor)
     X = []
     A = []
     B = []
@@ -610,9 +633,8 @@ def compute_distortion(experiment_id, attraction_factor=1, saveas='tmp'):
                 true_distance = experiment.distances[election_id_1][election_id_2]
                 true_distance /= map_diameter(m)
 
-                embedded_distance = l2(experiment.points[election_id_1], experiment.points[election_id_2], 1)
-                embedded_distance /= l2(experiment.points['identity_10_100_0'], experiment.points['uniformity_10_100_0'], 1)
-                # print(true_distance, embedded_distance)
+                embedded_distance = l2(experiment.coordinates[election_id_1], experiment.coordinates[election_id_2], 1)
+                embedded_distance /= l2(experiment.coordinates['identity_10_100_0'], experiment.coordinates['uniformity_10_100_0'], 1)
                 proportion = float(true_distance) / float(embedded_distance)
                 X.append(proportion)
                 A.append(true_distance)

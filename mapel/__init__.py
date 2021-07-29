@@ -101,8 +101,8 @@ def print_3d(experiment_id, **kwargs):
     pr.print_3d(experiment_id, **kwargs)
 
 
-def print_matrix(experiment_id, **kwargs):
-    pr.print_matrix(experiment_id, **kwargs)
+def print_matrix(**kwargs):
+    pr.print_matrix(**kwargs)
 
 
 def print_param_vs_distance(experiment_id, **kwargs):
@@ -151,8 +151,8 @@ def import_election(experiment_id, election_id):
     return el.import_election(experiment_id, election_id)
 
 
-def compute_subelection_weird(experiment_id, **kwargs):
-    dev.compute_subelection_weird(experiment_id, **kwargs)
+def compute_subelection_weird(**kwargs):
+    dev.compute_subelection_weird(**kwargs)
 
 
 def compute_winners(experiment_id, **kwargs):

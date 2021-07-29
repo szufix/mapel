@@ -10,7 +10,7 @@ from . import objects as obj
 from .metrics import lp
 from . import development as dev
 
-from .objects.Experiment import Experiment, Experiment_xd, Experiment_2d, Experiment_3d
+from .objects.Experiment import Experiment
 from .metrics.inner_distances import l2
 
 
@@ -219,22 +219,22 @@ def distortion_from_guardians(experiment, election_id):
                 m = experiment.elections[election_id_1].num_candidates
                 true_distance = experiment.distances[election_id_1][election_id_2]
                 true_distance /= map_diameter(m)
-                embedded_distance = l2(experiment.points[election_id_1], experiment.points[election_id_2], 2)
-                if election_id_2 == 'antagonism_10_100_0':
-                    print(election_id_1, election_id_2, embedded_distance)
-                    print(experiment.points[election_id_1], experiment.points[election_id_2])
-                embedded_distance /= l2(experiment.points['identity_10_100_0'],
-                                        experiment.points['uniformity_10_100_0'], 2)
+                embedded_distance = l2(experiment.coordinates[election_id_1], experiment.coordinates[election_id_2], 2)
+                # if election_id_2 == 'antagonism_10_100_0':
+                    # print(election_id_1, election_id_2, embedded_distance)
+                    # print(experiment.coordinates[election_id_1], experiment.coordinates[election_id_2])
+                embedded_distance /= l2(experiment.coordinates['identity_10_100_0'],
+                                        experiment.coordinates['uniformity_10_100_0'], 2)
                 ratio = float(true_distance) / float(embedded_distance)
                 values = np.append(values, ratio)
 
-
-                if ratio > 1000:
-                    print(election_id_1, election_id_2, ratio)
-                    print(experiment.distances[election_id_1][election_id_2])
-                    print(true_distance)
-                    print(l2(experiment.points[election_id_1], experiment.points[election_id_2], 1))
-                    print(embedded_distance)
+                #
+                # if ratio > 1000:
+                #     print(election_id_1, election_id_2, ratio)
+                #     print(experiment.distances[election_id_1][election_id_2])
+                #     print(true_distance)
+                #     print(l2(experiment.coordinates[election_id_1], experiment.coordinates[election_id_2], 1))
+                #     print(embedded_distance)
                 # print(ratio, values)
 
     return values

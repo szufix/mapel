@@ -3,7 +3,7 @@
 import math
 import os
 import numpy as np
-
+import time
 from threading import Thread
 
 #from .objects.Experiment import Experiment, Experiment_xd, Experiment_2d, Experiment_3d
@@ -46,15 +46,19 @@ def get_distance(election_1, election_2, distance_name=''):
         return metrics_with_inner_distance.get(main_distance)(election_1, election_2, inner_distance)
 
 
-def single_thread(experiment, distances, thread_ids, t):
+def single_thread(experiment, distances, times, thread_ids, t):
     """ Single thread for computing distance """
 
     for election_id_1, election_id_2 in thread_ids:
+        start_time = time.time()
         distance = get_distance(experiment.elections[election_id_1],
                                 experiment.elections[election_id_2],
                                 distance_name=experiment.distance_name)
 
         distances[election_id_1][election_id_2] = distance
+        distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
+        times[election_id_1][election_id_2] = time.time() - start_time
+        times[election_id_2][election_id_1] = times[election_id_1][election_id_2]
 
     print("thread " + str(t) + " is ready :)")
 

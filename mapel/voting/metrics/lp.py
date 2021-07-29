@@ -9,7 +9,7 @@ import numpy as np
 
 
 # FOR SUBELECTIONS
-def solve_lp_voter_subelection(election_1, election_2, metric_name='l1'):
+def solve_lp_voter_subelection(election_1, election_2, metric_name='1'):
     """ LP solver for voter subelection problem """
 
     cp = cplex.Cplex()

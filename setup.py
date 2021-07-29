@@ -25,7 +25,6 @@ setup(
     long_description_content_type="text/markdown",
     url='https://github.com/szufix/mapel',
     download_url='https://github.com/szufix/mapel',
-    #package_data={'mapel': []},
     packages=find_packages(exclude=['*priavte.py']),
     include_package_data=True,
     install_requires=required,

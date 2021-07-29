@@ -107,7 +107,8 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None, pa
 def generate_election(election_model=None, num_candidates=None, num_voters=None, param_1=0, param_2=0):
     votes = generate_votes(election_model=election_model, num_candidates=num_candidates,
                            num_voters=num_voters, param_1=param_1, param_2=param_2)
-    election = Election("virtual", "virtual", votes=votes, election_model=election_model)
+    election = Election("virtual", "virtual", votes=votes, election_model=election_model,
+                        num_candidates=num_candidates, num_voters=num_voters)
     return election
 
 
@@ -210,6 +211,8 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
                             file_.write("\n")
 
                 file_.close()
+
+    return experiment.elections[election_id]
 
 
 ########################################################################################################################

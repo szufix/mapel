@@ -29,6 +29,7 @@ def generate_group_separable_election(num_voters=None, num_candidates=None, para
     n = num_voters
 
     if param_1 == 0:
+        # todo: change this part
         func = lambda m, n, j: binom(m - 1, j) * binom(m - 1 + j, m) * (2 ** (n - 1) - 1) ** (j - 1)
         buckets = [func(m, n, j) for j in range(1, m)]
 

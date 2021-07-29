@@ -473,17 +473,19 @@ def add_guardians_to_picture(experiment_id, ax=None, values=None, legend=None, s
 
 def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None, title=None):
     file_name = os.path.join(os.getcwd(), "images", str(saveas))
+    # print(file_name)
 
     if xlabel is not None:
         plt.xlabel(xlabel, size=14)
     if title is not None:
         plt.suptitle(title, fontsize=16)
 
-    if values is None and legend:
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        plt.savefig(file_name, bbox_inches='tight')
-    else:
-        plt.savefig(file_name, bbox_inches='tight')
+    if saveas is not None:
+        if values is None and legend:
+            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+            plt.savefig(file_name, bbox_inches='tight')
+        else:
+            plt.savefig(file_name, bbox_inches='tight')
     """
     text_name = str(experiment.num_voters) + " x " + str(experiment.num_candidates)
     text = ax.text(0.0, 1.05, text_name, transform=ax.transAxes)
@@ -618,11 +620,138 @@ def print_3d(experiment_id, ms=20, attraction_factor=1, ignore=None, metric_name
         plt.show()
 
 
-def print_matrix(experiment_id, scale=1., distance_name='', metric_name='', saveas="matrix", show=True,
+def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", show=True,
+                 self_distances=False, yticks='left', with_std=False, time=False):
+    """Print the matrix with average distances between each pair of experiments """
+
+    # CREATE MAPPING FOR BUCKETS
+    bucket = np.array([[family_id for _ in range(experiment.families[family_id].size)] for family_id in experiment.families]).flatten()
+
+    # CREATE MAPPING FOR ELECTIONS
+    mapping = {}
+    ctr = 0
+    for family_id in experiment.families:
+        for election_id in experiment.families[family_id].election_ids:
+            mapping[ctr] = election_id
+            ctr += 1
+
+
+    # PREPARE EMPTY DICTS
+    matrix = {}
+    quantities = {}
+    for family_id_1 in experiment.families:
+        matrix[family_id_1] = {}
+        quantities[family_id_1] = {}
+        for family_id_2 in experiment.families:
+            matrix[family_id_1][family_id_2] = 0
+            quantities[family_id_1][family_id_2] = 0
+
+    # ADD VALUES
+    for i in range(experiment.num_elections):
+        limit = i + 1
+        if self_distances:
+            limit = i
+        for j in range(limit, experiment.num_elections):
+            if time:
+                matrix[bucket[i]][bucket[j]] += experiment.times[mapping[i]][mapping[j]]
+            else:
+                print('map', mapping[i], mapping[j])
+                print(experiment.distances[mapping[i]][mapping[j]])
+                matrix[bucket[i]][bucket[j]] += experiment.distances[mapping[i]][mapping[j]]
+            quantities[bucket[i]][bucket[j]] += 1
+    #
+    # for i, family_id_1 in enumerate(experiment.families):
+    #     for election_id_1 in experiment.families[family_id_1].election_ids:
+    #         for j, family_id_2 in enumerate(experiment.families):
+    #             for election_id_2 in experiment.families[family_id_2].election_ids:
+    #                 if time:
+    #                     matrix[bucket[i]][bucket[j]] += experiment.times[election_id_1][election_id_2]
+    #                 else:
+    #                     matrix[bucket[i]][bucket[j]] += experiment.distances[election_id_1][election_id_2]
+    #                 quantities[bucket[i]][bucket[j]] += 1
+
+    # NORMALIZE
+    for family_id_1 in experiment.families:
+        for family_id_2 in experiment.families:
+            if quantities[family_id_1][family_id_2] != 0.:
+                matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
+            matrix[family_id_1][family_id_2] *= scale
+            matrix[family_id_1][family_id_2] = int(round(matrix[family_id_1][family_id_2], 0))
+            matrix[family_id_2][family_id_1] = matrix[family_id_1][family_id_2]
+
+    # THE REST
+    fig, ax = plt.subplots()
+    num_families_new = experiment.num_families
+
+    matrix_new = np.zeros([num_families_new, num_families_new])
+
+    # FIND MIN & MAX
+    _min = min([min(matrix[family_id].values()) for family_id in experiment.families])
+    _max = max([max(matrix[family_id].values()) for family_id in experiment.families])
+    threshold = _min + 0.75*(_max - _min)
+
+    # PRINT
+    if with_std:
+        for i, family_id_1 in enumerate(experiment.families):
+            for j, family_id_2 in enumerate(experiment.families):
+                c = int(matrix[family_id_1][family_id_2])
+                std = int(round(experiment.std[family_id_1][family_id_2] * scale, 0))
+                matrix_new[i][j] = c
+                color = "black"
+                if c >= threshold:
+                    color = "white"
+                ax.text(j-0.1, i+0.1, str(c), va='bottom', ha='center', color=color, size=12)
+                if std >= 10:
+                    ax.text(j-0.3, i+0.1, '$\pm$' + str(std), va='top', ha='left', color=color, size=9)
+                else:
+                    ax.text(j-0.1, i+0.1, '$\pm$' + str(std), va='top', ha='left', color=color, size=9)
+    else:
+        for i, family_id_1 in enumerate(experiment.families):
+            for j, family_id_2 in enumerate(experiment.families):
+                c = int(matrix[family_id_1][family_id_2])
+                matrix_new[i][j] = c
+                color = "black"
+                if c >= threshold:
+                    color = "white"
+                ax.text(j, i, str(c), va='center', ha='center', color=color)
+
+    labels = []
+    for family_id in experiment.families:
+        labels.append(experiment.families[family_id].label)
+
+    ax.matshow(matrix_new, cmap=plt.cm.Blues)
+
+    x_values = labels
+    y_values = labels
+    y_axis = np.arange(0, num_families_new, 1)
+    x_axis = np.arange(0, num_families_new, 1)
+
+    if yticks != 'none':
+        ax.set_yticks(y_axis)
+        if yticks == 'left':
+            ax.set_yticklabels(y_values, rotation=25, size=12)
+        if yticks == 'right':
+            ax.set_yticklabels(y_values, rotation=-25, size=12)
+            ax.yaxis.tick_right()
+    else:
+        ax.set_yticks([])
+
+    ax.set_xticks(x_axis)
+    ax.set_xticklabels(x_values, rotation=75, size=12)
+
+    if experiment.store:
+        file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
+        plt.savefig(file_name, bbox_inches='tight')
+
+    if show:
+        plt.show()
+
+
+def print_matrix_old(experiment=None, scale=1., distance_name='', metric_name='', saveas="matrix", show=True,
                  self_distances=False, yticks='left'):
     """Print the matrix with average distances between each pair of experiments """
 
-    experiment = Experiment_xd(experiment_id, distance_name=distance_name, metric_name=metric_name, raw=True, self_distances=self_distances)
+    # experiment = Experiment_xd(experiment_id, distance_name=distance_name, metric_name=metric_name, raw=True, self_distances=self_distances)
     matrix = np.zeros([experiment.num_families, experiment.num_families])
     quantities = np.zeros([experiment.num_families, experiment.num_families])
 

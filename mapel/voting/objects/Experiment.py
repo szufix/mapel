@@ -16,17 +16,14 @@ import mapel.voting.print as pr
 
 import mapel.voting.elections.preflib as preflib
 
-from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS
 import math
 import csv
 import os
-from shutil import copyfile
 
-### COMMENT ON SERVER ###
-import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
-import scipy.stats as stats
-from PIL import Image
+import matplotlib.pyplot as plt
+
 
 try:
     from sklearn.manifold import MDS
@@ -34,8 +31,7 @@ try:
 except:
     pass
 
-import networkx as nx
-import numpy as np
+from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS
 
 
 
@@ -52,6 +48,7 @@ class Experiment:
 
         self.families = None
         self.distances = None
+        self.times = None
         self.points_by_families = None
 
         if experiment_id is None:
@@ -147,7 +144,10 @@ class Experiment:
         self.num_elections = sum([self.families[family_id].size for family_id in self.families])
         self.main_order = [i for i in range(self.num_elections)]
 
-        return self.generate_family_elections(family_id)
+        ids = self.generate_family_elections(family_id)
+        self.families[family_id].election_ids = ids
+
+        return ids
 
 
     def generate_family_elections(self, family_id):
@@ -195,19 +195,27 @@ class Experiment:
                                                                   family_id=family_id,
                                                                   param_1=param_1, param_2=param_2)
 
-    def compute_distances(self, distance_name='emd-positionwise', num_threads=1):
+    def compute_distances(self, distance_name='emd-positionwise', num_threads=1, self_distances=False):
         """ Compute distances between elections (using threads)"""
 
+        self.distance_name=distance_name
+
         distances = {}
+        times = {}
         for election_id in self.elections:
             distances[election_id] = {}
+            times[election_id] = {}
 
         threads = [{} for _ in range(num_threads)]
 
         ids = []
         for i, election_1 in enumerate(self.elections):
             for j, election_2 in enumerate(self.elections):
-                if i < j:
+
+                if i == j:
+                    if self_distances:
+                        ids.append((election_1, election_2))
+                elif i < j:
                     ids.append((election_1, election_2))
 
         num_distances = len(ids)
@@ -219,7 +227,7 @@ class Experiment:
             stop = int((t + 1) * num_distances / num_threads)
             thread_ids = ids[start:stop]
 
-            threads[t] = Thread(target=metr.single_thread, args=(self, distances, thread_ids, t))
+            threads[t] = Thread(target=metr.single_thread, args=(self, distances, times, thread_ids, t))
             threads[t].start()
 
         for t in range(num_threads):
@@ -240,6 +248,7 @@ class Experiment:
                             writer.writerow([election_1, election_2, distance])
 
         self.distances = distances
+        self.times = times
 
     def create_structure(self):
 
@@ -309,7 +318,7 @@ class Experiment:
         elections = {}
 
         for family_id in self.families:
-            if self.families[family_id].size == 1:
+            if self.families[family_id].single_election:
                 election_id = family_id
                 election = Election(self.experiment_id, election_id, with_matrix=with_matrices)
                 elections[election_id] = election
@@ -417,10 +426,8 @@ class Experiment:
                      angle=0, reverse=False, update=False, feature=None, attraction_factor=1, axis=False,
                      distance_name="emd-positionwise", guardians=False, ticks=None,
                      title=None,
-                     saveas=False, show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
+                     saveas=None, show=True, ms=20, normalizing_func=None, xticklabels=None, cmap=None,
                      ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
-
-        print(cmap)
 
         self.compute_points_by_families()
 
@@ -759,8 +766,11 @@ class Experiment:
         for election_id in self.elections:
             feature = features.get_feature(name)
             election = self.elections[election_id]
-            print(election_id, election)
-            value = feature(election)
+            # print(election_id, election)
+            if name in {'avg_distortion_from_guardians', 'worst_distortion_from_guardians'}:
+                value = feature(self, election_id)
+            else:
+                value = feature(election)
             # values.append(value)
             feature_dict[election_id] = value
 
@@ -901,283 +911,3 @@ class Experiment:
                 distances[election_id_1][election_id_2] = float(row['distance'])
                 distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
         return distances
-
-
-# DEPRICATED
-class Experiment_xd(Experiment):
-    """ Multi-dimensional map of elections """
-
-    def __init__(self, experiment_id, distance_name='emd-positionwise', self_distances=False):
-
-        Experiment.__init__(self, experiment_id, distance_name='emd-positionwise', elections='import',
-                            with_matrices=True)
-
-        # self.num_points, self.num_distances, self.distances = self.import_distances(experiment_id)
-        self.num_distances, self.distances, self.std = self.import_distances(experiment_id,
-                                                                             distance_name=distance_name,
-                                                                             self_distances=self_distances)
-
-    # @staticmethod
-    def import_distances(self, experiment_id, distance_name=None, self_distances=False):
-        """ Import precomputed distances between each pair of elections from a file """
-
-        file_name = str(distance_name) + '.csv'
-        path = os.path.join(os.getcwd(), "experiments", experiment_id, "distances", file_name)
-        num_points = self.num_elections
-        num_distances = int(num_points * (num_points - 1) / 2)
-
-        hist_data = {}
-        std = [[0. for _ in range(num_points)] for _ in range(num_points)]
-
-        for family_id in self.families:
-            for j in range(self.families[family_id].size):
-                election_id = family_id + '_' + str(j)
-                hist_data[election_id] = {}
-
-        with open(path, 'r', newline='') as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=',')
-
-            for row in reader:
-                election_id_1 = row['election_id_1']
-                election_id_2 = row['election_id_2']
-                hist_data[election_id_1][election_id_2] = float(row['distance'])
-                hist_data[election_id_2][election_id_1] = hist_data[election_id_1][election_id_2]
-
-        # todo: add self-distances
-        # for a in range(num_points):
-        #     limit = a+1
-        #     if self_distances:
-        #         limit = a
-        #     for b in range(limit, num_points):
-        #         line = file_.readline()
-        #         line = line.split(' ')
-        #         hist_data[a][b] = float(line[2])
-        #
-        #         # tmp correction for discrete distance
-        #         if distance_name == 'discrete':
-        #             hist_data[a][b] = self.families[0].size - hist_data[a][b]   # todo: correct this
-        #
-        #
-        #         hist_data[b][a] = hist_data[a][b]
-        #
-        #         if distance_name == 'voter_subelection':
-        #             std[a][b] = float(line[3])
-        #             std[b][a] = std[a][b]
-
-        return num_distances, hist_data, std
-
-
-# DEPRICATED
-class Experiment_2d(Experiment_xd):
-    """ Two-dimensional model of elections """
-
-    def __init__(self, experiment_id, distance_name="emd-positionwise", ignore=None, attraction_factor=1):
-
-        Experiment_xd.__init__(self, experiment_id, distance_name=distance_name)
-
-        self.attraction_factor = float(attraction_factor)
-
-        self.num_points, self.points, = self.import_points(ignore=ignore)
-        self.points_by_families = self.compute_points_by_families()
-
-    def import_points(self, ignore=None):
-        """ Import from a file precomputed coordinates of all the points -- each point refer to one election """
-
-        if ignore is None:
-            ignore = []
-
-        points = {}
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "coordinates", self.distance_name + "_2d_a" + str(float(self.attraction_factor)) + ".csv")
-
-        with open(path, 'r', newline='') as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=',')
-            ctr = 0
-            print(path)
-            for row in reader:
-                if self.main_order[ctr] < self.num_elections and self.main_order[ctr] not in ignore:
-                    points[row['election_id']] = [float(row['x']), float(row['y'])]
-                ctr += 1
-
-        return len(points), points
-
-    def compute_points_by_families(self):
-        """ Group all points by their families """
-
-        points_by_families = {}
-
-        # print(self.points)
-
-        for family_id in self.families:
-            points_by_families[family_id] = [[] for _ in range(2)]
-
-            for i in range(self.families[family_id].size):
-                election_id = family_id + '_' + str(i)
-                points_by_families[family_id][0].append(self.points[election_id][0])
-                points_by_families[family_id][1].append(self.points[election_id][1])
-
-        return points_by_families
-
-    def get_distance(self, i, j):
-        """ Compute Euclidean distance in two-dimensional space"""
-
-        distance = 0.
-        for d in range(2):
-            distance += (self.points[i][d] - self.points[j][d]) ** 2
-
-        return math.sqrt(distance)
-
-    def rotate(self, angle):
-        """ Rotate all the points by a given angle """
-
-        for i in range(self.num_points):
-            self.points[i][0], self.points[i][1] = self.rotate_point(0.5, 0.5, angle, self.points[i][0],
-                                                                     self.points[i][1])
-
-        self.points_by_families = self.compute_points_by_families()
-
-    def reverse(self):
-        """ Reverse all the points"""
-
-        for i in range(self.num_points):
-            self.points[i][0] = self.points[i][0]
-            self.points[i][1] = -self.points[i][1]
-
-        self.points_by_families = self.compute_points_by_families()
-
-    def update(self):
-        """ Save current coordinates of all the points to the original file"""
-
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "points", self.distance_name + "_2d_a" + str(self.attraction_factor) + ".csv")
-
-        with open(path, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',')
-            writer.writerow(["id", "x", "y"])
-
-            for i in range(self.num_points):
-                x = round(self.points[i][0], 5)
-                y = round(self.points[i][1], 5)
-                writer.writerow([i, x, y])
-
-    @staticmethod
-    def rotate_point(cx, cy, angle, px, py):
-        """ Rotate two-dimensional point by an angle """
-
-        s = math.sin(angle)
-        c = math.cos(angle)
-        px -= cx
-        py -= cy
-        x_new = px * c - py * s
-        y_new = px * s + py * c
-        px = x_new + cx
-        py = y_new + cy
-
-        return px, py
-
-
-# DEPRICATED
-class Experiment_3d(Experiment):
-    """ Two-dimensional model of elections """
-
-    def __init__(self, experiment_id, distance_name="emd-positionwise", ignore=None,
-                 attraction_factor=1):
-
-        Experiment.__init__(self, experiment_id, ignore=ignore, distance_name=distance_name)
-
-        self.attraction_factor = int(attraction_factor)
-
-        self.num_points, self.points, = self.import_points(ignore=ignore)
-        self.points_by_families = self.compute_points_by_families()
-
-    def import_points(self, ignore=None):
-        """ Import from a file precomputed coordinates of all the points -- each point refer to one election """
-
-        if ignore is None:
-            ignore = []
-
-        points = []
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "points", str(self.distance_name) + "_3d_a" + str(self.attraction_factor) + ".csv")
-
-        with open(path, 'r', newline='') as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=',')
-            ctr = 0
-            print(path)
-            for row in reader:
-                if self.main_order[ctr] < self.num_elections and self.main_order[ctr] not in ignore:
-                    points.append([float(row['x']), float(row['y']), float(row['z'])])
-                ctr += 1
-
-        return len(points), points
-
-    def compute_points_by_families(self):
-        """ Group all points by their families """
-
-        points_by_families = [[[] for _ in range(3)] for _ in range(self.num_families)]
-        ctr = 0
-
-        for i in range(self.num_families):
-            for j in range(self.families[i].size):
-                points_by_families[i][0].append(self.points[ctr][0])
-                points_by_families[i][1].append(self.points[ctr][1])
-                points_by_families[i][2].append(self.points[ctr][2])
-                ctr += 1
-
-        return points_by_families
-
-    def get_distance(self, i, j):
-        """ Compute Euclidean distance in two-dimensional space"""
-
-        distance = 0.
-        for d in range(2):
-            distance += (self.points[i][d] - self.points[j][d]) ** 2
-
-        return math.sqrt(distance)
-
-    def rotate(self, angle):
-        """ Rotate all the points by a given angle """
-
-        for i in range(self.num_points):
-            self.points[i][0], self.points[i][1] = self.rotate_point(0.5, 0.5, angle, self.points[i][0],
-                                                                     self.points[i][1])
-
-        self.points_by_families = self.compute_points_by_families()
-
-    def reverse(self, ):
-        """ Reverse all the points"""
-
-        for i in range(self.num_points):
-            self.points[i][0] = self.points[i][0]
-            self.points[i][1] = -self.points[i][1]
-
-        self.points_by_families = self.compute_points_by_families()
-
-    def update(self):
-        """ Save current coordinates of all the points to the original file"""
-
-        file_name = self.experiment_id + ".txt"
-        path = os.path.join(os.getcwd(), "results", "points", file_name)
-        file_ = open(path, 'w')
-        file_.write(str(self.num_points) + "\n")
-
-        for i in range(self.num_points):
-            x = round(self.points[i][0], 5)
-            y = round(self.points[i][1], 5)
-            file_.write(str(x) + ', ' + str(y) + "\n")
-        file_.close()
-
-    @staticmethod
-    def rotate_point(cx, cy, angle, px, py):
-        """ Rotate two-dimensional point by angle """
-
-        s = math.sin(angle)
-        c = math.cos(angle)
-        px -= cx
-        py -= cy
-        x_new = px * c - py * s
-        y_new = px * s + py * c
-        px = x_new + cx
-        py = y_new + cy
-
-        return px, py
