@@ -5,10 +5,10 @@ from mapel.voting.elections.group_separable import get_gs_caterpillar_vectors
 from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
 from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 
-from . import _elections as el
+import mapel.voting._elections as el
 
-from .objects.Election import Election, get_fake_vectors_single, get_fake_convex
-from .objects.Experiment import Experiment
+from mapel.voting.objects.Election import Election, get_fake_vectors_single, get_fake_convex
+from mapel.voting.objects.Experiment import Experiment
 
 import numpy as np
 import os

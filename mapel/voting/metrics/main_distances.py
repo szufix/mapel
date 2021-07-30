@@ -5,11 +5,11 @@ import random as rand
 import time
 
 import numpy as np
-from . import lp
+from mapel.voting.metrics import lp
 
 from scipy.optimize import linear_sum_assignment
 
-from .inner_distances import map_str_to_func
+from mapel.voting.metrics.inner_distances import map_str_to_func
 
 
 # MAIN DISTANCES

@@ -3,13 +3,13 @@ import mapel
 if __name__ == "__main__":
 
     # VARIANT 1
-    experiment = mapel.prepare_experiment(experiment_id='test')
-    experiment.prepare_elections()
-    experiment.compute_distances()
-    experiment.embed()
-    experiment.compute_feature('highest_borda_score')
-    cmap = mapel.custom_div_cmap(colors=["orange", "red", "purple", "black"], num_colors=11)
-    experiment.print_map(feature='highest_borda_score', cmap=cmap)
+    experiment = mapel.prepare_experiment(experiment_id='tymczasowe_6')
+    # experiment.prepare_elections()
+    # experiment.compute_distances()
+    # experiment.embed()
+    # experiment.compute_feature('highest_borda_score')
+    # cmap = mapel.custom_div_cmap(colors=["orange", "red", "purple", "black"], num_colors=11)
+    # experiment.print_map(feature='highest_borda_score', cmap=cmap)
 
     # VARIANT 2
     # experiment = mapel.prepare_experiment(experiment_id='kangaroo', elections='import')

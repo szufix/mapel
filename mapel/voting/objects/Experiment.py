@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 
-from .Election import Election
-from .Family import Family
+from mapel.voting.objects.Election import Election
+from mapel.voting.objects.Family import Family
 
 import mapel.voting._elections as _elections
 import mapel.voting.features as features

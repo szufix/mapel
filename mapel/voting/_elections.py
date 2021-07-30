@@ -22,7 +22,7 @@ from collections import Counter
 import numpy as np
 from scipy.stats import gamma
 
-from .objects.Election import Election
+from mapel.voting.objects.Election import Election
 
 import mapel.voting.elections.preflib as preflib
 
