@@ -43,7 +43,7 @@ class Experiment:
 
         self.distance_name = distance_name
         self.elections = {}
-        self.default_num_candidate = 10
+        self.default_num_candidates = 10
         self.default_num_voters = 100
 
         self.families = None
@@ -91,7 +91,7 @@ class Experiment:
                      num_candidates=None, num_voters=None, election_id=None):
 
         if num_candidates is None:
-            num_candidates = self.default_num_candidate
+            num_candidates = self.default_num_candidates
 
         if num_voters is None:
             num_voters = self.default_num_voters
