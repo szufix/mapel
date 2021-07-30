@@ -7,16 +7,16 @@ from threading import Thread
 import matplotlib.pyplot as plt
 import numpy as np
 
-from . import _elections as el
-from . import metrics as metr
-from . import winners as win
-from . import features
+import mapel.voting._elections as el
+import mapel.voting.metrics as metr
+import mapel.voting.winners as win
+import mapel.voting.features
 import copy
 
 import itertools
-from .objects.Experiment import Experiment
-from .objects.Election import Election
-from .metrics.inner_distances import l2
+from mapel.voting.objects.Experiment import Experiment
+from mapel.voting.objects.Election import Election
+from mapel.voting.metrics.inner_distances import l2
 
 import mapel.voting._metrics as metr
 

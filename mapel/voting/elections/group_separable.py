@@ -6,14 +6,13 @@ import numpy as np
 from scipy.special import binom
 
 
-def _decompose_tree(n, m, r):
+def _decompose_tree(num_leaves, num_internal_nodes):
     """ Algorithm from: Uniform generation of a Schroder tree"""
 
-    n = n + r
-    k = r
+    num_nodes = num_leaves + num_internal_nodes
 
-    patterns = _generate_patterns(n, k)
-    seq, sizes = _generate_tree(n, k, patterns)
+    patterns = _generate_patterns(num_nodes, num_internal_nodes)
+    seq, sizes = _generate_tree(num_nodes, num_internal_nodes, patterns)
 
     seq = cycle_lemma(seq)
 
@@ -24,43 +23,47 @@ def _decompose_tree(n, m, r):
 
 def generate_group_separable_election(num_voters=None, num_candidates=None, param_1=0):
     """ Algorithm from: The Complexity of Election Problems with Group-Separable Preferences"""
+    while True:
+        try:
+            m = num_candidates
+            n = num_voters
 
-    m = num_candidates
-    n = num_voters
+            if param_1 == 0:
+                func = lambda m, r: 1./(m-1) * binom(m - 1, r) * binom(m - 1 + r, m)
+                buckets = [func(m, r) for r in range(1, m)]
 
-    if param_1 == 0:
-        # todo: change this part
-        func = lambda m, n, j: binom(m - 1, j) * binom(m - 1 + j, m) * (2 ** (n - 1) - 1) ** (j - 1)
-        buckets = [func(m, n, j) for j in range(1, m)]
+                denominator = sum(buckets)
+                buckets = [buckets[i]/denominator for i in range(len(buckets))]
 
-        denominator = sum(buckets)
-        buckets = [buckets[i]/denominator for i in range(len(buckets))]
+                num_internal_nodes = np.random.choice(len(buckets), 1, p=buckets)[0]
 
-        r = np.random.choice(len(buckets), 1, p=buckets)[0]
+                decomposition_tree = _decompose_tree(num_candidates, num_internal_nodes)
 
-        decomposition_tree = _decompose_tree(m, n, r)
+            elif param_1 == 3:
+                decomposition_tree = _caterpillar(m)
 
-    elif param_1 == 3:
-        decomposition_tree = _caterpillar(m)
+            all_inner_nodes = get_all_inner_nodes(decomposition_tree)
 
-    all_inner_nodes = get_all_inner_nodes(decomposition_tree)
+            votes = []
+            for i in range(n):
 
-    votes = []
-    for i in range(n):
+                signature = [rand.choice([0, 1]) for _ in range(len(all_inner_nodes))]
 
-        signature = [rand.choice([0, 1]) for _ in range(len(all_inner_nodes))]
+                for i, node in enumerate(all_inner_nodes):
+                    node.reverse = signature[i]
 
-        for i, node in enumerate(all_inner_nodes):
-            node.reverse = signature[i]
+                raw_vote = sample_a_vote(decomposition_tree)
+                vote = [int(candidate.replace('x', '')) for candidate in raw_vote]
+                votes.append(vote)
 
-        raw_vote = sample_a_vote(decomposition_tree)
-        vote = [int(candidate.replace('x', '')) for candidate in raw_vote]
-        votes.append(vote)
+                for i, node in enumerate(all_inner_nodes):
+                    node.reverse = False
 
-        for i, node in enumerate(all_inner_nodes):
-            node.reverse = False
+            return votes
 
-    return votes
+        except:
+            print('failed')
+            pass
 
 
 REVERSE = {}
@@ -140,19 +143,15 @@ class Node:
         self.leaf = False
 
 
-def _generate_patterns(n, k):
+def _generate_patterns(num_nodes, num_internal_nodes):
     # Step 1: Mixing the patterns
-    patterns = ['M0' for _ in range(n-k)] + ['M1' for _ in range(k)]
+    patterns = ['M0' for _ in range(num_nodes-num_internal_nodes)] + ['M1' for _ in range(num_internal_nodes)]
     rand.shuffle(patterns)
     return patterns
 
 
-def _generate_tree(n, k, patterns):
+def _generate_tree(num_nodes, num_internal_nodes, patterns):
     """ Algorithm from: A linear-time algorithm for the generation of trees """
-
-    # n - number of nodes
-    # k - number of internal nodes
-
 
     sequence = []
     sizes = []
@@ -171,14 +170,12 @@ def _generate_tree(n, k, patterns):
             sizes.append(4)
             larges.append(i)
 
-
-    num_vertices = n
     num_classical_edges = 0
-    num_semi_edges = 2*k
-    num_multi_edges = k
+    num_semi_edges = 2*num_internal_nodes
+    num_multi_edges = num_internal_nodes
     num_trees = 1
     pos = 1
-    num_edges = num_vertices - num_trees - num_semi_edges - num_classical_edges
+    num_edges = num_nodes - num_trees - num_semi_edges - num_classical_edges
 
     pos_to_insert = []
     for i, elem in enumerate(sequence):

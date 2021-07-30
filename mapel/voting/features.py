@@ -6,12 +6,11 @@ import numpy as np
 import random as rand
 import math
 
-from . import objects as obj
-from .metrics import lp
-from . import development as dev
+from mapel.voting.metrics import lp
+import mapel.voting.development as dev
 
-from .objects.Experiment import Experiment
-from .metrics.inner_distances import l2
+# from mapel.voting.objects.Experiment import Experiment
+from mapel.voting.metrics.inner_distances import l2
 
 
 ### MAPPING ###

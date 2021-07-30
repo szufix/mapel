@@ -23,7 +23,6 @@ import numpy as np
 from scipy.stats import gamma
 
 from .objects.Election import Election
-# from .objects.Family import Family
 
 import mapel.voting.elections.preflib as preflib
 

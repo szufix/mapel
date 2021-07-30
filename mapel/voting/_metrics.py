@@ -6,15 +6,13 @@ import numpy as np
 import time
 from threading import Thread
 
-#from .objects.Experiment import Experiment, Experiment_xd, Experiment_2d, Experiment_3d
-# import mapel.voting.objects.Experiment as obj
 
-from .objects.Election import Election
+from mapel.voting.objects.Election import Election
 
 from time import sleep
 import csv
 
-from .metrics import main_distances as md
+from mapel.voting.metrics import main_distances as md
 
 # from mapel.voting.matrices import get_positionwise_matrix
 
