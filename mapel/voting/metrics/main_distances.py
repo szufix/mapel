@@ -96,8 +96,8 @@ def get_matching_cost_positionwise(ele_1, ele_2, inner_distance):
     """ Get matching cost for positionwise distances """
     vectors_1 = ele_1.get_vectors()
     vectors_2 = ele_2.get_vectors()
-    print(vectors_1)
-    print(vectors_2)
+    # print(vectors_1)
+    # print(vectors_2)
     size = ele_1.num_candidates
     cost_table = [[inner_distance(list(vectors_1[i]), list(vectors_2[j]), size) for i in range(size)] for j in range(size)]
     return cost_table
