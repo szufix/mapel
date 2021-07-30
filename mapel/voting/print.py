@@ -11,7 +11,7 @@ import scipy.stats as stats
 from PIL import Image
 
 from mapel.voting import _elections as el
-from mapel.voting import metrics as metr
+from mapel.voting import _metrics as metr
 import csv
 
 # from mapel.voting.objects.Experiment import Experiment, Experiment_xd, Experiment_2d, Experiment_3d

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import mapel.voting._elections as el
-import mapel.voting.metrics as metr
+
 import mapel.voting.winners as win
 import mapel.voting.features
 import copy

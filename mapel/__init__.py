@@ -1,11 +1,11 @@
 
-from mapel.voting import _elections as el
-from mapel.voting import embedding as emb
-from mapel.voting import _metrics as metr
+# from mapel.voting import _elections as el
+# from mapel.voting import embedding as emb
+# from mapel.voting import _metrics as metr
 from mapel.voting import print as pr
 from mapel.voting import development as dev
-from mapel.voting import matrices as mat
-from mapel.voting import features
+# from mapel.voting import matrices as mat
+# from mapel.voting import features
 
 
 def hello():
@@ -16,14 +16,14 @@ def hello():
 #####################
 
 
-def generate_election(**kwargs):
-    return el.generate_election(**kwargs)
-
-
-def generate_experiment(**kwargs):
-    return dev.generate_experiment(**kwargs)
-
-
+# def generate_election(**kwargs):
+#     return el.generate_election(**kwargs)
+#
+# #
+# def generate_experiment(**kwargs):
+#     return dev.generate_experiment(**kwargs)
+# #
+#
 def prepare_experiment(**kwargs):
     return dev.prepare_experiment(**kwargs)
 
@@ -40,12 +40,12 @@ def prepare_experiment(**kwargs):
 
 
 
-def prepare_elections(experiment_id, **kwargs):
-    el.prepare_elections(experiment_id, **kwargs)
+# def prepare_elections(experiment_id, **kwargs):
+#     el.prepare_elections(experiment_id, **kwargs)
 
-
-def prepare_matrices(experiment_id, **kwargs):
-    mat.prepare_matrices(experiment_id, **kwargs)
+#
+# def prepare_matrices(experiment_id, **kwargs):
+#     mat.prepare_matrices(experiment_id, **kwargs)
 
 
 ###########################
@@ -53,12 +53,12 @@ def prepare_matrices(experiment_id, **kwargs):
 ###########################
 
 
-def compute_distances(experiment_id, **kwargs):
-    metr.compute_distances(experiment_id, **kwargs)
+# def compute_distances(experiment_id, **kwargs):
+#     metr.compute_distances(experiment_id, **kwargs)
 
 
-def compute_distances_between_votes(*args):
-    return metr.compute_distances_between_votes(*args)
+# def compute_distances_between_votes(*args):
+#     return metr.compute_distances_between_votes(*args)
 
 
 # def compute_distances_between_matrices(*args):
@@ -70,16 +70,16 @@ def compute_distances_between_votes(*args):
 #################
 
 
-def convert_xd_to_2d(experiment, **kwargs):
-    emb.convert_xd_to_2d(experiment, **kwargs)
-
-
-def convert_xd_to_3d(experiment, **kwargs):
-    emb.convert_xd_to_3d(experiment, **kwargs)
-
-
-def embed(distances, **kwargs):
-    return emb.embed(distances, **kwargs)
+# def convert_xd_to_2d(experiment, **kwargs):
+#     emb.convert_xd_to_2d(experiment, **kwargs)
+#
+#
+# def convert_xd_to_3d(experiment, **kwargs):
+#     emb.convert_xd_to_3d(experiment, **kwargs)
+#
+#
+# def embed(distances, **kwargs):
+#     return emb.embed(distances, **kwargs)
 
 # def convert_using_tsne(experiment, **kwargs):
 #     emb.convert_using_tsne(experiment, **kwargs)
@@ -91,42 +91,42 @@ def embed(distances, **kwargs):
 ################
 ### PRINTING ###
 ################
+#
+#
+# def print_2d(experiment_id, **kwargs):
+#     pr.print_2d(experiment_id, **kwargs)
+#
+#
+# def print_3d(experiment_id, **kwargs):
+#     pr.print_3d(experiment_id, **kwargs)
+#
+#
+# def print_matrix(**kwargs):
+#     pr.print_matrix(**kwargs)
+#
+#
+# def print_param_vs_distance(experiment_id, **kwargs):
+#     pr.print_param_vs_distance(experiment_id, **kwargs)
 
 
-def print_2d(experiment_id, **kwargs):
-    pr.print_2d(experiment_id, **kwargs)
-
-
-def print_3d(experiment_id, **kwargs):
-    pr.print_3d(experiment_id, **kwargs)
-
-
-def print_matrix(**kwargs):
-    pr.print_matrix(**kwargs)
-
-
-def print_param_vs_distance(experiment_id, **kwargs):
-    pr.print_param_vs_distance(experiment_id, **kwargs)
-
-
-def print_map(coordinates, **kwargs):
-    pr.print_map(coordinates, **kwargs)
+# def print_map(coordinates, **kwargs):
+#     pr.print_map(coordinates, **kwargs)
 
 ######################
 ### COMPUTE SCORES ###
 ######################
 
 
-def compute_highest_plurality(experiment_id):
-    dev.compute_highest_plurality(experiment_id)
+# def compute_highest_plurality(experiment_id):
+#     dev.compute_highest_plurality(experiment_id)
+#
+#
+# def compute_highest_borda(experiment_id):
+#     dev.compute_highest_borda(experiment_id)
 
 
-def compute_highest_borda(experiment_id):
-    dev.compute_highest_borda(experiment_id)
-
-
-def compute_lowest_dodgson(experiment_id):
-    dev.compute_lowest_dodgson(experiment_id)
+# def compute_lowest_dodgson(experiment_id):
+    # dev.compute_lowest_dodgson(experiment_id)
 
 
 #########################
@@ -143,32 +143,32 @@ def compute_lowest_dodgson(experiment_id):
 #########################
 
 
-def get_distance(election_1, election_2, **kwargs):
-    return metr.get_distance(election_1, election_2, **kwargs)
+# def get_distance(election_1, election_2, **kwargs):
+#     return metr.get_distance(election_1, election_2, **kwargs)
+#
+#
+# def import_election(experiment_id, election_id):
+#     return el.import_election(experiment_id, election_id)
+#
+#
+# def compute_subelection_weird(**kwargs):
+#     dev.compute_subelection_weird(**kwargs)
+#
+#
+# def compute_winners(experiment_id, **kwargs):
+#     dev.compute_winners(experiment_id, **kwargs)
 
 
-def import_election(experiment_id, election_id):
-    return el.import_election(experiment_id, election_id)
+# def compute_effective_num_candidates(experiment_id, **kwargs):
+#     dev.compute_effective_num_candidates(experiment_id, **kwargs)
+#
+#
+# def compute_condorcet_existence(experiment_id):
+#     dev.compute_condorcet_existence(experiment_id)
 
 
-def compute_subelection_weird(**kwargs):
-    dev.compute_subelection_weird(**kwargs)
-
-
-def compute_winners(experiment_id, **kwargs):
-    dev.compute_winners(experiment_id, **kwargs)
-
-
-def compute_effective_num_candidates(experiment_id, **kwargs):
-    dev.compute_effective_num_candidates(experiment_id, **kwargs)
-
-
-def compute_condorcet_existence(experiment_id):
-    dev.compute_condorcet_existence(experiment_id)
-
-
-def create_structure(experiment_id):
-    dev.create_structure(experiment_id)
+# def create_structure(experiment_id):
+#     dev.create_structure(experiment_id)
 
 
 # def get_matrix(experiment_id, **kwargs):
@@ -176,22 +176,21 @@ def create_structure(experiment_id):
 
 
 # On OVERLEAF :)
-def generate_votes(**kwargs):
-    return el.generate_votes(**kwargs)
+# def generate_votes(**kwargs):
+#     return el.generate_votes(**kwargs)
+#
+#
+#
+# def generate_positionwise_matrix(**kwargs):
+#     return mat.generate_positionwise_matrix(**kwargs)
+#
+#
+# def get_positionwise_matrix(votes):
+#     return mat.get_positionwise_matrix(votes)
 
 
-
-def generate_positionwise_matrix(**kwargs):
-    return mat.generate_positionwise_matrix(**kwargs)
-
-
-def get_positionwise_matrix(votes):
-    return mat.get_positionwise_matrix(votes)
-
-
-def compute_feature(experiment_id, name, **kwargs):
-    features.compute_feature(experiment_id, name, **kwargs)
-
+# def compute_feature(experiment_id, name, **kwargs):
+#     features.compute_feature(experiment_id, name, **kwargs)
 
 def custom_div_cmap(**kwargs):
     return pr.custom_div_cmap(**kwargs)
