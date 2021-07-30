@@ -11,6 +11,19 @@ import mapel.voting.development as dev
 def hello():
     print("Hello!")
 
+
+def prepare_experiment(**kwargs):
+    return dev.prepare_experiment(**kwargs)
+
+
+def custom_div_cmap(**kwargs):
+    return pr.custom_div_cmap(**kwargs)
+
+
+def print_matrix(**kwargs):
+    pr.print_matrix(**kwargs)
+
+
 #####################
 ### ONLINE CODING ###
 #####################
@@ -24,8 +37,7 @@ def hello():
 #     return dev.generate_experiment(**kwargs)
 # #
 #
-def prepare_experiment(**kwargs):
-    return dev.prepare_experiment(**kwargs)
+
 
 
 # def generate_family(**kwargs):
@@ -101,8 +113,7 @@ def prepare_experiment(**kwargs):
 #     pr.print_3d(experiment_id, **kwargs)
 #
 #
-# def print_matrix(**kwargs):
-#     pr.print_matrix(**kwargs)
+
 #
 #
 # def print_param_vs_distance(experiment_id, **kwargs):
@@ -193,5 +204,3 @@ def prepare_experiment(**kwargs):
 #     features.compute_feature(experiment_id, name, **kwargs)
 
 
-def custom_div_cmap(**kwargs):
-    return pr.custom_div_cmap(**kwargs)

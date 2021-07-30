@@ -24,46 +24,41 @@ def _decompose_tree(num_leaves, num_internal_nodes):
 def generate_group_separable_election(num_voters=None, num_candidates=None, param_1=0):
     """ Algorithm from: The Complexity of Election Problems with Group-Separable Preferences"""
     while True:
-        try:
-            m = num_candidates
-            n = num_voters
+        m = num_candidates
+        n = num_voters
 
-            if param_1 == 0:
-                func = lambda m, r: 1./(m-1) * binom(m - 1, r) * binom(m - 1 + r, m)
-                buckets = [func(m, r) for r in range(1, m)]
+        if param_1 == 0:
+            func = lambda m, r: 1./(m-1) * binom(m - 1, r) * binom(m - 1 + r, m)
+            buckets = [func(m, r) for r in range(1, m)]
 
-                denominator = sum(buckets)
-                buckets = [buckets[i]/denominator for i in range(len(buckets))]
+            denominator = sum(buckets)
+            buckets = [buckets[i]/denominator for i in range(len(buckets))]
 
-                num_internal_nodes = np.random.choice(len(buckets), 1, p=buckets)[0]
+            num_internal_nodes = np.random.choice(len(buckets), 1, p=buckets)[0]+1
 
-                decomposition_tree = _decompose_tree(num_candidates, num_internal_nodes)
+            decomposition_tree = _decompose_tree(num_candidates, num_internal_nodes)
 
-            elif param_1 == 3:
-                decomposition_tree = _caterpillar(m)
+        elif param_1 == 3:
+            decomposition_tree = _caterpillar(m)
 
-            all_inner_nodes = get_all_inner_nodes(decomposition_tree)
+        all_inner_nodes = get_all_inner_nodes(decomposition_tree)
 
-            votes = []
-            for i in range(n):
+        votes = []
+        for i in range(n):
 
-                signature = [rand.choice([0, 1]) for _ in range(len(all_inner_nodes))]
+            signature = [rand.choice([0, 1]) for _ in range(len(all_inner_nodes))]
 
-                for i, node in enumerate(all_inner_nodes):
-                    node.reverse = signature[i]
+            for i, node in enumerate(all_inner_nodes):
+                node.reverse = signature[i]
 
-                raw_vote = sample_a_vote(decomposition_tree)
-                vote = [int(candidate.replace('x', '')) for candidate in raw_vote]
-                votes.append(vote)
+            raw_vote = sample_a_vote(decomposition_tree)
+            vote = [int(candidate.replace('x', '')) for candidate in raw_vote]
+            votes.append(vote)
 
-                for i, node in enumerate(all_inner_nodes):
-                    node.reverse = False
+            for i, node in enumerate(all_inner_nodes):
+                node.reverse = False
 
-            return votes
-
-        except:
-            print('failed')
-            pass
+        return votes
 
 
 REVERSE = {}

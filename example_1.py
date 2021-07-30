@@ -1,6 +1,7 @@
 import mapel
 
 if __name__ == "__main__":
+
     experiment = mapel.prepare_experiment()
 
     experiment.set_default_num_candidates(8)
