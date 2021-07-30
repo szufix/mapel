@@ -10,8 +10,9 @@ from mapel.voting.elections.group_separable import get_gs_caterpillar_vectors
 from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
 from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 from mapel.voting.elections.mallows import get_mallows_vectors
+from mapel.voting.elections.preflib import get_sushi_vectors
 
-from mapel.voting.glossary import LIST_OF_FAKE_MODELS
+from mapel.voting.glossary import LIST_OF_FAKE_MODELS, LIST_OF_PREFLIB_MODELS
 
 
 class Election:
@@ -107,6 +108,8 @@ class Election:
             vectors = get_single_crossing_vectors(self.num_candidates)
         elif self.election_model == 'gs_caterpillar_matrix':
             vectors=get_gs_caterpillar_vectors(self.num_candidates)
+        elif self.election_model == 'sushi_matrix':
+            vectors=get_sushi_vectors()
         elif self.election_model == 'norm-mallows_matrix':
             vectors=get_mallows_vectors(self.num_candidates, self.fake_param)
         elif self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
@@ -514,5 +517,11 @@ def import_soc_elections(experiment_id, election_id):
             for l in range(num_candidates):
                 votes[it][l] = int(line[l + 1])
             it += 1
+
+    # Shift by -1
+    if model_name in LIST_OF_PREFLIB_MODELS:
+        for i in range(num_voters):
+            for j in range(num_candidates):
+                votes[i][j] -= 1
 
     return votes, num_voters, num_candidates, param, model_name

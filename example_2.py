@@ -29,9 +29,12 @@ if __name__ == "__main__":
     experiment.add_election(election_model='conitzer_matrix', color='cyan')
     experiment.add_election(election_model='walsh_matrix', color='lime')
     experiment.add_election(election_model='gs_caterpillar_matrix', color='brown')
+    experiment.add_election(election_model='sushi_matrix', color='orange')
 
     experiment.compute_distances()
     experiment.embed(algorithm='mds')
+
+    experiment.print_map()
 
     experiment.compute_feature(name='highest_borda_score')
     experiment.print_map(feature='highest_borda_score')
