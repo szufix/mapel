@@ -115,7 +115,7 @@ class Experiment:
         """ Only add the Family; the Elections will be generated later"""
 
         if num_candidates is None:
-            num_candidates = self.default_num_candidate
+            num_candidates = self.default_num_candidates
 
         if num_voters is None:
             num_voters = self.default_num_voters
