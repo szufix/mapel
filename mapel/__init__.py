@@ -2,8 +2,8 @@
 # from mapel.voting import _elections as el
 # from mapel.voting import embedding as emb
 # from mapel.voting import _metrics as metr
-from mapel.voting import print as pr
-from mapel.voting import development as dev
+import mapel.voting.print as pr
+import mapel.voting.development as dev
 # from mapel.voting import matrices as mat
 # from mapel.voting import features
 
@@ -191,6 +191,7 @@ def prepare_experiment(**kwargs):
 
 # def compute_feature(experiment_id, name, **kwargs):
 #     features.compute_feature(experiment_id, name, **kwargs)
+
 
 def custom_div_cmap(**kwargs):
     return pr.custom_div_cmap(**kwargs)
