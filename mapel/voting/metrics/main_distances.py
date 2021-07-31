@@ -16,8 +16,8 @@ from mapel.voting.metrics.inner_distances import map_str_to_func
 def compute_positionwise_distance(election_1, election_2, inner_distance):
     """ Compute Positionwise distance between elections """
     cost_table = get_matching_cost_positionwise(election_1, election_2, map_str_to_func(inner_distance))
-    objective_value = solve_matching_vectors(cost_table)
-    return objective_value
+    objective_value, matching = solve_matching_vectors(cost_table)
+    return objective_value, matching
 
 
 def compute_agg_voterlikeness_distance(election_1, election_2, inner_distance):
@@ -96,8 +96,6 @@ def get_matching_cost_positionwise(ele_1, ele_2, inner_distance):
     """ Get matching cost for positionwise distances """
     vectors_1 = ele_1.get_vectors()
     vectors_2 = ele_2.get_vectors()
-    # print(vectors_1)
-    # print(vectors_2)
     size = ele_1.num_candidates
     cost_table = [[inner_distance(list(vectors_1[i]), list(vectors_2[j]), size) for i in range(size)] for j in range(size)]
     return cost_table
@@ -106,7 +104,7 @@ def get_matching_cost_positionwise(ele_1, ele_2, inner_distance):
 def solve_matching_vectors(cost_table):
     cost_table = np.array(cost_table)
     row_ind, col_ind = linear_sum_assignment(cost_table)
-    return cost_table[row_ind, col_ind].sum()
+    return cost_table[row_ind, col_ind].sum(), list(col_ind)
 
 
 def solve_matching_matrices(matrix_1, matrix_2, length, inner_distance):

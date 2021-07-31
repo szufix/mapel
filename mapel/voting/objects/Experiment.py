@@ -34,7 +34,6 @@ except:
 from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS
 
 
-
 class Experiment:
     """Abstract set of elections."""
 
@@ -50,6 +49,7 @@ class Experiment:
         self.distances = None
         self.times = None
         self.points_by_families = None
+        self.matchings = None
 
         if experiment_id is None:
             self.store = False
@@ -198,13 +198,15 @@ class Experiment:
     def compute_distances(self, distance_name='emd-positionwise', num_threads=1, self_distances=False):
         """ Compute distances between elections (using threads)"""
 
-        self.distance_name=distance_name
+        self.distance_name = distance_name
 
+        matchings = {}
         distances = {}
         times = {}
         for election_id in self.elections:
             distances[election_id] = {}
             times[election_id] = {}
+            matchings[election_id] = {}
 
         threads = [{} for _ in range(num_threads)]
 
@@ -227,7 +229,7 @@ class Experiment:
             stop = int((t + 1) * num_distances / num_threads)
             thread_ids = ids[start:stop]
 
-            threads[t] = Thread(target=metr.single_thread, args=(self, distances, times, thread_ids, t))
+            threads[t] = Thread(target=metr.single_thread, args=(self, distances, times, thread_ids, t, matchings))
             threads[t].start()
 
         for t in range(num_threads):
@@ -249,6 +251,7 @@ class Experiment:
 
         self.distances = distances
         self.times = times
+        self.matchings = matchings
 
     def create_structure(self):
 
