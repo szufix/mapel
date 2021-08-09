@@ -310,7 +310,6 @@ def prepare_preflib_family(experiment_id, experiment=None, election_model=None,
 
 def prepare_statistical_culture_family(experiment=None, election_model=None, family_id=None,
                                        params=None):
-    print(family_id)
 
     try:
         copy_param_1 = params['norm-phi']
@@ -343,8 +342,10 @@ def prepare_statistical_culture_family(experiment=None, election_model=None, fam
 
     for j in range(experiment.families[family_id].size):
         # print(j)
+        copy_param_1 = 4
 
         if election_model in {'unid', 'stan', 'anid', 'stid', 'anun', 'stun'}:
+            params = {}
             if copy_param_1 == 0:  # with both
                 params['param_1'] = j / (experiment.families[family_id].size - 1)
             elif copy_param_1 == 1:  # without first (which is last)

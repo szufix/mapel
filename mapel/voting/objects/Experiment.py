@@ -150,7 +150,6 @@ class Experiment:
         self.num_elections = sum([self.families[family_id].size for family_id in self.families])
         self.main_order = [i for i in range(self.num_elections)]
 
-        # print(family_id)
         ids = self.generate_family_elections(family_id)
         self.families[family_id].election_ids = ids
 
@@ -346,8 +345,8 @@ class Experiment:
         coordinates = self.import_cooridnates()
         return coordinates
 
-    def embed(self, attraction_factor=1, algorithm='spring', num_iterations=1000,
-              distance_name='emd-positionwise', num_neighbors=100, method='standard'):
+    def embed(self, attraction_factor=1, algorithm='spring', num_iterations=1000, radius=np.infty,
+              distance_name='emd-positionwise', num_neighbors=None, method='standard'):
         num_elections = len(self.distances)
 
         X = np.zeros((num_elections, num_elections))
@@ -358,7 +357,21 @@ class Experiment:
                     if self.distances[election_1_id][election_2_id] == 0:
                         self.distances[election_1_id][election_2_id] = 0.01
                     if algorithm in {'spring'}:
-                        X[i][j] = 1. / self.distances[election_1_id][election_2_id]
+                        normal = True
+                        if self.distances[election_1_id][election_2_id] > radius:
+                            X[i][j] = 0.
+                            normal = False
+                        if num_neighbors is not None:
+                            x = self.distances[election_1_id]
+                            sorted_list_1 = list((dict(sorted(x.items(), key=lambda item: item[1]))).keys())
+                            x = self.distances[election_2_id]
+                            sorted_list_2 = list((dict(sorted(x.items(), key=lambda item: item[1]))).keys())
+                            if (election_1_id not in sorted_list_2[0:num_neighbors]) and (
+                                    election_2_id not in sorted_list_1[0:num_neighbors]):
+                                X[i][j] = 0.
+                                normal = False
+                        if normal:
+                            X[i][j] = 1. / self.distances[election_1_id][election_2_id]
                     else:
                         X[i][j] = self.distances[election_1_id][election_2_id]
                     X[i][j] = X[i][j] ** attraction_factor
@@ -367,6 +380,9 @@ class Experiment:
         dt = [('weight', float)]
         X = X.view(dt)
         G = nx.from_numpy_matrix(X)
+
+        if num_neighbors is None:
+            num_neighbors = 100
 
         if algorithm == 'spring':
             my_pos = nx.spring_layout(G, iterations=num_iterations, dim=2)
@@ -719,10 +735,13 @@ class Experiment:
     def compute_points_by_families(self):
         """ Group all points by their families """
 
+        self.points_by_families = None
+
         COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
 
         if self.points_by_families is None:
             points_by_families = {}
+
 
         ### NEW ###
         if self.families is None:
