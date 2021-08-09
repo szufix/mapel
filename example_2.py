@@ -32,7 +32,7 @@ if __name__ == "__main__":
     experiment.add_election(election_model='sushi_matrix', color='orange')
 
     experiment.compute_distances()
-    experiment.embed(algorithm='mds')
+    experiment.embed(algorithm='lle')
 
     experiment.print_map()
 

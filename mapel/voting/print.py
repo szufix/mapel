@@ -22,7 +22,7 @@ def get_values_from_csv_file(experiment, feature):
 
     values = {}
     with open(path, 'r', newline='') as csv_file:
-        reader = csv.DictReader(csv_file, delimiter=',')
+        reader = csv.DictReader(csv_file, delimiter=';')
 
         for row in reader:
             election_id = row['election_id']
@@ -627,6 +627,7 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
     # CREATE MAPPING FOR BUCKETS
     bucket = np.array([[family_id for _ in range(experiment.families[family_id].size)] for family_id in experiment.families]).flatten()
 
+
     # CREATE MAPPING FOR ELECTIONS
     mapping = {}
     ctr = 0
@@ -634,7 +635,6 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
         for election_id in experiment.families[family_id].election_ids:
             mapping[ctr] = election_id
             ctr += 1
-
 
     # PREPARE EMPTY DICTS
     matrix = {}
@@ -656,6 +656,7 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
                 matrix[bucket[i]][bucket[j]] += experiment.times[mapping[i]][mapping[j]]
             else:
                 print('map', mapping[i], mapping[j])
+                print(experiment.distances)
                 print(experiment.distances[mapping[i]][mapping[j]])
                 matrix[bucket[i]][bucket[j]] += experiment.distances[mapping[i]][mapping[j]]
             quantities[bucket[i]][bucket[j]] += 1

@@ -162,8 +162,8 @@ def print_matrix(**kwargs):
 #     return el.import_election(experiment_id, election_id)
 #
 #
-# def compute_subelection_weird(**kwargs):
-#     dev.compute_subelection_weird(**kwargs)
+def compute_subelection_weird(**kwargs):
+    dev.compute_subelection_weird(**kwargs)
 #
 #
 # def compute_winners(experiment_id, **kwargs):

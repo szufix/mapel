@@ -79,7 +79,7 @@ def compute_discrete_distance(election_1, election_2):
 def compute_voter_subelection(election_1, election_2):
     """ Compute Voter-Subelection """
     objective_value = lp.solve_lp_voter_subelection(election_1, election_2)
-    return objective_value
+    return objective_value, None
 
 
 def compute_candidate_subelection(election_1, election_2):
@@ -88,7 +88,7 @@ def compute_candidate_subelection(election_1, election_2):
     path = os.path.join(os.getcwd(), "trash", file_name)
     objective_value = lp.solve_lp_candidate_subelections(path, election_1, election_2)
     lp.remove_lp_file(path)
-    return objective_value
+    return objective_value, None
 
 
 ### HELPER FUNCTIONS ###

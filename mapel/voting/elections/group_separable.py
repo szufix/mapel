@@ -21,13 +21,16 @@ def _decompose_tree(num_leaves, num_internal_nodes):
     return tree
 
 
-def generate_group_separable_election(num_voters=None, num_candidates=None, param_1=0):
+def generate_group_separable_election(num_voters=None, num_candidates=None, params=None):
     """ Algorithm from: The Complexity of Election Problems with Group-Separable Preferences"""
+    if params is None or params == {}:
+        params = {'param_1': 0}
+
     while True:
         m = num_candidates
         n = num_voters
 
-        if param_1 == 0:
+        if params['param_1'] == 0:
             func = lambda m, r: 1./(m-1) * binom(m - 1, r) * binom(m - 1 + r, m)
             buckets = [func(m, r) for r in range(1, m)]
 
@@ -38,7 +41,7 @@ def generate_group_separable_election(num_voters=None, num_candidates=None, para
 
             decomposition_tree = _decompose_tree(num_candidates, num_internal_nodes)
 
-        elif param_1 == 3:
+        elif params['param_1'] == 3:
             decomposition_tree = _caterpillar(m)
 
         all_inner_nodes = get_all_inner_nodes(decomposition_tree)

@@ -70,7 +70,7 @@ class Election:
         matrix = np.zeros([self.num_candidates, self.num_candidates])
 
         with open(path, 'r', newline='') as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=',')
+            reader = csv.DictReader(csv_file, delimiter=';')
             for i, row in enumerate(reader):
                 for j, candidate_id in enumerate(row):
                     matrix[i][j] = row[candidate_id]
@@ -117,6 +117,8 @@ class Election:
         elif self.election_model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
             vectors = get_fake_convex(self.election_model, self.num_candidates, self.num_voters, self.fake_param,
                                       get_fake_vectors_single)
+        elif self.election_model == 'crate':
+            vectors = get_fake_vectors_crate(self.election_model, self.num_candidates, self.num_voters, self.fake_param)
         else:
             for i in range(self.num_voters):
                 pos = 0
@@ -474,6 +476,7 @@ def convex_combination(base_1, base_2, length=0, alpha=0):
 
 
 def crate_combination(base_1, base_2, base_3, base_4, length=0, alpha=None):
+    alpha = alpha['alpha']
     vectors = np.zeros([length, length])
     for i in range(length):
         for j in range(length):

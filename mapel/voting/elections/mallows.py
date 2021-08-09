@@ -60,16 +60,16 @@ def mallowsVote(m,insertion_probabilites_list):
     return vote
 
 
-def generate_mallows_election(num_voters, num_candidates,param_1, param_2):
+def generate_mallows_election(num_voters, num_candidates,params):
     insertion_probabilites_list = []
     for i in range(1, num_candidates):
-        insertion_probabilites_list.append(computeInsertionProbas(i, param_1))
+        insertion_probabilites_list.append(computeInsertionProbas(i, params['phi']))
     V = []
     for i in range(num_voters):
         vote = mallowsVote(num_candidates, insertion_probabilites_list)
-        if param_2>0:
+        if params['phi']>0:
             probability = rand.random()
-            if probability >= param_2:
+            if probability >= params['phi']:
                 vote.reverse()
         V += [vote]
     return V

@@ -31,7 +31,7 @@ def prepare_matrices(experiment_id):
 
         with open(path, 'w', newline='') as csv_file:
 
-            writer = csv.writer(csv_file, delimiter=',')
+            writer = csv.writer(csv_file, delimiter=';')
             header = [str(i) for i in range(experiment.elections[election_id].num_candidates)]
             writer.writerow(header)
             for row in matrix:

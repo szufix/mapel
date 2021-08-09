@@ -4,10 +4,10 @@ import random as rand
 import numpy as np
 
 
-def generate_urn_model_election(num_voters=None, num_candidates=None, param_1=None):
+def generate_urn_model_election(num_voters=None, num_candidates=None, params=None):
     """ Generate Polya-Eggenberger urn model election"""
 
-    alpha = param_1
+    alpha = params['alpha']
     votes = np.zeros([num_voters, num_candidates])
     urn_size = 1.
     for j in range(num_voters):

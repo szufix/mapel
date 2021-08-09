@@ -54,7 +54,7 @@ def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="emd-posi
 
     with open(file_name, 'w', newline='') as csvfile:
 
-        writer = csv.writer(csvfile, delimiter=',')
+        writer = csv.writer(csvfile, delimiter=';')
         writer.writerow(["election_id", "x", "y"])
 
         ctr = 0
@@ -159,7 +159,7 @@ def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="emd-posi
 
     with open(file_name, 'w', newline='') as csvfile:
 
-        writer = csv.writer(csvfile, delimiter=',')
+        writer = csv.writer(csvfile, delimiter=';')
         writer.writerow(["id", "x", "y", "z"])
 
         for i in range(experiment.num_elections):

@@ -23,11 +23,15 @@ import os
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
+import ast
 
 
 try:
     from sklearn.manifold import MDS
     from sklearn.manifold import TSNE
+    from sklearn.manifold import SpectralEmbedding
+    from sklearn.manifold import LocallyLinearEmbedding
+    from sklearn.manifold import Isomap
 except:
     pass
 
@@ -86,7 +90,7 @@ class Experiment:
     def set_default_num_voters(self, num_voters):
         self.default_num_voters = num_voters
 
-    def add_election(self, election_model="none", param_1=0., param_2=0., label=None,
+    def add_election(self, election_model="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x', starting_from=0,
                      num_candidates=None, num_voters=None, election_id=None):
 
@@ -97,7 +101,7 @@ class Experiment:
             num_voters = self.default_num_voters
 
         return self.add_family(election_model=election_model,
-                        param_1=param_1, param_2=param_2,
+                        params=params,
                         size=1,
                         label=label,
                         color=color,
@@ -109,7 +113,7 @@ class Experiment:
                         family_id=election_id,
                         single_election=True)[0]
 
-    def add_family(self, election_model="none", param_1=0., param_2=0., size=1, label=None,
+    def add_family(self, election_model="none", params=None, size=1, label=None,
                    color="black", alpha=1., show=True, marker='o', starting_from=0,
                    num_candidates=None, num_voters=None, family_id=None, single_election=False):
         """ Only add the Family; the Elections will be generated later"""
@@ -125,16 +129,18 @@ class Experiment:
 
         if family_id is None:
             family_id = election_model + '_' + str(num_candidates) + '_' + str(num_voters)
-            if election_model in {'urn_model', 'norm-mallows', 'mallows', 'norm-mallows_matrix'} and param_1 != 0:
-                family_id += '_' + str(float(param_1))
-            if election_model in {'norm-mallows', 'mallows'} and param_2 != 0:
-                family_id += '__' + str(float(param_2))
+            if election_model in {'urn_model'} and params['alpha'] != 0:
+                family_id += '_' + str(float(params['alpha']))
+            elif election_model in {'mallows'} and params['phi'] != 0:
+                family_id += '_' + str(float(params['phi']))
+            elif election_model in {'norm-mallows', 'norm-mallows_matrix'} and params['norm-phi'] != 0:
+                family_id += '_' + str(float(params['norm-phi']))
 
         if label is None:
             label = family_id
 
         self.families[family_id] = Family(election_model=election_model, family_id=family_id,
-                                          param_1=param_1, param_2=param_2, label=label,
+                                          params=params, label=label,
                                           color=color, alpha=alpha, show=show, size=size, marker=marker,
                                           starting_from=starting_from,
                                           num_candidates=num_candidates, num_voters=num_voters,
@@ -144,6 +150,7 @@ class Experiment:
         self.num_elections = sum([self.families[family_id].size for family_id in self.families])
         self.main_order = [i for i in range(self.num_elections)]
 
+        # print(family_id)
         ids = self.generate_family_elections(family_id)
         self.families[family_id].election_ids = ids
 
@@ -151,8 +158,7 @@ class Experiment:
 
 
     def generate_family_elections(self, family_id):
-        param_1 = self.families[family_id].param_1
-        param_2 = self.families[family_id].param_2
+        params = self.families[family_id].params
         # num_candidates = self.families[family_id].num_candidates
         # num_voters = self.families[family_id].num_voters
 
@@ -160,12 +166,12 @@ class Experiment:
 
         if election_model in preflib.LIST_OF_PREFLIB_MODELS:
             _elections.prepare_preflib_family(experiment=self, election_model=election_model,
-                                              param_1=param_1)
+                                              params=params)
         else:
            return _elections.prepare_statistical_culture_family(experiment=self,
                                                           election_model=election_model,
                                                           family_id=family_id,
-                                                          param_1=param_1, param_2=param_2)
+                                                          params=params)
 
     def prepare_elections(self):
         """ Prepare elections for a given experiment """
@@ -179,8 +185,7 @@ class Experiment:
                 os.remove(os.path.join(path, file_name))
 
             for family_id in self.families:
-                param_1 = self.families[family_id].param_1
-                param_2 = self.families[family_id].param_2
+                params = self.families[family_id].params
                 # num_candidates = self.families[family_id].num_candidates
                 # num_voters = self.families[family_id].num_voters
 
@@ -188,12 +193,12 @@ class Experiment:
 
                 if election_model in preflib.LIST_OF_PREFLIB_MODELS:
                     _elections.prepare_preflib_family(experiment=self, election_model=election_model,
-                                                      param_1=param_1)
+                                                      params=params)
                 else:
                     _elections.prepare_statistical_culture_family(experiment=self,
                                                                   election_model=election_model,
                                                                   family_id=family_id,
-                                                                  param_1=param_1, param_2=param_2)
+                                                                  params=params)
 
     def compute_distances(self, distance_name='emd-positionwise', num_threads=1, self_distances=False):
         """ Compute distances between elections (using threads)"""
@@ -240,7 +245,7 @@ class Experiment:
                                 str(distance_name) + ".csv")
 
             with open(path, 'w', newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=',')
+                writer = csv.writer(csv_file, delimiter=';')
                 writer.writerow(["election_id_1", "election_id_2", "distance"])
 
                 for i, election_1 in enumerate(self.elections):
@@ -280,37 +285,37 @@ class Experiment:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
             with open(path, 'w') as file_csv:
                 file_csv.write(
-                    "size,num_candidates,num_voters,election_model,param_1,param_2,color,alpha,label,marker,show\n")
-                file_csv.write("3,10,100,impartial_culture,0,0,black,1,Impartial Culture,o,t\n")
-                file_csv.write("3,10,100,iac,0,0,black,0.7,IAC,o,t\n")
-                file_csv.write("3,10,100,conitzer,0,0,limegreen,1,SP by Conitzer,o,t\n")
-                file_csv.write("3,10,100,walsh,0,0,olivedrab,1,SP by Walsh,o,t\n")
-                file_csv.write("3,10,100,spoc_conitzer,0,0,DarkRed,0.7,SPOC,o,t\n")
-                file_csv.write("3,10,100,group-separable,0,0,blue,1,Group-Separable,o,t\n")
-                file_csv.write("3,10,100,single-crossing,0,0,purple,0.6,Single-Crossing,o,t\n")
-                file_csv.write("3,10,100,1d_interval,0,0,DarkGreen,1,1D Interval,o,t\n")
-                file_csv.write("3,10,100,2d_disc,0,0,Green,1,2D Disc,o,t\n")
-                file_csv.write("3,10,100,3d_cube,0,0,ForestGreen,0.7,3D Cube ,o,t\n")
-                file_csv.write("3,10,100,2d_sphere,0,0,black,0.2,2D Sphere,o,t\n")
-                file_csv.write("3,10,100,3d_sphere,0,0,black,0.4,3D Sphere,o,t\n")
-                file_csv.write("3,10,100,urn_model,0.1,0,yellow,1,Urn model 0.1,o,t\n")
-                file_csv.write("3,10,100,norm-mallows,0.5,0,blue,1,Norm-Mallows 0.5,o,t\n")
-                file_csv.write("3,10,100,urn_model,0,0,orange,1,Urn model (gamma),o,t\n")
-                file_csv.write("3,10,100,norm-mallows,0,0,cyan,1,Norm-Mallows (uniform),o,t\n")
-                file_csv.write("1,10,100,identity,0,0,blue,1,Identity,x,t\n")
-                file_csv.write("1,10,100,uniformity,0,0,black,1,Uniformity,x,t\n")
-                file_csv.write("1,10,100,antagonism,0,0,red,1,Antagonism,x,t\n")
-                file_csv.write("1,10,100,stratification,0,0,green,1,Stratification,x,t\n")
-                file_csv.write("1,10,100,walsh_matrix,0,0,olivedrab,1,Walsh Matrix,x,t\n")
-                file_csv.write("1,10,100,conitzer_matrix,0,0,limegreen,1,Conitzer Matrix,x,t\n")
-                file_csv.write("1,10,100,single-crossing_matrix,0,0,purple,0.6,Single-Crossing Matrix,x,t\n")
-                file_csv.write("1,10,100,gs_caterpillar_matrix,0,0,green,1,GS Caterpillar Matrix,x,t\n")
-                file_csv.write("3,10,100,unid,4,0,blue,1,UNID,3,f\n")
-                file_csv.write("3,10,100,anid,4,0,black,1,ANID,3,f\n")
-                file_csv.write("3,10,100,stid,4,0,black,1,STID,3,f\n")
-                file_csv.write("3,10,100,anun,4,0,black,1,ANUN,3,f\n")
-                file_csv.write("3,10,100,stun,4,0,black,1,STUN,3,f\n")
-                file_csv.write("3,10,100,stan,4,0,red,1,STAN,3,f\n")
+                    "size;num_candidates;num_voters;election_model;params;color;alpha;label;marker;show\n")
+                file_csv.write("3;10;100;impartial_culture;{};black;1;Impartial Culture;o;t\n")
+                file_csv.write("3;10;100;iac;{};black;0.7;IAC;o;t\n")
+                file_csv.write("3;10;100;conitzer;{};limegreen;1;SP by Conitzer;o;t\n")
+                file_csv.write("3;10;100;walsh;{};olivedrab;1;SP by Walsh;o;t\n")
+                file_csv.write("3;10;100;spoc_conitzer;{};DarkRed;0.7;SPOC;o;t\n")
+                file_csv.write("3;10;100;group-separable;{};blue;1;Group-Separable;o;t\n")
+                file_csv.write("3;10;100;single-crossing;{};purple;0.6;Single-Crossing;o;t\n")
+                file_csv.write("3;10;100;1d_interval;{};DarkGreen;1;1D Interval;o;t\n")
+                file_csv.write("3;10;100;2d_disc;{};Green;1;2D Disc;o;t\n")
+                file_csv.write("3;10;100;3d_cube;{};ForestGreen;0.7;3D Cube;o;t\n")
+                file_csv.write("3;10;100;2d_sphere;{};black;0.2;2D Sphere;o;t\n")
+                file_csv.write("3;10;100;3d_sphere;{};black;0.4;3D Sphere;o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn model 0.1;o;t\n")
+                file_csv.write("3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;Norm-Mallows 0.5;o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0};orange;1;Urn model (gamma);o;t\n")
+                file_csv.write("3;10;100;norm-mallows;{'norm-phi':0};cyan;1;Norm-Mallows (uniform);o;t\n")
+                file_csv.write("1;10;100;identity;{};blue;1;Identity;x;t\n")
+                file_csv.write("1;10;100;uniformity;{};black;1;Uniformity;x;t\n")
+                file_csv.write("1;10;100;antagonism;{};red;1;Antagonism;x;t\n")
+                file_csv.write("1;10;100;stratification;{};green;1;Stratification;x;t\n")
+                file_csv.write("1;10;100;walsh_matrix;{};olivedrab;1;Walsh Matrix;x;t\n")
+                file_csv.write("1;10;100;conitzer_matrix;{};limegreen;1;Conitzer Matrix;x;t\n")
+                file_csv.write("1;10;100;single-crossing_matrix;{};purple;0.6;Single-Crossing Matrix;x;t\n")
+                file_csv.write("1;10;100;gs_caterpillar_matrix;{};green;1;GS Caterpillar Matrix;x;t\n")
+                # file_csv.write("3;10;100;unid;4;0;blue;1;UNID;3;f\n")
+                # file_csv.write("3;10;100;anid;4;0;black;1;ANID;3;f\n")
+                # file_csv.write("3;10;100;stid;4;0;black;1;STID;3;f\n")
+                # file_csv.write("3;10;100;anun;4;0;black;1;ANUN;3;f\n")
+                # file_csv.write("3;10;100;stun;4;0;black;1;STUN;3;f\n")
+                # file_csv.write("3;10;100;stan;4;0;red;1;STAN;3;f\n")
         except:
             # print("Experiment already exists!")
             pass
@@ -341,7 +346,8 @@ class Experiment:
         coordinates = self.import_cooridnates()
         return coordinates
 
-    def embed(self, attraction_factor=1, algorithm='spring', num_iterations=1000, distance_name='emd-positionwise'):
+    def embed(self, attraction_factor=1, algorithm='spring', num_iterations=1000,
+              distance_name='emd-positionwise', num_neighbors=100, method='standard'):
         num_elections = len(self.distances)
 
         X = np.zeros((num_elections, num_elections))
@@ -351,7 +357,7 @@ class Experiment:
                 if i < j:
                     if self.distances[election_1_id][election_2_id] == 0:
                         self.distances[election_1_id][election_2_id] = 0.01
-                    if algorithm == 'spring':
+                    if algorithm in {'spring'}:
                         X[i][j] = 1. / self.distances[election_1_id][election_2_id]
                     else:
                         X[i][j] = self.distances[election_1_id][election_2_id]
@@ -368,6 +374,13 @@ class Experiment:
             my_pos = MDS(n_components=2).fit_transform(X)
         elif algorithm in {'tsne', 'TSNE'}:
             my_pos = TSNE(n_components=2).fit_transform(X)
+        elif algorithm in {'se', 'SE'}:
+            my_pos = SpectralEmbedding(n_components=2).fit_transform(X)
+        elif algorithm in {'isomap', 'ISOMAP'}:
+            my_pos = Isomap(n_components=2, n_neighbors=num_neighbors).fit_transform(X)
+        elif algorithm in {'lle', 'LLE'}:
+            my_pos = LocallyLinearEmbedding(n_components=2, n_neighbors=num_neighbors,
+                                            max_iter=num_iterations, method=method).fit_transform(X)
 
         points = {}
         for i, election_id in enumerate(self.distances):
@@ -380,7 +393,7 @@ class Experiment:
 
             with open(file_name, 'w', newline='') as csvfile:
 
-                writer = csv.writer(csvfile, delimiter=',')
+                writer = csv.writer(csvfile, delimiter=';')
                 writer.writerow(["election_id", "x", "y"])
 
                 ctr = 0
@@ -560,8 +573,8 @@ class Experiment:
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, 'map.csv')
         file_ = open(path, 'r')
 
-        header = [h.strip() for h in file_.readline().split(',')]
-        reader = csv.DictReader(file_, fieldnames=header)
+        header = [h.strip() for h in file_.readline().split(';')]
+        reader = csv.DictReader(file_, fieldnames=header, delimiter=';')
 
         starting_from = 0
         for row in reader:
@@ -569,8 +582,7 @@ class Experiment:
             election_model = None
             color = None
             label = None
-            param_1 = None
-            param_2 = None
+            params = None
             alpha = None
             size = None
             marker = None
@@ -586,11 +598,8 @@ class Experiment:
             if 'label' in row.keys():
                 label = str(row['label'])
 
-            if 'param_1' in row.keys():
-                param_1 = float(row['param_1'])
-
-            if 'param_2' in row.keys():
-                param_2 = float(row['param_2'])
+            if 'params' in row.keys():
+                params = ast.literal_eval(str(row['params']))
 
             if 'alpha' in row.keys():
                 alpha = float(row['alpha'])
@@ -612,13 +621,16 @@ class Experiment:
                 show = False
 
             family_id = election_model + '_' + str(num_candidates) + '_' + str(num_voters)
-            if election_model in {'urn_model', 'norm-mallows', 'mallows', 'norm-mallows_matrix'} and param_1 != 0:
-                family_id += '_' + str(float(param_1))
-            if election_model in {'norm-mallows', 'mallows'} and param_2 != 0:
-                family_id += '__' + str(float(param_2))
+
+            if election_model in {'urn_model'} and params['alpha'] != 0:
+                family_id += '_' + str(float(params['alpha']))
+            elif election_model in {'mallows'} and params['phi'] != 0:
+                family_id += '_' + str(float(params['phi']))
+            elif election_model in {'norm-mallows', 'norm-mallows_matrix'} and params['norm-phi'] != 0:
+                family_id += '_' + str(float(params['norm-phi']))
 
             families[family_id] = Family(election_model=election_model, family_id=family_id,
-                                         param_1=param_1, param_2=param_2, label=label,
+                                         params=params, label=label,
                                          color=color, alpha=alpha, show=show, size=size, marker=marker,
                                          starting_from=starting_from,
                                          num_candidates=num_candidates, num_voters=num_voters)
@@ -674,7 +686,7 @@ class Experiment:
                             "coordinates", self.distance_name + "_2d_a" + str(float(self.attraction_factor)) + ".csv")
 
         with open(path, 'r', newline='') as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=',')
+            reader = csv.DictReader(csv_file, delimiter=';')
             ctr = 0
             # print(path)
             for row in reader:
@@ -695,7 +707,7 @@ class Experiment:
                             "coordinates", self.distance_name + "_2d_a" + str(float(self.attraction_factor)) + ".csv")
 
         with open(path, 'r', newline='') as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=',')
+            reader = csv.DictReader(csv_file, delimiter=';')
             ctr = 0
             for row in reader:
                 if self.main_order[ctr] < self.num_elections and self.main_order[ctr] not in ignore:
@@ -745,6 +757,7 @@ class Experiment:
 
         ### ### ###
         else:
+            # todo: this part my raise an error
             for family_id in self.families:
                 # print(family_id)
                 points_by_families[family_id] = [[] for _ in range(2)]
@@ -780,7 +793,7 @@ class Experiment:
         if self.store:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "features", str(name) + '.csv')
             with open(path, 'w', newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=',')
+                writer = csv.writer(csv_file, delimiter=';')
                 writer.writerow(["election_id", "value"])
                 for key in feature_dict:
                     writer.writerow([key, feature_dict[key]])
@@ -822,7 +835,7 @@ class Experiment:
                             "points", self.distance_name + "_2d_a" + str(self.attraction_factor) + ".csv")
 
         with open(path, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',')
+            writer = csv.writer(csvfile, delimiter=';')
             writer.writerow(["id", "x", "y"])
 
             for i in range(self.num_elections):
@@ -862,7 +875,7 @@ class Experiment:
                 hist_data[election_id] = {}
 
         with open(path, 'r', newline='') as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=',')
+            reader = csv.DictReader(csv_file, delimiter=';')
 
             for row in reader:
                 election_id_1 = row['election_id_1']
@@ -906,7 +919,7 @@ class Experiment:
                 distances[election_id] = {}
 
         with open(path, 'r', newline='') as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=',')
+            reader = csv.DictReader(csv_file, delimiter=';')
 
             for row in reader:
                 election_id_1 = row['election_id_1']
