@@ -655,9 +655,9 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
             if time:
                 matrix[bucket[i]][bucket[j]] += experiment.times[mapping[i]][mapping[j]]
             else:
-                print('map', mapping[i], mapping[j])
-                print(experiment.distances)
-                print(experiment.distances[mapping[i]][mapping[j]])
+                # print('map', mapping[i], mapping[j])
+                # print(experiment.distances)
+                # print(experiment.distances[mapping[i]][mapping[j]])
                 matrix[bucket[i]][bucket[j]] += experiment.distances[mapping[i]][mapping[j]]
             quantities[bucket[i]][bucket[j]] += 1
     #
