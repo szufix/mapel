@@ -68,7 +68,8 @@ def separation(election):
 
     half = int(election.num_candidates / 2)
 
-    ranking = dev.get_borda_ranking(election.votes, election.num_voters, election.num_candidates)
+    ranking = dev.get_borda_ranking(election.votes, election.num_voters,
+                                    election.num_candidates)
     first_half = ranking[0:half]
 
     distance = 0
@@ -200,6 +201,8 @@ def get_effective_num_candidates(election, mode='Borda'):
         scores = [sum([vectors[j][i] * (c - i - 1) for i in range(c)]) / (c * (c - 1) / 2) for j in range(c)]
     elif mode == 'Plurality':
         scores = [sum([vectors[j][i] for i in range(1)]) for j in range(c)]
+    else:
+        scores = []
 
     return 1. / sum([x * x for x in scores])
 
@@ -213,12 +216,14 @@ def distortion_from_guardians(experiment, election_id):
     election_id_1 = election_id
 
     for election_id_2 in experiment.elections:
-        if election_id_2 in {'identity_10_100_0', 'uniformity_10_100_0', 'antagonism_10_100_0', 'stratification_10_100_0'}:
+        if election_id_2 in {'identity_10_100_0', 'uniformity_10_100_0',
+                             'antagonism_10_100_0', 'stratification_10_100_0'}:
             if election_id_1 != election_id_2:
                 m = experiment.elections[election_id_1].num_candidates
                 true_distance = experiment.distances[election_id_1][election_id_2]
                 true_distance /= map_diameter(m)
-                embedded_distance = l2(experiment.coordinates[election_id_1], experiment.coordinates[election_id_2], 2)
+                embedded_distance = l2(experiment.coordinates[election_id_1],
+                                       experiment.coordinates[election_id_2], 2)
                 # if election_id_2 == 'antagonism_10_100_0':
                     # print(election_id_1, election_id_2, embedded_distance)
                     # print(experiment.coordinates[election_id_1], experiment.coordinates[election_id_2])

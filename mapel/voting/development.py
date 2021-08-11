@@ -10,7 +10,7 @@ import numpy as np
 import mapel.voting._elections as el
 
 import mapel.voting.winners as win
-import mapel.voting.features
+import mapel.voting.features as features
 import copy
 
 import itertools
@@ -21,14 +21,18 @@ from mapel.voting.metrics.inner_distances import l2
 import mapel.voting._metrics as metr
 
 
-def prepare_experiment(experiment_id=None, elections=None, distances=None, coordinates=None):
-    return Experiment("virtual", import_controllers=False, experiment_id=experiment_id,
-                      elections=elections, distances=distances, coordinates=coordinates)
+def prepare_experiment(experiment_id=None, elections=None, distances=None,
+                       coordinates=None):
+    return Experiment("virtual",
+                      experiment_id=experiment_id,
+                      elections=elections, distances=distances,
+                      coordinates=coordinates)
 
 
 def generate_experiment(elections=None):
 
-    experiment = Experiment("virtual", elections=elections, import_controllers=False)
+    experiment = Experiment("virtual", elections=elections,
+                            )
 
     return experiment
 
@@ -42,10 +46,12 @@ def compute_lowest_dodgson(experiment_id, clear=True):
 
     experiment = Experiment(experiment_id)
 
-    file_name_1 = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
+    file_name_1 = os.path.join(os.getcwd(), "experiments", experiment_id,
+                               "controllers", "advanced",
                                "lowest_dodgson.txt")
 
-    file_name_2 = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
+    file_name_2 = os.path.join(os.getcwd(), "experiments", experiment_id,
+                               "controllers", "advanced",
                                "lowest_dodgson_time.txt")
 
     if clear:
@@ -80,12 +86,14 @@ def compute_lowest_dodgson(experiment_id, clear=True):
 
 ## PART 1 ##
 
-def compute_winners(experiment_id, method='hb', algorithm='exact', num_winners=10):
+def compute_winners(experiment_id, method='hb', algorithm='exact',
+                    num_winners=10):
     """ Compute winners for all elections in a given experiment """
 
     experiment = Experiment(experiment_id)
 
-    file_name = "experiments/" + experiment_id + "/controllers/winners/" + method + "_" + algorithm + ".txt"
+    file_name = "experiments/" + experiment_id + "/controllers/winners/" + \
+                method + "_" + algorithm + ".txt"
     file_output = open(file_name, 'w')
 
     Z = 0
@@ -106,10 +114,8 @@ def compute_winners(experiment_id, method='hb', algorithm='exact', num_winners=1
             winners = []
             if method in {'pav', 'hb'}:
                 if algorithm == 'exact':
-                    rule = {}
-                    rule['name'] = method
-                    rule['length'] = num_winners
-                    rule['type'] = 'borda_owa'
+                    rule = {'name': method, 'length': num_winners,
+                            'type': 'borda_owa'}
                     winners = win.get_winners(params, copy.deepcopy(experiment.elections[Z].votes), rule)
 
                 elif algorithm == 'greedy':
@@ -119,10 +125,12 @@ def compute_winners(experiment_id, method='hb', algorithm='exact', num_winners=1
                         winners = win.get_winners_approx_hb(copy.deepcopy(experiment.elections[Z].votes), params, algorithm)
 
             elif method == 'borda':
-                winners = compute_borda_winners(election, num_winners=num_winners)
+                winners = compute_borda_winners(election,
+                                                num_winners=num_winners)
 
             elif method == 'plurality':
-                winners = compute_plurality_winners(election, num_winners=num_winners)
+                winners = compute_plurality_winners(election,
+                                                    num_winners=num_winners)
 
 
             for winner in winners:
@@ -135,12 +143,14 @@ def compute_winners(experiment_id, method='hb', algorithm='exact', num_winners=1
     print("\nDone.")
 
 
-def import_winners(experiment_id, method='hb', algorithm='greedy', num_winners=10, num_elections=0):
+def import_winners(experiment_id, method='hb', algorithm='greedy',
+                   num_winners=10, num_elections=0):
     """ Import winners for all elections in a given experiment """
 
     winners = [[] for _ in range(num_elections)]
 
-    path = "experiments/" + experiment_id + "/controllers/winners/" + method + "_" + algorithm + ".txt"
+    path = "experiments/" + experiment_id + "/controllers/winners/" + method \
+           + "_" + algorithm + ".txt"
     with open(path) as file_txt:
         for i in range(num_elections):
             for j in range(num_winners):
@@ -176,14 +186,15 @@ def compute_plurality_winners(election, num_winners=10):
 def compute_effective_num_candidates(experiment_id, clear=True):
     """ Compute effective number of candidates """
 
-    file_name = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
+    file_name = os.path.join(os.getcwd(), "experiments", experiment_id,
+                             "controllers", "advanced",
                              "effective_num_candidates.txt")
 
     if clear:
         file_scores = open(file_name, 'w')
         file_scores.close()
 
-    experiment = Experiment_xd(experiment_id, distance_name='swap')
+    experiment = Experiment(experiment_id=experiment_id, distance_name='swap')
 
     for election in experiment.elections:
 
@@ -661,75 +672,75 @@ def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
     #     plt.show()
 
 
-def compute_distortion_paths(experiment_id, attraction_factor=1, saveas='tmp'):
-    experiment = Experiment_2d(experiment_id, attraction_factor=attraction_factor)
-    X = []
-    A = []
-    B = []
-
-    id_x = []
-    id_y = []
-    un_x = []
-    un_y = []
-    an_x = []
-    an_y = []
-    st_x = []
-    st_y = []
-
-    for i, election_id_1 in enumerate(experiment.elections):
-        for j, election_id_2 in enumerate(experiment.elections):
-            if i < j:
-                m = experiment.elections[election_id_1].num_candidates
-                true_distance = experiment.distances[election_id_1][election_id_2]
-                true_distance /= map_diameter(m)
-
-                embedded_distance = l2(experiment.points[election_id_1], experiment.points[election_id_2], 1)
-                embedded_distance /= l2(experiment.points['identity_10_100_0'], experiment.points['uniformity_10_100_0'], 1)
-                # print(true_distance, embedded_distance)
-                proportion = float(true_distance) / float(embedded_distance)
-                X.append(proportion)
-                A.append(true_distance)
-                B.append(embedded_distance)
-
-                if election_id_1 == 'identity_10_100_0' or election_id_2 == 'identity_10_100_0':
-                    id_x.append(true_distance)
-                    id_y.append(embedded_distance)
-
-                if election_id_1 == 'uniformity_10_100_0' or election_id_2 == 'uniformity_10_100_0':
-                    un_x.append(true_distance)
-                    un_y.append(embedded_distance)
-
-                if election_id_1 == 'stratification_10_100_0' or election_id_2 == 'stratification_10_100_0':
-                    st_x.append(true_distance)
-                    st_y.append(embedded_distance)
-
-                if election_id_1 == 'antagonism_10_100_0' or election_id_2 == 'antagonism_10_100_0':
-                    an_x.append(true_distance)
-                    an_y.append(embedded_distance)
-
-
-    plt.scatter(id_x, id_y, color='blue', label='ID')
-    plt.scatter(un_x, un_y, color='black', label='UN')
-    plt.scatter(st_x, st_y, color='green', label='ST')
-    plt.scatter(an_x, an_y, color='red', label='AN')
-    plt.legend()
-    plt.xlabel('true_distance/diameter')
-    plt.ylabel('embedded_distance/diameter')
-    name = 'images/' + saveas + '.png'
-    plt.savefig(name)
-    plt.show()
-
-    # for i in [1, 0.99, 0.95, 0.9]:
-    #     X = sorted(X)
-    #     X = X[0:int(i*len(X))]
-    #     X = [X[i] for i in range(len(X))]  # normalize by median
-    #     #X = [math.log(X[i]) for i in range(len(X))] # use log scale
-    #     plt.plot(X)
-    #     plt.title(i)
-    #     plt.ylabel('true_distance/diameter / embedded_distance/diameter')
-    #     plt.xlabel('meaningless')
-    #     name = 'images/' + str(i)+'_' + str(attraction_factor) + '.png'
-    #     plt.savefig(name)
-    #     plt.show()
+# def compute_distortion_paths(experiment_id, attraction_factor=1, saveas='tmp'):
+#     experiment = Experiment_2d(experiment_id, attraction_factor=attraction_factor)
+#     X = []
+#     A = []
+#     B = []
+#
+#     id_x = []
+#     id_y = []
+#     un_x = []
+#     un_y = []
+#     an_x = []
+#     an_y = []
+#     st_x = []
+#     st_y = []
+#
+#     for i, election_id_1 in enumerate(experiment.elections):
+#         for j, election_id_2 in enumerate(experiment.elections):
+#             if i < j:
+#                 m = experiment.elections[election_id_1].num_candidates
+#                 true_distance = experiment.distances[election_id_1][election_id_2]
+#                 true_distance /= map_diameter(m)
+#
+#                 embedded_distance = l2(experiment.points[election_id_1], experiment.points[election_id_2], 1)
+#                 embedded_distance /= l2(experiment.points['identity_10_100_0'], experiment.points['uniformity_10_100_0'], 1)
+#                 # print(true_distance, embedded_distance)
+#                 proportion = float(true_distance) / float(embedded_distance)
+#                 X.append(proportion)
+#                 A.append(true_distance)
+#                 B.append(embedded_distance)
+#
+#                 if election_id_1 == 'identity_10_100_0' or election_id_2 == 'identity_10_100_0':
+#                     id_x.append(true_distance)
+#                     id_y.append(embedded_distance)
+#
+#                 if election_id_1 == 'uniformity_10_100_0' or election_id_2 == 'uniformity_10_100_0':
+#                     un_x.append(true_distance)
+#                     un_y.append(embedded_distance)
+#
+#                 if election_id_1 == 'stratification_10_100_0' or election_id_2 == 'stratification_10_100_0':
+#                     st_x.append(true_distance)
+#                     st_y.append(embedded_distance)
+#
+#                 if election_id_1 == 'antagonism_10_100_0' or election_id_2 == 'antagonism_10_100_0':
+#                     an_x.append(true_distance)
+#                     an_y.append(embedded_distance)
+#
+#
+#     plt.scatter(id_x, id_y, color='blue', label='ID')
+#     plt.scatter(un_x, un_y, color='black', label='UN')
+#     plt.scatter(st_x, st_y, color='green', label='ST')
+#     plt.scatter(an_x, an_y, color='red', label='AN')
+#     plt.legend()
+#     plt.xlabel('true_distance/diameter')
+#     plt.ylabel('embedded_distance/diameter')
+#     name = 'images/' + saveas + '.png'
+#     plt.savefig(name)
+#     plt.show()
+#
+#     # for i in [1, 0.99, 0.95, 0.9]:
+#     #     X = sorted(X)
+#     #     X = X[0:int(i*len(X))]
+#     #     X = [X[i] for i in range(len(X))]  # normalize by median
+#     #     #X = [math.log(X[i]) for i in range(len(X))] # use log scale
+#     #     plt.plot(X)
+#     #     plt.title(i)
+#     #     plt.ylabel('true_distance/diameter / embedded_distance/diameter')
+#     #     plt.xlabel('meaningless')
+#     #     name = 'images/' + str(i)+'_' + str(attraction_factor) + '.png'
+#     #     plt.savefig(name)
+#     #     plt.show()
 
 

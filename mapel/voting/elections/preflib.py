@@ -30,7 +30,7 @@ def get_sushi_matrix():
 
 
 # GENERATE
-def generate_elections_preflib(experiment_id, election_model=None, elections_id=None,
+def generate_elections_preflib(experiment=None, election_model=None, elections_id=None,
                                num_voters=None, num_candidates=None, special=None, folder=None,
                                selection_method='random'):
     """ main function: generate elections"""
@@ -38,7 +38,7 @@ def generate_elections_preflib(experiment_id, election_model=None, elections_id=
     votes = generate_votes_preflib(election_model, selection_method=selection_method,
                                    num_voters=num_voters, num_candidates=num_candidates, folder=folder)
 
-    path = os.path.join("experiments", experiment_id, "elections", elections_id + ".soc")
+    path = os.path.join("experiments", experiment.experiment_id, "elections", elections_id + ".soc")
     file_ = open(path, 'w')
 
     file_.write(str(num_candidates) + "\n")
