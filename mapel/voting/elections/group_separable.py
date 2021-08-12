@@ -4,6 +4,7 @@ from itertools import chain
 import random as rand
 import numpy as np
 from scipy.special import binom
+import queue
 
 
 def _decompose_tree(num_leaves, num_internal_nodes):
@@ -23,6 +24,10 @@ def _decompose_tree(num_leaves, num_internal_nodes):
 
 def generate_group_separable_election(num_voters=None, num_candidates=None, params=None):
     """ Algorithm from: The Complexity of Election Problems with Group-Separable Preferences"""
+
+    if params is None:
+        params = {}
+
     if params is not None and 'param_1' not in params:
         params = {'param_1': 0}
 
@@ -61,7 +66,7 @@ def generate_group_separable_election(num_voters=None, num_candidates=None, para
             for i, node in enumerate(all_inner_nodes):
                 node.reverse = False
 
-        return votes
+        return votes, decomposition_tree
 
 
 REVERSE = {}
@@ -83,6 +88,18 @@ def get_all_leaves_nodes(node):
     for i in range(len(node.children)):
         output.append(get_all_leaves_nodes(node.children[i]))
     return list(chain.from_iterable(output))
+
+
+def get_all_nodes(root):
+    all_nodes = []
+    q = queue.Queue()
+    q.put(root)
+    while not q.empty():
+        node = q.get()
+        all_nodes.append(node)
+        for child in node.children:
+            q.put(child)
+    return all_nodes
 
 
 def get_bracket_notation(node):
@@ -124,9 +141,13 @@ class Node:
     def __init__(self, name):
 
         self.name = name
+        self.parent = None
         self.children = []
         self.leaf = True
         self.reverse = False
+
+        self.left = 0
+        self.right = 0
 
         self.num_leaf_descendants = None
         self.depth = None
@@ -139,6 +160,7 @@ class Node:
         return self.name
 
     def add_child(self, child):
+        child.parent = self
         self.children.append(child)
         self.leaf = False
 
@@ -157,18 +179,20 @@ def _generate_tree(num_nodes, num_internal_nodes, patterns):
     sizes = []
     larges = []
     ctr = 0
+    inner_ctr = 0
     for i, pattern in enumerate(patterns):
         if pattern == 'M0':
             sequence.append('x' + str(ctr))
             sizes.append(1)
             ctr += 1
         elif pattern == 'M1':
-            sequence.append('x')
+            sequence.append('v' + str(inner_ctr))
             sequence.append('()1')   # instead of 'o'
             sequence.append('f1')
             sequence.append('f1')
             sizes.append(4)
             larges.append(i)
+            inner_ctr += 1
 
     num_classical_edges = 0
     num_semi_edges = 2*num_internal_nodes
@@ -198,7 +222,7 @@ def _generate_tree(num_nodes, num_internal_nodes, patterns):
 def _turn_pattern_into_tree(pattern):
     stack = []
     for i, element in enumerate(pattern):
-        if 'x' in element:
+        if 'x' in element or 'v' in element:
             stack.append(Node(element))
         if 'f' in element:
             parent = stack.pop()
@@ -215,7 +239,7 @@ def cycle_lemma(sequence):
     min = 0
     pos_min = 0
     for element in sequence:
-        if 'x' in element:
+        if 'x' in element or 'v' in element:
             if height <= min:
                 pos_min = pos
                 min = height
@@ -247,6 +271,7 @@ def _add_num_leaf_descendants(node):
 
 def _add_scheme(node):
 
+    print(node.name)
     for starting_pos in node.scheme_1:
 
         pos = starting_pos
@@ -258,14 +283,14 @@ def _add_scheme(node):
             pos += child.num_leaf_descendants
 
     for starting_pos in node.scheme_2:
-
+        print(starting_pos)
         pos = starting_pos
         for child in node.children:
-            pos -= child.num_leaf_descendants
             if pos in child.scheme_2:
                 child.scheme_2[pos] += node.scheme_2[starting_pos]
             else:
                 child.scheme_2[pos] = node.scheme_2[starting_pos]
+            pos -= child.num_leaf_descendants
 
     if node.leaf:
         _construct_vector_from_scheme(node)
@@ -279,6 +304,7 @@ def _construct_vector_from_scheme(node):
     x = node.scheme_1
     y = node.scheme_2
     node.scheme = {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
+    print(node.scheme, x, y)
 
     weight = 1. / sum(node.scheme.values())
 
@@ -317,7 +343,7 @@ def _caterpillar(num_leaves):
 
     while num_leaves > 2:
         leaf = Node('x' + str(ctr))
-        inner_node = Node('inner_node')
+        inner_node = Node('v' + str(ctr))
         tmp_root.add_child(leaf)
         tmp_root.add_child(inner_node)
         tmp_root = inner_node
@@ -345,3 +371,70 @@ def get_gs_caterpillar_vectors(num_candidates):
 # print(votes)
 
 # generate_group_separable_election(num_voters=100,num_candidates=40)
+
+
+def set_left_and_right(node):
+    for i, child in enumerate(node.children):
+        # suma num_leaf_desc [wszystkich po lewej i wszystkich po prawej]
+        child.left = i
+        child.right = len(node.children)-i-1
+
+    for child in node.children:
+        set_left_and_right(child)
+
+
+def get_frequency_matrix_from_tree_by_pf(root):
+    _add_num_leaf_descendants(root)
+
+    m = int(root.num_leaf_descendants)
+
+    f = {}
+
+    all_nodes = get_all_nodes(root)
+    for node in all_nodes:
+        f[str(node.name)] = [0 for _ in range(m)]
+    set_left_and_right(root)
+
+    f[root.name][0] = 1
+
+    for node in all_nodes:
+        if node.name != root.name:
+            print(node.name)
+            for t in range(m):
+                value_1 = 0
+                if t-node.left >= 0:
+                    value_1 = 0.5*f[node.parent.name][t-node.left]
+                value_2 = 0
+                if t-node.right >= 0:
+                    value_2 = 0.5*f[node.parent.name][t-node.right]
+                f[str(node.name)][t] = value_1 + value_2
+
+    vectors = []
+    for i in range(m):
+        name = 'x' + str(i)
+        vectors.append(f[name])
+    return vectors
+
+#
+# num_voters = 1000
+# num_candidates = 3
+# votes, tree = generate_group_separable_election(num_voters=num_voters,
+#                                                 num_candidates=num_candidates)
+#
+# print(get_frequency_matrix_from_tree_by_pf(tree))
+#
+# vectors = np.zeros([num_candidates, num_candidates])
+#
+# for i in range(num_voters):
+#     pos = 0
+#     for j in range(num_candidates):
+#         vote = votes[i][j]
+#         if vote == -1:
+#             continue
+#         vectors[vote][pos] += 1
+#         pos += 1
+# for i in range(num_candidates):
+#     for j in range(num_candidates):
+#         vectors[i][j] /= float(num_voters)
+#
+# print(vectors)
