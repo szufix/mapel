@@ -29,6 +29,38 @@ def generate_elections_1d_simple(election_model=None, num_voters=None, num_candi
     return votes
 
 
+def generate_elections_2d_grid(election_model=None, num_voters=None, num_candidates=None):
+
+    voters = [[0, 0] for _ in range(num_voters)]
+    candidates = []
+
+    votes = np.zeros([num_voters, num_candidates], dtype=int)
+    distances = np.zeros([num_voters, num_candidates], dtype=float)
+
+    for j in range(num_voters):
+        voters[j] = get_rand('2d_square')
+    voters= sorted(voters)
+
+    sq = int(num_candidates**0.5)
+    d = 1./sq
+
+    for i in range(sq):
+        for j in range(sq):
+            x = d/2. + d*i
+            y = d/2. + d*j
+            point = [x, y]
+            candidates.append(point)
+
+    for j in range(num_voters):
+        for k in range(num_candidates):
+            votes[j][k] = k
+            distances[j][k] = distance(2, voters[j], candidates[k])
+
+        votes[j] = [x for _, x in sorted(zip(distances[j], votes[j]))]
+
+    return votes
+
+
 def generate_elections_2d_simple(election_model=None, num_voters=None, num_candidates=None):
     """ helper function: generate simple 2d elections"""
 

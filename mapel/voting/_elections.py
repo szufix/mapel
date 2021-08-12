@@ -6,7 +6,8 @@ from mapel.voting.elections.group_separable import \
 from mapel.voting.elections.mallows import generate_mallows_election, \
     phi_from_relphi
 from mapel.voting.elections.euclidean import generate_elections_1d_simple, \
-    generate_elections_2d_simple, generate_elections_nd_simple
+    generate_elections_2d_simple, generate_elections_nd_simple, \
+    generate_elections_2d_grid
 from mapel.voting.elections.single_peaked import generate_conitzer_election, \
     generate_walsh_election, generate_spoc_conitzer_election
 from mapel.voting.elections.single_crossing import \
@@ -72,7 +73,8 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
                         '5d_sphere': generate_elections_nd_simple,
                         '4d_ball': generate_elections_nd_simple,
                         '5d_ball': generate_elections_nd_simple,
-                        '40d_ball': generate_elections_nd_simple, }
+                        '40d_ball': generate_elections_nd_simple,
+                        '2d_grid': generate_elections_2d_grid}
 
     single_param_models = {'urn_model': generate_urn_model_election,
                            'group-separable':

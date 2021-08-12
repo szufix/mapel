@@ -23,7 +23,7 @@ def _decompose_tree(num_leaves, num_internal_nodes):
 
 def generate_group_separable_election(num_voters=None, num_candidates=None, params=None):
     """ Algorithm from: The Complexity of Election Problems with Group-Separable Preferences"""
-    if params is None or params == {}:
+    if params is not None and 'param_1' not in params:
         params = {'param_1': 0}
 
     while True:
@@ -131,6 +131,8 @@ class Node:
         self.num_leaf_descendants = None
         self.depth = None
         self.scheme = {}
+        self.scheme_1 = {}
+        self.scheme_2 = {}
         self.vector = []
 
     def __str__(self):
@@ -245,24 +247,25 @@ def _add_num_leaf_descendants(node):
 
 def _add_scheme(node):
 
-    for starting_pos in node.scheme:
+    for starting_pos in node.scheme_1:
 
         pos = starting_pos
         for child in node.children:
-            if pos in child.scheme:
-                child.scheme[pos] += node.scheme[starting_pos]
+            if pos in child.scheme_1:
+                child.scheme_1[pos] += node.scheme_1[starting_pos]
             else:
-                child.scheme[pos] = node.scheme[starting_pos]
+                child.scheme_1[pos] = node.scheme_1[starting_pos]
             pos += child.num_leaf_descendants
 
-        # right to left
-        pos = starting_pos + node.num_leaf_descendants
+    for starting_pos in node.scheme_2:
+
+        pos = starting_pos
         for child in node.children:
             pos -= child.num_leaf_descendants
-            if pos in child.scheme:
-                child.scheme[pos] += node.scheme[starting_pos]
+            if pos in child.scheme_2:
+                child.scheme_2[pos] += node.scheme_2[starting_pos]
             else:
-                child.scheme[pos] = node.scheme[starting_pos]
+                child.scheme_2[pos] = node.scheme_2[starting_pos]
 
     if node.leaf:
         _construct_vector_from_scheme(node)
@@ -272,6 +275,10 @@ def _add_scheme(node):
 
 
 def _construct_vector_from_scheme(node):
+
+    x = node.scheme_1
+    y = node.scheme_2
+    node.scheme = {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
 
     weight = 1. / sum(node.scheme.values())
 
@@ -285,8 +292,9 @@ def get_frequency_matrix_from_tree(root):
 
     _add_num_leaf_descendants(root)
 
-    root.scheme = {0: 1}
     Node.total_num_leaf_descendants = root.num_leaf_descendants
+    root.scheme_1 = {0: 1}
+    root.scheme_2 = {int(Node.total_num_leaf_descendants - 1): 1}
 
     _add_scheme(root)
 
