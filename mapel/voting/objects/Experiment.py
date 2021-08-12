@@ -262,13 +262,14 @@ class Experiment:
 
             with open(path, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(["election_id_1", "election_id_2", "distance"])
+                writer.writerow(["election_id_1", "election_id_2", "distance", "time"])
 
                 for i, election_1 in enumerate(self.elections):
                     for j, election_2 in enumerate(self.elections):
                         if i < j:
                             distance = str(distances[election_1][election_2])
-                            writer.writerow([election_1, election_2, distance])
+                            time = str(distances[election_1][election_2])
+                            writer.writerow([election_1, election_2, distance, time])
 
         self.distances = distances
         self.times = times
