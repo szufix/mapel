@@ -133,12 +133,12 @@ class Experiment:
         if family_id is None:
             family_id = election_model + '_' + str(num_candidates) + '_' \
                         + str(num_voters)
-            if election_model in {'urn_model'} and params['alpha'] != None:
+            if election_model in {'urn_model'} and params['alpha'] is not None:
                 family_id += '_' + str(float(params['alpha']))
-            elif election_model in {'mallows'} and params['phi'] != None:
+            elif election_model in {'mallows'} and params['phi'] is not None:
                 family_id += '_' + str(float(params['phi']))
             elif election_model in {'norm-mallows', 'norm-mallows_matrix'} \
-                    and params['norm-phi'] is None:
+                    and params['norm-phi'] is not None:
                 family_id += '_' + str(float(params['norm-phi']))
 
         if label is None:
@@ -166,9 +166,6 @@ class Experiment:
 
     def generate_family_elections(self, family_id):
         params = self.families[family_id].params
-        # num_candidates = self.families[family_id].num_candidates
-        # num_voters = self.families[family_id].num_voters
-
         election_model = self.families[family_id].election_model
 
         if election_model in preflib.LIST_OF_PREFLIB_MODELS:

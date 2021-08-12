@@ -39,16 +39,6 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
     if params is None:
         params = {}
 
-    if election_model == 'mallows' and params['phi'] == None:
-        params['phi'] = rand.random()
-    elif election_model == 'norm-mallows' and params['norm-phi'] == None:
-        params['norm-phi'] = rand.random()
-        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
-        print(params['phi'], params['norm-phi'])
-    elif election_model == 'urn_model' and params['alpha'] == None:
-        params['alpha'] = gamma.rvs(0.8)
-        # print(params['alpha'])
-
     naked_models = {'impartial_culture': generate_impartial_culture_election,
                     'iac': generate_impartial_anonymous_culture_election,
                     'conitzer': generate_conitzer_election,
@@ -117,20 +107,10 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
     if election_model not in LIST_OF_FAKE_MODELS:
         votes = [[int(x) for x in row] for row in votes]
 
-    return votes, params
+    return votes
 
 
-def generate_election(election_model=None, num_candidates=None,
-                      num_voters=None, params=None):
-    if params is None:
-        params = {}
-    votes, copy_params = generate_votes(election_model=election_model,
-                           num_candidates=num_candidates,
-                           num_voters=num_voters, params=params)
-    election = Election("virtual", "virtual", votes=votes,
-                        election_model=election_model,
-                        num_candidates=num_candidates, num_voters=num_voters)
-    return election, copy_params
+
 
 
 # def generate_family(**kwargs):
@@ -173,10 +153,34 @@ def generate_election(election_model=None, num_candidates=None,
 def generate_elections(experiment=None, election_model=None, election_id=None,
                        num_candidates=None, num_voters=None, params=None):
     """ main function: generate elections """
-    experiment.elections[election_id], copy_params = generate_election(election_model=election_model,
-                                                          num_candidates=num_candidates,
-                                                          num_voters=num_voters,
-                                                          params=params)
+
+    # print(params)
+    if params is None:
+        params = {}
+
+    if election_model == 'mallows' and params['phi'] == None:
+        params['phi'] = rand.random()
+    elif election_model == 'norm-mallows' and params['norm-phi'] == None:
+        params['norm-phi'] = rand.random()
+    elif election_model == 'urn_model' and params['alpha'] == None:
+        params['alpha'] = gamma.rvs(0.8)
+
+    if election_model == 'norm-mallows':
+        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+
+    if 'weight' not in params:
+        params['weight'] = 0.
+
+    votes = generate_votes(election_model=election_model,
+                           num_candidates=num_candidates,
+                           num_voters=num_voters, params=params)
+    election = Election("virtual", "virtual", votes=votes,
+                        election_model=election_model,
+                        num_candidates=num_candidates,
+                        num_voters=num_voters)
+
+    experiment.elections[election_id] = election
+
 
     if experiment.store:
 
@@ -191,7 +195,7 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
             # todo: store all params
             # file_.write(str(round(params['param_1'], 5)) + '\n')
             if election_model == 'norm-mallows_matrix':
-                file_.write(str(round(copy_params['norm-phi'], 5)) + '\n')
+                file_.write(str(round(params['norm-phi'], 5)) + '\n')
             file_.close()
 
         else:
@@ -210,17 +214,17 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
 
                 if election_model in {'urn_model'}:
                     file_.write("# " + NICE_NAME[election_model] + " " +
-                                str(round(copy_params['alpha'], 5)) + "\n")
+                                str(round(params['alpha'], 5)) + "\n")
                 elif election_model in ["mallows"]:
                     file_.write("# " + NICE_NAME[election_model] + " " +
-                                str(round(copy_params['phi'], 5)) + "\n")
+                                str(round(params['phi'], 5)) + "\n")
                 elif election_model in ["norm-mallows"]:
                     file_.write("# " + NICE_NAME[election_model] + " " +
-                                str(round(copy_params['norm-phi'], 5)) + "\n")
+                                str(round(params['norm-phi'], 5)) + "\n")
                 elif election_model in ['group-separable']:
                     try:
                         file_.write("# " + NICE_NAME[election_model] + " " +
-                                    str(round(copy_params['param_1'], 5)) + "\n")
+                                    str(round(params['param_1'], 5)) + "\n")
                     except Exception:
                         pass
 
@@ -342,14 +346,6 @@ def prepare_preflib_family(experiment=None, election_model=None,
 def prepare_statistical_culture_family(experiment=None, election_model=None, family_id=None,
                                        params=None):
 
-    try:
-        # copy_param_1 = params['norm-phi']
-        if election_model == 'norm-mallows':
-            if params['norm-phi'] > 0:
-                params['phi'] = phi_from_relphi(experiment.families[family_id].num_candidates, relphi=params['norm-phi'])
-    except Exception:
-        pass
-
     # base_map = {'35': 5, '50': 6, '80': 7, '110': 8, '165': 9, '199': 10}
 
     keys = []
@@ -393,7 +389,6 @@ def prepare_statistical_culture_family(experiment=None, election_model=None, fam
 
         if election_model in {'crate'}:
             params['alpha'] = base[j]
-
 
         if experiment.families[family_id].single_election:
             election_id = family_id

@@ -44,7 +44,7 @@ class Election:
                 self.votes = votes
                 self.num_candidates = len(votes[0])
                 self.num_voters = len(votes)
-                self.election_model = "virtual"
+                self.election_model = election_model
                 self.potes = self.votes_to_potes()
         else:
             self.fake = check_if_fake(experiment_id, election_id)

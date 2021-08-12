@@ -5,7 +5,7 @@ if __name__ == "__main__":
     experiment = mapel.prepare_experiment()
 
     experiment.set_default_num_voters(100)
-    experiment.set_default_num_candidates(5)
+    experiment.set_default_num_candidates(10)
 
     city_size = 10
 
