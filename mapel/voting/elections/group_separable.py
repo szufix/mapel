@@ -271,7 +271,7 @@ def _add_num_leaf_descendants(node):
 
 def _add_scheme(node):
 
-    print(node.name)
+    # print(node.name)
     for starting_pos in node.scheme_1:
 
         pos = starting_pos
@@ -283,7 +283,7 @@ def _add_scheme(node):
             pos += child.num_leaf_descendants
 
     for starting_pos in node.scheme_2:
-        print(starting_pos)
+        # print(starting_pos)
         pos = starting_pos
         for child in node.children:
             if pos in child.scheme_2:
@@ -304,7 +304,7 @@ def _construct_vector_from_scheme(node):
     x = node.scheme_1
     y = node.scheme_2
     node.scheme = {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
-    print(node.scheme, x, y)
+    # print(node.scheme, x, y)
 
     weight = 1. / sum(node.scheme.values())
 

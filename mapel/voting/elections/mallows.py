@@ -115,9 +115,9 @@ def mallowsMatrix(num_candidates,lphi,pos,normalize=True):
     return mat
 
 
-def get_mallows_matrix(num_candidates, fake_param,normalize=True):
-    lphi=fake_param[1]
-    weight=fake_param[0]
+def get_mallows_matrix(num_candidates, params,normalize=True):
+    lphi=params['norm-phi']
+    weight=params['weight']
     try:
         path = os.path.join(os.getcwd(), 'mapel','voting', 'elections', 'mallows_positionmatrices',str(num_candidates) + "_matrix.txt")
         with open(path, "rb") as file:
