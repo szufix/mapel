@@ -314,26 +314,26 @@ def _construct_vector_from_scheme(node):
         node.vector[int(key)] += node.scheme[key] * weight
 
 
-def get_frequency_matrix_from_tree(root):
-
-    _add_num_leaf_descendants(root)
-
-    Node.total_num_leaf_descendants = root.num_leaf_descendants
-    root.scheme_1 = {0: 1}
-    root.scheme_2 = {int(Node.total_num_leaf_descendants - 1): 1}
-
-    _add_scheme(root)
-
-    nodes = get_all_leaves_nodes(root)
-
-    m = Node.total_num_leaf_descendants
-    array = np.zeros([m, m])
-
-    for i in range(m):
-        for j in range(m):
-            array[i][j] = nodes[i].vector[j]
-
-    return array
+# def get_frequency_matrix_from_tree(root):
+#
+#     _add_num_leaf_descendants(root)
+#
+#     Node.total_num_leaf_descendants = root.num_leaf_descendants
+#     root.scheme_1 = {0: 1}
+#     root.scheme_2 = {int(Node.total_num_leaf_descendants - 1): 1}
+#
+#     _add_scheme(root)
+#
+#     nodes = get_all_leaves_nodes(root)
+#
+#     m = Node.total_num_leaf_descendants
+#     array = np.zeros([m, m])
+#
+#     for i in range(m):
+#         for j in range(m):
+#             array[i][j] = nodes[i].vector[j]
+#
+#     return array
 
 
 def _caterpillar(num_leaves):
@@ -375,15 +375,21 @@ def get_gs_caterpillar_vectors(num_candidates):
 
 def set_left_and_right(node):
     for i, child in enumerate(node.children):
-        # suma num_leaf_desc [wszystkich po lewej i wszystkich po prawej]
-        child.left = i
-        child.right = len(node.children)-i-1
+        left = 0
+        right = 0
+        for j, other_child in enumerate(node.children):
+            if j < i:
+                left += other_child.num_leaf_descendants
+            elif j > i:
+                right += other_child.num_leaf_descendants
+        child.left = left
+        child.right = right
 
     for child in node.children:
         set_left_and_right(child)
 
 
-def get_frequency_matrix_from_tree_by_pf(root):
+def get_frequency_matrix_from_tree(root):
     _add_num_leaf_descendants(root)
 
     m = int(root.num_leaf_descendants)
@@ -399,7 +405,7 @@ def get_frequency_matrix_from_tree_by_pf(root):
 
     for node in all_nodes:
         if node.name != root.name:
-            print(node.name)
+            # print(node.name)
             for t in range(m):
                 value_1 = 0
                 if t-node.left >= 0:
@@ -413,15 +419,15 @@ def get_frequency_matrix_from_tree_by_pf(root):
     for i in range(m):
         name = 'x' + str(i)
         vectors.append(f[name])
-    return vectors
+    return np.array(vectors)
 
-#
+
 # num_voters = 1000
-# num_candidates = 3
+# num_candidates = 5
 # votes, tree = generate_group_separable_election(num_voters=num_voters,
 #                                                 num_candidates=num_candidates)
 #
-# print(get_frequency_matrix_from_tree_by_pf(tree))
+# print(get_frequency_matrix_from_tree(tree))
 #
 # vectors = np.zeros([num_candidates, num_candidates])
 #
