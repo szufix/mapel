@@ -183,7 +183,6 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
 
     experiment.elections[election_id] = election
 
-
     if experiment.store:
 
         if election_model in LIST_OF_FAKE_MODELS:
@@ -349,7 +348,7 @@ def prepare_statistical_culture_family(experiment=None, election_model=None, fam
                                        params=None):
 
     # base_map = {'35': 5, '50': 6, '80': 7, '110': 8, '165': 9, '199': 10}
-
+    # print
     keys = []
 
     base = []
@@ -384,8 +383,8 @@ def prepare_statistical_culture_family(experiment=None, election_model=None, fam
                 params['param_1'] = (j + 1) / experiment.families[family_id].size
             elif copy_param_1 == 4:  # without both
                 params['param_1'] = (j + 1) / (experiment.families[family_id].size + 1)
-        if election_model == 'norm-mallows_matrix':
-            params['norm-phi'] = (j + 1) / experiment.families[family_id].size
+        # if election_model == 'norm-mallows_matrix':
+        #     params['norm-phi'] = (j + 1) / experiment.families[family_id].size
         # elif election_model == 'urn_model' and copy_param_1 == -2.:
         #     params['alpha'] = round(j / 10000., 2)
 

@@ -31,6 +31,8 @@ class Election:
         else:
             self.fake = False
 
+
+
         if votes is not None:
             if str(votes[0]) in LIST_OF_FAKE_MODELS:
                 self.fake = True
@@ -39,7 +41,7 @@ class Election:
                 self.num_candidates = votes[1]
                 self.num_voters = votes[2]
                 self.fake_param = votes[3]
-
+                # print(self.fake_param)
             else:
                 self.votes = votes
                 self.num_candidates = len(votes[0])
@@ -111,6 +113,7 @@ class Election:
         elif self.election_model == 'sushi_matrix':
             vectors=get_sushi_vectors()
         elif self.election_model == 'norm-mallows_matrix':
+            #print(self.fake_param)
             vectors=get_mallows_vectors(self.num_candidates, self.fake_param)
         elif self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
             vectors = get_fake_vectors_single(self.election_model, self.num_candidates, self.num_voters)
