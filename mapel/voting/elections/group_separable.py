@@ -66,8 +66,8 @@ def generate_group_separable_election(num_voters=None, num_candidates=None, para
             for i, node in enumerate(all_inner_nodes):
                 node.reverse = False
 
-        return votes, decomposition_tree
-
+        # return votes, decomposition_tree
+        return votes
 
 REVERSE = {}
 
