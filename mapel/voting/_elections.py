@@ -107,6 +107,7 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
         print("No such election model!", election_model)
 
     if election_model not in LIST_OF_FAKE_MODELS:
+        # print(votes)
         votes = [[int(x) for x in row] for row in votes]
 
     return votes
