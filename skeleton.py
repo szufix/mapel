@@ -48,9 +48,7 @@ def print_coordinates( experiment, names ):
 
 
 def normalize_coordinates( experiment ):
-    print( experiment.coordinates )
-    exit()
-
+    pass
 
 
 
