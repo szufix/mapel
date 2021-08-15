@@ -161,16 +161,6 @@ def print_tables( experiment ):
 
 
 
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     m = 16
     n = 100
@@ -222,13 +212,14 @@ if __name__ == "__main__":
 
 
     experiment.compute_distances()
-    experiment.embed( algorithm="lle", num_neighbors = 82)
-    normalize_coordinates( experiment ) 
+    for n in [30,60,90]:
+        experiment.embed( algorithm="lle", num_neighbors = n)
+    # normalize_coordinates( experiment )
 
-    print_tables( experiment )
+    # print_tables( experiment )
     
-    experiment.print_map(title='Skeleton Map', saveas='skeleton', ms=30, legend=True,
-                         mixed=True)
+        experiment.print_map(title='Skeleton Map', saveas='skeleton', ms=30, legend=True,
+                             mixed=True)
 
 
 

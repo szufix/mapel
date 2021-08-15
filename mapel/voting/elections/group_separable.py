@@ -28,26 +28,30 @@ def generate_group_separable_election(num_voters=None, num_candidates=None, para
     if params is None:
         params = {}
 
-    if params is not None and 'param_1' not in params:
-        params = {'param_1': 0}
+    if params is not None and 'tree' not in params:
+        params = {'tree': 'random'}
 
     while True:
         m = num_candidates
         n = num_voters
 
-        if params['param_1'] == 0:
+        if params['tree'] == 'random':
             func = lambda m, r: 1./(m-1) * binom(m - 1, r) * binom(m - 1 + r, m)
             buckets = [func(m, r) for r in range(1, m)]
 
             denominator = sum(buckets)
+            print(buckets)
             buckets = [buckets[i]/denominator for i in range(len(buckets))]
 
             num_internal_nodes = np.random.choice(len(buckets), 1, p=buckets)[0]+1
 
             decomposition_tree = _decompose_tree(num_candidates, num_internal_nodes)
 
-        elif params['param_1'] == 3:
+        elif params['tree'] == 'caterpillar':
             decomposition_tree = _caterpillar(m)
+
+        elif params['tree'] == 'balanced':
+            decomposition_tree = _balanced(m)
 
         all_inner_nodes = get_all_inner_nodes(decomposition_tree)
 
@@ -358,9 +362,43 @@ def _caterpillar(num_leaves):
     return root
 
 
+def _balanced(num_leaves):
+    root = Node('root')
+    ctr = 0
+
+    q = queue.Queue()
+    q.put(root)
+
+    while ctr < num_leaves-2:
+        tmp_root = q.get()
+        for _ in range(2):
+            inner_node = Node('v' + str(ctr))
+            tmp_root.add_child(inner_node)
+            q.put(inner_node)
+            ctr += 1
+
+    ctr = 0
+    while ctr < num_leaves:
+        tmp_root = q.get()
+        for _ in range(2):
+            node = Node('x' + str(ctr))
+            tmp_root.add_child(node)
+            ctr += 1
+
+    # print_tree(root)
+    return root
+
+
+def print_tree(root):
+    print(root.name)
+    for child in root.children:
+        print_tree(child)
+
+
 ### MATRICES ###
 def get_gs_caterpillar_matrix(num_candidates):
     return get_gs_caterpillar_vectors(num_candidates).transpose()
+
 
 def get_gs_caterpillar_vectors(num_candidates):
     return get_frequency_matrix_from_tree(_caterpillar(num_candidates))

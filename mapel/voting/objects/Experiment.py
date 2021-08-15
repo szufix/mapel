@@ -535,9 +535,45 @@ class Experiment:
                      saveas=None, show=True, ms=20, normalizing_func=None,
                      xticklabels=None, cmap=None,
                      ignore=None, marker_func=None, tex=False, black=False,
-                     legend=True, levels=False, tmp=False):
+                     legend=True, levels=False, tmp=False, adjust=False):
 
         self.compute_points_by_families()
+
+        if adjust:
+
+            sufix_1 = '_' + str(self.default_num_candidates) + '_' + str(self.default_num_voters) + '_0'
+            sufix_2 = '_' + str(self.default_num_candidates) + '_' + str(self.default_num_voters)
+
+            if 'ID' in self.coordinates:
+                identity = 'ID'
+                uniformity = 'UN'
+                antagonism = 'AN'
+                stratification = 'ST'
+            elif 'identity' in self.coordinates:
+                identity = 'identity'
+                uniformity = 'uniformity'
+                antagonism = 'antagonism'
+                stratification = 'stratification'
+            elif 'identity'+sufix_1 in self.coordinates:
+                identity = 'identity' + sufix_1
+                uniformity = 'uniformity' + sufix_1
+                antagonism = 'antagonism' + sufix_1
+                stratification = 'stratification' + sufix_1
+            elif 'identity'+sufix_2 in self.coordinates:
+                identity = 'identity' + sufix_2
+                uniformity = 'uniformity' + sufix_2
+                antagonism = 'antagonism' + sufix_2
+                stratification = 'stratification' + sufix_2
+
+            # print(self.coordinates)
+
+            d_x = self.coordinates[identity][0] - self.coordinates[uniformity][0]
+            d_y = self.coordinates[identity][1] - self.coordinates[uniformity][1]
+            # print(d_x, d_y)
+            alpha = math.atan(d_x/d_y)
+            self.rotate(alpha - math.pi/2.)
+            if self.coordinates[antagonism][1] < self.coordinates[stratification][1]:
+                self.reverse()
 
         if angle != 0:
             self.rotate(angle)
@@ -919,19 +955,19 @@ class Experiment:
     def rotate(self, angle):
         """ Rotate all the points by a given angle """
 
-        for i in range(self.num_elections):
-            self.coordinates[i][0], self.coordinates[i][1] = self.rotate_point(
-                0.5, 0.5, angle, self.coordinates[i][0],
-                self.coordinates[i][1])
+        for election_id in self.elections:
+            self.coordinates[election_id][0], self.coordinates[election_id][1] = self.rotate_point(
+                0.5, 0.5, angle, self.coordinates[election_id][0],
+                self.coordinates[election_id][1])
 
         self.compute_points_by_families()
 
     def reverse(self):
         """ Reverse all the points"""
 
-        for i in range(self.num_elections):
-            self.coordinates[i][0] = self.coordinates[i][0]
-            self.coordinates[i][1] = -self.coordinates[i][1]
+        for election_id in self.elections:
+            self.coordinates[election_id][0] = self.coordinates[election_id][0]
+            self.coordinates[election_id][1] = -self.coordinates[election_id][1]
 
         self.compute_points_by_families()
 

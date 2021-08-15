@@ -50,7 +50,7 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
                     'real_uniformity': generate_real_uniformity_election,
                     'real_antagonism': generate_real_antagonism_election,
                     'real_stratification':
-                        generate_real_stratification_election}
+                        generate_real_stratification_election,}
 
     euclidean_models = {'1d_interval': generate_elections_1d_simple,
                         '1d_gaussian': generate_elections_1d_simple,
