@@ -572,6 +572,9 @@ class Experiment:
             # print(d_x, d_y)
             alpha = math.atan(d_x/d_y)
             self.rotate(alpha - math.pi/2.)
+            if self.coordinates[uniformity][0] > self.coordinates[identity][0]:
+                self.rotate(math.pi)
+
             if self.coordinates[antagonism][1] < self.coordinates[stratification][1]:
                 self.reverse()
 
