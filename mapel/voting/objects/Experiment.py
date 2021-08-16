@@ -518,6 +518,11 @@ class Experiment:
                 plt.savefig(path, bbox_inches='tight')
             plt.show()
 
+    def get_election_id_from_model_name(self, model_name):
+        for election_id in self.elections:
+            if self.elections[election_id].election_model == model_name:
+                return election_id
+
     def print_map(self, dim='2d', **kwargs):
         """ Print the two-dimensional embedding of multi-dimensional map of the elections """
         if dim == '2d':
@@ -530,7 +535,7 @@ class Experiment:
                      angle=0, reverse=False, update=False, feature=None,
                      attraction_factor=1, axis=False,
                      distance_name="emd-positionwise", guardians=False,
-                     ticks=None,
+                     ticks=None, skeleton={},
                      title=None,
                      saveas=None, show=True, ms=20, normalizing_func=None,
                      xticklabels=None, cmap=None,
@@ -541,35 +546,13 @@ class Experiment:
 
         if adjust:
 
-            sufix_1 = '_' + str(self.default_num_candidates) + '_' + str(self.default_num_voters) + '_0'
-            sufix_2 = '_' + str(self.default_num_candidates) + '_' + str(self.default_num_voters)
-
-            if 'ID' in self.coordinates:
-                identity = 'ID'
-                uniformity = 'UN'
-                antagonism = 'AN'
-                stratification = 'ST'
-            elif 'identity' in self.coordinates:
-                identity = 'identity'
-                uniformity = 'uniformity'
-                antagonism = 'antagonism'
-                stratification = 'stratification'
-            elif 'identity'+sufix_1 in self.coordinates:
-                identity = 'identity' + sufix_1
-                uniformity = 'uniformity' + sufix_1
-                antagonism = 'antagonism' + sufix_1
-                stratification = 'stratification' + sufix_1
-            elif 'identity'+sufix_2 in self.coordinates:
-                identity = 'identity' + sufix_2
-                uniformity = 'uniformity' + sufix_2
-                antagonism = 'antagonism' + sufix_2
-                stratification = 'stratification' + sufix_2
-
-            # print(self.coordinates)
+            uniformity = self.get_election_id_from_model_name('uniformity')
+            identity = self.get_election_id_from_model_name('identity')
+            antagonism = self.get_election_id_from_model_name('antagonism')
+            stratification = self.get_election_id_from_model_name('stratification')
 
             d_x = self.coordinates[identity][0] - self.coordinates[uniformity][0]
             d_y = self.coordinates[identity][1] - self.coordinates[uniformity][1]
-            # print(d_x, d_y)
             alpha = math.atan(d_x/d_y)
             self.rotate(alpha - math.pi/2.)
             if self.coordinates[uniformity][0] > self.coordinates[identity][0]:
@@ -614,6 +597,9 @@ class Experiment:
         pr.basic_background(ax=ax, values=feature, legend=legend,
                             saveas=saveas, xlabel=xlabel,
                             title=title)
+
+        if skeleton != {}:
+            pr.add_skeleton(experiment=self, skeleton=skeleton)
 
         if tex:
             pr.saveas_tex(saveas=saveas)

@@ -1,7 +1,7 @@
 
 # from mapel.voting import _elections as el
 # from mapel.voting import embedding as emb
-# from mapel.voting import _metrics as metr
+import mapel.voting._metrics as metr
 import mapel.voting.print as pr
 import mapel.voting.development as dev
 # from mapel.voting import matrices as mat
@@ -162,8 +162,8 @@ def print_matrix(**kwargs):
 #     return el.import_election(experiment_id, election_id)
 #
 #
-def compute_subelection_weird(**kwargs):
-    dev.compute_subelection_weird(**kwargs)
+def compute_subelection_by_groups(**kwargs):
+    metr.compute_subelection_by_groups(**kwargs)
 #
 #
 # def compute_winners(experiment_id, **kwargs):

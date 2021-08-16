@@ -1428,5 +1428,18 @@ def print_clustering_bis(experiment_id, magic=1, q=0):
                 normalizing_func=normalizing_func, xticklabels=xticklabels, cmap=custom_map, black=True, levels=True)
 
 
+def add_skeleton(experiment=None, skeleton=None):
+
+    def my_text(x1, y1, text, color="black", alpha=1., size=12):
+
+        plt.text(x1, y1, text, size=size, rotation=0., ha="center",
+                 va="center",
+                 color=color, alpha=alpha,
+                 bbox=dict(boxstyle="round", ec="black", fc="white"))
+
+    for name in skeleton:
+        x = experiment.coordinates[name][0]
+        y = experiment.coordinates[name][1]
+        my_text(x, y, name)
 
 
