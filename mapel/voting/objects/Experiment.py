@@ -105,6 +105,7 @@ class Experiment:
                      color="black", alpha=1., show=True, marker='x',
                      starting_from=0,
                      num_candidates=None, num_voters=None, election_id=None):
+        """ Add election to the experiment """
 
         if num_candidates is None:
             num_candidates = self.default_num_candidates
@@ -129,7 +130,7 @@ class Experiment:
                    label=None, color="black", alpha=1., show=True, marker='o',
                    starting_from=0, num_candidates=None, num_voters=None,
                    family_id=None, single_election=False):
-        """ Only add the Family; the Elections will be generated later"""
+        """ Add family of elections to the experiment """
 
         if num_candidates is None:
             num_candidates = self.default_num_candidates

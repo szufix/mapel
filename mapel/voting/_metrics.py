@@ -44,6 +44,13 @@ def get_distance(election_1, election_2, distance_name=''):
         return metrics_with_inner_distance.get(main_distance)(election_1, election_2, inner_distance)
 
 
+def _minus_one(vector):
+    new_vector = [0 for _ in range(len(vector))]
+    for i in range(len(vector)):
+        new_vector[vector[i]] = i
+    return new_vector
+
+
 def single_thread(experiment, distances, times, thread_ids, t, matchings):
     """ Single thread for computing distance """
 
@@ -54,6 +61,7 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
                                 distance_name=experiment.distance_name)
 
         matchings[election_id_1][election_id_2] = matching
+        matchings[election_id_2][election_id_1] = _minus_one(matching)
         distances[election_id_1][election_id_2] = distance
         distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
         times[election_id_1][election_id_2] = time() - start_time
