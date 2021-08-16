@@ -20,7 +20,7 @@ def generate_single_crossing_election(num_voters=None, num_candidates=None):
             if domain[line - 1][i] < domain[line - 1][i + 1]:
                 poss.append([domain[line - 1][i], domain[line - 1][i + 1]])
 
-        r = rand.randint(0, len(poss) - 1) # random swap
+        r = rand.randint(0, len(poss) - 1)  # random swap
 
         for i in range(num_candidates):
 
@@ -80,6 +80,7 @@ def generate_single_crossing_election(num_voters=None, num_candidates=None):
 
 def get_single_crossing_matrix(num_candidates):
     return get_single_crossing_vectors(num_candidates).transpose()
+
 
 def get_single_crossing_vectors(num_candidates):
 

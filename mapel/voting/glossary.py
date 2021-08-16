@@ -55,3 +55,5 @@ LIST_OF_FAKE_MODELS = {'identity', 'uniformity', 'antagonism', 'stratification',
                           'crate', 'walsh_matrix', 'conitzer_matrix',
                           'single-crossing_matrix', 'gs_caterpillar_matrix',
                           'norm-mallows_matrix', 'sushi_matrix'}
+
+PATHS = {'unid', 'stan', 'anid', 'stid', 'anun', 'stun'}

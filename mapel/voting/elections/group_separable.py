@@ -22,8 +22,10 @@ def _decompose_tree(num_leaves, num_internal_nodes):
     return tree
 
 
-def generate_group_separable_election(num_voters=None, num_candidates=None, params=None):
-    """ Algorithm from: The Complexity of Election Problems with Group-Separable Preferences"""
+def generate_group_separable_election(num_voters=None, num_candidates=None,
+                                      params=None):
+    """ Algorithm from: The Complexity of Election Problems
+    with Group-Separable Preferences"""
 
     if params is None:
         params = {}
@@ -36,16 +38,19 @@ def generate_group_separable_election(num_voters=None, num_candidates=None, para
         n = num_voters
 
         if params['tree'] == 'random':
-            func = lambda m, r: 1./(m-1) * binom(m - 1, r) * binom(m - 1 + r, m)
+            func = lambda m, r: 1./(m-1) * binom(m - 1, r) * \
+                                binom(m - 1 + r, m)
             buckets = [func(m, r) for r in range(1, m)]
 
             denominator = sum(buckets)
             print(buckets)
             buckets = [buckets[i]/denominator for i in range(len(buckets))]
 
-            num_internal_nodes = np.random.choice(len(buckets), 1, p=buckets)[0]+1
+            num_internal_nodes = \
+                np.random.choice(len(buckets), 1, p=buckets)[0]+1
 
-            decomposition_tree = _decompose_tree(num_candidates, num_internal_nodes)
+            decomposition_tree = \
+                _decompose_tree(num_candidates, num_internal_nodes)
 
         elif params['tree'] == 'caterpillar':
             decomposition_tree = _caterpillar(m)
@@ -58,7 +63,8 @@ def generate_group_separable_election(num_voters=None, num_candidates=None, para
         votes = []
         for i in range(n):
 
-            signature = [rand.choice([0, 1]) for _ in range(len(all_inner_nodes))]
+            signature = [rand.choice([0, 1])
+                         for _ in range(len(all_inner_nodes))]
 
             for i, node in enumerate(all_inner_nodes):
                 node.reverse = signature[i]
@@ -133,7 +139,8 @@ def sample_a_vote(node, reverse=False):
             output.append(sample_a_vote(node.children[i]))
     else:
         for i in range(len(node.children)):
-            output.append(sample_a_vote(node.children[len(node.children)-1-i], reverse=True))
+            output.append(sample_a_vote(node.children[len(node.children)-1-i],
+                                        reverse=True))
 
     return list(chain.from_iterable(output))
 
@@ -171,7 +178,8 @@ class Node:
 
 def _generate_patterns(num_nodes, num_internal_nodes):
     # Step 1: Mixing the patterns
-    patterns = ['M0' for _ in range(num_nodes-num_internal_nodes)] + ['M1' for _ in range(num_internal_nodes)]
+    patterns = ['M0' for _ in range(num_nodes-num_internal_nodes)] + \
+               ['M1' for _ in range(num_internal_nodes)]
     rand.shuffle(patterns)
     return patterns
 
@@ -210,7 +218,8 @@ def _generate_tree(num_nodes, num_internal_nodes, patterns):
         if elem == '()1':
             pos_to_insert.append(i)
 
-    choices = list(np.random.choice([i for i in range(len(pos_to_insert))], size=num_edges, replace=True))
+    choices = list(np.random.choice([i for i in range(len(pos_to_insert))],
+                                    size=num_edges, replace=True))
     choices.sort(reverse=True)
 
     for choice in choices:
@@ -463,7 +472,7 @@ def get_frequency_matrix_from_tree(root):
 # num_voters = 1000
 # num_candidates = 5
 # votes, tree = generate_group_separable_election(num_voters=num_voters,
-#                                                 num_candidates=num_candidates)
+#                                       num_candidates=num_candidates)
 #
 # print(get_frequency_matrix_from_tree(tree))
 #

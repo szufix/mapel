@@ -32,7 +32,7 @@ from mapel.voting.objects.Election import Election
 
 import mapel.voting.elections.preflib as preflib
 
-from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS
+from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS
 
 
 def generate_votes(election_model=None, num_candidates=None, num_voters=None,
@@ -50,7 +50,7 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
                     'real_uniformity': generate_real_uniformity_election,
                     'real_antagonism': generate_real_antagonism_election,
                     'real_stratification':
-                        generate_real_stratification_election,}
+                        generate_real_stratification_election}
 
     euclidean_models = {'1d_interval': generate_elections_1d_simple,
                         '1d_gaussian': generate_elections_1d_simple,
@@ -88,17 +88,18 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
                                                  num_candidates=num_candidates)
 
     elif election_model in euclidean_models:
-        votes = euclidean_models.get(election_model)(num_voters=num_voters,
-                                                     num_candidates=num_candidates,
-                                                     election_model=election_model)
+        votes = euclidean_models.get(election_model)(
+            num_voters=num_voters, num_candidates=num_candidates,
+            election_model=election_model)
 
     elif election_model in single_param_models:
-        votes = single_param_models.get(election_model)(num_voters=num_voters,
-                                                        num_candidates=num_candidates,
-                                                        params=params)
+        votes = single_param_models.get(election_model)(
+            num_voters=num_voters, num_candidates=num_candidates,
+            params=params)
 
     elif election_model in double_param_models:
-        votes = double_param_models.get(election_model)(num_voters,num_candidates,params)
+        votes = double_param_models.get(election_model)(num_voters,
+                                                        num_candidates, params)
 
     elif election_model in LIST_OF_FAKE_MODELS:
         votes = [election_model, num_candidates, num_voters, params]
@@ -112,10 +113,6 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
 
     return votes
 
-
-
-
-
 # def generate_family(**kwargs):
 #
 #     votes = generate_votes(**kwargs)
@@ -125,7 +122,8 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
 
 # deprecated
 # needs update
-# def extend_elections(experiment_id, folder=None, starting_from=0, ending_at=1000000):
+# def extend_elections(experiment_id, folder=None, starting_from=0,
+# ending_at=1000000):
 #     """ Prepare elections for a given experiment """
 #     experiment = Experiment(experiment_id, raw=True)
 #
@@ -157,19 +155,19 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
                        num_candidates=None, num_voters=None, params=None):
     """ main function: generate elections """
 
-    # print(params)
     if params is None:
         params = {}
 
-    if election_model == 'mallows' and params['phi'] == None:
+    if election_model == 'mallows' and params['phi'] is None:
         params['phi'] = rand.random()
-    elif election_model == 'norm-mallows' and params['norm-phi'] == None:
+    elif election_model == 'norm-mallows' and params['norm-phi'] is None:
         params['norm-phi'] = rand.random()
-    elif election_model == 'urn_model' and params['alpha'] == None:
+    elif election_model == 'urn_model' and params['alpha'] is None:
         params['alpha'] = gamma.rvs(0.8)
 
     if election_model == 'norm-mallows':
-        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+        params['phi'] = phi_from_relphi(num_candidates,
+                                        relphi=params['norm-phi'])
 
     if 'weight' not in params:
         params['weight'] = 0.
@@ -194,25 +192,17 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
             file_.write(str(num_voters) + '\n')
             file_.write(str(num_candidates) + '\n')
             file_.write(str(election_model) + '\n')
-            # todo: store all params
-            # file_.write(str(round(params['param_1'], 5)) + '\n')
             if election_model == 'norm-mallows_matrix':
                 file_.write(str(round(params['norm-phi'], 5)) + '\n')
             file_.close()
 
         else:
 
-            # votes = generate_votes(election_model=election_model,
-            #                        num_candidates=num_candidates, num_voters=num_voters,
-            #                        param_1=param_1, param_2=param_2)
-
             votes = experiment.elections[election_id].votes
-
-            if experiment.store:
-                path = os.path.join("experiments",
-                                    str(experiment.experiment_id), "elections",
-                                    (str(election_id) + ".soc"))
-                file_ = open(path, 'w')
+            path = os.path.join("experiments",
+                                str(experiment.experiment_id), "elections",
+                                (str(election_id) + ".soc"))
+            with open(path, 'w') as file_:
 
                 if election_model in {'urn_model'}:
                     file_.write("# " + NICE_NAME[election_model] + " " +
@@ -244,7 +234,8 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
                 counted_votes = [[count, list(row)] for row, count in c.items()]
                 counted_votes = sorted(counted_votes, reverse=True)
 
-                file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' + str(len(counted_votes)) + "\n")
+                file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
+                            str(len(counted_votes)) + "\n")
 
                 for i in range(len(counted_votes)):
                     file_.write(str(counted_votes[i][0]) + ', ')
@@ -255,13 +246,10 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
                         else:
                             file_.write("\n")
 
-                file_.close()
-
     return experiment.elections[election_id]
 
 
-########################################################################################################################
-
+###############################################################################
 
 # IMPORT
 def import_election(experiment_id, election_id):
@@ -292,7 +280,8 @@ def prepare_preflib_family(experiment=None, election_model=None,
     elif election_model == 'skate':
         folder = 'skate_ic'
         # 9 judges
-        ids = [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+        ids = [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+               25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
                35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 47, 48]
     elif election_model == 'sushi':
         folder = 'sushi_ff'
@@ -337,70 +326,74 @@ def prepare_preflib_family(experiment=None, election_model=None,
         election_id = "core_" + str(id_)
         tmp_election_type = election_model + '_' + str(ri)
 
-        preflib.generate_elections_preflib(experiment=experiment, election_model=tmp_election_type, elections_id=election_id,
-                                           num_voters=experiment.families[election_model].num_voters,
-                                           num_candidates=experiment.families[election_model].num_candidates,
-                                           special=params,
-                                           folder=folder, selection_method=selection_method)
+        preflib.generate_elections_preflib(
+            experiment=experiment, election_model=tmp_election_type,
+            elections_id=election_id,
+            num_voters=experiment.families[election_model].num_voters,
+            num_candidates=experiment.families[election_model].num_candidates,
+            special=params,
+            folder=folder, selection_method=selection_method)
         id_ += 1
 
 
-def prepare_statistical_culture_family(experiment=None, election_model=None, family_id=None,
-                                       params=None):
+def _get_params_for_crate(j):
+    base = []
+    my_size = 10
+    # with_edge
+    for p in range(my_size):
+        for q in range(my_size):
+            for r in range(my_size):
+                a = p / (my_size - 1)
+                b = q / (my_size - 1)
+                c = r / (my_size - 1)
+                d = 1 - a - b - c
+                tmp = [a, b, c, d]
+                if d >= 0 and sum(tmp) == 1:
+                    base.append(tmp)
+    params = {'alpha': base[j]}
+    return params
 
+
+def _get_params_for_paths(experiment, family_id, j, copy_param_1=4):
+
+    params = {}
+    if copy_param_1 == 0:  # with both
+        params['param_1'] = j / (experiment.families[family_id].size - 1)
+    elif copy_param_1 == 1:  # without first (which is last)
+        params['param_1'] = j / experiment.families[family_id].size
+    elif copy_param_1 == 2:  # without second (which is first)
+        params['param_1'] = (j + 1) / experiment.families[family_id].size
+    elif copy_param_1 == 4:  # without both
+        params['param_1'] = (j + 1) / (experiment.families[family_id].size + 1)
+
+    return params
+
+
+def prepare_statistical_culture_family(experiment=None, election_model=None,
+                                       family_id=None, params=None):
     # base_map = {'35': 5, '50': 6, '80': 7, '110': 8, '165': 9, '199': 10}
-    # print
+
     keys = []
 
-    base = []
-    if election_model == 'crate':
-        params = {}
-        my_size = 10
-        # with_edge
-        for p in range(my_size):
-            for q in range(my_size):
-                for r in range(my_size):
-                    a = p / (my_size - 1)
-                    b = q / (my_size - 1)
-                    c = r / (my_size - 1)
-                    d = 1 - a - b - c
-                    tmp = [a, b, c, d]
-                    if d >= 0 and sum(tmp) == 1:
-                        base.append(tmp)
-
-    # print(len(base))
-
     for j in range(experiment.families[family_id].size):
-        # print(j)
-        copy_param_1 = 4
 
-        if election_model in {'unid', 'stan', 'anid', 'stid', 'anun', 'stun'}:
-            params = {}
-            if copy_param_1 == 0:  # with both
-                params['param_1'] = j / (experiment.families[family_id].size - 1)
-            elif copy_param_1 == 1:  # without first (which is last)
-                params['param_1'] = j / experiment.families[family_id].size
-            elif copy_param_1 == 2:  # without second (which is first)
-                params['param_1'] = (j + 1) / experiment.families[family_id].size
-            elif copy_param_1 == 4:  # without both
-                params['param_1'] = (j + 1) / (experiment.families[family_id].size + 1)
-        # if election_model == 'norm-mallows_matrix':
-        #     params['norm-phi'] = (j + 1) / experiment.families[family_id].size
-        # elif election_model == 'urn_model' and copy_param_1 == -2.:
-        #     params['alpha'] = round(j / 10000., 2)
+        if election_model in PATHS:
+            params = _get_params_for_paths(experiment, family_id, j)
 
         if election_model in {'crate'}:
-            params['alpha'] = base[j]
+            params = _get_params_for_crate(j)
 
         if experiment.families[family_id].single_election:
             election_id = family_id
         else:
             election_id = family_id + '_' + str(j)
 
-        generate_elections(experiment=experiment, election_model=election_model, election_id=election_id,
-                           num_voters=experiment.families[family_id].num_voters,
-                           num_candidates=experiment.families[family_id].num_candidates,
-                           params=copy.deepcopy(params))
+        generate_elections(
+            experiment=experiment, election_model=election_model,
+            election_id=election_id,
+            num_voters=experiment.families[family_id].num_voters,
+            num_candidates=experiment.families[family_id].num_candidates,
+            params=copy.deepcopy(params))
 
         keys.append(election_id)
 

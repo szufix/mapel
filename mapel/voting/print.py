@@ -481,6 +481,12 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
         plt.suptitle(title, fontsize=16)
 
     if saveas is not None:
+
+        try:
+            os.mkdir(os.path.join(os.getcwd(), "images"))
+        except FileExistsError:
+            pass
+
         if values is None and legend:
             ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
             plt.savefig(file_name, bbox_inches='tight')

@@ -32,10 +32,16 @@ try:
     from sklearn.manifold import LocallyLinearEmbedding
     from sklearn.manifold import Isomap
 except ImportError as error:
+    MDS = None
+    TSNE = None
+    SpectralEmbedding = None
+    LocallyLinearEmbedding = None
+    Isomap = None
     print(error)
 
 COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown',
           'lime', 'cyan', 'grey']
+
 
 class Experiment:
     """Abstract set of elections."""
@@ -54,6 +60,10 @@ class Experiment:
         self.times = None
         self.points_by_families = None
         self.matchings = None
+
+        self.num_families = None
+        self.num_elections = None
+        self.main_order = None
 
         if experiment_id is None:
             self.store = False
@@ -193,15 +203,12 @@ class Experiment:
 
             for family_id in self.families:
                 params = self.families[family_id].params
-                # num_candidates = self.families[family_id].num_candidates
-                # num_voters = self.families[family_id].num_voters
-
                 election_model = self.families[family_id].election_model
 
                 if election_model in preflib.LIST_OF_PREFLIB_MODELS:
-                    _elections.prepare_preflib_family(experiment=self,
-                                                      election_model=election_model,
-                                                      params=params)
+                    _elections.prepare_preflib_family(
+                        experiment=self, election_model=election_model,
+                        params=params)
                 else:
                     _elections.prepare_statistical_culture_family(
                         experiment=self, election_model=election_model,
@@ -241,12 +248,13 @@ class Experiment:
             start = int(t * num_distances / num_threads)
             stop = int((t + 1) * num_distances / num_threads)
             thread_ids = ids[start:stop]
+            copy_t = t
 
             threads[t] = Thread(target=metr.single_thread, args=(self,
                                                                  distances,
                                                                  times,
                                                                  thread_ids,
-                                                                 t, matchings))
+                                                                 copy_t, matchings))
             threads[t].start()
 
         for t in range(num_threads):
@@ -259,14 +267,16 @@ class Experiment:
 
             with open(path, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(["election_id_1", "election_id_2", "distance", "time"])
+                writer.writerow(
+                    ["election_id_1", "election_id_2", "distance", "time"])
 
                 for i, election_1 in enumerate(self.elections):
                     for j, election_2 in enumerate(self.elections):
                         if i < j:
                             distance = str(distances[election_1][election_2])
                             time = str(distances[election_1][election_2])
-                            writer.writerow([election_1, election_2, distance, time])
+                            writer.writerow(
+                                [election_1, election_2, distance, time])
 
         self.distances = distances
         self.times = times
@@ -311,9 +321,11 @@ class Experiment:
                                 "map.csv")
             with open(path, 'w') as file_csv:
                 file_csv.write(
-                    "size;num_candidates;num_voters;election_model;params;color;alpha;label;marker;show\n")
+                    "size;num_candidates;num_voters;election_model;params;"
+                    "color;alpha;label;marker;show\n")
                 file_csv.write(
-                    "3;10;100;impartial_culture;{};black;1;Impartial Culture;o;t\n")
+                    "3;10;100;impartial_culture;{};black;1;"
+                    "Impartial Culture;o;t\n")
                 file_csv.write("3;10;100;iac;{};black;0.7;IAC;o;t\n")
                 file_csv.write(
                     "3;10;100;conitzer;{};limegreen;1;SP by Conitzer;o;t\n")
@@ -324,7 +336,8 @@ class Experiment:
                 file_csv.write(
                     "3;10;100;group-separable;{};blue;1;Group-Separable;o;t\n")
                 file_csv.write(
-                    "3;10;100;single-crossing;{};purple;0.6;Single-Crossing;o;t\n")
+                    "3;10;100;single-crossing;{};purple;0.6;"
+                    "Single-Crossing;o;t\n")
                 file_csv.write(
                     "3;10;100;1d_interval;{};DarkGreen;1;1D Interval;o;t\n")
                 file_csv.write("3;10;100;2d_disc;{};Green;1;2D Disc;o;t\n")
@@ -335,13 +348,17 @@ class Experiment:
                 file_csv.write(
                     "3;10;100;3d_sphere;{};black;0.4;3D Sphere;o;t\n")
                 file_csv.write(
-                    "3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn model 0.1;o;t\n")
+                    "3;10;100;urn_model;{'alpha':0.1};yellow;1;"
+                    "Urn model 0.1;o;t\n")
                 file_csv.write(
-                    "3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;Norm-Mallows 0.5;o;t\n")
+                    "3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;"
+                    "Norm-Mallows 0.5;o;t\n")
                 file_csv.write(
-                    "3;10;100;urn_model;{'alpha':0};orange;1;Urn model (gamma);o;t\n")
+                    "3;10;100;urn_model;{'alpha':0};orange;1;"
+                    "Urn model (gamma);o;t\n")
                 file_csv.write(
-                    "3;10;100;norm-mallows;{'norm-phi':0};cyan;1;Norm-Mallows (uniform);o;t\n")
+                    "3;10;100;norm-mallows;{'norm-phi':0};cyan;1;"
+                    "Norm-Mallows (uniform);o;t\n")
                 file_csv.write("1;10;100;identity;{};blue;1;Identity;x;t\n")
                 file_csv.write(
                     "1;10;100;uniformity;{};black;1;Uniformity;x;t\n")
@@ -351,20 +368,22 @@ class Experiment:
                 file_csv.write(
                     "1;10;100;walsh_matrix;{};olivedrab;1;Walsh Matrix;x;t\n")
                 file_csv.write(
-                    "1;10;100;conitzer_matrix;{};limegreen;1;Conitzer Matrix;x;t\n")
+                    "1;10;100;conitzer_matrix;{};limegreen;1;"
+                    "Conitzer Matrix;x;t\n")
                 file_csv.write(
-                    "1;10;100;single-crossing_matrix;{};purple;0.6;Single-Crossing Matrix;x;t\n")
+                    "1;10;100;single-crossing_matrix;{};purple;0.6;"
+                    "Single-Crossing Matrix;x;t\n")
                 file_csv.write(
-                    "1;10;100;gs_caterpillar_matrix;{};green;1;GS Caterpillar Matrix;x;t\n")
+                    "1;10;100;gs_caterpillar_matrix;{};green;1;"
+                    "GS Caterpillar Matrix;x;t\n")
                 # file_csv.write("3;10;100;unid;4;0;blue;1;UNID;3;f\n")
                 # file_csv.write("3;10;100;anid;4;0;black;1;ANID;3;f\n")
                 # file_csv.write("3;10;100;stid;4;0;black;1;STID;3;f\n")
                 # file_csv.write("3;10;100;anun;4;0;black;1;ANUN;3;f\n")
                 # file_csv.write("3;10;100;stun;4;0;black;1;STUN;3;f\n")
                 # file_csv.write("3;10;100;stan;4;0;red;1;STAN;3;f\n")
-        except Exception:
-            # print("Experiment already exists!")
-            pass
+        except FileExistsError:
+            print("Experiment already exists!")
 
     def add_elections_to_experiment(self, with_matrices=False):
         """ Import elections from a file """
@@ -431,7 +450,8 @@ class Experiment:
                                 x[i][j] = 0.
                                 normal = False
                         if normal:
-                            x[i][j] = 1. / self.distances[election_1_id][election_2_id]
+                            x[i][j] = 1. / self.distances[election_1_id][
+                                election_2_id]
                     else:
                         x[i][j] = self.distances[election_1_id][election_2_id]
                     x[i][j] = x[i][j] ** attraction_factor
@@ -439,13 +459,13 @@ class Experiment:
 
         dt = [('weight', float)]
         x = x.view(dt)
-        G = nx.from_numpy_matrix(x)
+        graph = nx.from_numpy_matrix(x)
 
         if num_neighbors is None:
             num_neighbors = 100
 
         if algorithm == 'spring':
-            my_pos = nx.spring_layout(G, iterations=num_iterations, dim=2)
+            my_pos = nx.spring_layout(graph, iterations=num_iterations, dim=2)
         elif algorithm in {'mds', 'MDS'}:
             my_pos = MDS(n_components=2).fit_transform(x)
         elif algorithm in {'tsne', 'TSNE'}:
@@ -505,12 +525,13 @@ class Experiment:
         else:
 
             for color in group_by:
-                X = []
-                Y = []
+                x_array = []
+                y_array = []
                 for election_id in group_by[color]:
-                    X.append(self.coordinates[election_id][0])
-                    Y.append(self.coordinates[election_id][1])
-                plt.scatter(X, Y, label=group_by[color][0], color=color)
+                    x_array.append(self.coordinates[election_id][0])
+                    y_array.append(self.coordinates[election_id][1])
+                plt.scatter(x_array, y_array, label=group_by[color][0],
+                            color=color)
             plt.legend()
             if saveas is not None:
                 file_name = saveas + ".png"
@@ -524,7 +545,8 @@ class Experiment:
                 return election_id
 
     def print_map(self, dim='2d', **kwargs):
-        """ Print the two-dimensional embedding of multi-dimensional map of the elections """
+        """ Print the two-dimensional embedding of multi-dimensional
+        map of the elections """
         if dim == '2d':
             self.print_map_2d(**kwargs)
         elif dim == '3d':
@@ -535,12 +557,15 @@ class Experiment:
                      angle=0, reverse=False, update=False, feature=None,
                      attraction_factor=1, axis=False,
                      distance_name="emd-positionwise", guardians=False,
-                     ticks=None, skeleton={},
+                     ticks=None, skeleton=None,
                      title=None,
                      saveas=None, show=True, ms=20, normalizing_func=None,
                      xticklabels=None, cmap=None,
                      ignore=None, marker_func=None, tex=False, black=False,
                      legend=True, levels=False, tmp=False, adjust=False):
+
+        if skeleton is None:
+            skeleton = {}
 
         self.compute_points_by_families()
 
@@ -549,16 +574,20 @@ class Experiment:
             uniformity = self.get_election_id_from_model_name('uniformity')
             identity = self.get_election_id_from_model_name('identity')
             antagonism = self.get_election_id_from_model_name('antagonism')
-            stratification = self.get_election_id_from_model_name('stratification')
+            stratification = self.get_election_id_from_model_name(
+                'stratification')
 
-            d_x = self.coordinates[identity][0] - self.coordinates[uniformity][0]
-            d_y = self.coordinates[identity][1] - self.coordinates[uniformity][1]
-            alpha = math.atan(d_x/d_y)
-            self.rotate(alpha - math.pi/2.)
+            d_x = self.coordinates[identity][0] - self.coordinates[uniformity][
+                0]
+            d_y = self.coordinates[identity][1] - self.coordinates[uniformity][
+                1]
+            alpha = math.atan(d_x / d_y)
+            self.rotate(alpha - math.pi / 2.)
             if self.coordinates[uniformity][0] > self.coordinates[identity][0]:
                 self.rotate(math.pi)
 
-            if self.coordinates[antagonism][1] < self.coordinates[stratification][1]:
+            if self.coordinates[antagonism][1] < \
+                    self.coordinates[stratification][1]:
                 self.reverse()
 
         if angle != 0:
@@ -592,7 +621,6 @@ class Experiment:
                                     ticks=ticks)
         else:
             pr.basic_coloring(experiment=self, ax=ax, ms=ms)
-
 
         if skeleton != {}:
             pr.add_skeleton(experiment=self, skeleton=skeleton, ax=ax)
@@ -754,12 +782,12 @@ class Experiment:
             family_id = election_model + '_' + str(num_candidates) + '_' + str(
                 num_voters)
 
-            if election_model in {'urn_model'} and params['alpha'] != None:
+            if election_model in {'urn_model'} and params['alpha'] is not None:
                 family_id += '_' + str(float(params['alpha']))
-            elif election_model in {'mallows'} and params['phi'] != None:
+            elif election_model in {'mallows'} and params['phi'] is not None:
                 family_id += '_' + str(float(params['phi']))
-            elif election_model in {'norm-mallows', 'norm-mallows_matrix'} and \
-                    params['norm-phi'] != None:
+            elif election_model in {'norm-mallows', 'norm-mallows_matrix'} \
+                    and params['norm-phi'] is not None:
                 family_id += '_' + str(float(params['norm-phi']))
 
             families[family_id] = Family(election_model=election_model,
@@ -946,7 +974,8 @@ class Experiment:
         """ Rotate all the points by a given angle """
 
         for election_id in self.elections:
-            self.coordinates[election_id][0], self.coordinates[election_id][1] = self.rotate_point(
+            self.coordinates[election_id][0], self.coordinates[election_id][
+                1] = self.rotate_point(
                 0.5, 0.5, angle, self.coordinates[election_id][0],
                 self.coordinates[election_id][1])
 
@@ -957,7 +986,8 @@ class Experiment:
 
         for election_id in self.elections:
             self.coordinates[election_id][0] = self.coordinates[election_id][0]
-            self.coordinates[election_id][1] = -self.coordinates[election_id][1]
+            self.coordinates[election_id][1] = -self.coordinates[election_id][
+                1]
 
         self.compute_points_by_families()
 

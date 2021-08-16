@@ -3,7 +3,8 @@ import numpy as np
 import math
 
 
-def generate_elections_1d_simple(election_model=None, num_voters=None, num_candidates=None):
+def generate_elections_1d_simple(election_model=None, num_voters=None,
+                                 num_candidates=None):
     """ helper function: generate simple 1d elections"""
 
     voters = [0 for _ in range(num_voters)]
@@ -29,7 +30,8 @@ def generate_elections_1d_simple(election_model=None, num_voters=None, num_candi
     return votes
 
 
-def generate_elections_2d_grid(election_model=None, num_voters=None, num_candidates=None):
+def generate_elections_2d_grid(election_model=None, num_voters=None,
+                               num_candidates=None):
 
     voters = [[0, 0] for _ in range(num_voters)]
     candidates = []
@@ -39,7 +41,7 @@ def generate_elections_2d_grid(election_model=None, num_voters=None, num_candida
 
     for j in range(num_voters):
         voters[j] = get_rand('2d_square')
-    voters= sorted(voters)
+    voters = sorted(voters)
 
     sq = int(num_candidates**0.5)
     d = 1./sq
@@ -61,7 +63,8 @@ def generate_elections_2d_grid(election_model=None, num_voters=None, num_candida
     return votes
 
 
-def generate_elections_2d_simple(election_model=None, num_voters=None, num_candidates=None):
+def generate_elections_2d_simple(election_model=None, num_voters=None,
+                                 num_candidates=None):
     """ helper function: generate simple 2d elections"""
 
     voters = [[0, 0] for _ in range(num_voters)]
@@ -72,7 +75,7 @@ def generate_elections_2d_simple(election_model=None, num_voters=None, num_candi
 
     for j in range(num_voters):
         voters[j] = get_rand(election_model)
-    voters= sorted(voters)
+    voters = sorted(voters)
 
     for j in range(num_candidates):
         candidates[j] = get_rand(election_model)
@@ -88,16 +91,20 @@ def generate_elections_2d_simple(election_model=None, num_voters=None, num_candi
     return votes
 
 
-def generate_elections_nd_simple(election_model=None, num_voters=None, num_candidates=None):
+def generate_elections_nd_simple(election_model=None, num_voters=None,
+                                 num_candidates=None):
     """ helper function: generate simple nd elections"""
 
     n_dim = 0
 
-    if election_model == "3d_sphere" or election_model == "3d_cube" or election_model == "3d_ball":
+    if election_model == "3d_sphere" or election_model == "3d_cube" or \
+            election_model == "3d_ball":
         n_dim = 3
-    elif election_model == "4d_sphere" or election_model == "4d_cube" or election_model == "4d_ball":
+    elif election_model == "4d_sphere" or election_model == "4d_cube" or \
+            election_model == "4d_ball":
         n_dim = 4
-    elif election_model == "5d_sphere" or election_model == "5d_cube" or election_model == "5d_ball":
+    elif election_model == "5d_sphere" or election_model == "5d_cube" or \
+            election_model == "5d_ball":
         n_dim = 5
     elif election_model == "10d_cube":
         n_dim = 10
@@ -131,7 +138,6 @@ def generate_elections_nd_simple(election_model=None, num_voters=None, num_candi
     return votes
 
 
-
 # AUXILIARY
 def random_ball(dimension, num_points=1, radius=1):
     from numpy import random, linalg
@@ -155,22 +161,26 @@ def get_rand(elections_model, cat="voters"):
         while point > 1 or point < 0:
             point = rand.gauss(0.5, 0.15)
     elif elections_model == "1d_one_sided_triangle":
-        point = rand.uniform(0, 1) ** (0.5)
+        point = rand.uniform(0, 1) ** 0.5
     elif elections_model == "1d_full_triangle":
-        point = rand.choice([rand.uniform(0, 1) ** (0.5), 2 - rand.uniform(0, 1) ** (0.5)])
+        point = rand.choice([rand.uniform(0, 1) ** 0.5,
+                             2 - rand.uniform(0, 1) ** 0.5])
     elif elections_model == "1d_two_party":
         point = rand.choice([rand.uniform(0, 1), rand.uniform(2, 3)])
     elif elections_model in {"2d_disc", "2d_range_disc"}:
         phi = 2.0 * 180.0 * rand.random()
         radius = math.sqrt(rand.random()) * 0.5
-        point = [0.5 + radius * math.cos(phi), 0.5 + radius * math.sin(phi)]
+        point = [0.5 + radius * math.cos(phi),
+                 0.5 + radius * math.sin(phi)]
     elif elections_model == "2d_range_overlapping":
         phi = 2.0 * 180.0 * rand.random()
         radius = math.sqrt(rand.random()) * 0.5
         if cat == "voters":
-            point = [0.25 + radius * math.cos(phi), 0.5 + radius * math.sin(phi)]
+            point = [0.25 + radius * math.cos(phi),
+                     0.5 + radius * math.sin(phi)]
         elif cat == "candidates":
-            point = [0.75 + radius * math.cos(phi), 0.5 + radius * math.sin(phi)]
+            point = [0.75 + radius * math.cos(phi),
+                     0.5 + radius * math.sin(phi)]
 
     elif elections_model in {"2d_square"}:
         point = [rand.random(), rand.random()]
@@ -201,9 +211,13 @@ def get_rand(elections_model, cat="voters"):
     elif elections_model == "3d_interval_bis" or elections_model == "3d_cube":
         point = [rand.random(), rand.random(), rand.random()]
     elif elections_model == "3d_gaussian_bis":
-        point = [rand.gauss(0.5, 0.15), rand.gauss(0.5, 0.15), rand.gauss(0.5, 0.15)]
+        point = [rand.gauss(0.5, 0.15),
+                 rand.gauss(0.5, 0.15),
+                 rand.gauss(0.5, 0.15)]
         while distance(3, point, [0.5, 0.5, 0.5]) > 0.5:
-            point = [rand.gauss(0.5, 0.15), rand.gauss(0.5, 0.15), rand.gauss(0.5, 0.15)]
+            point = [rand.gauss(0.5, 0.15),
+                     rand.gauss(0.5, 0.15),
+                     rand.gauss(0.5, 0.15)]
     elif elections_model == "4d_cube":
         dim = 4
         point = [rand.random() for _ in range(dim)]

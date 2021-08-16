@@ -1,8 +1,6 @@
 import random as rand
 import numpy as np
-from math import *
 from random import *
-from sys import argv
 
 from scipy.special import binom
 
@@ -88,7 +86,6 @@ def walsh_sp(a, b):
 
 def f(i, j):
     if i < 0: return 0
-    if j < 0: return 0
     return (1.0 / (2 ** (i + j))) * binom(i + j, i)
 
 
@@ -184,7 +181,7 @@ def get_conitzer_vectors(m):
 
 
 def simconitzer(m):
-    P = [[0] * m for i in range(m)]
+    P = [[0] * m for _ in range(m)]
     T = 100000
 
     C = list(range(m))
