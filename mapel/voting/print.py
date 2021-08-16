@@ -1314,125 +1314,25 @@ def add_mask_100_100(fig, ax, black=False):
 
 
 
-def print_clustering(experiment_id, magic=1, q=0):
-    #"""
-    experiment = obj.experiment_xd(experiment_id)
 
-    guardians = ['identity', 'uniformity', 'antagonism', 'chess']
-    distances = {}
+####################
+####################
 
-    for guardian in guardians:
+####################
+####################
 
-        path = os.path.join("experiments", experiment_id, "controllers", "distances", guardian + ".txt")
-        file_ = open(path, 'r')
+####################
+####################
 
-        distances[guardian] = []
-        for i in range(experiment.num_elections):
-            distance = float(file_.readline().strip())
-            distances[guardian].append(distance)
-
-    path = os.path.join("experiments", str(experiment_id), "controllers", "advanced", 'guardians.txt')
-    file_ = open(path, 'w')
-
-    for i in range(experiment.num_elections):
-        order = [0,1,2,3]
-        values = [distances['identity'][i], distances['uniformity'][i], distances['antagonism'][i], distances['chess'][i]]
-        order = [x for _, x in sorted(zip(values, order))]
-        file_.write(str(order[q]) + '\n')
-        #file_.write(str(int(order[0]+order[1])) + '\n')
-    #"""
-    file_.close()
-
-    def normalizing_func(shade):
-        #print(shade)
-        shade /= 3
-        return shade
-
-    def reversed_func(arg):
-        arg *= 25
-        return arg
-
-    #[print(reversed_func(i)) for i in [0., 0.25, 0.5, 0.75, 1.]]
-
-    custom_map = custom_div_cmap(colors=["blue", "black", "red", "green"], num_colors=4)
-    xticklabels = list(['                   identity',
-                        '                   uniformity',
-                        '                   antagonism',
-                        '                   stratification', ''])
-    print_2d(experiment_id, saveas="distances/map_clustering_" + str(q), ms=16, values="guardians", magic=magic,
-                normalizing_func=normalizing_func, xticklabels=xticklabels, cmap=custom_map, black=True, levels=True)
+####################
+####################
 
 
-def print_clustering_bis(experiment_id, magic=1, q=0):
-    #"""
-    experiment = obj.experiment_xd(experiment_id)
-
-    guardians = ['identity', 'uniformity', 'antagonism', 'chess']
-    distances = {}
-
-    for guardian in guardians:
-
-        path = os.path.join("experiments", experiment_id, "controllers", "distances", guardian + ".txt")
-        file_ = open(path, 'r')
-
-        distances[guardian] = []
-        for i in range(experiment.num_elections):
-            distance = float(file_.readline().strip())
-            distances[guardian].append(distance)
-
-    path = os.path.join("experiments", str(experiment_id), "controllers", "advanced", 'guardians.txt')
-    file_ = open(path, 'w')
-
-    for i in range(experiment.num_elections):
-        order = [1000, 100, 10, 1]
-        values = [distances['identity'][i], distances['uniformity'][i], distances['antagonism'][i], distances['chess'][i]]
-        order = [x for _, x in sorted(zip(values, order))]
-        #file_.write(str(order[q]) + '\n')
-        file_.write(str(int(order[0]+order[1])) + '\n')
-        values = sorted(values)
-        #print(values[0], values[1])
-
-    #"""
-    file_.close()
-
-    def normalizing_func(shade):
-        shade = int(shade)
-        if shade == 11: # CH-AN
-            shade = 0
-        elif shade == 101:   # CH-UN
-            shade = 1/5
-        elif shade == 1001: # CH-ID
-            shade = 2/5
-        elif shade == 1010: # AN-ID
-            shade = 3/5
-        elif shade == 1100: # UN-ID
-            shade = 4/5
-        elif shade == 110: # AN-UN
-            shade = 1
-        return shade
-
-    def reversed_func(arg):
-        arg *= 25
-        return arg
-
-    #[print(reversed_func(i)) for i in [0., 0.25, 0.5, 0.75, 1.]]
-
-    custom_map = custom_div_cmap(colors=["black", "green", "red", "orange", "purple", "blue"], num_colors=6)
-    xticklabels = list(['CH-AN',
-                        'CH-UN',
-                        'CH-ID',
-                        'AN-ID',
-                        'UN-ID',
-                        'AN-UN'])
-    print_2d(experiment_id, saveas="distances/map_clustering_" + str(q), ms=16, values="guardians", magic=magic,
-                normalizing_func=normalizing_func, xticklabels=xticklabels, cmap=custom_map, black=True, levels=True)
-
-
-def add_skeleton(experiment=None, skeleton=None):
+def add_skeleton(experiment=None, skeleton=None, ax=None):
 
     def my_text(x1, y1, text, color="black", alpha=1., size=12):
 
-        plt.text(x1, y1, text, size=size, rotation=0., ha="center",
+        ax.text(x1, y1, text, size=size, rotation=0., ha="center",
                  va="center",
                  color=color, alpha=alpha,
                  bbox=dict(boxstyle="round", ec="black", fc="white"))
@@ -1441,5 +1341,6 @@ def add_skeleton(experiment=None, skeleton=None):
         x = experiment.coordinates[name][0]
         y = experiment.coordinates[name][1]
         my_text(x, y, name)
+
 
 

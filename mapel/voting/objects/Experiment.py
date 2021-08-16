@@ -593,13 +593,14 @@ class Experiment:
         else:
             pr.basic_coloring(experiment=self, ax=ax, ms=ms)
 
+
+        if skeleton != {}:
+            pr.add_skeleton(experiment=self, skeleton=skeleton, ax=ax)
+
         # BACKGROUND
         pr.basic_background(ax=ax, values=feature, legend=legend,
                             saveas=saveas, xlabel=xlabel,
                             title=title)
-
-        if skeleton != {}:
-            pr.add_skeleton(experiment=self, skeleton=skeleton)
 
         if tex:
             pr.saveas_tex(saveas=saveas)
