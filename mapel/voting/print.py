@@ -492,20 +492,15 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
             plt.savefig(file_name, bbox_inches='tight')
         else:
             plt.savefig(file_name, bbox_inches='tight')
-    """
-    text_name = str(experiment.num_voters) + " x " + str(experiment.num_candidates)
-    text = ax.text(0.0, 1.05, text_name, transform=ax.transAxes)
-    file_name = os.path.join(os.getcwd(), "images", str(saveas))
-    if values is None and legend == True:
-        lgd = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        plt.savefig(file_name, bbox_extra_artists=(lgd, text), bbox_inches='tight')
-    else:
-        plt.savefig(file_name, bbox_inches='tight')
-    """
+
 
 
 def saveas_tex(saveas=None):
     import tikzplotlib
+    try:
+        os.mkdir(os.path.join(os.getcwd(), "images", "tex"))
+    except FileExistsError:
+        pass
     file_name = saveas + ".tex"
     path = os.path.join(os.getcwd(), "images", "tex", file_name)
     tikzplotlib.save(path)
@@ -633,12 +628,14 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
     # CREATE MAPPING FOR BUCKETS
     bucket = np.array([[family_id for _ in range(experiment.families[family_id].size)] for family_id in experiment.families]).flatten()
 
-
     # CREATE MAPPING FOR ELECTIONS
     mapping = {}
     ctr = 0
     for family_id in experiment.families:
-        for election_id in experiment.families[family_id].election_ids:
+        # todo: automate elections_ids
+        # for election_id in experiment.families[family_id].election_ids:
+        for i in range(experiment.families[family_id].size):
+            election_id = family_id + '_' + str(i)
             mapping[ctr] = election_id
             ctr += 1
 
@@ -1336,11 +1333,11 @@ def add_mask_100_100(fig, ax, black=False):
 
 def add_skeleton(experiment=None, skeleton=None, ax=None):
 
-    def my_text(x1, y1, text, color="black", alpha=1., size=12):
+    def my_text(x1, y1, text, color="black", alpha=1., size=20):
 
         ax.text(x1, y1, text, size=size, rotation=0., ha="center",
                  va="center",
-                 color=color, alpha=alpha,
+                 color=color, alpha=alpha, zorder=100,
                  bbox=dict(boxstyle="round", ec="black", fc="white"))
 
     for name in skeleton:

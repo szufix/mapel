@@ -24,11 +24,12 @@ import mapel.voting._metrics as metr
 
 
 def prepare_experiment(experiment_id=None, elections=None, distances=None,
-                       coordinates=None):
+                       coordinates=None, distance_name='emd-positionwise'):
     return Experiment("virtual",
                       experiment_id=experiment_id,
                       elections=elections, distances=distances,
-                      coordinates=coordinates)
+                      coordinates=coordinates,
+                      distance_name=distance_name)
 
 
 def generate_experiment(elections=None):

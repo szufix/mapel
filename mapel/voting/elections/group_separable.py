@@ -43,7 +43,7 @@ def generate_group_separable_election(num_voters=None, num_candidates=None,
             buckets = [func(m, r) for r in range(1, m)]
 
             denominator = sum(buckets)
-            print(buckets)
+            # print(buckets)
             buckets = [buckets[i]/denominator for i in range(len(buckets))]
 
             num_internal_nodes = \

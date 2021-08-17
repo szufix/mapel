@@ -83,7 +83,8 @@ class Experiment:
 
         if distances is not None:
             if distances == 'import':
-                self.distances = self.add_distances_to_experiment()
+                self.distances, self.times = self.add_distances_to_experiment(
+                    distance_name=distance_name)
             else:
                 self.distances = distances
 
@@ -103,7 +104,7 @@ class Experiment:
 
     def add_election(self, election_model="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x',
-                     starting_from=0,
+                     starting_from=0, size=1,
                      num_candidates=None, num_voters=None, election_id=None):
         """ Add election to the experiment """
 
@@ -115,7 +116,7 @@ class Experiment:
 
         return self.add_family(election_model=election_model,
                                params=params,
-                               size=1,
+                               size=size,
                                label=label,
                                color=color,
                                alpha=alpha, show=show,
@@ -406,9 +407,9 @@ class Experiment:
 
         return elections
 
-    def add_distances_to_experiment(self):
-        distances = self.import_my_distances()
-        return distances
+    def add_distances_to_experiment(self, distance_name=None):
+        distances, times = self.import_my_distances(distance_name=distance_name)
+        return distances, times
 
     def add_coordinates_to_experiment(self):
         coordinates = self.import_cooridnates()
@@ -1076,8 +1077,7 @@ class Experiment:
 
         return num_distances, hist_data, std
 
-    def import_my_distances(self, self_distances=False,
-                            distance_name='emd-positionwise'):
+    def import_my_distances(self, distance_name='emd-positionwise'):
         """ Import precomputed distances between each pair of elections
         from a file """
 
@@ -1085,11 +1085,13 @@ class Experiment:
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                             "distances", file_name)
         distances = {}
+        times = {}
 
         for family_id in self.families:
             for j in range(self.families[family_id].size):
                 election_id = family_id + '_' + str(j)
                 distances[election_id] = {}
+                times[election_id] = {}
 
         with open(path, 'r', newline='') as csv_file:
             reader = csv.DictReader(csv_file, delimiter=';')
@@ -1101,4 +1103,8 @@ class Experiment:
                     row['distance'])
                 distances[election_id_2][election_id_1] = \
                     distances[election_id_1][election_id_2]
-        return distances
+                times[election_id_1][election_id_2] = float(
+                    row['time'])
+                times[election_id_2][election_id_1] = \
+                    times[election_id_1][election_id_2]
+        return distances, times

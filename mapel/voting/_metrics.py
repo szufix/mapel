@@ -208,9 +208,13 @@ def thread_function(experiment, distance_name, all_pairs, election_models, param
         # print('hello', election_id_1, election_id_2)
         result = 0
         local_ctr = 0
+
+        total_time = 0
+
         for p in range(precision):
             # print('p', p)
-            if t == 1:
+            # print('local', t)
+            if t < 5:
                 print("ctr: ", local_ctr)
                 local_ctr += 1
 
@@ -220,10 +224,10 @@ def thread_function(experiment, distance_name, all_pairs, election_models, param
             # print('start')
             election_2 = el.generate_elections(experiment=experiment, election_model=election_models[election_id_2], election_id=election_id_2,
                                   num_candidates=num_candidates, num_voters=num_voters, params=params[election_id_2])
+
             start_time = time()
-
-
             distance, mapping = get_distance(election_1, election_2, distance_name=distance_name)
+            total_time += (time() - start_time)
             # print(distance)
             # delete tmp files
 
@@ -243,14 +247,14 @@ def thread_function(experiment, distance_name, all_pairs, election_models, param
         distances[election_id_1][election_id_2] = result / precision
         distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
 
-        matchings[election_id_1][election_id_2] = mapping
-        times[election_id_1][election_id_2] = time() - start_time
+        # matchings[election_id_1][election_id_2] = mapping
+        times[election_id_1][election_id_2] = total_time / precision
         times[election_id_2][election_id_1] = times[election_id_1][election_id_2]
 
-    # print("thread " + str(t) + " is ready :)")
+    print("thread " + str(t) + " is ready :)")
 
 
-def compute_subelection_by_groups(experiment, distance_name='1-voter_subelection', t=0, num_threads=1,
+def compute_subelection_by_groups(experiment, distance_name='0-voter_subelection', t=0, num_threads=1,
                                   precision=10, self_distances=False, num_voters=None, num_candidates=None,
                                   ):
     if num_candidates is None:
@@ -331,6 +335,8 @@ def compute_subelection_by_groups(experiment, distance_name='1-voter_subelection
                 value = float(np.std(np.array(all_pairs[election_1][election_2])))
                 std[election_1][election_2] = round(value, 5)
 
+    experiment.distances = distances
+    experiment.times = times
 
     if experiment.store:
         path = os.path.join(os.getcwd(), "experiments",
@@ -344,7 +350,7 @@ def compute_subelection_by_groups(experiment, distance_name='1-voter_subelection
 
             for i, election_1 in enumerate(experiment.elections):
                 for j, election_2 in enumerate(experiment.elections):
-                    if i < j:
+                    if (i == j and self_distances) or i < j:
                         distance = str(distances[election_1][election_2])
                         time = str(times[election_1][election_2])
                         std_value = str(std[election_1][election_2])
@@ -358,7 +364,7 @@ def compute_subelection_by_groups(experiment, distance_name='1-voter_subelection
         with open(path, 'w') as txtfile:
             for i, election_1 in enumerate(experiment.elections):
                 for j, election_2 in enumerate(experiment.elections):
-                    if i < j:
+                    if (i == j and self_distances) or i < j:
                         for p in range(precision):
 
                             txtfile.write(str(i) + ' ' + str(j) + ' ' + str(p) + ' ' +
