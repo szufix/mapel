@@ -33,7 +33,7 @@ def get_values_from_csv_file(experiment, feature):
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
-def get_values_from_file(experiment, feature, normalizing_func=None, marker_func=None):
+def get_values_from_file(experiment, feature, normalizing_func=None, marker_func=None, dim=2):
 
     if isinstance(feature, str):
         if feature in experiment.features:
@@ -53,6 +53,7 @@ def get_values_from_file(experiment, feature, normalizing_func=None, marker_func
     shades = []
     xx = []
     yy = []
+    zz = []
     markers = []
 
     ctr = 0
@@ -79,14 +80,20 @@ def get_values_from_file(experiment, feature, normalizing_func=None, marker_func
 
             xx.append(experiment.coordinates[election_id][0])
             yy.append(experiment.coordinates[election_id][1])
+            if dim == 3:
+                zz.append(experiment.coordinates[election_id][2])
+
 
             ctr += 1
 
     xx = np.asarray(xx)
     yy = np.asarray(yy)
+    if dim == 3:
+        zz = np.asarray(zz)
+
     shades = np.asarray(shades)
     markers = np.asarray(markers)
-    return xx, yy, shades, markers, _min, _max
+    return xx, yy, zz, shades, markers, _min, _max
 
 
 def get_values_from_file_old(experiment, experiment_id, values, normalizing_func=None, marker_func=None):
@@ -189,31 +196,34 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
 
 
 def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None, normalizing_func=None,
-                         marker_func=None, xticklabels=None, ms=None, cmap=None, ticks=None):
-    xx, yy, shades, markers, _min, _max = get_values_from_file(experiment, feature, normalizing_func, marker_func)
+                         marker_func=None, xticklabels=None, ms=None, cmap=None, ticks=None, dim=2):
+    xx, yy, zz, shades, markers, _min, _max = get_values_from_file(experiment, feature, normalizing_func, marker_func, dim=dim)
     unique_markers = set(markers)
     images = []
 
     for um in unique_markers:
         masks = (markers == um)
-        images.append(
-            [ax.scatter(xx[masks], yy[masks], c=shades[masks], vmin=0, vmax=1, cmap=cmap, marker=um, s=ms)])
+        if dim == 2:
+            images.append(ax.scatter(xx[masks], yy[masks], c=shades[masks], vmin=0, vmax=1, cmap=cmap, marker=um, s=ms))
+        elif dim == 3:
+            images.append(ax.scatter(xx[masks], yy[masks], zz[masks], c=shades[masks], vmin=0, vmax=1, cmap=cmap, marker=um, s=ms))
 
-    from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
-    ax_divider = make_axes_locatable(ax)
-    cax = ax_divider.append_axes("bottom", size="5%", pad="5%")
+    if dim == 2:
 
-    if xticklabels is None:
-        lin = np.linspace(_min, _max, 6)
-        xticklabels = [np.round(lin[i], 1) for i in range(6)]
+        from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+        ax_divider = make_axes_locatable(ax)
+        cax = ax_divider.append_axes("bottom", size="5%", pad="5%")
 
-    cb = fig.colorbar(images[0][0], cax=cax, orientation="horizontal",
-                      shrink=1, ticks=ticks)  # shrink not working
+        if xticklabels is None:
+            lin = np.linspace(_min, _max, 6)
+            xticklabels = [np.round(lin[i], 1) for i in range(6)]
 
-    cb.ax.locator_params(nbins=len(xticklabels), tight=True)
-    cb.ax.tick_params(labelsize=16)
-    if xticklabels is not None:
-        cb.ax.set_xticklabels(xticklabels)
+        cb = fig.colorbar(images[0][0], cax=cax, orientation="horizontal",
+                          shrink=1, ticks=ticks)  # shrink not working
+        cb.ax.locator_params(nbins=len(xticklabels), tight=True)
+        cb.ax.tick_params(labelsize=16)
+        if xticklabels is not None:
+            cb.ax.set_xticklabels(xticklabels)
 
 
 def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
@@ -229,12 +239,18 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
             [ax.scatter(xx[masks], yy[masks], zz[masks], c=shades[masks], vmin=0, vmax=1, cmap=cmap, marker=um, s=ms)])
 
 
-def basic_coloring(experiment=None, ax=None, ms=None):
+def basic_coloring(experiment=None, ax=None, ms=None, dim=2):
     for family_id in experiment.families:
         if experiment.families[family_id].show:
-            ax.scatter(experiment.points_by_families[family_id][0], experiment.points_by_families[family_id][1],
-                       color=experiment.families[family_id].color, label=experiment.families[family_id].label,
-                       alpha=experiment.families[family_id].alpha, s=ms, marker=experiment.families[family_id].marker)
+            if dim == 2:
+                ax.scatter(experiment.points_by_families[family_id][0], experiment.points_by_families[family_id][1],
+                           color=experiment.families[family_id].color, label=experiment.families[family_id].label,
+                           alpha=experiment.families[family_id].alpha, s=ms, marker=experiment.families[family_id].marker)
+            elif dim == 3:
+                ax.scatter(experiment.points_by_families[family_id][0], experiment.points_by_families[family_id][1],
+                           experiment.points_by_families[family_id][2],
+                           color=experiment.families[family_id].color, label=experiment.families[family_id].label,
+                           alpha=experiment.families[family_id].alpha, s=ms, marker=experiment.families[family_id].marker)
 
 
 
@@ -626,16 +642,16 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
     """Print the matrix with average distances between each pair of experiments """
 
     # CREATE MAPPING FOR BUCKETS
-    bucket = np.array([[family_id for _ in range(experiment.families[family_id].size)] for family_id in experiment.families]).flatten()
+    bucket = np.array([[family_id
+                        for _ in range(experiment.families[family_id].size)]
+                       for family_id in experiment.families]).flatten()
+
 
     # CREATE MAPPING FOR ELECTIONS
     mapping = {}
     ctr = 0
     for family_id in experiment.families:
-        # todo: automate elections_ids
-        # for election_id in experiment.families[family_id].election_ids:
-        for i in range(experiment.families[family_id].size):
-            election_id = family_id + '_' + str(i)
+        for election_id in experiment.families[family_id].election_ids:
             mapping[ctr] = election_id
             ctr += 1
 
@@ -675,13 +691,14 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
     #                 quantities[bucket[i]][bucket[j]] += 1
 
     # NORMALIZE
-    for family_id_1 in experiment.families:
-        for family_id_2 in experiment.families:
-            if quantities[family_id_1][family_id_2] != 0.:
-                matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
-            matrix[family_id_1][family_id_2] *= scale
-            matrix[family_id_1][family_id_2] = int(round(matrix[family_id_1][family_id_2], 0))
-            matrix[family_id_2][family_id_1] = matrix[family_id_1][family_id_2]
+    for i, family_id_1 in enumerate(experiment.families):
+        for j, family_id_2 in enumerate(experiment.families):
+            if (self_distances and i==j) or i<j:
+                if quantities[family_id_1][family_id_2] != 0.:
+                    matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
+                matrix[family_id_1][family_id_2] *= scale
+                matrix[family_id_1][family_id_2] = int(round(matrix[family_id_1][family_id_2], 0))
+                matrix[family_id_2][family_id_1] = matrix[family_id_1][family_id_2]
 
     # THE REST
     fig, ax = plt.subplots()
@@ -699,7 +716,7 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
         for i, family_id_1 in enumerate(experiment.families):
             for j, family_id_2 in enumerate(experiment.families):
                 c = int(matrix[family_id_1][family_id_2])
-                std = int(round(experiment.std[family_id_1][family_id_2] * scale, 0))
+                std = int(round(experiment.stds[mapping[i]][mapping[j]] * scale, 0))
                 matrix_new[i][j] = c
                 color = "black"
                 if c >= threshold:
