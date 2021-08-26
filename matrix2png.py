@@ -11,8 +11,17 @@ def getrgb( value, MAX ):
     x = int(255*value/MAX)
     return (x,x,x)
 
+def getrgb_uniform( value, MAX ):
+    x = int(255*value)
+    return (x,x,x)
+
+
 def getsqrtrgb( value, MAX ):
     x = int(255*(value**0.33)/(MAX**0.33))
+    return (x,x,x)
+
+def getsqrtrgb_uniform( value, MAX ):
+    x = int(255*(value**0.25))
     return (x,x,x)
 
 
@@ -20,9 +29,10 @@ def getsqrtrgb( value, MAX ):
 if __name__ == "__main__":
 
     # introduce yourself
-    if len(argv) < 2:
+    if len(argv) < 4:
         print("Invocation:")
-        print("  python3 matrix2png num_candidates election_model [param1]")
+        print("  python3 matrix2png num_candidates election_model reorder [param1]")
+        print("  reorder -- name of the model to try to resemble (e.g., ID, or AN); use org to use original order")
         print("")
         exit()
 
@@ -30,13 +40,18 @@ if __name__ == "__main__":
     m     = int(argv[1])
     n     = m*m    
     model = argv[2]
-    if len(argv) >= 4:
-        param = float(argv[3])
+    tgt   = argv[3]
+    print("TGT:", tgt)
+    if len(argv) >= 5:
+        param = float(argv[4])
     else:
         param = None
 
-    name = model+".png" # +"-"+str(m)+"x"+str(m)+".png"
-
+    if model != "mallows":
+      name = "%s_%d_%s.png" % (model, m, tgt)
+    else:
+      name = "%s_phi%d_%d_%s.png" % (model,param*100, m, tgt)
+ 
     # prepare the experiment/matrix
     experiment = mapel.prepare_experiment()
     experiment.set_default_num_candidates( m )
@@ -59,7 +74,6 @@ if __name__ == "__main__":
 
     # get the mapping to a given election
     experiment.compute_distances()
-    tgt = argv[-1]
     if tgt == "org":
         match = list(range(m))
     else:
@@ -82,7 +96,7 @@ if __name__ == "__main__":
         for x in range(m):
            MAX = max(MAX, M[y][x] ) 
 
-    color = lambda v: getsqrtrgb( v, MAX )
+    color = lambda v: getsqrtrgb_uniform( v, MAX )
 
     ### print columns
     print("----")
@@ -103,4 +117,4 @@ if __name__ == "__main__":
     img.save( name )
 
     
-    print(MAX)
+    print("MAX value:", MAX)
