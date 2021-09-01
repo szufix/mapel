@@ -1,6 +1,5 @@
 
 # from mapel.voting import _elections as el
-# from mapel.voting import embedding as emb
 import mapel.voting._metrics as metr
 import mapel.voting.print as pr
 import mapel.voting.development as dev

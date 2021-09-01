@@ -51,8 +51,8 @@ class Election:
             self.fake = check_if_fake(experiment_id, election_id)
             if self.fake:
                 self.election_model, self.fake_param, self.num_voters, \
-                self.num_candidates = import_fake_elections(
-                    experiment_id, election_id)
+                    self.num_candidates = import_fake_elections(
+                        experiment_id, election_id)
             else:
                 self.votes, self.num_voters, self.num_candidates, self.param, \
                 self.election_model = import_soc_elections(
@@ -114,14 +114,15 @@ class Election:
             vectors = get_gs_caterpillar_vectors(self.num_candidates)
         elif self.election_model == 'sushi_matrix':
             vectors = get_sushi_vectors()
-        elif self.election_model == 'norm-mallows_matrix':
-            # print(self.fake_param)
+        elif self.election_model in {'norm-mallows_matrix', 'mallows_matrix_path'}:
             vectors = get_mallows_vectors(self.num_candidates, self.fake_param)
         elif self.election_model in {'identity', 'uniformity',
                                      'antagonism', 'stratification'}:
             vectors = get_fake_vectors_single(self.election_model,
                                               self.num_candidates,
                                               self.num_voters)
+        elif self.election_model in {'walsh_path', 'conitzer_path'}:
+            vectors = get_fake_multiplication(self.num_candidates, self.fake_param, self.election_model)
         elif self.election_model in PATHS:
             vectors = get_fake_convex(self.election_model,
                                       self.num_candidates, self.num_voters,
@@ -234,7 +235,8 @@ class Election:
         for v1 in range(self.num_voters):
             for v2 in range(self.num_voters):
                 # Spearman distance between votes
-                # matrix[v1][v2] = sum([abs(self.potes[v1][c] - self.potes[v2][c]) for c in range(self.num_candidates)])
+                # matrix[v1][v2] = sum([abs(self.potes[v1][c]
+                # - self.potes[v2][c]) for c in range(self.num_candidates)])
 
                 # Swap distance between votes
                 swap_distance = 0
@@ -362,18 +364,25 @@ def import_fake_elections(experiment_id, election_id):
     num_voters = int(my_file.readline().strip())
     num_candidates = int(my_file.readline().strip())
     fake_model_name = str(my_file.readline().strip())
+    params = {}
     if fake_model_name == 'crate':
-        fake_param = [float(my_file.readline().strip()),
+        params = [float(my_file.readline().strip()),
                       float(my_file.readline().strip()),
                       float(my_file.readline().strip()),
                       float(my_file.readline().strip())]
     elif fake_model_name == 'norm-mallows_matrix':
-        fake_param = [float(my_file.readline().strip()),
-                      float(my_file.readline().strip())]
+        params['norm-phi'] = float(my_file.readline().strip())
+        params['weight'] = float(my_file.readline().strip())
+    elif fake_model_name in PATHS:
+        params['alpha'] = float(my_file.readline().strip())
+        if fake_model_name == 'mallows_matrix_path':
+            params['norm-phi'] = params['alpha']
+            params['weight'] = float(my_file.readline().strip())
     else:
-        fake_param = float(my_file.readline().strip())
+        params = {}
+    # print(params)
 
-    return fake_model_name, fake_param, num_voters, num_candidates
+    return fake_model_name, params, num_voters, num_candidates
 
 
 def get_fake_vectors_single(fake_model_name, num_candidates, num_voters):
@@ -465,6 +474,20 @@ def get_fake_borda_vector(fake_model_name, num_candidates, num_voters):
     return borda_vector
 
 
+def get_fake_multiplication(num_candidates, params, election_model):
+    params['weight'] = 0.
+    params['norm-phi'] = params['alpha']
+    main_matrix = []
+    if election_model == 'conitzer_path':
+        main_matrix = get_conitzer_vectors(num_candidates).transpose()
+    elif election_model == 'walsh_path':
+        main_matrix = get_walsh_vectors(num_candidates).transpose()
+    mallows_matrix = get_mallows_vectors(num_candidates, params).transpose()
+    # mallows_matrix = np.linalg.inv(mallows_matrix) # JUST FOR FUN
+    output = np.matmul(main_matrix, mallows_matrix).transpose()
+    return output
+
+
 def get_fake_vectors_crate(fake_model_name, num_candidates, num_voters,
                            fake_param):
     base_1 = get_fake_vectors_single('uniformity', num_candidates, num_voters)
@@ -477,7 +500,7 @@ def get_fake_vectors_crate(fake_model_name, num_candidates, num_voters,
                              length=num_candidates, alpha=fake_param)
 
 
-def get_fake_convex(fake_model_name, num_candidates, num_voters, fake_param,
+def get_fake_convex(fake_model_name, num_candidates, num_voters, params,
                     function_name):
     if fake_model_name == 'unid':
         base_1 = function_name('uniformity', num_candidates, num_voters)
@@ -501,11 +524,11 @@ def get_fake_convex(fake_model_name, num_candidates, num_voters, fake_param,
         raise NameError('No such fake vectors/matrix!')
 
     return convex_combination(base_1, base_2, length=num_candidates,
-                              alpha=fake_param)
+                              params=params)
 
 
-def convex_combination(base_1, base_2, length=0, alpha=0):
-    alpha = alpha['param_1']
+def convex_combination(base_1, base_2, length=0, params=None):
+    alpha = params['alpha']
     if base_1.ndim == 1:
         output = np.zeros([length])
         for i in range(length):

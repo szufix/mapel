@@ -1,6 +1,5 @@
 
 import math
-import random as rand
 import numpy as np
 
 ### MAPPING ###
@@ -29,7 +28,8 @@ def l1(vector_1, vector_2, length):
 
 def l2(vector_1, vector_2, length):
     """ compute L2 metric """
-    return math.pow(sum([math.pow((vector_1[i] - vector_2[i]), 2) for i in range(len(vector_1))]), 0.5)
+    return math.pow(sum([math.pow((vector_1[i] - vector_2[i]), 2)
+                         for i in range(len(vector_1))]), 0.5)
 
 
 def chebyshev(vector_1, vector_2, length):
@@ -41,8 +41,10 @@ def hellinger(vector_1, vector_2, length):
     """ compute HELLINGER metric """
     h1 = np.average(vector_1)
     h2 = np.average(vector_2)
-    product = sum([math.sqrt(vector_1[i] * vector_2[i]) for i in range(len(vector_1))])
-    return math.sqrt(1 - (1 / math.sqrt(h1 * h2 * length * length(vector_1))) * product)
+    product = sum([math.sqrt(vector_1[i] * vector_2[i])
+                   for i in range(len(vector_1))])
+    return math.sqrt(1 - (1 / math.sqrt(h1 * h2 * length * length(vector_1)))
+                     * product)
 
 
 def emd(vector_1, vector_2, length):

@@ -2,25 +2,17 @@
 
 import os
 import time
-import csv
-from threading import Thread
 
 import matplotlib.pyplot as plt
-import numpy as np
-
-import mapel.voting._elections as el
 
 import mapel.voting.winners as win
 import mapel.voting.features as features
 import copy
 
-import itertools
 from mapel.voting.objects.Experiment import Experiment
-from mapel.voting.objects.Election import Election
 from mapel.voting.metrics.inner_distances import l2
 
 import mapel.voting._metrics as metr
-
 
 
 def prepare_experiment(experiment_id=None, elections=None, distances=None,

@@ -9,11 +9,10 @@ import math
 from mapel.voting.metrics import lp
 import mapel.voting.development as dev
 
-# from mapel.voting.objects.Experiment import Experiment
 from mapel.voting.metrics.inner_distances import l2
 
 
-### MAPPING ###
+# MAPPING #
 def get_feature(name):
     return {'borda_std': borda_std,
             'separation': separation,
@@ -98,7 +97,8 @@ def highest_borda_score(election):
     """ Compute highest BORDA score of a given election """
     c = election.num_candidates
     vectors = election.get_vectors()
-    borda = [sum([vectors[i][pos]*(c-pos-1) for pos in range(c)]) for i in range(c)]
+    borda = [sum([vectors[i][pos] * (c - pos - 1) for pos in range(c)])
+             for i in range(c)]
     return max(borda) * election.num_voters
 
 
@@ -132,17 +132,17 @@ def highest_copeland_score(potes, num_voters, num_candidates):
 def potes_to_unique_potes(potes):
     """ Remove repetitions from potes (positional votes) """
     unique_potes = []
-    N = []
+    n = []
     for pote in potes:
         flag_new = True
         for i, p in enumerate(unique_potes):
             if list(pote) == list(p):
-                N[i] += 1
+                n[i] += 1
                 flag_new = False
         if flag_new:
             unique_potes.append(pote)
-            N.append(1)
-    return unique_potes, N
+            n.append(1)
+    return unique_potes, n
 
 
 def lowest_dodgson_score(election):
@@ -155,7 +155,8 @@ def lowest_dodgson_score(election):
         # PREPARE N
         unique_potes, N = potes_to_unique_potes(election.potes)
 
-        e = np.zeros([len(N), election.num_candidates, election.num_candidates])
+        e = np.zeros([len(N), election.num_candidates,
+                      election.num_candidates])
 
         # PREPARE e
         for i, p in enumerate(unique_potes):
@@ -198,7 +199,8 @@ def get_effective_num_candidates(election, mode='Borda'):
     vectors = election.votes_to_positionwise_matrix()
 
     if mode == 'Borda':
-        scores = [sum([vectors[j][i] * (c - i - 1) for i in range(c)]) / (c * (c - 1) / 2) for j in range(c)]
+        scores = [sum([vectors[j][i] * (c - i - 1) for i in range(c)])
+                  / (c * (c - 1) / 2) for j in range(c)]
     elif mode == 'Plurality':
         scores = [sum([vectors[j][i] for i in range(1)]) for j in range(c)]
     else:
@@ -206,10 +208,12 @@ def get_effective_num_candidates(election, mode='Borda'):
 
     return 1. / sum([x * x for x in scores])
 
+
 ########################################################################
 def map_diameter(c):
     """ Compute the diameter """
     return 1 / 3 * (c + 1) * (c - 1)
+
 
 def distortion_from_guardians(experiment, election_id):
     values = np.array([])
@@ -220,33 +224,26 @@ def distortion_from_guardians(experiment, election_id):
                              'antagonism_10_100_0', 'stratification_10_100_0'}:
             if election_id_1 != election_id_2:
                 m = experiment.elections[election_id_1].num_candidates
-                true_distance = experiment.distances[election_id_1][election_id_2]
+                true_distance = \
+                    experiment.distances[election_id_1][election_id_2]
                 true_distance /= map_diameter(m)
                 embedded_distance = l2(experiment.coordinates[election_id_1],
-                                       experiment.coordinates[election_id_2], 2)
-                # if election_id_2 == 'antagonism_10_100_0':
-                    # print(election_id_1, election_id_2, embedded_distance)
-                    # print(experiment.coordinates[election_id_1], experiment.coordinates[election_id_2])
-                embedded_distance /= l2(experiment.coordinates['identity_10_100_0'],
-                                        experiment.coordinates['uniformity_10_100_0'], 2)
+                                       experiment.coordinates[election_id_2],
+                                       2)
+
+                embedded_distance /= \
+                    l2(experiment.coordinates['identity_10_100_0'],
+                       experiment.coordinates['uniformity_10_100_0'], 2)
                 ratio = float(true_distance) / float(embedded_distance)
                 values = np.append(values, ratio)
 
-                #
-                # if ratio > 1000:
-                #     print(election_id_1, election_id_2, ratio)
-                #     print(experiment.distances[election_id_1][election_id_2])
-                #     print(true_distance)
-                #     print(l2(experiment.coordinates[election_id_1], experiment.coordinates[election_id_2], 1))
-                #     print(embedded_distance)
-                # print(ratio, values)
-
     return values
+
 
 def avg_distortion_from_guardians(experiment, election_id):
     values = distortion_from_guardians(experiment, election_id)
-    # print('values', values)
     return np.mean(values)
+
 
 def worst_distortion_from_guardians(experiment, election_id):
     values = distortion_from_guardians(experiment, election_id)

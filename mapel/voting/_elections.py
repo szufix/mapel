@@ -35,6 +35,7 @@ import mapel.voting.elections.preflib as preflib
 from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS
 
 
+
 def generate_votes(election_model=None, num_candidates=None, num_voters=None,
                    params=None):
     if params is None:
@@ -169,6 +170,11 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
         params['phi'] = phi_from_relphi(num_candidates,
                                         relphi=params['norm-phi'])
 
+    if election_model == 'mallows_matrix_path':
+        params['norm-phi'] = params['alpha']
+        params['phi'] = phi_from_relphi(num_candidates,
+                                        relphi=params['norm-phi'])
+
     if 'weight' not in params:
         params['weight'] = 0.
 
@@ -194,6 +200,10 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
             file_.write(str(election_model) + '\n')
             if election_model == 'norm-mallows_matrix':
                 file_.write(str(round(params['norm-phi'], 5)) + '\n')
+            elif election_model in PATHS:
+                file_.write(str(round(params['alpha'], 5)) + '\n')
+                if election_model == 'mallows_matrix_path':
+                    file_.write(str(round(params['weight'], 5)) + '\n')
             file_.close()
 
         else:
@@ -358,13 +368,13 @@ def _get_params_for_paths(experiment, family_id, j, copy_param_1=4):
 
     params = {}
     if copy_param_1 == 0:  # with both
-        params['param_1'] = j / (experiment.families[family_id].size - 1)
+        params['alpha'] = j / (experiment.families[family_id].size - 1)
     elif copy_param_1 == 1:  # without first (which is last)
-        params['param_1'] = j / experiment.families[family_id].size
+        params['alpha'] = j / experiment.families[family_id].size
     elif copy_param_1 == 2:  # without second (which is first)
-        params['param_1'] = (j + 1) / experiment.families[family_id].size
+        params['alpha'] = (j + 1) / experiment.families[family_id].size
     elif copy_param_1 == 4:  # without both
-        params['param_1'] = (j + 1) / (experiment.families[family_id].size + 1)
+        params['alpha'] = (j + 1) / (experiment.families[family_id].size + 1)
 
     return params
 
@@ -373,15 +383,19 @@ def prepare_statistical_culture_family(experiment=None, election_model=None,
                                        family_id=None, params=None):
     # base_map = {'35': 5, '50': 6, '80': 7, '110': 8, '165': 9, '199': 10}
 
+    # print(election_model)
+
     keys = []
 
     for j in range(experiment.families[family_id].size):
 
         if election_model in PATHS:
-            params = _get_params_for_paths(experiment, family_id, j)
+            new_params = _get_params_for_paths(experiment, family_id, j)
+            params = {**params, **new_params}
 
         if election_model in {'crate'}:
-            params = _get_params_for_crate(j)
+            new_params = _get_params_for_crate(j)
+            params = {**params, **new_params}
 
         if experiment.families[family_id].single_election:
             election_id = family_id

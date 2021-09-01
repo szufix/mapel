@@ -18,11 +18,12 @@ mapel/_tmp.py
 mapel/_workshop.py
 mapel/main.py
 _testing_print_3d.py
-_testing_3.py
+_testing_skeleton_matrix.py
 _testing_print_matrix.py
 _testing_1.py
 _testing_5.py
 
+mapel/voting/elections/mallows_positionmatrices/50_matrix.txt
 
 
 # Byte-compiled / optimized / DLL files
