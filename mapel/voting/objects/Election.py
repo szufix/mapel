@@ -3,6 +3,7 @@
 import csv
 import os
 import numpy as np
+import copy
 
 from mapel.voting.elections.group_separable import get_gs_caterpillar_vectors
 from mapel.voting.elections.single_peaked import get_walsh_vectors, \
@@ -11,8 +12,13 @@ from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 from mapel.voting.elections.mallows import get_mallows_vectors
 from mapel.voting.elections.preflib import get_sushi_vectors
 
+from mapel.voting.winners import compute_plurality_winners, \
+    compute_borda_winners, compute_stv_winners
+
 from mapel.voting.glossary import LIST_OF_FAKE_MODELS, \
     LIST_OF_PREFLIB_MODELS, PATHS
+
+from mapel.voting.not_in_the_package.__winners import generate_winners
 
 
 class Election:
@@ -26,6 +32,8 @@ class Election:
 
         self.num_voters = num_voters
         self.num_candidates = num_candidates
+        self.winners = None
+        self.alternative_winners = {}
 
         if election_model in LIST_OF_FAKE_MODELS:
             self.fake = True
@@ -145,11 +153,6 @@ class Election:
                 for j in range(self.num_candidates):
                     vectors[i][j] /= float(self.num_voters)
 
-            # # todo: change to original version
-            # if not self.fake:
-            #     vectors = [*zip(*vectors)]
-
-        # return matrix.transpose()
 
         self.vectors = vectors
         self.matrix = self.vectors.transpose()
@@ -328,6 +331,66 @@ class Election:
 
         return vector, num_possible_scores
 
+    def compute_winners(self, method=None, num_winners=None):
+
+        self.borda_points = get_borda_points(self.votes, self.num_voters, self.num_candidates)
+
+        if method == 'plurality':
+            self.winners = compute_plurality_winners(election=self, num_winners=num_winners)
+        if method == 'borda':
+            self.winners = compute_borda_winners(election=self, num_winners=num_winners)
+        if method == 'stv':
+            self.winners = compute_stv_winners(election=self, num_winners=num_winners)
+        if method in {'approx_cc', 'approx_hb', 'approx_pav'}:
+            self.winners = generate_winners(election=self, num_winners=num_winners, method=method)
+
+
+
+    def compute_alternative_winners(self, method=None, party_id=None, num_winners=None):
+
+        election_without_party_id = remove_candidate_from_election(copy.deepcopy(self), party_id, num_winners)
+        # print(election_without_party_id.votes)
+        election_without_party_id = map_the_votes(election_without_party_id, party_id, num_winners)
+        # print(election_without_party_id.votes)
+
+        if method == 'plurality':
+            winners_without_party_id = compute_plurality_winners(election=election_without_party_id, num_winners=num_winners)
+        if method == 'borda':
+            winners_without_party_id = compute_borda_winners(election=election_without_party_id, num_winners=num_winners)
+        if method == 'stv':
+            winners_without_party_id = compute_stv_winners(election=election_without_party_id, num_winners=num_winners)
+        if method in {'approx_cc', 'approx_hb', 'approx_pav'}:
+            winners_without_party_id = generate_winners(election=election_without_party_id, num_winners=num_winners, method=method)
+
+        # print(winners_without_party_id)
+        winners_without_party_id = unmap_the_winners(winners_without_party_id, party_id, num_winners)
+        # print(winners_without_party_id)
+
+        self.alternative_winners[party_id] = winners_without_party_id
+
+
+def map_the_votes(election, party_id, party_size):
+    new_votes = [[] for _ in range(election.num_voters)]
+    for i in range(election.num_voters):
+        for j in range(election.num_candidates):
+            if election.votes[i][j] >= party_id * party_size:
+                new_votes[i].append(election.votes[i][j]-party_size)
+            else:
+                new_votes[i].append(election.votes[i][j])
+    election.votes = new_votes
+    return election
+
+
+def unmap_the_winners(winners, party_id, party_size):
+    new_winners = []
+    for j in range(len(winners)):
+        if winners[j] >= party_id * party_size:
+            new_winners.append(winners[j]+party_size)
+        else:
+            new_winners.append(winners[j])
+    return new_winners
+
+
 
 def check_if_fake(experiment_id, election_id):
     file_name = str(election_id) + ".soc"
@@ -380,7 +443,6 @@ def import_fake_elections(experiment_id, election_id):
             params['weight'] = float(my_file.readline().strip())
     else:
         params = {}
-    # print(params)
 
     return fake_model_name, params, num_voters, num_candidates
 
@@ -600,3 +662,12 @@ def import_soc_elections(experiment_id, election_id):
                 votes[i][j] -= 1
 
     return votes, num_voters, num_candidates, param, model_name
+
+
+def remove_candidate_from_election(election, party_id, party_size):
+    for vote in election.votes:
+        for i in range(party_size):
+            _id = party_id*party_size + i
+            vote.remove(_id)
+    election.num_candidates -= party_size
+    return election

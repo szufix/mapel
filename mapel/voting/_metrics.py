@@ -254,20 +254,6 @@ def thread_function(experiment, distance_name, all_pairs,
             # print(distance)
             # delete tmp files
 
-            # # todo: verify if we need this
-            # if experiment.store:
-            #     file_name_1 = str(election_id_1) + ".soc"
-            #     path_1 = os.path.join(os.getcwd(),
-            #     "experiments", experiment.experiment_id,
-            #     "elections", "soc_original", file_name_1)
-            #     os.remove(path_1)
-            #
-            #     file_name_2 = str(election_id_2) + ".soc"
-            #     path_2 = os.path.join(os.getcwd(), "experiments",
-            #     experiment.experiment_id, "elections",
-            #     "soc_original", file_name_2)
-            #     os.remove(path_2)
-
             all_pairs[election_id_1][election_id_2][p] = round(distance, 5)
             result += distance
 

@@ -137,3 +137,31 @@ def get_mallows_matrix(num_candidates, params,normalize=True):
 
 def get_mallows_vectors(num_candidates, fake_param):
     return get_mallows_matrix(num_candidates, fake_param).transpose()
+
+
+def generate_mallows_party(num_voters=None, num_candidates=None,
+                           election_model=None, params=None):
+    num_parties = params['num_parties']
+    num_winners = params['num_winners']
+    party_size = num_winners
+
+    params['phi'] = phi_from_relphi(num_parties, relphi=params['main-phi'])
+    mapping = generate_mallows_election(num_voters, num_parties, params)[0]
+
+    params['phi'] = phi_from_relphi(num_parties, relphi=params['norm-phi'])
+    votes = generate_mallows_election(num_voters, num_parties, params)
+
+    for i in range(num_voters):
+        for j in range(num_parties):
+            votes[i][j] = mapping[votes[i][j]]
+
+    new_votes = [[] for _ in range(num_voters)]
+
+    for i in range(num_voters):
+        for j in range(num_parties):
+            for w in range(party_size):
+                _id = votes[i][j] * party_size + w
+                new_votes[i].append(_id)
+
+    return new_votes
+

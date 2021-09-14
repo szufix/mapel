@@ -18,9 +18,9 @@ mapel/_tmp.py
 mapel/_workshop.py
 mapel/main.py
 _testing_print_3d.py
-_testing_skeleton_matrix.py
-_testing_print_matrix.py
-_testing_1.py
+_past_aaai_2022/_testing_skeleton_matrix.py
+_past_aaai_2022/_testing_print_matrix.py
+_testing_party.py
 _testing_5.py
 
 mapel/voting/elections/mallows_positionmatrices/50_matrix.txt

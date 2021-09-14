@@ -61,3 +61,5 @@ LIST_OF_FAKE_MODELS = {'identity', 'uniformity', 'antagonism',
 PATHS = {'unid', 'stan', 'anid', 'stid', 'anun', 'stun',
          'mallows_matrix_path', 'walsh_path', 'conitzer_path'}
 
+PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
+                'walsh_party', 'conitzer_party', 'mallows_party'}

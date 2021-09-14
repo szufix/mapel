@@ -9,13 +9,140 @@ from shutil import copyfile
 
 import matplotlib.pyplot as plt
 import numpy as np
-from skopt import gp_minimize
+# from skopt import gp_minimize
 
 from mapel.voting import elections as el
 from mapel.voting import metrics as metr
 from mapel.voting import objects as obj
-from mapel.voting import winners as win
+from mapel.voting.not_in_the_package import __winners as win
 import copy
+
+
+### VERIONS WITH DICT INSTEAD OF LIST
+def compute_plurality_winners(election=None, num_winners=1):
+
+    scores = {}
+    for c in election.votes[0]:
+        scores[c] = 0
+
+    for vote in election.votes:
+        scores[vote[0]] += 1
+
+    ranking = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+    ranking = ranking[0:num_winners]
+    winners = []
+
+    for winner in ranking:
+        winners.append(winner[0])
+
+    return winners
+
+
+def compute_borda_winners(election=None, num_winners=1):
+
+    scores = {}
+    for c in election.votes[0]:
+        scores[c] = 0
+
+    for vote in election.votes:
+        for pos, c in enumerate(vote):
+            scores[c] += election.num_candidates - pos - 1
+
+    ranking = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+    ranking = ranking[0:num_winners]
+    winners = []
+
+    for winner in ranking:
+        winners.append(winner[0])
+
+    return winners
+
+
+def compute_stv_winners(election=None, num_winners=1):
+
+    winners = []  # [0] * params['orders']
+
+    droop_quota = math.floor(
+        election.num_voters / (num_winners + 1.)) + 1
+
+    votes_on_1 = {}
+    active = {}
+    for c in election.votes[0]:
+        votes_on_1[c] = 0
+        active[c] = True
+
+    for vote in election.votes:
+        votes_on_1[vote[0]] += 1
+
+    v_power = [1.] * election.num_voters
+
+    keys = list(votes_on_1.keys())
+
+    while len(winners) + sum(active.values()) > num_winners:
+
+        ctr = election.num_candidates
+        iterator = 0
+        winner_id = keys[iterator]
+        while ctr > 0:
+
+            if active[winner_id] and votes_on_1[winner_id] >= droop_quota:
+
+                winners += [winner_id]
+
+                total = 0
+                for i in range(election.num_voters):
+                    for j in range(election.num_candidates):
+                        if active[election.votes[i][j]]:
+                            if election.votes[i][j] == winner_id:
+                                for k in range(j + 1,
+                                               election.num_candidates):
+                                    if active[election.votes[i][k]]:
+                                        v_power[i] *= float(votes_on_1[
+                                                                winner_id] - droop_quota) / float(
+                                            votes_on_1[winner_id])
+                                        votes_on_1[election.votes[i][k]] += 1. * \
+                                                                   v_power[
+                                                                       i]
+                                        total += 1. * v_power[i]
+                                        ctr = election.num_candidates
+                                        break
+                            break
+
+                votes_on_1[winner_id] = 0
+                active[winner_id] = False
+
+            ctr -= 1
+            iterator += 1
+            iterator %= election.num_candidates
+            winner_id = keys[iterator]
+
+        loser_votes = droop_quota
+        loser_id = keys[0]
+        for key in keys:
+            if active[key] and votes_on_1[key] < loser_votes:
+                loser_votes = votes_on_1[key]
+                loser_id = key
+
+        votes_on_1[loser_id] = 0
+        for i in range(election.num_voters):
+            for j in range(election.num_candidates):
+                if active[election.votes[i][j]]:
+                    if election.votes[i][j] == loser_id:
+                        for k in range(j + 1, election.num_candidates):
+                            if active[election.votes[i][k]]:
+                                votes_on_1[election.votes[i][k]] += 1. * v_power[i]
+                                break
+                    break
+        active[loser_id] = False
+
+    for key in keys:
+        if active[key]:
+            winners += [key]
+
+    winners = sorted(winners)
+
+    return winners[0:num_winners]
+#########################
 
 
 def compute_approx(experiment_id, method='hb', algorithm='greedy', num_winners=10):

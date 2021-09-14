@@ -30,3 +30,27 @@ def generate_impartial_culture_election(num_voters=None, num_candidates=None):
         votes[j] = np.random.permutation(num_candidates)
 
     return votes
+
+
+def generate_ic_party(num_voters=None, num_candidates=None, params=None,
+                      election_model=None):
+    """ helper function: generate impartial culture elections """
+    num_parties = params['num_parties']
+    party_size = params['num_winners']
+
+    votes = np.zeros([num_voters, num_parties], dtype=int)
+
+    for j in range(num_voters):
+        votes[j] = np.random.permutation(num_parties)
+
+    new_votes = [[] for _ in range(num_voters)]
+    # print(votes)
+    for i in range(num_voters):
+        for j in range(num_parties):
+            for w in range(party_size):
+                _id = votes[i][j] * party_size + w
+                new_votes[i].append(_id)
+    # print(new_votes)
+    return new_votes
+
+

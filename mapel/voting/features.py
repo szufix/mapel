@@ -39,29 +39,9 @@ def borda_std(election):
     return std
 
 
-# def separation_2(election):
-#
-#     if election.fake:
-#         return 0
-#
-#     first_half = np.zeros(election.num_candidates)
-#
-#     for i in range(election.num_voters):
-#         for j in range(int(election.num_candidates/2)):
-#             first_half[election.votes[i][j]] += 1
-#
-#     value = 0
-#     shift = election.num_voters/2
-#     for i in range(len(first_half)):
-#         if first_half[i] > shift:
-#             first_half[i] -= 2*shift
-#         value += first_half[i]**2
-#
-#     return value
-
 
 def separation(election):
-    # todo: policzyć to na podstawie positionwise vectors
+
     if election.fake:
         return 0
 

@@ -6,7 +6,7 @@ rootDir = os.path.abspath(os.path.dirname(__file__))
 reqPath = os.path.join(rootDir, 'requirements.txt')
 readmePath = os.path.join(rootDir, 'README.md')
 dir_1 = os.path.join(rootDir, 'mapel')
- 
+
  
 with open(reqPath) as f:
     required = f.read().splitlines()

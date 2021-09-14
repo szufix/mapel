@@ -178,27 +178,18 @@ class Experiment:
                                   for family_id in self.families])
         self.main_order = [i for i in range(self.num_elections)]
 
-        ids = self.generate_family_elections(family_id)
-        self.families[family_id].election_ids = ids
-
-        # print(ids)
-
-        return ids
-
-    def generate_family_elections(self, family_id):
         params = self.families[family_id].params
         election_model = self.families[family_id].election_model
 
-        if election_model in preflib.LIST_OF_PREFLIB_MODELS:
-            _elections.prepare_preflib_family(experiment=self,
-                                              election_model=election_model,
-                                              params=copy.deepcopy(params))
-        else:
-            return _elections.prepare_statistical_culture_family(
-                experiment=self,
-                election_model=election_model,
-                family_id=family_id,
-                params=copy.deepcopy(params))
+        ids = _elections.prepare_statistical_culture_family(
+            experiment=self,
+            election_model=election_model,
+            family_id=family_id,
+            params=copy.deepcopy(params))
+
+        self.families[family_id].election_ids = ids
+
+        return ids
 
     def prepare_elections(self):
         """ Prepare elections for a given experiment """
@@ -224,6 +215,17 @@ class Experiment:
                     _elections.prepare_statistical_culture_family(
                         experiment=self, election_model=election_model,
                         family_id=family_id, params=params)
+
+    def compute_winners(self, method=None, num_winners=1):
+        for election_id in self.elections:
+            self.elections[election_id].compute_winners(method=method,
+                                                        num_winners=num_winners)
+
+    def compute_alternative_winners(self, method=None, num_winners=None, num_parties=None):
+        for election_id in self.elections:
+            for party_id in range(num_parties):
+                self.elections[election_id].compute_alternative_winners(
+                    method=method, party_id=party_id, num_winners=num_winners)
 
     def compute_distances(self, distance_name='emd-positionwise',
                           num_threads=1, self_distances=False):
@@ -417,6 +419,7 @@ class Experiment:
 
             self.families[family_id].election_ids = ids
 
+
         return elections
 
     def add_distances_to_experiment(self, distance_name=None):
@@ -504,7 +507,6 @@ class Experiment:
         for i, election_id in enumerate(self.distances):
             points[election_id] = [my_pos[i][d] for d in range(dim)]
 
-        # todo: store to file
         if self.store:
             file_name = os.path.join(os.getcwd(), "experiments",
                                      self.experiment_id,
@@ -522,7 +524,8 @@ class Experiment:
 
                 ctr = 0
                 for election_model_id in self.families:
-                    for election_id in self.families[election_model_id].election_ids:
+                    for election_id in \
+                            self.families[election_model_id].election_ids:
                         x = round(points[election_id][0], 5)
                         y = round(points[election_id][1], 5)
                         if dim == 2:
@@ -596,25 +599,28 @@ class Experiment:
 
         if adjust:
 
-            uniformity = self.get_election_id_from_model_name('uniformity')
-            identity = self.get_election_id_from_model_name('identity')
-            antagonism = self.get_election_id_from_model_name('antagonism')
-            stratification = self.get_election_id_from_model_name(
-                'stratification')
+            try:
+                uniformity = self.get_election_id_from_model_name('uniformity')
+                identity = self.get_election_id_from_model_name('identity')
+                antagonism = self.get_election_id_from_model_name('antagonism')
+                stratification = self.get_election_id_from_model_name(
+                    'stratification')
 
-            d_x = self.coordinates[identity][0] - \
-                    self.coordinates[uniformity][0]
-            d_y = self.coordinates[identity][1] - \
-                    self.coordinates[uniformity][
-                      1]
-            alpha = math.atan(d_x / d_y)
-            self.rotate(alpha - math.pi / 2.)
-            if self.coordinates[uniformity][0] > self.coordinates[identity][0]:
-                self.rotate(math.pi)
+                d_x = self.coordinates[identity][0] - \
+                        self.coordinates[uniformity][0]
+                d_y = self.coordinates[identity][1] - \
+                        self.coordinates[uniformity][
+                          1]
+                alpha = math.atan(d_x / d_y)
+                self.rotate(alpha - math.pi / 2.)
+                if self.coordinates[uniformity][0] > self.coordinates[identity][0]:
+                    self.rotate(math.pi)
 
-            if self.coordinates[antagonism][1] < \
-                    self.coordinates[stratification][1]:
-                self.reverse()
+                if self.coordinates[antagonism][1] < \
+                        self.coordinates[stratification][1]:
+                    self.reverse()
+            except:
+                pass
 
         if angle != 0:
             self.rotate(angle)
@@ -635,7 +641,6 @@ class Experiment:
 
         ax = fig.add_subplot()
 
-        # tmp solution
         plt.axis('equal')
 
         if not axis:
@@ -813,6 +818,7 @@ class Experiment:
                 num_voters = int(row['num_voters'])
 
             family_id = str(row['label'])
+            # family_id = election_model
 
             show = True
             if row['show'].strip() != 't':
@@ -851,40 +857,8 @@ class Experiment:
         if ignore is None:
             ignore = []
 
-        # todo: update this part of code
-        # ctr = 0
-        # for family_id in families:
-        #     resize = 0
-        #     for j in range(families[family_id].size):
-        #         if self.main_order[ctr] >= self.num_elections or
-        #           self.main_order[ctr] in ignore:
-        #             resize += 1
-        #         ctr += 1
-        #     families[family_id].size -= resize
-
         file_.close()
         return families
-
-    # def import_order(self, main_order_name):
-    #     """Import precomputed order of all the elections from a file."""
-    #
-    #     if main_order_name == 'default':
-    #         main_order = [i for i in range(self.num_elections)]
-    #
-    #     else:
-    #         file_name = os.path.join(os.getcwd(), "experiments",
-    #         self.experiment_id, "results", "orders",
-    #         main_order_name + ".txt")
-    #         file_ = open(file_name, 'r')
-    #         file_.readline()  # skip this line
-    #         all_elections = int(file_.readline())
-    #         file_.readline()  # skip this line
-    #         main_order = []
-    #
-    #         for w in range(all_elections):
-    #             main_order.append(int(file_.readline()))
-    #
-    #     return main_order
 
     def import_points(self, ignore=None):
         """ Import from a file precomputed coordinates of all the points --
@@ -899,14 +873,10 @@ class Experiment:
         if ignore is None:
             ignore = []
 
-
-
         points = {}
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                             "coordinates", self.distance_name + "_2d_a" + str(
                 float(self.attraction_factor)) + ".csv")
-
-
 
         with open(path, 'r', newline='') as csv_file:
 
@@ -920,20 +890,6 @@ class Experiment:
                         self.main_order[ctr] not in ignore:
                     points[row['election_id']] = [float(row['x']), float(row['y'])]
                 ctr += 1
-
-            # TMP
-            # reader = csv.DictReader(csv_file, delimiter=',')
-            # ctr = 0
-            #
-            # for i, row in enumerate(reader):
-            #
-            #     if self.main_order[ctr] < self.num_elections and \
-            #             self.main_order[ctr] not in ignore:
-            #         name = 'noname_' + str(i)
-            #         # print(row)
-            #         points[name] = [float(row['x']), float(row['y'])]
-            #     ctr += 1
-
 
         return points
 
@@ -953,8 +909,7 @@ class Experiment:
                 # param_2 = 0
                 label = election_id
                 color = COLORS[int(i % len(COLORS))]
-                # todo: if there are more elections than len(COLORS)
-                #  lower the alpha
+
                 alpha = 1.
                 # show = True
                 # size = 1
@@ -982,7 +937,7 @@ class Experiment:
                 except:
                     pass
         else:
-            # todo: this part my raise an error
+
             for family_id in self.families:
                 points_by_families[family_id] = [[] for _ in range(3)]
 
@@ -1125,27 +1080,6 @@ class Experiment:
                 hist_data[election_id_2][election_id_1] = \
                     hist_data[election_id_1][election_id_2]
 
-        # todo: add self-distances
-        # for a in range(num_points):
-        #     limit = a+1
-        #     if self_distances:
-        #         limit = a
-        #     for b in range(limit, num_points):
-        #         line = file_.readline()
-        #         line = line.split(' ')
-        #         hist_data[a][b] = float(line[2])
-        #
-        #         # tmp correction for discrete distance
-        #         if distance_name == 'discrete':
-        #             hist_data[a][b] = self.families[0].size - hist_data[a][b]
-        # todo: correct this
-        #
-        #
-        #         hist_data[b][a] = hist_data[a][b]
-        #
-        #         if distance_name == 'voter_subelection':
-        #             std[a][b] = float(line[3])
-        #             std[b][a] = std[a][b]
 
         return num_distances, hist_data, std
 
@@ -1194,3 +1128,5 @@ class Experiment:
                     pass
 
         return distances, times, stds
+
+

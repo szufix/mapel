@@ -5,6 +5,38 @@ from random import *
 from scipy.special import binom
 
 
+
+def generate_sp_party(election_model=None, num_voters=None,
+                           num_candidates=None, params=None):
+
+    candidates = [[] for _ in range(num_candidates)]
+    _ids = [i for i in range(num_candidates)]
+
+    for j in range(params['num_parties']):
+        for w in range(params['num_winners']):
+            _id = j*params['num_winners'] + w
+            candidates[_id] = [rand.gauss(params['party'][j][0], 0.1)]
+    # print(candidates)
+
+    mapping = [x for _, x in sorted(zip(candidates, _ids))]
+    # print(mapping)
+
+    if election_model == 'conitzer_party':
+        votes = generate_conitzer_election(num_voters=num_voters,
+                                           num_candidates=num_candidates)
+    elif election_model == 'walsh_party':
+        votes = generate_walsh_election(num_voters=num_voters,
+                                           num_candidates=num_candidates)
+    # print(votes)
+    for i in range(num_voters):
+        for j in range(num_candidates):
+            votes[i][j] = mapping[votes[i][j]]
+    # print(votes)
+
+    return votes
+
+
+
 def generate_conitzer_election(num_voters=None, num_candidates=None):
     """ helper function: generate conitzer single-peaked elections """
 
@@ -67,7 +99,7 @@ def generate_walsh_election(num_voters=None, num_candidates=None):
     for j in range(num_voters):
         votes[j] = walsh_sp(0, num_candidates - 1)
 
-    return votes
+    return votes.astype(int)
 
 
 # AUXILIARY

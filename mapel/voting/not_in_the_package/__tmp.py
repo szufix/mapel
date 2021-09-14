@@ -12,6 +12,374 @@ from mapel.voting import elections as el
 from mapel.voting import metrics as metr
 from mapel.voting import objects as obj
 
+
+def ijcai_2021_coloring_1(ax=None, experiment=None, ms=None,
+                          tmp=None, tmp2=None, zorder=None):
+    # TEMPORARY VERSION
+    for k in range(experiment.num_families):
+        if experiment.families[k].show:
+
+            if experiment.families[k].election_experiment in {
+                'identity', 'uniformity', 'antagonism', 'chess',
+                'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+                ax.scatter(experiment.points_by_families[k][0],
+                           experiment.points_by_families[k][1],
+                           zorder=zorder[0],
+                           color=experiment.families[k].color,
+                           label=experiment.families[k].label,
+                           alpha=tmp[0] * experiment.families[k].alpha,
+                           s=ms * tmp2[0],
+                           marker=experiment.families[k].marker)
+
+            elif experiment.families[
+                k].election_experiment in LIST_OF_PREFLIB_ELECTIONS:
+                ax.scatter(experiment.points_by_families[k][0],
+                           experiment.points_by_families[k][1],
+                           zorder=zorder[1],
+                           color=experiment.families[k].color,
+                           label=experiment.families[k].label,
+                           alpha=tmp[1] * experiment.families[k].alpha,
+                           s=ms * tmp2[1],
+                           marker=experiment.families[k].marker)
+            else:
+                ax.scatter(experiment.points_by_families[k][0],
+                           experiment.points_by_families[k][1],
+                           color=experiment.families[k].color,
+                           label=experiment.families[k].label,
+                           zorder=zorder[2],
+                           alpha=tmp[2] * experiment.families[k].alpha,
+                           s=ms * tmp2[2],
+                           marker=experiment.families[k].marker)
+
+
+def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
+                          tmp2=None, zorder=None, fuzzy_paths=True):
+    tmp = [1, 1, 1]
+    # TEMPORARY VERSION
+    ctr = 0
+    for k in experiment.families:
+        if experiment.families[k].show:
+
+            if experiment.families[k].election_model in {'identity',
+                                                         'uniformity',
+                                                         'antagonism',
+                                                         'stratification',
+                                                         'unid', 'anid',
+                                                         'stid', 'anun',
+                                                         'stun', 'stan'}:
+                zorder = 0
+                if experiment.families[k].election_model == 'unid':
+                    zorder = 1
+
+                t_ms = ms
+                if fuzzy_paths:
+                    t_ms *= 10
+                ax.scatter(experiment.points_by_families[k][0],
+                           experiment.points_by_families[k][1], zorder=zorder,
+                           color=experiment.families[k].color,
+                           label=experiment.families[k].label,
+                           alpha=1 * experiment.families[k].alpha, s=t_ms,
+                           marker='o', linewidth=0)
+                ctr += experiment.families[k].size
+
+            elif experiment.families[k].election_model in {'real_identity',
+                                                           'real_uniformity',
+                                                           'real_antagonism',
+                                                           'real_stratification'}:
+                ax.scatter(experiment.points_by_families[k][0],
+                           experiment.points_by_families[k][1], zorder=5,
+                           color=experiment.families[k].color,
+                           label=experiment.families[k].label,
+                           alpha=experiment.families[k].alpha, s=ms * 5,
+                           marker=experiment.families[k].marker)
+                ctr += experiment.families[k].size
+
+            elif experiment.families[
+                k].election_model in LIST_OF_PREFLIB_ELECTIONS:
+                ax.scatter(experiment.points_by_families[k][0],
+                           experiment.points_by_families[k][1], zorder=2,
+                           color=experiment.families[k].color,
+                           label=experiment.families[k].label,
+                           alpha=experiment.families[k].alpha, s=ms,
+                           marker=experiment.families[k].marker)
+                ctr += experiment.families[k].size
+
+            elif experiment.families[k].election_model in {'norm_mallows',
+                                                           'mallows',
+                                                           'urn_experiment'}:
+                for i in range(experiment.families[k].size):
+                    param = float(experiment.elections[ctr].param)
+                    if param > 1:
+                        param = 1
+
+                    if experiment.families[k].election_model in {
+                        'norm_mallows', 'mallows'}:
+                        my_cmap = custom_div_cmap(num_colors=11,
+                                                  colors=["cyan", "blue"],
+                                                  name='my_custom_m')
+                        # print(param)
+                    elif experiment.families[k].election_model in {
+                        'urn_experiment'}:
+                        my_cmap = custom_div_cmap(num_colors=11,
+                                                  colors=["gold", "orange",
+                                                          "red"],
+                                                  name='my_custom_u')
+
+                    if i == 0:
+                        ax.scatter(experiment.points_by_families[k][0][i],
+                                   experiment.points_by_families[k][1][i],
+                                   zorder=2,
+                                   label=experiment.families[k].label,
+                                   cmap=my_cmap, vmin=0, vmax=1, alpha=0.5,
+                                   c=param * tmp[2] * experiment.families[
+                                       k].alpha,
+                                   s=ms * tmp2[2],
+                                   marker=experiment.families[k].marker)
+                    else:
+
+                        ax.scatter(experiment.points_by_families[k][0][i],
+                                   experiment.points_by_families[k][1][i],
+                                   zorder=2,
+                                   cmap=my_cmap, vmin=0, vmax=1, alpha=0.5,
+                                   c=param * tmp[2] * experiment.families[
+                                       k].alpha, s=ms * tmp2[2],
+                                   marker=experiment.families[k].marker)
+                    ctr += 1
+            else:
+                ax.scatter(experiment.points_by_families[k][0],
+                           experiment.points_by_families[k][1],
+                           color=experiment.families[k].color,
+                           label=experiment.families[k].label, zorder=2,
+                           alpha=tmp[2] * experiment.families[k].alpha,
+                           s=ms * tmp2[2],
+                           marker=experiment.families[k].marker)
+                ctr += experiment.families[k].size
+
+
+def add_guardians_to_picture(experiment_id, ax=None, values=None, legend=None,
+                             saveas=None):
+    # fig.set_size_inches(10, 10)
+    # corners = [[-1, 1, 1, -1], [1, 1, -1, -1]]
+    # ax.scatter(corners[0], corners[1], alpha=0)
+    def my_text(x1, y1, text, color="black", alpha=1., size=12):
+
+        plt.text(x1, y1, text, size=size, rotation=0., ha="center",
+                 va="center",
+                 color=color, alpha=alpha,
+                 bbox=dict(boxstyle="round", ec="black", fc="white"))
+
+    if experiment_id == 'ijcai/original+paths':
+        my_text(-0.48, 0.30, "UN")
+        my_text(0.5, 1.25, "AN")
+        my_text(1.8, 0.28, "ID")
+        my_text(0.9, -0.83, "ST")
+    elif experiment_id == 'ijcai/paths+urn+phi_mallows+preflib':
+        my_text(0.03, 0.18, "UN")
+        my_text(0.72, 0.94, "AN")
+        my_text(2.0, 0.17, "ID")
+        my_text(1.3, -0.74, "ST")
+
+    elif experiment_id == 'ijcai/paths+mallows':
+        my_text(-0.89, 1.29, "UN", size=24)
+        my_text(-0.1, 2.06, "AN", size=24)
+        my_text(1.04, 1.29, "ID", size=24)
+        my_text(0.32, 0.28, "ST", size=24)
+    elif experiment_id == 'ijcai/paths+phi_mallows':
+        my_text(-1.18, -0.02, "UN", size=24)
+        my_text(-0.37, 0.82, "AN", size=24)
+        my_text(0.9, -0.03, "ID", size=24)
+        my_text(0.12, -1.06, "ST", size=24)
+    elif experiment_id == 'ijcai/paths+urn':
+        my_text(-0.03, 0.02, "UN", size=24)
+        my_text(0.73, 0.88, "AN", size=24)
+        my_text(2.02, 0.03, "ID", size=24)
+        my_text(1.28, -0.89, "ST", size=24)
+
+    file_name = os.path.join(os.getcwd(), "images", str(saveas))
+    if values is None and legend == True:
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.savefig(file_name, bbox_inches='tight')
+    else:
+        plt.savefig(file_name, bbox_inches='tight')
+
+def print_2d(experiment_id, mask=False, mixed=False, fuzzy_paths=True,
+             xlabel=None,
+             angle=0, reverse=False, update=False, values=None,
+             attraction_factor=1, axis=False,
+             distance_name="emd-positionwise", guardians=False, tmp2=[1, 1, 1],
+             zorder=[1, 1, 1], ticks=None, title=None,
+             saveas="map_2d", show=True, ms=20, normalizing_func=None,
+             xticklabels=None, cmap=None,
+             ignore=None, marker_func=None, tex=False, black=False,
+             legend=True, levels=False, tmp=False):
+    """ Print the two-dimensional embedding of multi-dimensional map of the elections """
+
+    experiment = Experiment_2d(experiment_id, distance_name=distance_name,
+                               ignore=ignore,
+                               attraction_factor=attraction_factor)
+
+    if angle != 0:
+        experiment.rotate(angle)
+
+    if reverse:
+        experiment.reverse()
+
+    if update:
+        experiment.update()
+
+    if cmap is None:
+        cmap = custom_div_cmap()
+
+    if values is not None:
+        fig = plt.figure(figsize=(6.4, 4.8 + 0.48))
+    else:
+        fig = plt.figure()
+    # import matplotlib.gridspec as gridspec
+    # gs = gridspec.GridSpec(2, 1, height_ratios=[10, 1])
+    ax = fig.add_subplot()
+
+    if not axis:
+        plt.axis('off')
+
+    if values is not None:
+        color_map_by_feature(fig=fig, ax=ax, experiment=experiment,
+                             experiment_id=experiment_id, feature=values,
+                             normalizing_func=normalizing_func,
+                             marker_func=marker_func,
+                             xticklabels=xticklabels, ms=ms, cmap=cmap,
+                             ticks=ticks)
+    elif tmp:
+        ijcai_2021_coloring_1(ax=ax, experiment=experiment, ms=ms, tmp=tmp,
+                              tmp2=tmp2, zorder=zorder)
+    elif mixed:
+        ijcai_2021_coloring_2(ax=ax, experiment=experiment, ms=ms, tmp=tmp,
+                              tmp2=tmp2, zorder=zorder,
+                              fuzzy_paths=fuzzy_paths)
+    else:
+        basic_coloring(ax=ax, experiment=experiment, ms=ms)
+
+    if mask:
+        mask_background(fig=fig, ax=ax, black=black, saveas=saveas, tex=tex)
+    elif levels:
+        level_background(fig=fig, ax=ax, saveas=saveas, tex=tex)
+    else:
+        basic_background(ax=ax, values=values, legend=legend, saveas=saveas,
+                         xlabel=xlabel, title=title)
+
+    if guardians:
+        add_guardians_to_picture(experiment_id, ax=ax, values=values,
+                                 legend=legend, saveas=saveas)
+
+    if tex:
+        saveas_tex(saveas=saveas)
+
+    if show:
+        plt.show()
+
+
+def compute_winners(experiment_id, method='hb', algorithm='exact',
+                    num_winners=10):
+    """ Compute winners for all elections in a given experiment """
+
+    experiment = Experiment(experiment_id)
+
+    file_name = "experiments/" + experiment_id + "/controllers/winners/" + \
+                method + "_" + algorithm + ".txt"
+    file_output = open(file_name, 'w')
+
+    Z = 0
+    for fam in range(experiment.num_families):
+
+        for _ in range(experiment.families[fam].size):
+
+            print(Z)
+
+            params = {}
+            params['orders'] = num_winners
+            params['voters'] = experiment.families[fam].num_voters
+            params['candidates'] = experiment.families[fam].num_candidates
+            params['elections'] = 1
+
+            election = experiment.elections[Z]
+
+            winners = []
+            if method in {'pav', 'hb'}:
+                if algorithm == 'exact':
+                    rule = {'name': method, 'length': num_winners,
+                            'type': 'borda_owa'}
+                    winners = win.get_winners(params, copy.deepcopy(experiment.elections[Z].votes), rule)
+
+                elif algorithm == 'greedy':
+                    if method == "pav":
+                        winners = win.get_winners_approx_pav(copy.deepcopy(experiment.elections[Z].votes), params, algorithm)
+                    elif method == "hb":
+                        winners = win.get_winners_approx_hb(copy.deepcopy(experiment.elections[Z].votes), params, algorithm)
+
+            elif method == 'borda':
+                winners = compute_borda_winners(election,
+                                                num_winners=num_winners)
+
+            elif method == 'plurality':
+                winners = compute_plurality_winners(election,
+                                                    num_winners=num_winners)
+
+
+            for winner in winners:
+                file_output.write(str(winner) + "\n")
+
+            Z = Z+1
+
+    file_output.close()
+
+    print("\nDone.")
+
+
+def compute_statistics_tmp(experiment_id, method='hb', algorithm='greedy', num_winners=10):
+
+    experiment = Experiment(experiment_id)
+
+
+    file_name = "experiments/" + experiment_id + "/controllers/approx/" + method + "_" + algorithm + ".txt"
+    file_output = open(file_name, 'w')
+    num_lines = experiment.num_elections
+    file_output.write(str(num_lines) + "\n")
+
+    winners_1 = import_winners(experiment_id, method='hb', algorithm=algorithm, num_winners=num_winners, num_elections=experiment.num_elections)
+    winners_2 = import_winners(experiment_id, method='hb', algorithm='exact', num_winners=num_winners, num_elections=experiment.num_elections)
+
+    Z = 0
+    for fam in range(experiment.num_families):
+
+        for _ in range(experiment.families[fam].size):
+
+            print(Z)
+
+            params = {}
+            params['orders'] = num_winners
+            params['voters'] = experiment.num_voters
+            params['candidates'] = experiment.families[fam].num_candidates
+            params['elections'] = experiment.num_elections
+
+            if method == "pav":
+                score_1 = win.check_pav_dissat(copy.deepcopy(experiment.elections[Z].votes), params, winners_1[Z])
+            elif method == "hb":
+                score_1 = win.check_hb_dissat(copy.deepcopy(experiment.elections[Z].votes), params, winners_1[Z])
+
+            if method == "pav":
+                score_2 = win.check_pav_dissat(copy.deepcopy(experiment.elections[Z].votes), params, winners_2[Z])
+            elif method == "hb":
+                score_2 = win.check_hb_dissat(copy.deepcopy(experiment.elections[Z].votes), params, winners_2[Z])
+
+            output = score_1 / score_2
+
+            file_output.write(str(output) + "\n")
+
+            Z = Z+1
+
+    file_output.close()
+
+    print("\nDone.")
+
 # KIND OF A BACKUP
 def print_map(self, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
               angle=0, reverse=False, update=False, feature=None, attraction_factor=1, axis=False,

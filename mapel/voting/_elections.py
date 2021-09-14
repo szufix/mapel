@@ -4,17 +4,19 @@
 from mapel.voting.elections.group_separable import \
     generate_group_separable_election
 from mapel.voting.elections.mallows import generate_mallows_election, \
-    phi_from_relphi
+    phi_from_relphi, generate_mallows_party
 from mapel.voting.elections.euclidean import generate_elections_1d_simple, \
     generate_elections_2d_simple, generate_elections_nd_simple, \
-    generate_elections_2d_grid
+    generate_elections_2d_grid, generate_2d_gaussian_party, get_rand, \
+    generate_1d_gaussian_party
 from mapel.voting.elections.single_peaked import generate_conitzer_election, \
-    generate_walsh_election, generate_spoc_conitzer_election
+    generate_walsh_election, generate_spoc_conitzer_election, \
+    generate_sp_party
 from mapel.voting.elections.single_crossing import \
     generate_single_crossing_election
 from mapel.voting.elections.impartial import \
     generate_impartial_culture_election, \
-    generate_impartial_anonymous_culture_election
+    generate_impartial_anonymous_culture_election, generate_ic_party
 from mapel.voting.elections.guardians import \
     generate_real_antagonism_election, \
     generate_real_identity_election, generate_real_stratification_election, \
@@ -32,8 +34,8 @@ from mapel.voting.objects.Election import Election
 
 import mapel.voting.elections.preflib as preflib
 
-from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS
-
+from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, \
+                                PARTY_MODELS
 
 
 def generate_votes(election_model=None, num_candidates=None, num_voters=None,
@@ -77,6 +79,14 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
                         '40d_ball': generate_elections_nd_simple,
                         '2d_grid': generate_elections_2d_grid}
 
+    party_models = {'1d_gaussian_party': generate_1d_gaussian_party,
+                    '2d_gaussian_party': generate_2d_gaussian_party,
+                    'walsh_party': generate_sp_party,
+                    'conitzer_party': generate_sp_party,
+                    'mallows_party': generate_mallows_party,
+                    'ic_party': generate_ic_party
+                    }
+
     single_param_models = {'urn_model': generate_urn_model_election,
                            'group-separable':
                                generate_group_separable_election}
@@ -92,6 +102,11 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
         votes = euclidean_models.get(election_model)(
             num_voters=num_voters, num_candidates=num_candidates,
             election_model=election_model)
+
+    elif election_model in party_models:
+        votes = party_models.get(election_model)(
+            num_voters=num_voters, num_candidates=num_candidates,
+            election_model=election_model, params=params)
 
     elif election_model in single_param_models:
         votes = single_param_models.get(election_model)(
@@ -379,13 +394,33 @@ def _get_params_for_paths(experiment, family_id, j, copy_param_1=4):
     return params
 
 
+def prepare_parties(experiment=None, election_model=None,
+                    family_id=None, params=None):
+    parties = []
+
+    if election_model == '2d_gaussian_party':
+        for i in range(params['num_parties']):
+            point = [rand.random(), rand.random()]
+            parties.append(point)
+
+    elif election_model in ['1d_gaussian_party',
+                            'conitzer_party', 'walsh_party']:
+        for i in range(params['num_parties']):
+            point = [rand.random()]
+            parties.append(point)
+
+    return parties
+
+
 def prepare_statistical_culture_family(experiment=None, election_model=None,
                                        family_id=None, params=None):
-    # base_map = {'35': 5, '50': 6, '80': 7, '110': 8, '165': 9, '199': 10}
-
-    # print(election_model)
-
     keys = []
+
+    if election_model in PARTY_MODELS:
+        params['party'] = prepare_parties(experiment=experiment,
+                                            params=params,
+                                            election_model=election_model,
+                                            family_id=family_id)
 
     for j in range(experiment.families[family_id].size):
 

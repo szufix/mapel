@@ -5,7 +5,6 @@ import time
 
 import matplotlib.pyplot as plt
 
-import mapel.voting.winners as win
 import mapel.voting.features as features
 import copy
 
@@ -81,61 +80,6 @@ def compute_lowest_dodgson(experiment_id, clear=True):
 
 ## PART 1 ##
 
-def compute_winners(experiment_id, method='hb', algorithm='exact',
-                    num_winners=10):
-    """ Compute winners for all elections in a given experiment """
-
-    experiment = Experiment(experiment_id)
-
-    file_name = "experiments/" + experiment_id + "/controllers/winners/" + \
-                method + "_" + algorithm + ".txt"
-    file_output = open(file_name, 'w')
-
-    Z = 0
-    for fam in range(experiment.num_families):
-
-        for _ in range(experiment.families[fam].size):
-
-            print(Z)
-
-            params = {}
-            params['orders'] = num_winners
-            params['voters'] = experiment.families[fam].num_voters
-            params['candidates'] = experiment.families[fam].num_candidates
-            params['elections'] = 1
-
-            election = experiment.elections[Z]
-
-            winners = []
-            if method in {'pav', 'hb'}:
-                if algorithm == 'exact':
-                    rule = {'name': method, 'length': num_winners,
-                            'type': 'borda_owa'}
-                    winners = win.get_winners(params, copy.deepcopy(experiment.elections[Z].votes), rule)
-
-                elif algorithm == 'greedy':
-                    if method == "pav":
-                        winners = win.get_winners_approx_pav(copy.deepcopy(experiment.elections[Z].votes), params, algorithm)
-                    elif method == "hb":
-                        winners = win.get_winners_approx_hb(copy.deepcopy(experiment.elections[Z].votes), params, algorithm)
-
-            elif method == 'borda':
-                winners = compute_borda_winners(election,
-                                                num_winners=num_winners)
-
-            elif method == 'plurality':
-                winners = compute_plurality_winners(election,
-                                                    num_winners=num_winners)
-
-
-            for winner in winners:
-                file_output.write(str(winner) + "\n")
-
-            Z = Z+1
-
-    file_output.close()
-
-    print("\nDone.")
 
 
 def import_winners(experiment_id, method='hb', algorithm='greedy',
@@ -207,120 +151,6 @@ def compute_condorcet_existence(experiment_id):
         for election in experiment.elections:
             exists = is_condorect_winner(election)
             file_txt.write(str(exists) + "\n")
-
-
-## PART 2 ##
-
-
-def compute_statistics_tmp(experiment_id, method='hb', algorithm='greedy', num_winners=10):
-
-    experiment = Experiment(experiment_id)
-
-
-    file_name = "experiments/" + experiment_id + "/controllers/approx/" + method + "_" + algorithm + ".txt"
-    file_output = open(file_name, 'w')
-    num_lines = experiment.num_elections
-    file_output.write(str(num_lines) + "\n")
-
-    winners_1 = import_winners(experiment_id, method='hb', algorithm=algorithm, num_winners=num_winners, num_elections=experiment.num_elections)
-    winners_2 = import_winners(experiment_id, method='hb', algorithm='exact', num_winners=num_winners, num_elections=experiment.num_elections)
-
-    Z = 0
-    for fam in range(experiment.num_families):
-
-        for _ in range(experiment.families[fam].size):
-
-            print(Z)
-
-            params = {}
-            params['orders'] = num_winners
-            params['voters'] = experiment.num_voters
-            params['candidates'] = experiment.families[fam].num_candidates
-            params['elections'] = experiment.num_elections
-
-            if method == "pav":
-                score_1 = win.check_pav_dissat(copy.deepcopy(experiment.elections[Z].votes), params, winners_1[Z])
-            elif method == "hb":
-                score_1 = win.check_hb_dissat(copy.deepcopy(experiment.elections[Z].votes), params, winners_1[Z])
-
-            if method == "pav":
-                score_2 = win.check_pav_dissat(copy.deepcopy(experiment.elections[Z].votes), params, winners_2[Z])
-            elif method == "hb":
-                score_2 = win.check_hb_dissat(copy.deepcopy(experiment.elections[Z].votes), params, winners_2[Z])
-
-            output = score_1 / score_2
-
-            file_output.write(str(output) + "\n")
-
-            Z = Z+1
-
-    file_output.close()
-
-    print("\nDone.")
-
-
-# def compute_overlapping_of_winners(experiment_id, num_winners=10):
-#
-#     model = obj.Model(experiment_id, raw=True)
-#
-#     file_name = "experiments/" + experiment_id + "/controllers/approx/" + 'overlap' + ".txt"
-#     file_output = open(file_name, 'w')
-#     num_lines = model.num_elections
-#     file_output.write(str(num_lines) + "\n")
-#
-#     winners_1 = import_winners(experiment_id, method='plurality', algorithm='exact',
-#                                num_winners=num_winners, num_elections=model.num_elections)
-#     winners_2 = app.import_winners(experiment_id, method='borda', algorithm='exact',
-#                                num_winners=num_winners, num_elections=model.num_elections)
-#
-#     Z = 0
-#     for fam in range(model.num_families):
-#
-#         for _ in range(model.families[fam].size):
-#
-#             print(Z)
-#
-#             winners = (set(winners_1[Z])).intersection(set(winners_2[Z]))
-#
-#             output = len(winners)
-#
-#             file_output.write(str(output) + "\n")
-#
-#             Z = Z+1
-#
-#     file_output.close()
-#
-#     print("\nDone.")
-#
-#
-# def print_statistics(experiment_id, method='hb', algorithm='greedy', num_winners=10):
-#
-#     model = Experiment(experiment_id)
-#
-#     mallows = []
-#     norm_mallows = []
-#     path = "experiments/" + experiment_id + "/controllers/approx/" + method + "_" + algorithm + ".txt"
-#     with open(path) as file_txt:
-#         spam_line = file_txt.readline()
-#         for i in range(model.num_families):
-#             local_sum = 0.
-#             for j in range(model.families[i].size):
-#                 value = float(file_txt.readline().strip())
-#                 local_sum += value
-#             avg = local_sum / float(model.families[i].size)
-#             if i%2==0:
-#                 mallows.append(avg)
-#             else:
-#                 norm_mallows.append(avg)
-#
-#     X = [20,30,40,50,60,70,80,90,100]
-#     plt.plot(X, mallows, label='Mallows')
-#     plt.plot(X, norm_mallows, label='Norm-Mallows')
-#     plt.legend()
-#     plt.ylabel('dissatisfaction ratio')
-#     plt.xlabel('number of candidates')
-#     plt.savefig('mallows_vs_norm-mallows.png')
-#     plt.show()
 
 
 def print_chart_overlapping_of_winners(experiment_id, method='hb', algorithm='greedy', num_winners=10):
@@ -470,8 +300,6 @@ def result_backup(experiment_id, result, i, j):
 
 
 def get_borda_ranking(votes, num_voters, num_candidates):
-
-    # todo: compute ranking based on positionwise vectors
 
     points = [0 for _ in range(num_candidates)]
     scoring = [1. for _ in range(num_candidates)]

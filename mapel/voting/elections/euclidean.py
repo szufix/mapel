@@ -1,6 +1,88 @@
 import random as rand
+
+import matplotlib.pyplot as plt
 import numpy as np
 import math
+
+
+def generate_1d_gaussian_party(election_model=None, num_voters=None,
+                           num_candidates=None, params=None):
+    if params is None:
+        params = {}
+    if 'num_winners' not in params:
+        params['num_winners'] = 1
+
+    voters = [[] for _ in range(num_voters)]
+    candidates = [[] for _ in range(num_candidates)]
+
+    votes = np.zeros([num_voters, num_candidates], dtype=int)
+    distances = np.zeros([num_voters, num_candidates], dtype=float)
+
+    shift = [rand.random()/4.]
+    for j in range(num_voters):
+        voters[j] = [rand.random()+shift[0]]
+    # voters = sorted(voters)
+
+    for j in range(params['num_parties']):
+        for w in range(params['num_winners']):
+            _id = j*params['num_winners'] + w
+            candidates[_id] = [rand.gauss(params['party'][j][0], 0.1)]
+    # candidates = sorted(candidates)
+
+    for j in range(num_voters):
+        for k in range(num_candidates):
+            votes[j][k] = k
+            distances[j][k] = distance(1, voters[j], candidates[k])
+
+        votes[j] = [x for _, x in sorted(zip(distances[j], votes[j]))]
+
+    return votes
+
+
+def generate_2d_gaussian_party(election_model=None, num_voters=None,
+                           num_candidates=None, params=None):
+    if params is None:
+        params = {}
+    if 'num_winners' not in params:
+        params['num_winners'] = 1
+
+    voters = [[] for _ in range(num_voters)]
+    candidates = [[] for _ in range(num_candidates)]
+
+    votes = np.zeros([num_voters, num_candidates], dtype=int)
+    distances = np.zeros([num_voters, num_candidates], dtype=float)
+
+    shift = [rand.random()/4., rand.random()/4.]
+    for j in range(num_voters):
+        voters[j] = [rand.random()+shift[0], rand.random()+shift[1]]
+    # voters = sorted(voters)
+
+    for j in range(params['num_parties']):
+        for w in range(params['num_winners']):
+            _id = j*params['num_winners'] + w
+            # print(_id)
+            candidates[_id] = [rand.gauss(params['party'][j][0], 0.1),
+                             rand.gauss(params['party'][j][1], 0.1)]
+    # candidates = sorted(candidates)
+
+    # tmp_v = np.asarray(voters).transpose()
+    # plt.scatter(tmp_v[0], tmp_v[1], color='grey')
+    # tmp_c = np.asarray(candidates).transpose()
+    # plt.scatter(tmp_c[0], tmp_c[1], color='blue')
+    # plt.show()
+    #
+    # print(num_candidates, params['num_winners'], params['num_parties'])
+    # print(candidates)
+
+
+    for j in range(num_voters):
+        for k in range(num_candidates):
+            votes[j][k] = k
+            distances[j][k] = distance(2, voters[j], candidates[k])
+
+        votes[j] = [x for _, x in sorted(zip(distances[j], votes[j]))]
+
+    return votes
 
 
 def generate_elections_1d_simple(election_model=None, num_voters=None,
@@ -246,6 +328,7 @@ def get_rand(elections_model, cat="voters"):
         dim = 40
         point = list(random_ball(dim)[0])
     else:
+        print('unknown model')
         point = [0, 0]
     return point
 
@@ -253,7 +336,7 @@ def distance(dim, x_1, x_2):
     """ compute distance between two points """
 
     if dim == 1:
-        return abs(x_1 - x_2)
+        return abs(x_1[0] - x_2[0])
 
     output = 0.
     for i in range(dim):

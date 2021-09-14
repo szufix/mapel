@@ -43,7 +43,6 @@ def prepare_matrices(experiment_id):
 
 def generate_positionwise_matrix(election_model=None, num_candidates=None,
                                  num_voters=100, params=None):
-    # todo: there is a repetition of this code in Election file
 
     if election_model == 'conitzer_matrix':
         vectors = get_conitzer_vectors(num_candidates)
