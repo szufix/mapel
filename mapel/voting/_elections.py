@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """ this module is used to generate and import elections"""
 
-from mapel.voting.elections.group_separable import \
-    generate_group_separable_election
+from mapel.voting.elections.group_separable import generate_group_separable_election
 from mapel.voting.elections.mallows import generate_mallows_election, \
     phi_from_relphi, generate_mallows_party
 from mapel.voting.elections.euclidean import generate_elections_1d_simple, \
@@ -34,12 +33,16 @@ from mapel.voting.objects.Election import Election
 
 import mapel.voting.elections.preflib as preflib
 
-from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, \
-                                PARTY_MODELS
+from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, PARTY_MODELS
 
 
-def generate_votes(election_model=None, num_candidates=None, num_voters=None,
-                   params=None):
+def generate_approval_votes(election_model=None, num_candidates=None, num_voters=None, params=None):
+    votes = []
+    return votes
+
+
+def generate_ordinal_votes(election_model=None, num_candidates=None, num_voters=None, params=None):
+
     if params is None:
         params = {}
 
@@ -95,8 +98,7 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
                            'norm-mallows': generate_mallows_election, }
 
     if election_model in naked_models:
-        votes = naked_models.get(election_model)(num_voters=num_voters,
-                                                 num_candidates=num_candidates)
+        votes = naked_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates)
 
     elif election_model in euclidean_models:
         votes = euclidean_models.get(election_model)(
@@ -114,8 +116,7 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
             params=params)
 
     elif election_model in double_param_models:
-        votes = double_param_models.get(election_model)(num_voters,
-                                                        num_candidates, params)
+        votes = double_param_models.get(election_model)(num_voters, num_candidates, params)
 
     elif election_model in LIST_OF_FAKE_MODELS:
         votes = [election_model, num_candidates, num_voters, params]
@@ -167,8 +168,9 @@ def generate_votes(election_model=None, num_candidates=None, num_voters=None,
 
 
 # GENERATE
-def generate_elections(experiment=None, election_model=None, election_id=None,
-                       num_candidates=None, num_voters=None, params=None):
+def generate_elections(experiment=None, election_model=None, election_id=None, num_candidates=None,
+                       num_voters=None, params=None, ballot='ordinal'):
+
     """ main function: generate elections """
 
     if params is None:
@@ -182,20 +184,27 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
         params['alpha'] = gamma.rvs(0.8)
 
     if election_model == 'norm-mallows':
-        params['phi'] = phi_from_relphi(num_candidates,
-                                        relphi=params['norm-phi'])
+        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
     if election_model == 'mallows_matrix_path':
         params['norm-phi'] = params['alpha']
-        params['phi'] = phi_from_relphi(num_candidates,
-                                        relphi=params['norm-phi'])
+        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
     if 'weight' not in params:
         params['weight'] = 0.
 
-    votes = generate_votes(election_model=election_model,
-                           num_candidates=num_candidates,
-                           num_voters=num_voters, params=params)
+    if ballot == 'ordinal':
+        votes = generate_ordinal_votes(election_model=election_model,
+                               num_candidates=num_candidates,
+                               num_voters=num_voters, params=params)
+    elif ballot == 'approval':
+        votes = generate_approval_votes(election_model=election_model,
+                               num_candidates=num_candidates,
+                               num_voters=num_voters, params=params)
+    else:
+        print("Such ballot does not exist!")
+        votes = []
+
     election = Election("virtual", "virtual", votes=votes,
                         election_model=election_model,
                         num_candidates=num_candidates,
@@ -203,6 +212,7 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
 
     experiment.elections[election_id] = election
 
+    # For now, storing works only for ordinal ballot
     if experiment.store:
 
         if election_model in LIST_OF_FAKE_MODELS:
@@ -271,6 +281,7 @@ def generate_elections(experiment=None, election_model=None, election_id=None,
                         else:
                             file_.write("\n")
 
+
     return experiment.elections[election_id]
 
 
@@ -283,8 +294,8 @@ def import_election(experiment_id, election_id):
 
 
 # HELPER FUNCTIONS #
-def prepare_preflib_family(experiment=None, election_model=None,
-                           params=None, id_=None, folder=None):
+def prepare_preflib_family(experiment=None, election_model=None, params=None,
+                           id_=None, folder=None):
     # NEEDS UPDATE #
 
     selection_method = 'random'
@@ -412,15 +423,13 @@ def prepare_parties(experiment=None, election_model=None,
     return parties
 
 
-def prepare_statistical_culture_family(experiment=None, election_model=None,
-                                       family_id=None, params=None):
+def prepare_statistical_culture_family(experiment=None, election_model=None, family_id=None,
+                                       params=None, ballot='ordinal'):
     keys = []
 
     if election_model in PARTY_MODELS:
-        params['party'] = prepare_parties(experiment=experiment,
-                                            params=params,
-                                            election_model=election_model,
-                                            family_id=family_id)
+        params['party'] = prepare_parties(experiment=experiment, params=params,
+                                          election_model=election_model, family_id=family_id)
 
     for j in range(experiment.families[family_id].size):
 
@@ -439,10 +448,9 @@ def prepare_statistical_culture_family(experiment=None, election_model=None,
 
         generate_elections(
             experiment=experiment, election_model=election_model,
-            election_id=election_id,
-            num_voters=experiment.families[family_id].num_voters,
+            election_id=election_id, num_voters=experiment.families[family_id].num_voters,
             num_candidates=experiment.families[family_id].num_candidates,
-            params=copy.deepcopy(params))
+            params=copy.deepcopy(params), ballot=ballot)
 
         keys.append(election_id)
 

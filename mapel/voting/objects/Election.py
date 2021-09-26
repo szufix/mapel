@@ -6,26 +6,22 @@ import numpy as np
 import copy
 
 from mapel.voting.elections.group_separable import get_gs_caterpillar_vectors
-from mapel.voting.elections.single_peaked import get_walsh_vectors, \
-    get_conitzer_vectors
+from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
 from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 from mapel.voting.elections.mallows import get_mallows_vectors
 from mapel.voting.elections.preflib import get_sushi_vectors
 
-from mapel.voting.winners import compute_plurality_winners, \
-    compute_borda_winners, compute_stv_winners
+from mapel.voting.winners import compute_sntv_winners, compute_borda_winners, compute_stv_winners
 
-from mapel.voting.glossary import LIST_OF_FAKE_MODELS, \
-    LIST_OF_PREFLIB_MODELS, PATHS
+from mapel.voting.glossary import LIST_OF_FAKE_MODELS, LIST_OF_PREFLIB_MODELS, PATHS
 
 from mapel.voting.not_in_the_package.__winners import generate_winners
 
 
 class Election:
 
-    def __init__(self, experiment_id, election_id, votes=None,
-                 with_matrix=False, election_model=None,
-                 num_voters=None, num_candidates=None):
+    def __init__(self, experiment_id, election_id, votes=None, with_matrix=False,
+                 election_model=None, ballot='ordinal', num_voters=None, num_candidates=None):
 
         self.experiment_id = experiment_id
         self.election_id = election_id
@@ -59,12 +55,10 @@ class Election:
             self.fake = check_if_fake(experiment_id, election_id)
             if self.fake:
                 self.election_model, self.fake_param, self.num_voters, \
-                    self.num_candidates = import_fake_elections(
-                        experiment_id, election_id)
+                    self.num_candidates = import_fake_elections(experiment_id, election_id)
             else:
                 self.votes, self.num_voters, self.num_candidates, self.param, \
-                self.election_model = import_soc_elections(
-                    experiment_id, election_id)
+                    self.election_model = import_soc_elections(experiment_id, election_id)
 
                 self.potes = self.votes_to_potes()
 
@@ -77,8 +71,7 @@ class Election:
     def import_matrix(self):
 
         file_name = self.election_id + '.csv'
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            'matrices', file_name)
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, 'matrices', file_name)
         matrix = np.zeros([self.num_candidates, self.num_candidates])
 
         with open(path, 'r', newline='') as csv_file:
@@ -124,21 +117,16 @@ class Election:
             vectors = get_sushi_vectors()
         elif self.election_model in {'norm-mallows_matrix', 'mallows_matrix_path'}:
             vectors = get_mallows_vectors(self.num_candidates, self.fake_param)
-        elif self.election_model in {'identity', 'uniformity',
-                                     'antagonism', 'stratification'}:
-            vectors = get_fake_vectors_single(self.election_model,
-                                              self.num_candidates,
+        elif self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+            vectors = get_fake_vectors_single(self.election_model, self.num_candidates,
                                               self.num_voters)
         elif self.election_model in {'walsh_path', 'conitzer_path'}:
             vectors = get_fake_multiplication(self.num_candidates, self.fake_param, self.election_model)
         elif self.election_model in PATHS:
-            vectors = get_fake_convex(self.election_model,
-                                      self.num_candidates, self.num_voters,
-                                      self.fake_param,
-                                      get_fake_vectors_single)
+            vectors = get_fake_convex(self.election_model, self.num_candidates, self.num_voters,
+                                      self.fake_param, get_fake_vectors_single)
         elif self.election_model == 'crate':
-            vectors = get_fake_vectors_crate(self.election_model,
-                                             self.num_candidates,
+            vectors = get_fake_vectors_crate(self.election_model, self.num_candidates,
                                              self.num_voters, self.fake_param)
         else:
             for i in range(self.num_voters):
@@ -194,8 +182,7 @@ class Election:
         intervals = []
 
         for i in range(len(vectors)):
-            intervals.append(self.vector_to_interval(vectors[i],
-                                                     precision=precision))
+            intervals.append(self.vector_to_interval(vectors[i], precision=precision))
 
         return intervals
 
@@ -207,14 +194,11 @@ class Election:
 
             if self.election_model in {'identity', 'uniformity',
                                        'antagonism', 'stratification'}:
-                matrix = get_fake_matrix_single(self.election_model,
-                                                self.num_candidates,
+                matrix = get_fake_matrix_single(self.election_model, self.num_candidates,
                                                 self.num_voters)
             elif self.election_model in PATHS:
-                matrix = get_fake_convex(self.election_model,
-                                         self.num_candidates, self.num_voters,
-                                         self.fake_param,
-                                         get_fake_matrix_single)
+                matrix = get_fake_convex(self.election_model, self.num_candidates, self.num_voters,
+                                         self.fake_param, get_fake_matrix_single)
 
         else:
 
@@ -269,22 +253,18 @@ class Election:
 
             if self.election_model in {'identity', 'uniformity',
                                        'antagonism', 'stratification'}:
-                borda_vector = get_fake_borda_vector(self.election_model,
-                                                     self.num_candidates,
+                borda_vector = get_fake_borda_vector(self.election_model, self.num_candidates,
                                                      self.num_voters)
             elif self.election_model in PATHS:
-                borda_vector = get_fake_convex(self.election_model,
-                                               self.num_candidates,
-                                               self.num_voters,
-                                               self.fake_param,
+                borda_vector = get_fake_convex(self.election_model, self.num_candidates,
+                                               self.num_voters, self.fake_param,
                                                get_fake_borda_vector)
 
         else:
             c = self.num_candidates
             v = self.num_voters
             vectors = self.votes_to_positionwise_matrix()
-            borda_vector = [sum([vectors[j][i] * (c - i - 1)
-                                 for i in range(c)]) * v for j in
+            borda_vector = [sum([vectors[j][i] * (c - i - 1) for i in range(c)]) * v for j in
                             range(self.num_candidates)]
             borda_vector = sorted(borda_vector, reverse=True)
 
@@ -335,8 +315,8 @@ class Election:
 
         self.borda_points = get_borda_points(self.votes, self.num_voters, self.num_candidates)
 
-        if method == 'plurality':
-            self.winners = compute_plurality_winners(election=self, num_winners=num_winners)
+        if method == 'sntv':
+            self.winners = compute_sntv_winners(election=self, num_winners=num_winners)
         if method == 'borda':
             self.winners = compute_borda_winners(election=self, num_winners=num_winners)
         if method == 'stv':
@@ -348,19 +328,24 @@ class Election:
 
     def compute_alternative_winners(self, method=None, party_id=None, num_winners=None):
 
-        election_without_party_id = remove_candidate_from_election(copy.deepcopy(self), party_id, num_winners)
+        election_without_party_id = remove_candidate_from_election(copy.deepcopy(self),
+                                                                   party_id, num_winners)
         # print(election_without_party_id.votes)
         election_without_party_id = map_the_votes(election_without_party_id, party_id, num_winners)
         # print(election_without_party_id.votes)
 
-        if method == 'plurality':
-            winners_without_party_id = compute_plurality_winners(election=election_without_party_id, num_winners=num_winners)
+        if method == 'sntv':
+            winners_without_party_id = compute_sntv_winners(election=election_without_party_id,
+                                                            num_winners=num_winners)
         if method == 'borda':
-            winners_without_party_id = compute_borda_winners(election=election_without_party_id, num_winners=num_winners)
+            winners_without_party_id = compute_borda_winners(election=election_without_party_id,
+                                                             num_winners=num_winners)
         if method == 'stv':
-            winners_without_party_id = compute_stv_winners(election=election_without_party_id, num_winners=num_winners)
+            winners_without_party_id = compute_stv_winners(election=election_without_party_id,
+                                                           num_winners=num_winners)
         if method in {'approx_cc', 'approx_hb', 'approx_pav'}:
-            winners_without_party_id = generate_winners(election=election_without_party_id, num_winners=num_winners, method=method)
+            winners_without_party_id = generate_winners(election=election_without_party_id,
+                                                        num_winners=num_winners, method=method)
 
         # print(winners_without_party_id)
         winners_without_party_id = unmap_the_winners(winners_without_party_id, party_id, num_winners)
@@ -391,11 +376,9 @@ def unmap_the_winners(winners, party_id, party_size):
     return new_winners
 
 
-
 def check_if_fake(experiment_id, election_id):
     file_name = str(election_id) + ".soc"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections",
-                        file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     line = my_file.readline().strip()
     if line[0] == '$':
@@ -419,8 +402,7 @@ def get_borda_points(votes, num_voters, num_candidates):
 
 def import_fake_elections(experiment_id, election_id):
     file_name = str(election_id) + ".soc"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections",
-                        file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     my_file.readline()  # line with $ fake
 
@@ -429,10 +411,8 @@ def import_fake_elections(experiment_id, election_id):
     fake_model_name = str(my_file.readline().strip())
     params = {}
     if fake_model_name == 'crate':
-        params = [float(my_file.readline().strip()),
-                      float(my_file.readline().strip()),
-                      float(my_file.readline().strip()),
-                      float(my_file.readline().strip())]
+        params = [float(my_file.readline().strip()), float(my_file.readline().strip()),
+                  float(my_file.readline().strip()), float(my_file.readline().strip())]
     elif fake_model_name == 'norm-mallows_matrix':
         params['norm-phi'] = float(my_file.readline().strip())
         params['weight'] = float(my_file.readline().strip())
@@ -550,16 +530,14 @@ def get_fake_multiplication(num_candidates, params, election_model):
     return output
 
 
-def get_fake_vectors_crate(fake_model_name, num_candidates, num_voters,
-                           fake_param):
+def get_fake_vectors_crate(fake_model_name, num_candidates, num_voters, fake_param):
     base_1 = get_fake_vectors_single('uniformity', num_candidates, num_voters)
     base_2 = get_fake_vectors_single('identity', num_candidates, num_voters)
     base_3 = get_fake_vectors_single('antagonism', num_candidates, num_voters)
-    base_4 = get_fake_vectors_single('stratification', num_candidates,
-                                     num_voters)
+    base_4 = get_fake_vectors_single('stratification', num_candidates, num_voters)
 
-    return crate_combination(base_1, base_2, base_3, base_4,
-                             length=num_candidates, alpha=fake_param)
+    return crate_combination(base_1, base_2, base_3, base_4, length=num_candidates,
+                             alpha=fake_param)
 
 
 def get_fake_convex(fake_model_name, num_candidates, num_voters, params,
@@ -585,8 +563,7 @@ def get_fake_convex(fake_model_name, num_candidates, num_voters, params,
     else:
         raise NameError('No such fake vectors/matrix!')
 
-    return convex_combination(base_1, base_2, length=num_candidates,
-                              params=params)
+    return convex_combination(base_1, base_2, length=num_candidates, params=params)
 
 
 def convex_combination(base_1, base_2, length=0, params=None):
@@ -621,8 +598,7 @@ def crate_combination(base_1, base_2, base_3, base_4, length=0, alpha=None):
 
 def import_soc_elections(experiment_id, election_id):
     file_name = str(election_id) + ".soc"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections",
-                        file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
 
     param = 0

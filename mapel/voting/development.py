@@ -9,9 +9,212 @@ import mapel.voting.features as features
 import copy
 
 from mapel.voting.objects.Experiment import Experiment
-from mapel.voting.metrics.inner_distances import l2
+from mapel.voting.metrics.inner_distances import l1, l2
 
 import mapel.voting._metrics as metr
+import csv
+import numpy as np
+
+
+def potLadle(v, m):
+    vv = sorted(v, reverse=True)
+    cumv = np.cumsum(vv)
+    n = 0
+    while n < len(v) and vv[n] / cumv[n] >= 1 / (2 * m + n):
+        n += 1
+    v = np.array(v)
+    vv = v / cumv[n - 1]
+    s = vv * (1 + n / (2 * m)) - 1 / (2 * m)
+    s[s < 0] = 0
+    return list(s)
+
+
+def compute_spoilers(election_model=None, method=None, num_winners=None, num_parties=None,
+                     num_voters=100, num_districts=100, precision=100):
+    party_size = num_winners
+    num_candidates = num_parties * num_winners
+
+    all_weight_spoilers = []
+    all_weight_vectors = []
+    all_shapley_spoilers = []
+    all_shapley_vectors = []
+    all_banzhaf_spoilers = []
+    all_banzhaf_vectors = []
+    all_borda = []
+
+    all_alternative_weight_vectors = []
+    all_alternative_shapley_vectors = []
+    all_alternative_banzhaf_vectors = []
+
+    for _ in range(precision):
+        experiment = prepare_experiment()
+        experiment.set_default_num_candidates(num_candidates)
+        experiment.set_default_num_voters(num_voters)
+
+        experiment.add_family(election_model=election_model, size=num_districts,
+                              params={'num_winners': num_winners, 'num_parties': num_parties,
+                                      'main-phi': 0.5, 'norm-phi': 0.5})
+
+        experiment.compute_winners(method=method, num_winners=num_winners)
+
+        if method == 'dhondt':
+            # main election
+            parties = [0 for _ in range(num_parties)]
+            for election_id in experiment.elections:
+                for vote in experiment.elections[election_id].votes:
+                    parties[int(vote[0] / party_size)] += 1
+            denominator = sum(parties)
+            for i in range(num_parties):
+                parties[i] /= denominator
+            weight_vector = potLadle(parties, num_winners)
+
+            # alternative elections
+            alternative_weight_vectors = [[] for _ in range(num_parties)]
+            for c in range(num_parties):
+                parties = [0 for _ in range(num_parties)]
+                for election_id in experiment.elections:
+                    for vote in experiment.elections[election_id].votes:
+                        ctr = 0
+                        while int(vote[ctr] / party_size) == c:
+                            ctr += 1
+                        parties[int(vote[ctr] / party_size)] += 1
+
+                denominator = sum(parties)
+                for i in range(num_parties):
+                    parties[i] /= denominator
+                alternative_weight_vectors[c] = potLadle(parties, num_winners)
+
+        else:
+
+            experiment.compute_alternative_winners(method=method, num_winners=num_winners,
+                                                   num_parties=num_parties)
+
+            weight_vector = [0 for _ in range(num_parties)]
+            alternative_weight_vectors = {}
+            for party_id in range(num_parties):
+                alternative_weight_vectors[party_id] = [0 for i in
+                                                        range(num_parties)]
+
+            for election_id in experiment.elections:
+                for w in experiment.elections[election_id].winners:
+                    weight_vector[int(w / party_size)] += 1
+                for party_id in range(num_parties):
+                    for w in \
+                            experiment.elections[
+                                election_id].alternative_winners[
+                                party_id]:
+                        alternative_weight_vectors[party_id][
+                            int(w / party_size)] += 1
+
+        borda = [0 for _ in range(num_parties)]
+        for election_id in experiment.elections:
+            for i in range(num_candidates):
+                borda[int(i / party_size)] += experiment.elections[election_id].borda_points[i]
+
+        denominator = sum(borda)
+        borda = [elem / denominator for elem in borda]
+
+        denominator = sum(weight_vector)
+        weight_vector = [elem / denominator for elem in weight_vector]
+
+        for spoiler_id in range(num_parties):
+            denominator = sum(alternative_weight_vectors[spoiler_id])
+            for party_id in range(num_parties):
+                alternative_weight_vectors[spoiler_id][party_id] /= denominator
+
+        # WEIGHT
+        weight_spoilers = []
+        for party_id in range(num_parties):
+            value = l1(weight_vector, alternative_weight_vectors[party_id])
+            value -= 2 * weight_vector[party_id]
+            weight_spoilers.append(value / (value + borda[party_id]))
+        all_weight_spoilers.append(weight_spoilers)
+        all_weight_vectors.append(weight_vector)
+
+        # SHAPLEY
+        # shapley_spoilers = []
+        # shapley_vector = features.shapley(weight_vector)
+        # alternative_shapley_vectors = []
+        # for party_id in range(num_parties):
+        #     alternative_shapley_vector = features.shapley(
+        #         alternative_weight_vectors[party_id])
+        #     alternative_shapley_vectors.append(alternative_shapley_vector)
+        #     value = l1(shapley_vector, alternative_shapley_vector)
+        #     value -= 2 * shapley_vector[party_id]
+        #     shapley_spoilers.append(value / (value + borda[party_id]))
+        # all_shapley_spoilers.append(shapley_spoilers)
+        # all_shapley_vectors.append(shapley_vector)
+
+        # BANZHAF
+        banzhaf_spoilers = []
+        banzhaf_vector = features.banzhaf(weight_vector)
+        alternative_banzhaf_vectors = []
+        for party_id in range(num_parties):
+            alternative_banzhaf_vector = features.banzhaf(
+                alternative_weight_vectors[party_id])
+            alternative_banzhaf_vectors.append(
+                alternative_banzhaf_vector)
+            value = l1(banzhaf_vector, alternative_banzhaf_vector)
+            value -= 2 * banzhaf_vector[party_id]
+            banzhaf_spoilers.append(value / (value + borda[party_id]))
+
+        all_banzhaf_spoilers.append(banzhaf_spoilers)
+        all_banzhaf_vectors.append(banzhaf_vector)
+
+        # BORDA
+        all_borda.append(borda)
+
+        # BIG FILE ALL
+        all_alternative_weight_vectors.append(alternative_weight_vectors)
+        # all_alternative_shapley_vectors.append(alternative_shapley_vectors)
+        all_alternative_banzhaf_vectors.append(alternative_banzhaf_vectors)
+
+    # SAVE TO FILE -- SMALL
+    file_name = election_model + '_p' + str(num_parties) + \
+                '_k' + str(num_winners) + \
+                '_' + str(method) + '_small'
+    path = os.path.join(os.getcwd(), 'party', file_name + '.csv')
+    with open(path, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=';')
+        writer.writerow(["iteration", "party_id", "weight",
+                         "sp_weight", "shapley", "sp_shapley",
+                         "banzhaf", "sp_banzhaf", "borda"])
+
+        for j in range(len(all_weight_vectors)):
+            for p in range(num_parties):
+                writer.writerow([j, p,
+                                 all_weight_vectors[j][p],
+                                 all_weight_spoilers[j][p],
+                                 "NULL",  # all_shapley_vectors[j][p],
+                                 "NULL",  # all_shapley_spoilers[j][p],
+                                 all_banzhaf_vectors[j][p],
+                                 all_banzhaf_spoilers[j][p],
+                                 all_borda[j][p]])
+
+    # SAVE TO FILE -- BIG
+    file_name = election_model + '_p' + str(num_parties) + '_k' + str(
+        num_winners) + '_' + str(method) + '_big'
+    path = os.path.join(os.getcwd(), 'party', file_name + '.csv')
+
+    with open(path, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=';')
+        writer.writerow(["iteration", "spoiler_id", 'party_id',
+                         "weight", "shapley", "banzhaf"])
+
+        for j in range(len(all_weight_vectors)):
+
+            for party_id in range(num_parties):
+                writer.writerow([j, "NULL", party_id,
+                                 all_weight_vectors[j][party_id],
+                                 "NULL", # all_shapley_vectors[j][party_id],
+                                 all_banzhaf_vectors[j][party_id]])
+
+            for spoiler_id in range(num_parties):
+                for party_id in range(num_parties):
+                    writer.writerow([j, spoiler_id, party_id,
+                                     all_alternative_weight_vectors[j][spoiler_id][party_id],
+                                     "NULL",  # all_alternative_shapley_vectors[j][spoiler_id][party_id],
+                                     all_alternative_banzhaf_vectors[j][spoiler_id][party_id]])
 
 
 def prepare_experiment(experiment_id=None, elections=None, distances=None,
@@ -24,7 +227,6 @@ def prepare_experiment(experiment_id=None, elections=None, distances=None,
 
 
 def generate_experiment(elections=None):
-
     experiment = Experiment("virtual", elections=elections,
                             )
 
@@ -81,7 +283,6 @@ def compute_lowest_dodgson(experiment_id, clear=True):
 ## PART 1 ##
 
 
-
 def import_winners(experiment_id, method='hb', algorithm='greedy',
                    num_winners=10, num_elections=0):
     """ Import winners for all elections in a given experiment """
@@ -136,7 +337,6 @@ def compute_effective_num_candidates(experiment_id, clear=True):
     experiment = Experiment(experiment_id=experiment_id, distance_name='swap')
 
     for election in experiment.elections:
-
         score = features.get_effective_num_candidates(election)
 
         file_scores = open(file_name, 'a')
@@ -153,8 +353,8 @@ def compute_condorcet_existence(experiment_id):
             file_txt.write(str(exists) + "\n")
 
 
-def print_chart_overlapping_of_winners(experiment_id, method='hb', algorithm='greedy', num_winners=10):
-
+def print_chart_overlapping_of_winners(experiment_id, method='hb',
+                                       algorithm='greedy', num_winners=10):
     experiment = Experiment(experiment_id, raw=True)
 
     mallows = []
@@ -172,9 +372,9 @@ def print_chart_overlapping_of_winners(experiment_id, method='hb', algorithm='gr
 
             # print(avg)
 
-            if i%3 == 0:
+            if i % 3 == 0:
                 mallows.append(avg)
-            elif i%3 == 1:
+            elif i % 3 == 1:
                 norm_mallows.append(avg)
             else:
                 impartial_culture.append(avg)
@@ -184,7 +384,7 @@ def print_chart_overlapping_of_winners(experiment_id, method='hb', algorithm='gr
     # plt.plot(X, norm_mallows, label='Norm-Mallows')
 
     # X = [x for x in range(5,105,5)]
-    X = [10,20,30,40]
+    X = [10, 20, 30, 40]
     plt.plot(X, mallows, label='Mallows')
     plt.plot(X, norm_mallows, label='Norm-Mallows')
     plt.plot(X, impartial_culture, label='IC')
@@ -201,7 +401,6 @@ def print_chart_overlapping_of_winners(experiment_id, method='hb', algorithm='gr
 
 
 def print_chart_condorcet_existence(experiment_id):
-
     experiment = Experiment(experiment_id, raw=True)
 
     mallows = []
@@ -230,12 +429,13 @@ def print_chart_condorcet_existence(experiment_id):
     # plt.plot(X, mallows, label='Mallows')
     # plt.plot(X, norm_mallows, label='Norm-Mallows')
 
-    X = [x for x in range(10, 150+10, 10)]
+    X = [x for x in range(10, 150 + 10, 10)]
     # X = [x for x in range(5, 105, 5)]
     # X = [10,20,30,40]
-    plt.plot(X, mallows, label='Mallows '+str(experiment.families[0].param_1))
-    #plt.plot(X, norm_mallows, label='Norm-Mallows')
-    #plt.plot(X, impartial_culture, label='IC')
+    plt.plot(X, mallows,
+             label='Mallows ' + str(experiment.families[0].param_1))
+    # plt.plot(X, norm_mallows, label='Norm-Mallows')
+    # plt.plot(X, impartial_culture, label='IC')
 
     plt.xticks(size=14)
     plt.yticks(size=14)
@@ -252,19 +452,14 @@ def print_chart_condorcet_existence(experiment_id):
 
 
 ## PART 3 ## SUBELECTIONS
- 
-
-
-
-
 
 
 ### PART X ###
 
 
-
-
 import math
+
+
 def is_condorect_winner(election):
     """ Check if election witness Condorect winner"""
     for i in range(election.num_candidates):
@@ -294,13 +489,13 @@ def map_diameter(c):
 
 
 def result_backup(experiment_id, result, i, j):
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "distances", "backup.txt")
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "distances",
+                        "backup.txt")
     with open(path, 'a') as txt_file:
         txt_file.write(str(i) + ' ' + str(j) + ' ' + str(result) + '\n')
 
 
 def get_borda_ranking(votes, num_voters, num_candidates):
-
     points = [0 for _ in range(num_candidates)]
     scoring = [1. for _ in range(num_candidates)]
 
@@ -312,7 +507,8 @@ def get_borda_ranking(votes, num_voters, num_candidates):
             points[int(votes[i][j])] += scoring[j]
 
     candidates = [x for x in range(num_candidates)]
-    ordered_candidates = [x for _, x in sorted(zip(points, candidates), reverse=True)]
+    ordered_candidates = [x for _, x in
+                          sorted(zip(points, candidates), reverse=True)]
 
     return ordered_candidates
 
@@ -328,11 +524,16 @@ def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
         for j, election_id_2 in enumerate(experiment.elections):
             if i < j:
                 m = experiment.elections[election_id_1].num_candidates
-                true_distance = experiment.distances[election_id_1][election_id_2]
+                true_distance = experiment.distances[election_id_1][
+                    election_id_2]
                 true_distance /= map_diameter(m)
 
-                embedded_distance = l2(experiment.coordinates[election_id_1], experiment.coordinates[election_id_2], 1)
-                embedded_distance /= l2(experiment.coordinates['identity_10_100_0'], experiment.coordinates['uniformity_10_100_0'], 1)
+                embedded_distance = l2(experiment.coordinates[election_id_1],
+                                       experiment.coordinates[election_id_2],
+                                       1)
+                embedded_distance /= l2(
+                    experiment.coordinates['identity_10_100_0'],
+                    experiment.coordinates['uniformity_10_100_0'], 1)
                 proportion = float(true_distance) / float(embedded_distance)
                 X.append(proportion)
                 A.append(true_distance)
@@ -357,7 +558,6 @@ def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
     #     name = 'images/' + str(i)+'_' + str(attraction_factor) + '.png'
     #     plt.savefig(name)
     #     plt.show()
-
 
 # def compute_distortion_paths(experiment_id, attraction_factor=1, saveas='tmp'):
 #     experiment = Experiment_2d(experiment_id, attraction_factor=attraction_factor)
@@ -429,5 +629,3 @@ def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
 #     #     name = 'images/' + str(i)+'_' + str(attraction_factor) + '.png'
 #     #     plt.savefig(name)
 #     #     plt.show()
-
-
