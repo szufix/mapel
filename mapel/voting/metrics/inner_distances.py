@@ -13,9 +13,9 @@ def map_str_to_func(name):
             }.get(name)
 
 
-def discrete(vector_1, vector_2, length):
+def discrete(vector_1, vector_2):
     """ compute DISCRETE metric """
-    for i in range(length(vector_1)):
+    for i in range(len(vector_1)):
         if vector_1[i] != vector_2[i]:
             return 1
     return 0
@@ -37,17 +37,17 @@ def chebyshev(vector_1, vector_2):
     return max([abs(vector_1[i] - vector_2[i]) for i in range(len(vector_1))])
 
 
-def hellinger(vector_1, vector_2, length):
+def hellinger(vector_1, vector_2):
     """ compute HELLINGER metric """
     h1 = np.average(vector_1)
     h2 = np.average(vector_2)
     product = sum([math.sqrt(vector_1[i] * vector_2[i])
                    for i in range(len(vector_1))])
-    return math.sqrt(1 - (1 / math.sqrt(h1 * h2 * length * length(vector_1)))
+    return math.sqrt(1 - (1 / math.sqrt(h1 * h2 * len(vector_1) * len(vector_1)))
                      * product)
 
 
-def emd(vector_1, vector_2, length):
+def emd(vector_1, vector_2):
     """ compute EMD metric """
     dirt = 0.
     for i in range(len(vector_1) - 1):

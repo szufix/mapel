@@ -36,37 +36,42 @@ class Election:
         else:
             self.fake = False
 
-        if votes is not None:
-            if str(votes[0]) in LIST_OF_FAKE_MODELS:
-                self.fake = True
-                self.votes = votes[0]
-                self.election_model = votes[0]
-                self.num_candidates = votes[1]
-                self.num_voters = votes[2]
-                self.fake_param = votes[3]
-                # print(self.fake_param)
+        if ballot == 'ordinal':
+            if votes is not None:
+                if str(votes[0]) in LIST_OF_FAKE_MODELS:
+                    self.fake = True
+                    self.votes = votes[0]
+                    self.election_model = votes[0]
+                    self.num_candidates = votes[1]
+                    self.num_voters = votes[2]
+                    self.fake_param = votes[3]
+                    # print(self.fake_param)
+                else:
+                    self.votes = votes
+                    self.num_candidates = len(votes[0])
+                    self.num_voters = len(votes)
+                    self.election_model = election_model
+                    self.potes = self.votes_to_potes()
             else:
-                self.votes = votes
-                self.num_candidates = len(votes[0])
-                self.num_voters = len(votes)
-                self.election_model = election_model
-                self.potes = self.votes_to_potes()
-        else:
-            self.fake = check_if_fake(experiment_id, election_id)
-            if self.fake:
-                self.election_model, self.fake_param, self.num_voters, \
-                    self.num_candidates = import_fake_elections(experiment_id, election_id)
+                self.fake = check_if_fake(experiment_id, election_id)
+                if self.fake:
+                    self.election_model, self.fake_param, self.num_voters, \
+                        self.num_candidates = import_fake_elections(experiment_id, election_id)
+                else:
+                    self.votes, self.num_voters, self.num_candidates, self.param, \
+                        self.election_model = import_soc_elections(experiment_id, election_id)
+
+                    self.potes = self.votes_to_potes()
+
+            if with_matrix:
+                self.matrix = self.import_matrix()
+                self.vectors = self.matrix.transpose()
             else:
-                self.votes, self.num_voters, self.num_candidates, self.param, \
-                    self.election_model = import_soc_elections(experiment_id, election_id)
+                self.votes_to_positionwise_vectors()
 
-                self.potes = self.votes_to_potes()
-
-        if with_matrix:
-            self.matrix = self.import_matrix()
-            self.vectors = self.matrix.transpose()
-        else:
-            self.votes_to_positionwise_vectors()
+        elif ballot == 'approval':
+            self.votes = votes
+            self.election_model = election_model
 
     def import_matrix(self):
 
@@ -100,6 +105,21 @@ class Election:
             return self.matrix
         else:
             return self.votes_to_positionwise_matrix()
+
+    def votes_to_approval_frequency_vector(self):
+
+        approval_frequency_vector = np.zeros([self.num_candidates])
+
+        for vote_id in self.votes:
+            for c in self.votes[vote_id]:
+                approval_frequency_vector[c] += 1
+
+        for c in range(self.num_candidates):
+            approval_frequency_vector[c] /= self.num_voters
+
+        approval_frequency_vector = sorted(approval_frequency_vector)
+
+        return approval_frequency_vector
 
     def votes_to_positionwise_vectors(self):
 

@@ -75,8 +75,7 @@ class Experiment:
 
         if elections is not None:
             if elections == 'import':
-                self.elections = self.add_elections_to_experiment(
-                    with_matrices=with_matrices)
+                self.elections = self.add_elections_to_experiment(with_matrices=with_matrices)
             else:
                 self.elections = elections
 
@@ -102,8 +101,7 @@ class Experiment:
         self.default_num_voters = num_voters
 
     def add_election(self, election_model="none", params=None, label=None,
-                     color="black", alpha=1., show=True, marker='x',
-                     starting_from=0, size=1,
+                     color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
                      num_candidates=None, num_voters=None, election_id=None):
         """ Add election to the experiment """
 
@@ -189,8 +187,7 @@ class Experiment:
             self.elections = {}
 
         if self.store:
-            path = os.path.join(os.getcwd(), "experiments",
-                                self.experiment_id, "elections")
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
             for file_name in os.listdir(path):
                 os.remove(os.path.join(path, file_name))
 
@@ -294,24 +291,12 @@ class Experiment:
             os.mkdir(os.path.join(os.getcwd(), "trash"))
 
         try:
-            os.mkdir(
-                os.path.join(os.getcwd(), "experiments", self.experiment_id))
-
-            os.mkdir(
-                os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                             "distances"))
-            os.mkdir(
-                os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                             "features"))
-            os.mkdir(
-                os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                             "coordinates"))
-            os.mkdir(
-                os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                             "elections"))
-            os.mkdir(
-                os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                             "matrices"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "features"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices"))
 
             # PREPARE MAP.CSV FILE
 

@@ -5,6 +5,36 @@ import numpy as np
 import math
 
 
+def generate_approval_2d_disc_elections(election_model=None, num_voters=None,
+                                          num_candidates=None):
+    """ helper function: generate simple approval 2d elections"""
+
+    threshold = 0.25
+    election_model = "2d_disc"
+
+    voters = [[0, 0] for _ in range(num_voters)]
+    candidates = [[0, 0] for _ in range(num_candidates)]
+
+    votes = {}
+    for i in range(num_voters):
+        votes[i] = set()
+
+    for j in range(num_voters):
+        voters[j] = get_rand(election_model)
+    voters = sorted(voters)
+
+    for j in range(num_candidates):
+        candidates[j] = get_rand(election_model)
+    candidates = sorted(candidates)
+
+    for j in range(num_voters):
+        for k in range(num_candidates):
+            if distance(2, voters[j], candidates[k]) < threshold:
+                votes[j].add(k)
+
+    return votes
+
+
 def generate_1d_gaussian_party(election_model=None, num_voters=None,
                            num_candidates=None, params=None):
     if params is None:
@@ -331,6 +361,7 @@ def get_rand(elections_model, cat="voters"):
         print('unknown model')
         point = [0, 0]
     return point
+
 
 def distance(dim, x_1, x_2):
     """ compute distance between two points """

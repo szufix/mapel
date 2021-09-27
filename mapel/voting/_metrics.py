@@ -12,6 +12,7 @@ import mapel.voting._elections as el
 import csv
 
 from mapel.voting.metrics import main_distances as md
+from mapel.voting.metrics import main_approval_distances as mad
 
 
 # MAIN FUNCTIONS
@@ -32,6 +33,7 @@ def get_distance(election_1, election_2, distance_name=''):
         'pairwise': md.compute_pairwise_distance,
         'voterlikeness': md.compute_voterlikeness_distance,
         'agg_voterlikeness': md.compute_agg_voterlikeness_distance,
+        'approval_frequency': mad.compute_approval_frequency,
     }
 
     if main_distance in metrics_without_params:
@@ -62,8 +64,7 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
         distance, matching = get_distance(experiment.elections[election_id_1],
                                 experiment.elections[election_id_2],
                                 distance_name=experiment.distance_name)
-        # print(election_id_1, election_id_2, distance, matching)
-        # print(election_id_1)
+
         matchings[election_id_1][election_id_2] = matching
         matchings[election_id_2][election_id_1] = _minus_one(matching)
         distances[election_id_1][election_id_2] = distance

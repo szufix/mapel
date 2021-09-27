@@ -438,6 +438,10 @@ def basic_background(ax=None, values=None, legend=None, saveas=None,
         else:
             plt.savefig(file_name, bbox_inches='tight')
 
+    elif legend:
+        ax.legend()
+
+
 
 def saveas_tex(saveas=None):
     import tikzplotlib

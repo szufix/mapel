@@ -3,8 +3,18 @@ import numpy as np
 import math
 
 
-def generate_impartial_anonymous_culture_election(num_voters=None,
-                                                  num_candidates=None):
+def generate_approval_ic_election(num_voters=None, num_candidates=None, params=None):
+    votes = {}
+    for i in range(num_voters):
+        vote = set()
+        for j in range(num_candidates):
+            if rand.random() <= params['p']:
+                vote.add(j)
+        votes[str(i)] = vote
+    return votes
+
+
+def generate_impartial_anonymous_culture_election(num_voters=None, num_candidates=None):
     alpha = 1. / math.factorial(num_candidates)
 
     votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]

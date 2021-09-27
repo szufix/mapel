@@ -63,3 +63,5 @@ PATHS = {'unid', 'stan', 'anid', 'stid', 'anun', 'stun',
 
 PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
                 'walsh_party', 'conitzer_party', 'mallows_party'}
+
+APPROVAL_MODELS = {'approval_ic', 'approval_2d_disc'}

@@ -7,15 +7,15 @@ from mapel.voting.elections.mallows import generate_mallows_election, \
 from mapel.voting.elections.euclidean import generate_elections_1d_simple, \
     generate_elections_2d_simple, generate_elections_nd_simple, \
     generate_elections_2d_grid, generate_2d_gaussian_party, get_rand, \
-    generate_1d_gaussian_party
+    generate_1d_gaussian_party, generate_approval_2d_disc_elections
 from mapel.voting.elections.single_peaked import generate_conitzer_election, \
     generate_walsh_election, generate_spoc_conitzer_election, \
     generate_sp_party
 from mapel.voting.elections.single_crossing import \
     generate_single_crossing_election
-from mapel.voting.elections.impartial import \
-    generate_impartial_culture_election, \
-    generate_impartial_anonymous_culture_election, generate_ic_party
+from mapel.voting.elections.impartial import generate_impartial_culture_election, \
+    generate_impartial_anonymous_culture_election, generate_ic_party, \
+    generate_approval_ic_election
 from mapel.voting.elections.guardians import \
     generate_real_antagonism_election, \
     generate_real_identity_election, generate_real_stratification_election, \
@@ -33,11 +33,27 @@ from mapel.voting.objects.Election import Election
 
 import mapel.voting.elections.preflib as preflib
 
-from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, PARTY_MODELS
+from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, PARTY_MODELS, \
+    APPROVAL_MODELS
 
 
 def generate_approval_votes(election_model=None, num_candidates=None, num_voters=None, params=None):
-    votes = []
+
+    euclidean_models = {'approval_2d_disc': generate_approval_2d_disc_elections}
+
+    models = {'approval_ic': generate_approval_ic_election}
+
+    if election_model in models:
+        votes = models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
+                                           params=params)
+    elif election_model in euclidean_models:
+        votes = euclidean_models.get(election_model)(election_model=election_model,
+                                           num_voters=num_voters, num_candidates=num_candidates)
+
+    else:
+        votes = []
+        print("No such election model!", election_model)
+
     return votes
 
 
@@ -208,7 +224,8 @@ def generate_elections(experiment=None, election_model=None, election_id=None, n
     election = Election("virtual", "virtual", votes=votes,
                         election_model=election_model,
                         num_candidates=num_candidates,
-                        num_voters=num_voters)
+                        num_voters=num_voters,
+                        ballot=ballot)
 
     experiment.elections[election_id] = election
 
@@ -280,7 +297,6 @@ def generate_elections(experiment=None, election_model=None, election_id=None, n
                             file_.write(", ")
                         else:
                             file_.write("\n")
-
 
     return experiment.elections[election_id]
 
@@ -424,8 +440,12 @@ def prepare_parties(experiment=None, election_model=None,
 
 
 def prepare_statistical_culture_family(experiment=None, election_model=None, family_id=None,
-                                       params=None, ballot='ordinal'):
+                                       params=None):
     keys = []
+    ballot = 'ordinal'
+
+    if election_model in APPROVAL_MODELS:
+        ballot = 'approval'
 
     if election_model in PARTY_MODELS:
         params['party'] = prepare_parties(experiment=experiment, params=params,
