@@ -165,3 +165,27 @@ def generate_mallows_party(num_voters=None, num_candidates=None,
 
     return new_votes
 
+
+def generate_approval_mallows_election(num_voters=None, num_candidates=None, params=None):
+    # central_vote = set()
+    # for c in range(num_candidates):
+    #     if rand.random() <= params['p']:
+    #         central_vote.add(c)
+    k = int(params['p']*num_candidates)
+    central_vote = {i for i in range(k)}
+
+    votes = [0 for _ in range(num_voters)]
+    for v in range(num_voters):
+        vote = set()
+        for c in range(num_candidates):
+            if rand.random() <= params['phi']:
+                if rand.random() <= params['p']:
+                    vote.add(c)
+            else:
+                if c in central_vote:
+                    vote.add(c)
+        votes[v] = vote
+
+    return votes
+
+

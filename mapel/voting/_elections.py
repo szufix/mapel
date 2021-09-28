@@ -2,12 +2,16 @@
 """ this module is used to generate and import elections"""
 
 from mapel.voting.elections.group_separable import generate_group_separable_election
+
 from mapel.voting.elections.mallows import generate_mallows_election, \
-    phi_from_relphi, generate_mallows_party
+    phi_from_relphi, generate_mallows_party, generate_approval_mallows_election
+
 from mapel.voting.elections.euclidean import generate_elections_1d_simple, \
     generate_elections_2d_simple, generate_elections_nd_simple, \
     generate_elections_2d_grid, generate_2d_gaussian_party, get_rand, \
-    generate_1d_gaussian_party, generate_approval_2d_disc_elections
+    generate_1d_gaussian_party, \
+    generate_approval_2d_disc_elections, generate_approval_1d_interval_elections
+
 from mapel.voting.elections.single_peaked import generate_conitzer_election, \
     generate_walsh_election, generate_spoc_conitzer_election, \
     generate_sp_party
@@ -15,7 +19,8 @@ from mapel.voting.elections.single_crossing import \
     generate_single_crossing_election
 from mapel.voting.elections.impartial import generate_impartial_culture_election, \
     generate_impartial_anonymous_culture_election, generate_ic_party, \
-    generate_approval_ic_election
+    generate_approval_ic_election, generate_approval_id_election
+
 from mapel.voting.elections.guardians import \
     generate_real_antagonism_election, \
     generate_real_identity_election, generate_real_stratification_election, \
@@ -34,14 +39,34 @@ from mapel.voting.objects.Election import Election
 import mapel.voting.elections.preflib as preflib
 
 from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, PARTY_MODELS, \
-    APPROVAL_MODELS
+    APPROVAL_MODELS, GRAPH_MODELS
+
+import networkx as nx
+
+
+def generate_graph(election_model=None, num_voters=None, num_candidates=None, params=None):
+
+    if election_model == 'erdos_renyi_graph':
+        return nx.erdos_renyi_graph(params['n'], params['p'])
+    elif election_model == 'watts_strogatz_graph':
+        return nx.watts_strogatz_graph(params['n'], params['k'], params['p'])
+    elif election_model == 'barabasi_albert_graph':
+        return nx.barabasi_albert_graph(params['n'], params['m'])
+    elif election_model == 'random_geometric_graph':
+        return nx.random_geometric_graph(params['n'], params['radius'])
+    elif election_model == 'random_tree':
+        return nx.random_tree(params['n'])
+
 
 
 def generate_approval_votes(election_model=None, num_candidates=None, num_voters=None, params=None):
 
-    euclidean_models = {'approval_2d_disc': generate_approval_2d_disc_elections}
+    euclidean_models = {'approval_2d_disc': generate_approval_2d_disc_elections,
+                        'approval_1d_interval': generate_approval_1d_interval_elections}
 
-    models = {'approval_ic': generate_approval_ic_election}
+    models = {'approval_ic': generate_approval_ic_election,
+              'approval_mallows': generate_approval_mallows_election,
+              'approval_id': generate_approval_id_election,}
 
     if election_model in models:
         votes = models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
@@ -217,6 +242,12 @@ def generate_elections(experiment=None, election_model=None, election_id=None, n
         votes = generate_approval_votes(election_model=election_model,
                                num_candidates=num_candidates,
                                num_voters=num_voters, params=params)
+
+    elif ballot == 'graph':
+        votes = generate_graph(election_model=election_model,
+                                        num_candidates=num_candidates,
+                                        num_voters=num_voters, params=params)
+
     else:
         print("Such ballot does not exist!")
         votes = []
@@ -446,6 +477,9 @@ def prepare_statistical_culture_family(experiment=None, election_model=None, fam
 
     if election_model in APPROVAL_MODELS:
         ballot = 'approval'
+
+    if election_model in GRAPH_MODELS:
+        ballot = 'graph'
 
     if election_model in PARTY_MODELS:
         params['party'] = prepare_parties(experiment=experiment, params=params,

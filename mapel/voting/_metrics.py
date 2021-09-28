@@ -11,38 +11,90 @@ import mapel.voting._elections as el
 
 import csv
 
-from mapel.voting.metrics import main_distances as md
+from mapel.voting.metrics import main_ordinal_distances as mod
 from mapel.voting.metrics import main_approval_distances as mad
+
+from mapel.voting.metrics.inner_distances import l1
+
+import networkx as nx
+
+
+def my_closeness_centrality(election_1, election_2):
+
+    g1 = nx.closeness_centrality(election_1.votes)
+    g2 = nx.closeness_centrality(election_2.votes)
+    v1 = sorted(list(g1.values()))
+    v2 = sorted(list(g2.values()))
+    return l1(v1, v2), None
+
+
+def my_degree_centrality(election_1, election_2):
+
+    g1 = nx.degree_centrality(election_1.votes)
+    g2 = nx.degree_centrality(election_2.votes)
+    v1 = sorted(list(g1.values()))
+    v2 = sorted(list(g2.values()))
+    return l1(v1, v2), None
+
+
+def my_betweenness_centrality(election_1, election_2):
+
+    g1 = nx.betweenness_centrality(election_1.votes)
+    g2 = nx.betweenness_centrality(election_2.votes)
+    v1 = sorted(list(g1.values()))
+    v2 = sorted(list(g2.values()))
+    return l1(v1, v2), None
+
+
+def my_eigenvector_centrality(election_1, election_2):
+
+    g1 = nx.betweenness_centrality(election_1.votes)
+    g2 = nx.betweenness_centrality(election_2.votes)
+    v1 = sorted(list(g1.values()))
+    v2 = sorted(list(g2.values()))
+    return l1(v1, v2), None
 
 
 # MAIN FUNCTIONS
 def get_distance(election_1, election_2, distance_name=''):
     """ Main function """
+
+    graph_metrics = {
+        'closeness_centrality': my_closeness_centrality,
+        'degree_centrality': my_degree_centrality,
+        'betweenness_centrality': my_betweenness_centrality,
+        'eigenvector_centrality': my_eigenvector_centrality,
+    }
+
+    if distance_name in graph_metrics:
+        return graph_metrics.get(distance_name)(election_1, election_2)
+
+    ############################################################################
     inner_distance, main_distance = distance_name.split('-')
 
     metrics_without_params = {
-        'discrete': md.compute_voter_subelection,
-        'voter_subelection': md.compute_voter_subelection,
-        'candidate_subelection': md.compute_candidate_subelection,
-        'spearman': md.compute_spearman_distance,
+        'discrete': mod.compute_voter_subelection,
+        'voter_subelection': mod.compute_voter_subelection,
+        'candidate_subelection': mod.compute_candidate_subelection,
+        'spearman': mod.compute_spearman_distance,
     }
 
     metrics_with_inner_distance = {
-        'positionwise': md.compute_positionwise_distance,
-        'bordawise': md.compute_bordawise_distance,
-        'pairwise': md.compute_pairwise_distance,
-        'voterlikeness': md.compute_voterlikeness_distance,
-        'agg_voterlikeness': md.compute_agg_voterlikeness_distance,
+        'positionwise': mod.compute_positionwise_distance,
+        'bordawise': mod.compute_bordawise_distance,
+        'pairwise': mod.compute_pairwise_distance,
+        'voterlikeness': mod.compute_voterlikeness_distance,
+        'agg_voterlikeness': mod.compute_agg_voterlikeness_distance,
         'approval_frequency': mad.compute_approval_frequency,
+        'coapproval_frequency_vectors': mad.compute_cooparoval_frequency_vectors,
     }
 
+
     if main_distance in metrics_without_params:
-        return metrics_without_params.get(main_distance)(election_1,
-                                                         election_2)
+        return metrics_without_params.get(main_distance)(election_1, election_2)
 
     elif main_distance in metrics_with_inner_distance:
-        return metrics_with_inner_distance.get(main_distance)(election_1,
-                                                              election_2,
+        return metrics_with_inner_distance.get(main_distance)(election_1, election_2,
                                                               inner_distance)
 
 

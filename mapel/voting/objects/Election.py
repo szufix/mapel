@@ -69,7 +69,7 @@ class Election:
             else:
                 self.votes_to_positionwise_vectors()
 
-        elif ballot == 'approval':
+        elif ballot in ['approval', 'graph']:
             self.votes = votes
             self.election_model = election_model
 
@@ -110,8 +110,8 @@ class Election:
 
         approval_frequency_vector = np.zeros([self.num_candidates])
 
-        for vote_id in self.votes:
-            for c in self.votes[vote_id]:
+        for vote in self.votes:
+            for c in vote:
                 approval_frequency_vector[c] += 1
 
         for c in range(self.num_candidates):
@@ -120,6 +120,19 @@ class Election:
         approval_frequency_vector = sorted(approval_frequency_vector)
 
         return approval_frequency_vector
+
+    def votes_to_cooparoval_frequency_vectors(self):
+        vectors = np.zeros([self.num_candidates, self.num_candidates*2])
+
+        for vote in self.votes:
+            size = len(vote)
+            for c in range(self.num_candidates):
+                if c in vote:
+                    vectors[c][size] += 1
+                else:
+                    vectors[c][self.num_candidates + size] += 1
+
+        return vectors
 
     def votes_to_positionwise_vectors(self):
 

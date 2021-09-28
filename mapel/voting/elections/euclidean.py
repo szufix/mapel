@@ -5,6 +5,34 @@ import numpy as np
 import math
 
 
+def generate_approval_1d_interval_elections(election_model=None, num_voters=None,
+                                          num_candidates=None):
+    """ helper function: generate simple approval 2d elections"""
+
+    threshold = 0.125
+    election_model = "1d_interval"
+
+    voters = [0 for _ in range(num_voters)]
+    candidates = [0 for _ in range(num_candidates)]
+
+    votes = [set() for _ in range(num_voters)]
+
+    for j in range(num_voters):
+        voters[j] = get_rand(election_model)
+    voters = sorted(voters)
+
+    for j in range(num_candidates):
+        candidates[j] = get_rand(election_model)
+    candidates = sorted(candidates)
+
+    for j in range(num_voters):
+        for k in range(num_candidates):
+            if distance(1, voters[j], candidates[k]) < threshold:
+                votes[j].add(k)
+
+    return votes
+
+
 def generate_approval_2d_disc_elections(election_model=None, num_voters=None,
                                           num_candidates=None):
     """ helper function: generate simple approval 2d elections"""
@@ -15,9 +43,7 @@ def generate_approval_2d_disc_elections(election_model=None, num_voters=None,
     voters = [[0, 0] for _ in range(num_voters)]
     candidates = [[0, 0] for _ in range(num_candidates)]
 
-    votes = {}
-    for i in range(num_voters):
-        votes[i] = set()
+    votes = [set() for _ in range(num_voters)]
 
     for j in range(num_voters):
         voters[j] = get_rand(election_model)
@@ -367,7 +393,7 @@ def distance(dim, x_1, x_2):
     """ compute distance between two points """
 
     if dim == 1:
-        return abs(x_1[0] - x_2[0])
+        return abs(x_1 - x_2)
 
     output = 0.
     for i in range(dim):

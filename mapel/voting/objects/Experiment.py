@@ -194,7 +194,6 @@ class Experiment:
             for family_id in self.families:
                 params = self.families[family_id].params
                 election_model = self.families[family_id].election_model
-                ballot = self.families[family_id].ballot
 
                 if election_model in preflib.LIST_OF_PREFLIB_MODELS:
                     _elections.prepare_preflib_family(
@@ -202,7 +201,7 @@ class Experiment:
                 else:
                     _elections.prepare_statistical_culture_family(
                         experiment=self, election_model=election_model,
-                        family_id=family_id, params=params, ballot=ballot)
+                        family_id=family_id, params=params)
 
     def compute_winners(self, method=None, num_winners=1):
         for election_id in self.elections:

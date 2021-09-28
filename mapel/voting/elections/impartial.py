@@ -4,13 +4,13 @@ import math
 
 
 def generate_approval_ic_election(num_voters=None, num_candidates=None, params=None):
-    votes = {}
+    votes = [0 for _ in range(num_voters)]
     for i in range(num_voters):
         vote = set()
         for j in range(num_candidates):
             if rand.random() <= params['p']:
                 vote.add(j)
-        votes[str(i)] = vote
+        votes[i] = vote
     return votes
 
 
@@ -64,3 +64,8 @@ def generate_ic_party(num_voters=None, num_candidates=None, params=None,
     return new_votes
 
 
+def generate_approval_id_election(num_voters=None, num_candidates=None, params=None):
+    k = int(params['p']*num_candidates)
+    vote = {i for i in range(k)}
+    votes = [vote for _ in range(num_voters)]
+    return votes
