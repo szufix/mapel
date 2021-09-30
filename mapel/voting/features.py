@@ -45,7 +45,6 @@ def borda_std(election):
     return std
 
 
-
 def separation(election):
 
     if election.fake:

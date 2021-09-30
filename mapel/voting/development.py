@@ -220,7 +220,7 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
 def prepare_experiment(experiment_id=None, elections=None, distances=None,
                        coordinates=None, distance_name='emd-positionwise'):
     return Experiment("virtual", experiment_id=experiment_id, elections=elections,
-                      distances=distances,coordinates=coordinates, distance_name=distance_name)
+                      distances=distances, coordinates=coordinates, distance_name=distance_name)
 
 
 def generate_experiment(elections=None):

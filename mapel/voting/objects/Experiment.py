@@ -126,7 +126,8 @@ class Experiment:
 
     def add_family(self, election_model="none", params=None, size=1, label=None, color="black",
                    alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,
-                   num_voters=None, family_id=None, single_election=False):
+                   num_voters=None, family_id=None, single_election=False,
+                   path=None):
         """ Add family of elections to the experiment """
 
         if num_candidates is None:
@@ -161,7 +162,7 @@ class Experiment:
                                           show=show, size=size, marker=marker,
                                           starting_from=starting_from,
                                           num_candidates=num_candidates,
-                                          num_voters=num_voters,
+                                          num_voters=num_voters, path=path,
                                           single_election=single_election)
 
         self.num_families = len(self.families)
@@ -302,8 +303,7 @@ class Experiment:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "map.csv")
             with open(path, 'w') as file_csv:
-                file_csv.write(
-                    "size;num_candidates;num_voters;election_model;params;"
+                file_csv.write("size;num_candidates;num_voters;election_model;params;"
                     "color;alpha;label;marker;show\n")
                 file_csv.write(
                     "3;10;100;impartial_culture;{};black;1;"
@@ -318,10 +318,8 @@ class Experiment:
                 file_csv.write("3;10;100;2d_disc;{};Green;1;2D Disc;o;t\n")
                 file_csv.write("3;10;100;3d_cube;{};ForestGreen;0.7;3D Cube;o;t\n")
                 file_csv.write("3;10;100;2d_sphere;{};black;0.2;2D Sphere;o;t\n")
-                file_csv.write(
-                    "3;10;100;3d_sphere;{};black;0.4;3D Sphere;o;t\n")
-                file_csv.write(
-                    "3;10;100;urn_model;{'alpha':0.1};yellow;1;"
+                file_csv.write("3;10;100;3d_sphere;{};black;0.4;3D Sphere;o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;"
                     "Urn model 0.1;o;t\n")
                 file_csv.write(
                     "3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;"
@@ -333,21 +331,15 @@ class Experiment:
                     "3;10;100;norm-mallows;{'norm-phi':0};cyan;1;"
                     "Norm-Mallows (uniform);o;t\n")
                 file_csv.write("1;10;100;identity;{};blue;1;Identity;x;t\n")
-                file_csv.write(
-                    "1;10;100;uniformity;{};black;1;Uniformity;x;t\n")
+                file_csv.write("1;10;100;uniformity;{};black;1;Uniformity;x;t\n")
                 file_csv.write("1;10;100;antagonism;{};red;1;Antagonism;x;t\n")
-                file_csv.write(
-                    "1;10;100;stratification;{};green;1;Stratification;x;t\n")
-                file_csv.write(
-                    "1;10;100;walsh_matrix;{};olivedrab;1;Walsh Matrix;x;t\n")
-                file_csv.write(
-                    "1;10;100;conitzer_matrix;{};limegreen;1;"
+                file_csv.write("1;10;100;stratification;{};green;1;Stratification;x;t\n")
+                file_csv.write("1;10;100;walsh_matrix;{};olivedrab;1;Walsh Matrix;x;t\n")
+                file_csv.write("1;10;100;conitzer_matrix;{};limegreen;1;"
                     "Conitzer Matrix;x;t\n")
-                file_csv.write(
-                    "1;10;100;single-crossing_matrix;{};purple;0.6;"
+                file_csv.write("1;10;100;single-crossing_matrix;{};purple;0.6;"
                     "Single-Crossing Matrix;x;t\n")
-                file_csv.write(
-                    "1;10;100;gs_caterpillar_matrix;{};green;1;"
+                file_csv.write("1;10;100;gs_caterpillar_matrix;{};green;1;"
                     "GS Caterpillar Matrix;x;t\n")
                 file_csv.write("3;10;100;unid;{};blue;1;UNID;3;f\n")
                 file_csv.write("3;10;100;anid;{};black;1;ANID;3;f\n")

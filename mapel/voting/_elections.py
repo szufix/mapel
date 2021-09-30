@@ -8,7 +8,7 @@ from mapel.voting.elections.mallows import generate_mallows_election, \
 
 from mapel.voting.elections.euclidean import generate_elections_1d_simple, \
     generate_elections_2d_simple, generate_elections_nd_simple, \
-    generate_elections_2d_grid, generate_2d_gaussian_party, get_rand, \
+    generate_elections_2d_grid, generate_2d_gaussian_party, \
     generate_1d_gaussian_party, \
     generate_approval_2d_disc_elections, generate_approval_1d_interval_elections
 
@@ -43,7 +43,6 @@ from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, PARTY_M
 
 import networkx as nx
 
-
 def generate_graph(election_model=None, num_nodes=None, params=None):
     non_params_graphs = {'cycle_graph': nx.cycle_graph,
                          'wheel_graph': nx.wheel_graph,
@@ -64,7 +63,6 @@ def generate_graph(election_model=None, num_nodes=None, params=None):
         return nx.barabasi_albert_graph(num_nodes, params['m'])
     elif election_model == 'random_geometric_graph':
         return nx.random_geometric_graph(num_nodes, params['radius'])
-
 
 
 def generate_approval_votes(election_model=None, num_candidates=None, num_voters=None, params=None):
@@ -219,7 +217,7 @@ def generate_ordinal_votes(election_model=None, num_candidates=None, num_voters=
 
 # GENERATE
 def generate_elections(experiment=None, election_model=None, election_id=None, num_candidates=None,
-                       num_voters=None, params=None, ballot='ordinal'):
+                       num_voters=None, params=None, ballot='ordinal', param_name=None):
     """ main function: generate elections """
 
     if params is None:
@@ -241,9 +239,11 @@ def generate_elections(experiment=None, election_model=None, election_id=None, n
         params['norm-phi'] = params['alpha']
         params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
-    if election_model == 'erdos_renyi_graph_path':
-        params['p'] = params['alpha']
-        alpha = params['p']
+    if election_model == 'erdos_renyi_graph' and params['p'] is None:
+        params['p'] = rand.random()
+
+    if param_name is not None:
+        alpha = params[param_name]
 
     if 'weight' not in params:
         params['weight'] = 0.
@@ -448,18 +448,17 @@ def _get_params_for_crate(j):
     return params
 
 
-def _get_params_for_paths(experiment, family_id, j, copy_param_1=4):
-    params = {}
-    if copy_param_1 == 0:  # with both
-        params['alpha'] = j / (experiment.families[family_id].size - 1)
-    elif copy_param_1 == 1:  # without first (which is last)
-        params['alpha'] = j / experiment.families[family_id].size
-    elif copy_param_1 == 2:  # without second (which is first)
-        params['alpha'] = (j + 1) / experiment.families[family_id].size
-    elif copy_param_1 == 4:  # without both
-        params['alpha'] = (j + 1) / (experiment.families[family_id].size + 1)
+def _get_params_for_paths(experiment, family_id, j, with_extremes=False):
 
-    return params
+    param_name = experiment.families[family_id].path['param_name']
+
+    params = {}
+    if with_extremes:
+        params[param_name] = j / (experiment.families[family_id].size - 1)
+    elif not with_extremes:
+        params[param_name] = (j + 1) / (experiment.families[family_id].size + 1)
+
+    return params, param_name
 
 
 def prepare_parties(experiment=None, election_model=None,
@@ -497,8 +496,9 @@ def prepare_statistical_culture_family(experiment=None, election_model=None, fam
 
     for j in range(experiment.families[family_id].size):
 
-        if election_model in PATHS:
-            new_params = _get_params_for_paths(experiment, family_id, j)
+        param_name = None
+        if experiment.families[family_id].path is not None:
+            new_params, param_name = _get_params_for_paths(experiment, family_id, j)
             params = {**params, **new_params}
 
         if election_model in {'crate'}:
@@ -514,7 +514,7 @@ def prepare_statistical_culture_family(experiment=None, election_model=None, fam
             experiment=experiment, election_model=election_model,
             election_id=election_id, num_voters=experiment.families[family_id].num_voters,
             num_candidates=experiment.families[family_id].num_candidates,
-            params=copy.deepcopy(params), ballot=ballot)
+            params=copy.deepcopy(params), ballot=ballot, param_name=param_name)
 
         keys.append(election_id)
 

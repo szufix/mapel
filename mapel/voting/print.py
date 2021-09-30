@@ -312,7 +312,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
     for family_id in experiment.families:
         if experiment.families[family_id].show:
             if dim == 2:
-                if family_id == 'erdos_path':
+                if '_path' in family_id:
                     for i in range(experiment.families[family_id].size):
                         election_id = experiment.families[family_id].election_ids[i]
                         alpha = experiment.elections[election_id].alpha

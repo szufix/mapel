@@ -6,7 +6,7 @@ class Family:
     def __init__(self, election_model="none", family_id='none', params=None,
                  size=1, label="none", color="black", alpha=1., show=True, marker='o',
                  starting_from=0, num_candidates=None, num_voters=None, single_election=False,
-                 election_ids=None, ballot='ordinal'):
+                 election_ids=None, ballot='ordinal', path=None):
 
         if params is None:
             params = {}
@@ -28,3 +28,4 @@ class Family:
         self.single_election = single_election
         self.election_ids = election_ids
         self.ballot = ballot
+        self.path = path
