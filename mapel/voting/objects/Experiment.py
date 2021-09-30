@@ -530,7 +530,7 @@ class Experiment:
             self.print_map_3d(**kwargs)
 
     def print_map_2d(self, mask=False, mixed=False, fuzzy_paths=True,
-                     xlabel=None,
+                     xlabel=None, shading=False,
                      angle=0, reverse=False, update=False, feature=None,
                      attraction_factor=1, axis=False,
                      distance_name="emd-positionwise", guardians=False,
@@ -609,7 +609,10 @@ class Experiment:
                 pr.add_skeleton(experiment=self, skeleton=skeleton, ax=ax)
                 pr.add_roads(experiment=self, roads=roads, ax=ax)
             else:
-                pr.basic_coloring(experiment=self, ax=ax, ms=ms, dim=dim)
+                if shading:
+                    pr.basic_coloring_with_shading(experiment=self, ax=ax, ms=ms, dim=dim)
+                else:
+                    pr.basic_coloring(experiment=self, ax=ax, ms=ms, dim=dim)
 
 
         # BACKGROUND

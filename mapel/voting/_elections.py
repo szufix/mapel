@@ -44,36 +44,44 @@ from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, PARTY_M
 import networkx as nx
 
 
-def generate_graph(election_model=None, num_voters=None, num_candidates=None, params=None):
+def generate_graph(election_model=None, num_nodes=None, params=None):
+    non_params_graphs = {'cycle_graph': nx.cycle_graph,
+                         'wheel_graph': nx.wheel_graph,
+                         'star_graph': nx.star_graph,
+                         'ladder_graph': nx.ladder_graph,
+                         'circular_ladder_graph': nx.circular_ladder_graph,
+                         'random_tree': nx.random_tree,
+                         }
 
-    if election_model == 'erdos_renyi_graph':
-        return nx.erdos_renyi_graph(params['n'], params['p'])
+    if election_model in non_params_graphs:
+        return non_params_graphs[election_model](num_nodes)
+
+    elif election_model in ['erdos_renyi_graph', 'erdos_renyi_graph_path']:
+        return nx.erdos_renyi_graph(num_nodes, params['p'])
     elif election_model == 'watts_strogatz_graph':
-        return nx.watts_strogatz_graph(params['n'], params['k'], params['p'])
+        return nx.watts_strogatz_graph(num_nodes, params['k'], params['p'])
     elif election_model == 'barabasi_albert_graph':
-        return nx.barabasi_albert_graph(params['n'], params['m'])
+        return nx.barabasi_albert_graph(num_nodes, params['m'])
     elif election_model == 'random_geometric_graph':
-        return nx.random_geometric_graph(params['n'], params['radius'])
-    elif election_model == 'random_tree':
-        return nx.random_tree(params['n'])
+        return nx.random_geometric_graph(num_nodes, params['radius'])
 
 
 
 def generate_approval_votes(election_model=None, num_candidates=None, num_voters=None, params=None):
-
     euclidean_models = {'approval_2d_disc': generate_approval_2d_disc_elections,
                         'approval_1d_interval': generate_approval_1d_interval_elections}
 
     models = {'approval_ic': generate_approval_ic_election,
               'approval_mallows': generate_approval_mallows_election,
-              'approval_id': generate_approval_id_election,}
+              'approval_id': generate_approval_id_election, }
 
     if election_model in models:
         votes = models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates,
                                            params=params)
     elif election_model in euclidean_models:
         votes = euclidean_models.get(election_model)(election_model=election_model,
-                                           num_voters=num_voters, num_candidates=num_candidates)
+                                                     num_voters=num_voters,
+                                                     num_candidates=num_candidates)
 
     else:
         votes = []
@@ -83,7 +91,6 @@ def generate_approval_votes(election_model=None, num_candidates=None, num_voters
 
 
 def generate_ordinal_votes(election_model=None, num_candidates=None, num_voters=None, params=None):
-
     if params is None:
         params = {}
 
@@ -139,7 +146,8 @@ def generate_ordinal_votes(election_model=None, num_candidates=None, num_voters=
                            'norm-mallows': generate_mallows_election, }
 
     if election_model in naked_models:
-        votes = naked_models.get(election_model)(num_voters=num_voters, num_candidates=num_candidates)
+        votes = naked_models.get(election_model)(num_voters=num_voters,
+                                                 num_candidates=num_candidates)
 
     elif election_model in euclidean_models:
         votes = euclidean_models.get(election_model)(
@@ -170,6 +178,7 @@ def generate_ordinal_votes(election_model=None, num_candidates=None, num_voters=
         votes = [[int(x) for x in row] for row in votes]
 
     return votes
+
 
 # def generate_family(**kwargs):
 #
@@ -211,11 +220,12 @@ def generate_ordinal_votes(election_model=None, num_candidates=None, num_voters=
 # GENERATE
 def generate_elections(experiment=None, election_model=None, election_id=None, num_candidates=None,
                        num_voters=None, params=None, ballot='ordinal'):
-
     """ main function: generate elections """
 
     if params is None:
         params = {}
+
+    alpha = 1
 
     if election_model == 'mallows' and params['phi'] is None:
         params['phi'] = rand.random()
@@ -231,32 +241,33 @@ def generate_elections(experiment=None, election_model=None, election_id=None, n
         params['norm-phi'] = params['alpha']
         params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
+    if election_model == 'erdos_renyi_graph_path':
+        params['p'] = params['alpha']
+        alpha = params['p']
+
     if 'weight' not in params:
         params['weight'] = 0.
 
     if ballot == 'ordinal':
         votes = generate_ordinal_votes(election_model=election_model,
-                               num_candidates=num_candidates,
-                               num_voters=num_voters, params=params)
+                                       num_candidates=num_candidates,
+                                       num_voters=num_voters, params=params)
     elif ballot == 'approval':
         votes = generate_approval_votes(election_model=election_model,
-                               num_candidates=num_candidates,
-                               num_voters=num_voters, params=params)
+                                        num_candidates=num_candidates,
+                                        num_voters=num_voters, params=params)
 
     elif ballot == 'graph':
         votes = generate_graph(election_model=election_model,
-                                        num_candidates=num_candidates,
-                                        num_voters=num_voters, params=params)
+                               num_nodes=num_candidates, params=params)
 
     else:
         print("Such ballot does not exist!")
         votes = []
 
     election = Election("virtual", "virtual", votes=votes,
-                        election_model=election_model,
-                        num_candidates=num_candidates,
-                        num_voters=num_voters,
-                        ballot=ballot)
+                        election_model=election_model, num_candidates=num_candidates,
+                        num_voters=num_voters, ballot=ballot, alpha=alpha)
 
     experiment.elections[election_id] = election
 
@@ -438,7 +449,6 @@ def _get_params_for_crate(j):
 
 
 def _get_params_for_paths(experiment, family_id, j, copy_param_1=4):
-
     params = {}
     if copy_param_1 == 0:  # with both
         params['alpha'] = j / (experiment.families[family_id].size - 1)

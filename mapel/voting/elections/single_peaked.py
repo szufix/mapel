@@ -36,7 +36,6 @@ def generate_sp_party(election_model=None, num_voters=None,
     return votes
 
 
-
 def generate_conitzer_election(num_voters=None, num_candidates=None):
     """ helper function: generate conitzer single-peaked elections """
 

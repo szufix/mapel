@@ -59,7 +59,8 @@ LIST_OF_FAKE_MODELS = {'identity', 'uniformity', 'antagonism',
                        'walsh_path', 'conitzer_path'}
 
 PATHS = {'unid', 'stan', 'anid', 'stid', 'anun', 'stun',
-         'mallows_matrix_path', 'walsh_path', 'conitzer_path'}
+         'mallows_matrix_path', 'walsh_path', 'conitzer_path',
+         'erdos_renyi_graph_path'}
 
 PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
                 'walsh_party', 'conitzer_party', 'mallows_party'}
@@ -68,6 +69,8 @@ APPROVAL_MODELS = {'approval_ic', 'approval_2d_disc', 'approval_mallows', 'appro
                    'approval_1d_interval'}
 
 GRAPH_MODELS = {'erdos_renyi_graph', 'watts_strogatz_graph', 'barabasi_albert_graph',
-                'random_geometric_graph', 'random_tree'}
+                'random_geometric_graph', 'random_tree',
+                'cycle_graph', 'wheel_graph', 'star_graph', 'ladder_graph', 'circular_ladder_graph',
+                'erdos_renyi_graph_path'}
 
 

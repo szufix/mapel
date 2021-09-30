@@ -3,6 +3,7 @@ import os
 from shutil import copyfile
 
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import numpy as np
 from PIL import Image
 
@@ -31,7 +32,6 @@ def get_values_from_file(experiment, feature, normalizing_func=None,
     if isinstance(feature, str):
         if feature in experiment.features:
             values = experiment.features[feature]
-
         else:
             values = get_values_from_csv_file(experiment, feature)
     else:
@@ -218,7 +218,7 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
             lin = np.linspace(_min, _max, 6)
             xticklabels = [np.round(lin[i], 1) for i in range(6)]
 
-        cb = fig.colorbar(images[0][0], cax=cax, orientation="horizontal",
+        cb = fig.colorbar(images[0], cax=cax, orientation="horizontal",
                           shrink=1, ticks=ticks)  # shrink not working
         cb.ax.locator_params(nbins=len(xticklabels), tight=True)
         cb.ax.tick_params(labelsize=16)
@@ -297,6 +297,47 @@ def basic_coloring(experiment=None, ax=None, ms=None, dim=2):
                            label=experiment.families[family_id].label,
                            alpha=experiment.families[family_id].alpha, s=ms,
                            marker=experiment.families[family_id].marker)
+            elif dim == 3:
+                ax.scatter(experiment.points_by_families[family_id][0],
+                           experiment.points_by_families[family_id][1],
+                           experiment.points_by_families[family_id][2],
+                           color=experiment.families[family_id].color,
+                           label=experiment.families[family_id].label,
+                           alpha=experiment.families[family_id].alpha, s=ms,
+                           marker=experiment.families[family_id].marker)
+
+
+def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
+
+    for family_id in experiment.families:
+        if experiment.families[family_id].show:
+            if dim == 2:
+                if family_id == 'erdos_path':
+                    for i in range(experiment.families[family_id].size):
+                        election_id = experiment.families[family_id].election_ids[i]
+                        alpha = experiment.elections[election_id].alpha
+                        if i == experiment.families[family_id].size - 1:
+                            ax.scatter(experiment.points_by_families[family_id][0][i],
+                                       experiment.points_by_families[family_id][1][i],
+                                       color=experiment.families[family_id].color,
+                                       label=family_id,
+                                       alpha=alpha, s=ms,
+                                       marker=experiment.families[family_id].marker)
+                        else:
+                            ax.scatter(experiment.points_by_families[family_id][0][i],
+                                       experiment.points_by_families[family_id][1][i],
+                                       color=experiment.families[family_id].color,
+                                       alpha=alpha, s=ms,
+                                       marker=experiment.families[family_id].marker)
+
+
+                else:
+                    ax.scatter(experiment.points_by_families[family_id][0],
+                               experiment.points_by_families[family_id][1],
+                               color=experiment.families[family_id].color,
+                               label=experiment.families[family_id].label,
+                               alpha=experiment.families[family_id].alpha, s=ms,
+                               marker=experiment.families[family_id].marker)
             elif dim == 3:
                 ax.scatter(experiment.points_by_families[family_id][0],
                            experiment.points_by_families[family_id][1],

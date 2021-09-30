@@ -20,16 +20,18 @@ from mapel.voting.not_in_the_package.__winners import generate_winners
 
 class Election:
 
-    def __init__(self, experiment_id, election_id, votes=None, with_matrix=False,
+    def __init__(self, experiment_id, election_id, votes=None, with_matrix=False, alpha=None,
                  election_model=None, ballot='ordinal', num_voters=None, num_candidates=None):
 
         self.experiment_id = experiment_id
         self.election_id = election_id
+        self.ballot = ballot
 
         self.num_voters = num_voters
         self.num_candidates = num_candidates
         self.winners = None
         self.alternative_winners = {}
+        self.alpha = alpha
 
         if election_model in LIST_OF_FAKE_MODELS:
             self.fake = True

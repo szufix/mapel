@@ -13,6 +13,8 @@ import mapel.voting.development as dev
 
 from mapel.voting.metrics.inner_distances import l2
 
+import networkx as nx
+
 
 # MAPPING #
 def get_feature(name):
@@ -25,6 +27,8 @@ def get_feature(name):
             'lowest_dodgson_score': lowest_dodgson_score,
             'avg_distortion_from_guardians': avg_distortion_from_guardians,
             'worst_distortion_from_guardians': worst_distortion_from_guardians,
+            'graph_diameter': graph_diameter,
+            'graph_diameter_log': graph_diameter_log,
             }.get(name)
 
 
@@ -267,3 +271,17 @@ def shapley(rgWeights, fpThold=0.5):
             wSum += w[dec]
         cDecisive[perm[dec]] += 1
     return cDecisive / sum(cDecisive)
+
+
+def graph_diameter(election):
+    try:
+        return nx.diameter(election.votes)
+    except:
+        return 100
+
+
+def graph_diameter_log(election):
+    try:
+        return math.log(nx.diameter(election.votes))
+    except:
+        return math.log(100)

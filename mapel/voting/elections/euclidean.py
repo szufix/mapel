@@ -118,7 +118,7 @@ def generate_2d_gaussian_party(election_model=None, num_voters=None,
             _id = j*params['num_winners'] + w
             # print(_id)
             candidates[_id] = [rand.gauss(params['party'][j][0], 0.1),
-                             rand.gauss(params['party'][j][1], 0.1)]
+                               rand.gauss(params['party'][j][1], 0.1)]
     # candidates = sorted(candidates)
 
     # tmp_v = np.asarray(voters).transpose()

@@ -13,63 +13,49 @@ import csv
 
 from mapel.voting.metrics import main_ordinal_distances as mod
 from mapel.voting.metrics import main_approval_distances as mad
+from mapel.voting.metrics import main_graph_distances as mgd
 
 from mapel.voting.metrics.inner_distances import l1
 
 import networkx as nx
 
 
-def my_closeness_centrality(election_1, election_2):
-
-    g1 = nx.closeness_centrality(election_1.votes)
-    g2 = nx.closeness_centrality(election_2.votes)
-    v1 = sorted(list(g1.values()))
-    v2 = sorted(list(g2.values()))
-    return l1(v1, v2), None
-
-
-def my_degree_centrality(election_1, election_2):
-
-    g1 = nx.degree_centrality(election_1.votes)
-    g2 = nx.degree_centrality(election_2.votes)
-    v1 = sorted(list(g1.values()))
-    v2 = sorted(list(g2.values()))
-    return l1(v1, v2), None
-
-
-def my_betweenness_centrality(election_1, election_2):
-
-    g1 = nx.betweenness_centrality(election_1.votes)
-    g2 = nx.betweenness_centrality(election_2.votes)
-    v1 = sorted(list(g1.values()))
-    v2 = sorted(list(g2.values()))
-    return l1(v1, v2), None
-
-
-def my_eigenvector_centrality(election_1, election_2):
-
-    g1 = nx.betweenness_centrality(election_1.votes)
-    g2 = nx.betweenness_centrality(election_2.votes)
-    v1 = sorted(list(g1.values()))
-    v2 = sorted(list(g2.values()))
-    return l1(v1, v2), None
-
-
 # MAIN FUNCTIONS
-def get_distance(election_1, election_2, distance_name=''):
+def get_distance(election_1, election_2, distance_name=None):
     """ Main function """
 
-    graph_metrics = {
-        'closeness_centrality': my_closeness_centrality,
-        'degree_centrality': my_degree_centrality,
-        'betweenness_centrality': my_betweenness_centrality,
-        'eigenvector_centrality': my_eigenvector_centrality,
+    if election_1.ballot == 'graph':
+        return get_graph_distance(election_1.votes, election_2.votes, distance_name=distance_name)
+    elif election_1.ballot == 'approval':
+        return get_approval_distance(election_1, election_2, distance_name=distance_name)
+    elif election_1.ballot == 'ordinal':
+        return get_ordinal_distance(election_1, election_2, distance_name=distance_name)
+    else:
+        print('No such ballot!')
+
+
+def get_approval_distance(election_1, election_2, distance_name=None):
+
+    inner_distance, main_distance = distance_name.split('-')
+
+    metrics_without_params = {
     }
 
-    if distance_name in graph_metrics:
-        return graph_metrics.get(distance_name)(election_1, election_2)
+    metrics_with_inner_distance = {
+        'approval_frequency': mad.compute_approval_frequency,
+        'coapproval_frequency_vectors': mad.compute_cooparoval_frequency_vectors,
+    }
 
-    ############################################################################
+    if main_distance in metrics_without_params:
+        return metrics_without_params.get(main_distance)(election_1, election_2)
+
+    elif main_distance in metrics_with_inner_distance:
+        return metrics_with_inner_distance.get(main_distance)(election_1, election_2,
+                                                              inner_distance)
+
+
+def get_ordinal_distance(election_1, election_2, distance_name=None):
+
     inner_distance, main_distance = distance_name.split('-')
 
     metrics_without_params = {
@@ -85,10 +71,7 @@ def get_distance(election_1, election_2, distance_name=''):
         'pairwise': mod.compute_pairwise_distance,
         'voterlikeness': mod.compute_voterlikeness_distance,
         'agg_voterlikeness': mod.compute_agg_voterlikeness_distance,
-        'approval_frequency': mad.compute_approval_frequency,
-        'coapproval_frequency_vectors': mad.compute_cooparoval_frequency_vectors,
     }
-
 
     if main_distance in metrics_without_params:
         return metrics_without_params.get(main_distance)(election_1, election_2)
@@ -96,6 +79,26 @@ def get_distance(election_1, election_2, distance_name=''):
     elif main_distance in metrics_with_inner_distance:
         return metrics_with_inner_distance.get(main_distance)(election_1, election_2,
                                                               inner_distance)
+
+
+def get_graph_distance(graph_1, graph_2, distance_name=''):
+
+    graph_simple_metrics = {'closeness_centrality': nx.closeness_centrality,
+                            'degree_centrality': nx.degree_centrality,
+                            'betweenness_centrality': nx.betweenness_centrality,
+                            'eigenvector_centrality': nx.eigenvector_centrality,
+                            }
+
+    graph_advanced_metrics = {
+        'graph_edit_distance': mgd.compute_graph_edit_distance,
+        'graph_histogram': mgd.compute_graph_histogram,
+    }
+
+    if distance_name in graph_simple_metrics:
+        return mgd.compute_graph_simple_metrics(graph_1, graph_2, graph_simple_metrics[distance_name])
+
+    if distance_name in graph_advanced_metrics:
+        return graph_advanced_metrics.get(distance_name)(graph_1, graph_2)
 
 
 def _minus_one(vector):
