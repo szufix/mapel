@@ -188,8 +188,8 @@ if __name__ == "__main__":
     experiment.add_family(election_model='stid', size=stid, color='gray', marker=".")
     experiment.add_family(election_model='anun', size=anun, color='gray', marker=".")
     experiment.add_family(election_model='stun', size=stun, color='gray', marker=".")
-#    experiment.add_family(election_model='unid', size=unid, color='gray', param_1=4)
-#    experiment.add_family(election_model='stan', size=stan, color='gray', param_1=4)
+#    experiment.add_family(model='unid', size=unid, color='gray', param_1=4)
+#    experiment.add_family(model='stan', size=stan, color='gray', param_1=4)
 
 
     # Single-Peaked
@@ -201,7 +201,7 @@ if __name__ == "__main__":
 
     experiment.add_election(election_model="sushi_matrix", election_id="SHI", color="green")
     experiment.add_election(election_model="2d_grid", election_id="SHI", color="magenta")
-#    experiment.add_election(election_model="single-crossing_matrix", election_id="SCR", color="gray")
+#    experiment.add_election(model="single-crossing_matrix", election_id="SCR", color="gray")
 
 
     # Mallows

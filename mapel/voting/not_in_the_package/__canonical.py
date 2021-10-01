@@ -253,7 +253,7 @@ def prepare_elections_extended(experiment_id):
 
     id_ = 800
     for i in range(30, model.num_families):
-        elections_type = model.families[i].election_model
+        elections_type = model.families[i].model
         special_1 = model.families[i].special_1
         special_2 = model.families[i].special_2
         num_elections = 1
@@ -294,7 +294,7 @@ def prepare_elections_unid(experiment_id):
     #for i in range(35, model.num_families):
     #id_ = 0
     for i in range(model.num_families):
-        elections_type = model.families[i].election_model
+        elections_type = model.families[i].model
         special_1 = model.families[i].special_1
         special_2 = model.families[i].special_2
         num_elections = 1

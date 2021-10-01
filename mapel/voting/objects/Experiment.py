@@ -43,13 +43,13 @@ COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 
 
 
 class Experiment:
-    """Abstract set of elections."""
+    """Abstract set of instances."""
 
-    def __init__(self, ignore=None, elections=None, distances=None, with_matrices=False,
+    def __init__(self, ignore=None, instances=None, distances=None, with_matrices=False,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None):
 
         self.distance_name = distance_name
-        self.elections = {}
+        self.instances = {}
         self.default_num_candidates = 10
         self.default_num_voters = 100
 
@@ -61,7 +61,7 @@ class Experiment:
         self.matchings = None
 
         self.num_families = None
-        self.num_elections = None
+        self.num_instances = None
         self.main_order = None
 
         if experiment_id is None:
@@ -73,11 +73,11 @@ class Experiment:
             self.families = self.import_controllers(ignore=ignore)
             self.attraction_factor = 1
 
-        if elections is not None:
-            if elections == 'import':
-                self.elections = self.add_elections_to_experiment(with_matrices=with_matrices)
+        if instances is not None:
+            if instances == 'import':
+                self.instances = self.add_instances_to_experiment(with_matrices=with_matrices)
             else:
-                self.elections = elections
+                self.instances = instances
 
         if distances is not None:
             if distances == 'import':
@@ -100,9 +100,9 @@ class Experiment:
     def set_default_num_voters(self, num_voters):
         self.default_num_voters = num_voters
 
-    def add_election(self, election_model="none", params=None, label=None,
+    def add_instance(self, model="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
-                     num_candidates=None, num_voters=None, election_id=None):
+                     num_candidates=None, num_voters=None, election_id=None, num_nodes=None):
         """ Add election to the experiment """
 
         if num_candidates is None:
@@ -111,24 +111,18 @@ class Experiment:
         if num_voters is None:
             num_voters = self.default_num_voters
 
-        return self.add_family(election_model=election_model,
-                               params=params,
-                               size=size,
-                               label=label,
-                               color=color,
-                               alpha=alpha, show=show,
-                               marker=marker,
-                               starting_from=starting_from,
-                               num_candidates=num_candidates,
-                               num_voters=num_voters,
-                               family_id=election_id,
-                               single_election=True)[0]
+        return self.add_family(model=model, params=params, size=size, label=label, color=color,
+                               alpha=alpha, show=show,  marker=marker, starting_from=starting_from,
+                               num_candidates=num_candidates, num_voters=num_voters,
+                               family_id=election_id, num_nodes=num_nodes, single_election=True)[0]
 
-    def add_family(self, election_model="none", params=None, size=1, label=None, color="black",
+    def add_family(self, model="none", params=None, size=1, label=None, color="black",
                    alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,
-                   num_voters=None, family_id=None, single_election=False,
-                   path=None):
-        """ Add family of elections to the experiment """
+                   num_voters=None, family_id=None, single_election=False, num_nodes=None,
+                   path=None, name=None):
+        """ Add family of instances to the experiment """
+        if name is not None:
+            family_id = name
 
         if num_candidates is None:
             num_candidates = self.default_num_candidates
@@ -140,12 +134,12 @@ class Experiment:
             self.families = {}
 
         if family_id is None:
-            family_id = election_model + '_' + str(num_candidates) + '_' + str(num_voters)
-            if election_model in {'urn_model'} and params['alpha'] is not None:
+            family_id = model + '_' + str(num_candidates) + '_' + str(num_voters)
+            if model in {'urn_model'} and params['alpha'] is not None:
                 family_id += '_' + str(float(params['alpha']))
-            elif election_model in {'mallows'} and params['phi'] is not None:
+            elif model in {'mallows'} and params['phi'] is not None:
                 family_id += '_' + str(float(params['phi']))
-            elif election_model in {'norm-mallows', 'norm-mallows_matrix'} \
+            elif model in {'norm-mallows', 'norm-mallows_matrix'} \
                     and params['norm-phi'] is not None:
                 family_id += '_' + str(float(params['norm-phi']))
 
@@ -157,23 +151,23 @@ class Experiment:
         elif label is None:
             label = family_id
 
-        self.families[family_id] = Family(election_model=election_model, family_id=family_id,
+        self.families[family_id] = Family(model=model, family_id=family_id,
                                           params=params, label=label, color=color, alpha=alpha,
                                           show=show, size=size, marker=marker,
-                                          starting_from=starting_from,
+                                          starting_from=starting_from, num_nodes=num_nodes,
                                           num_candidates=num_candidates,
                                           num_voters=num_voters, path=path,
                                           single_election=single_election)
 
         self.num_families = len(self.families)
-        self.num_elections = sum([self.families[family_id].size for family_id in self.families])
-        self.main_order = [i for i in range(self.num_elections)]
+        self.num_instances = sum([self.families[family_id].size for family_id in self.families])
+        self.main_order = [i for i in range(self.num_instances)]
 
         params = self.families[family_id].params
-        election_model = self.families[family_id].election_model
+        model = self.families[family_id].model
 
         ids = _elections.prepare_statistical_culture_family(experiment=self,
-                                                            election_model=election_model,
+                                                            model=model,
                                                             family_id=family_id,
                                                             params=copy.deepcopy(params))
 
@@ -181,49 +175,55 @@ class Experiment:
 
         return ids
 
-    def prepare_elections(self):
-        """ Prepare elections for a given experiment """
+    def add_election(self, **kwargs):
+        return self.add_instance(**kwargs)
 
-        if self.elections is None:
-            self.elections = {}
+    def add_graph(self, name=None, **kwargs):
+        return self.add_instance(election_id=name, **kwargs)
+
+    def prepare_instances(self):
+        """ Prepare instances for a given experiment """
+
+        if self.instances is None:
+            self.instances = {}
 
         if self.store:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances")
             for file_name in os.listdir(path):
                 os.remove(os.path.join(path, file_name))
 
             for family_id in self.families:
                 params = self.families[family_id].params
-                election_model = self.families[family_id].election_model
+                model = self.families[family_id].model
 
-                if election_model in preflib.LIST_OF_PREFLIB_MODELS:
-                    _elections.prepare_preflib_family(
-                        experiment=self, election_model=election_model, params=params)
+                if model in preflib.LIST_OF_PREFLIB_MODELS:
+                    _instances.prepare_preflib_family(
+                        experiment=self, model=model, params=params)
                 else:
-                    _elections.prepare_statistical_culture_family(
-                        experiment=self, election_model=election_model,
+                    _instances.prepare_statistical_culture_family(
+                        experiment=self, model=model,
                         family_id=family_id, params=params)
 
     def compute_winners(self, method=None, num_winners=1):
-        for election_id in self.elections:
-            self.elections[election_id].compute_winners(method=method, num_winners=num_winners)
+        for election_id in self.instances:
+            self.instances[election_id].compute_winners(method=method, num_winners=num_winners)
 
     def compute_alternative_winners(self, method=None, num_winners=None, num_parties=None):
-        for election_id in self.elections:
+        for election_id in self.instances:
             for party_id in range(num_parties):
-                self.elections[election_id].compute_alternative_winners(
+                self.instances[election_id].compute_alternative_winners(
                     method=method, party_id=party_id, num_winners=num_winners)
 
     def compute_distances(self, distance_name='emd-positionwise', num_threads=1,
                           self_distances=False):
-        """ Compute distances between elections (using threads) """
+        """ Compute distances between instances (using threads) """
 
         self.distance_name = distance_name
 
         matchings = {}
         distances = {}
         times = {}
-        for election_id in self.elections:
+        for election_id in self.instances:
             distances[election_id] = {}
             times[election_id] = {}
             matchings[election_id] = {}
@@ -231,8 +231,8 @@ class Experiment:
         threads = [{} for _ in range(num_threads)]
 
         ids = []
-        for i, election_1 in enumerate(self.elections):
-            for j, election_2 in enumerate(self.elections):
+        for i, election_1 in enumerate(self.instances):
+            for j, election_2 in enumerate(self.instances):
                 if i == j:
                     if self_distances:
                         ids.append((election_1, election_2))
@@ -266,8 +266,8 @@ class Experiment:
                 writer.writerow(
                     ["election_id_1", "election_id_2", "distance", "time"])
 
-                for i, election_1 in enumerate(self.elections):
-                    for j, election_2 in enumerate(self.elections):
+                for i, election_1 in enumerate(self.instances):
+                    for j, election_2 in enumerate(self.instances):
                         if i < j:
                             distance = str(distances[election_1][election_2])
                             time = str(distances[election_1][election_2])
@@ -295,7 +295,7 @@ class Experiment:
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances"))
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "features"))
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances"))
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices"))
 
             # PREPARE MAP.CSV FILE
@@ -303,7 +303,7 @@ class Experiment:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "map.csv")
             with open(path, 'w') as file_csv:
-                file_csv.write("size;num_candidates;num_voters;election_model;params;"
+                file_csv.write("size;num_candidates;num_voters;model;params;"
                     "color;alpha;label;marker;show\n")
                 file_csv.write(
                     "3;10;100;impartial_culture;{};black;1;"
@@ -350,10 +350,10 @@ class Experiment:
         except FileExistsError:
             print("Experiment already exists!")
 
-    def add_elections_to_experiment(self, with_matrices=False):
-        """ Import elections from a file """
+    def add_instances_to_experiment(self, with_matrices=False):
+        """ Import instances from a file """
 
-        elections = {}
+        instances = {}
 
         for family_id in self.families:
 
@@ -361,19 +361,19 @@ class Experiment:
             if self.families[family_id].single_election:
                 election_id = family_id
                 election = Election(self.experiment_id, election_id, with_matrix=with_matrices)
-                elections[election_id] = election
+                instances[election_id] = election
                 ids.append(str(election_id))
             else:
                 for j in range(self.families[family_id].size):
                     election_id = family_id + '_' + str(j)
                     election = Election(self.experiment_id, election_id, with_matrix=with_matrices)
-                    elections[election_id] = election
+                    instances[election_id] = election
                     ids.append(str(election_id))
 
             self.families[family_id].election_ids = ids
 
 
-        return elections
+        return instances
 
     def add_distances_to_experiment(self, distance_name=None):
         distances, times, stds = self.import_my_distances(distance_name=distance_name)
@@ -387,9 +387,9 @@ class Experiment:
               num_iterations=1000, radius=np.infty, dim=2,
               distance_name='emd-positionwise', num_neighbors=None,
               method='standard'):
-        num_elections = len(self.distances)
+        num_instances = len(self.distances)
 
-        x = np.zeros((num_elections, num_elections))
+        x = np.zeros((num_instances, num_instances))
 
         for i, election_1_id in enumerate(self.distances):
             for j, election_2_id in enumerate(self.distances):
@@ -469,9 +469,9 @@ class Experiment:
                     writer.writerow(["election_id", "x", "y", "z"])
 
                 ctr = 0
-                for election_model_id in self.families:
+                for model_id in self.families:
                     for election_id in \
-                            self.families[election_model_id].election_ids:
+                            self.families[model_id].election_ids:
                         x = round(points[election_id][0], 5)
                         y = round(points[election_id][1], 5)
                         if dim == 2:
@@ -509,13 +509,13 @@ class Experiment:
             plt.show()
 
     def get_election_id_from_model_name(self, model_name):
-        for election_id in self.elections:
-            if self.elections[election_id].election_model == model_name:
+        for election_id in self.instances:
+            if self.instances[election_id].model == model_name:
                 return election_id
 
     def print_map(self, dim=2, **kwargs):
         """ Print the two-dimensional embedding of multi-dimensional
-        map of the elections """
+        map of the instances """
         if dim == 2:
             self.print_map_2d(**kwargs)
         elif dim == 3:
@@ -524,7 +524,7 @@ class Experiment:
     def print_map_2d(self, mask=False, mixed=False, fuzzy_paths=True,
                      xlabel=None, shading=False,
                      angle=0, reverse=False, update=False, feature=None,
-                     attraction_factor=1, axis=False,
+                     attraction_factor=2, axis=False,
                      distance_name="emd-positionwise", guardians=False,
                      ticks=None, skeleton=None, roads=None,
                      title=None, dim=2, event='none',
@@ -624,7 +624,7 @@ class Experiment:
                      attraction_factor=1, axis=False,
                      distance_name="emd-positionwise", guardians=False,
                      ticks=None, dim=3,
-                     title=None,
+                     title=None, shading=False,
                      saveas="map_2d", show=True, ms=20, normalizing_func=None,
                      xticklabels=None, cmap=None,
                      ignore=None, marker_func=None, tex=False, black=False,
@@ -676,7 +676,7 @@ class Experiment:
             plt.show()
 
     # def add_matrices_to_experiment(self):
-    #     """ Import elections from a file """
+    #     """ Import instances from a file """
     #
     #     matrices = {}
     #     vectors = {}
@@ -695,7 +695,7 @@ class Experiment:
     #     file_name = election_id + '.csv'
     #     path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
     #     'matrices', file_name)
-    #     num_candidates = self.elections[election_id].num_candidates
+    #     num_candidates = self.instances[election_id].num_candidates
     #     matrix = np.zeros([num_candidates, num_candidates])
     #
     #     with open(path, 'r', newline='') as csv_file:
@@ -723,7 +723,7 @@ class Experiment:
         starting_from = 0
         for row in reader:
 
-            election_model = None
+            model = None
             color = None
             label = None
             params = None
@@ -733,8 +733,8 @@ class Experiment:
             num_candidates = None
             num_voters = None
 
-            if 'election_model' in row.keys():
-                election_model = str(row['election_model']).strip()
+            if 'model' in row.keys():
+                model = str(row['model']).strip()
 
             if 'color' in row.keys():
                 color = str(row['color']).strip()
@@ -761,17 +761,17 @@ class Experiment:
                 num_voters = int(row['num_voters'])
 
             family_id = str(row['label'])
-            # family_id = election_model
+            # family_id = model
 
             show = True
             if row['show'].strip() != 't':
                 show = False
 
-            if election_model in {'urn_model'} and params['alpha'] is not None:
+            if model in {'urn_model'} and params['alpha'] is not None:
                 family_id += '_' + str(float(params['alpha']))
-            elif election_model in {'mallows'} and params['phi'] is not None:
+            elif model in {'mallows'} and params['phi'] is not None:
                 family_id += '_' + str(float(params['phi']))
-            elif election_model in {'norm-mallows', 'norm-mallows_matrix'} \
+            elif model in {'norm-mallows', 'norm-mallows_matrix'} \
                     and params['norm-phi'] is not None:
                 family_id += '_' + str(float(params['norm-phi']))
 
@@ -781,7 +781,7 @@ class Experiment:
                 single_election = True
                 family_id = label
 
-            families[family_id] = Family(election_model=election_model,
+            families[family_id] = Family(model=model,
                                          family_id=family_id,
                                          params=params, label=label,
                                          color=color, alpha=alpha, show=show,
@@ -793,9 +793,9 @@ class Experiment:
             starting_from += size
 
         self.num_families = len(families)
-        self.num_elections = sum(
+        self.num_instances = sum(
             [families[family_id].size for family_id in families])
-        self.main_order = [i for i in range(self.num_elections)]
+        self.main_order = [i for i in range(self.num_instances)]
 
         if ignore is None:
             ignore = []
@@ -829,7 +829,7 @@ class Experiment:
             ctr = 0
 
             for row in reader:
-                if self.main_order[ctr] < self.num_elections and \
+                if self.main_order[ctr] < self.num_instances and \
                         self.main_order[ctr] not in ignore:
                     points[row['election_id']] = [float(row['x']), float(row['y'])]
                 ctr += 1
@@ -843,11 +843,11 @@ class Experiment:
 
         if self.families is None:
             self.families = {}
-            for i, election_id in enumerate(self.elections):
-                ele = self.elections[election_id]
+            for i, election_id in enumerate(self.instances):
+                ele = self.instances[election_id]
                 # print(ele)
-                election_model = ele.election_model
-                family_id = election_model
+                model = ele.model
+                family_id = model
                 # param_1 = 0
                 # param_2 = 0
                 label = election_id
@@ -862,7 +862,7 @@ class Experiment:
                 num_voters = ele.num_voters
 
                 self.families[election_id] = Family(
-                    election_model=election_model, family_id=family_id,
+                    model=model, family_id=family_id,
                     label=label, alpha=alpha,
                     color=color,
                     num_candidates=num_candidates, num_voters=num_voters)
@@ -908,9 +908,9 @@ class Experiment:
         # values = []
         feature_dict = {}
 
-        for election_id in self.elections:
+        for election_id in self.instances:
             feature = features.get_feature(name)
-            election = self.elections[election_id]
+            election = self.instances[election_id]
             # print(election_id, election)
             if name in {'avg_distortion_from_guardians',
                         'worst_distortion_from_guardians'}:
@@ -944,7 +944,7 @@ class Experiment:
     def rotate(self, angle):
         """ Rotate all the points by a given angle """
 
-        for election_id in self.elections:
+        for election_id in self.instances:
             self.coordinates[election_id][0], self.coordinates[election_id][
                 1] = self.rotate_point(
                 0.5, 0.5, angle, self.coordinates[election_id][0],
@@ -955,7 +955,7 @@ class Experiment:
     def reverse(self):
         """ Reverse all the points"""
 
-        for election_id in self.elections:
+        for election_id in self.instances:
             self.coordinates[election_id][0] = self.coordinates[election_id][0]
             self.coordinates[election_id][1] = -self.coordinates[election_id][
                 1]
@@ -973,7 +973,7 @@ class Experiment:
             writer = csv.writer(csvfile, delimiter=';')
             writer.writerow(["election_id", "x", "y"])
 
-            for election_id in self.elections:
+            for election_id in self.instances:
                 x = round(self.coordinates[election_id][0], 5)
                 y = round(self.coordinates[election_id][1], 5)
                 writer.writerow([election_id, x, y])
@@ -995,13 +995,13 @@ class Experiment:
 
     def import_distances(self, self_distances=False,
                          distance_name='emd-positionwise'):
-        """ Import precomputed distances between each pair of elections
+        """ Import precomputed distances between each pair of instances
         from a file """
 
         file_name = str(distance_name) + '.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                             "distances", file_name)
-        num_points = self.num_elections
+        num_points = self.num_instances
         num_distances = int(num_points * (num_points - 1) / 2)
 
         hist_data = {}
@@ -1027,7 +1027,7 @@ class Experiment:
         return num_distances, hist_data, std
 
     def import_my_distances(self, distance_name='emd-positionwise'):
-        """ Import precomputed distances between each pair of elections
+        """ Import precomputed distances between each pair of instances
         from a file """
 
         file_name = str(distance_name) + '.csv'

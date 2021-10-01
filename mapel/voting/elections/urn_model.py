@@ -5,7 +5,7 @@ import numpy as np
 
 
 def generate_urn_model_election(num_voters=None, num_candidates=None, params=None):
-    """ Generate Polya-Eggenberger urn model election"""
+    """ Generate (ordinal) Polya-Eggenberger urn model election"""
 
     alpha = params['alpha']
     votes = np.zeros([num_voters, num_candidates])
@@ -16,6 +16,27 @@ def generate_urn_model_election(num_voters=None, num_candidates=None, params=Non
             votes[j] = np.random.permutation(num_candidates)
         else:
             votes[j] = votes[rand.randint(0, j - 1)]
+        urn_size += alpha
+
+    return votes
+
+
+def generate_approval_urn_election(num_voters=None, num_candidates=None, params=None):
+    """ Generate (approval) Polya-Eggenberger urn model election"""
+
+    alpha = params['alpha']
+    votes = []
+    urn_size = 1.
+    for j in range(num_voters):
+        rho = rand.uniform(0, urn_size)
+        if rho <= 1.:
+            vote = set()
+            for c in range(num_candidates):
+                if rand.random() <= params['p']:
+                    vote.add(c)
+            votes.append(vote)
+        else:
+            votes.append(votes[rand.randint(0, j - 1)])
         urn_size += alpha
 
     return votes

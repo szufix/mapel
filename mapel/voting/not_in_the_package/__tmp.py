@@ -60,7 +60,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
     for k in experiment.families:
         if experiment.families[k].show:
 
-            if experiment.families[k].election_model in {'identity',
+            if experiment.families[k].model in {'identity',
                                                          'uniformity',
                                                          'antagonism',
                                                          'stratification',
@@ -68,7 +68,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                                                          'stid', 'anun',
                                                          'stun', 'stan'}:
                 zorder = 0
-                if experiment.families[k].election_model == 'unid':
+                if experiment.families[k].model == 'unid':
                     zorder = 1
 
                 t_ms = ms
@@ -82,7 +82,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                            marker='o', linewidth=0)
                 ctr += experiment.families[k].size
 
-            elif experiment.families[k].election_model in {'real_identity',
+            elif experiment.families[k].model in {'real_identity',
                                                            'real_uniformity',
                                                            'real_antagonism',
                                                            'real_stratification'}:
@@ -95,7 +95,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                 ctr += experiment.families[k].size
 
             elif experiment.families[
-                k].election_model in LIST_OF_PREFLIB_ELECTIONS:
+                k].model in LIST_OF_PREFLIB_ELECTIONS:
                 ax.scatter(experiment.points_by_families[k][0],
                            experiment.points_by_families[k][1], zorder=2,
                            color=experiment.families[k].color,
@@ -104,7 +104,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                            marker=experiment.families[k].marker)
                 ctr += experiment.families[k].size
 
-            elif experiment.families[k].election_model in {'norm_mallows',
+            elif experiment.families[k].model in {'norm_mallows',
                                                            'mallows',
                                                            'urn_experiment'}:
                 for i in range(experiment.families[k].size):
@@ -112,13 +112,13 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                     if param > 1:
                         param = 1
 
-                    if experiment.families[k].election_model in {
+                    if experiment.families[k].model in {
                         'norm_mallows', 'mallows'}:
                         my_cmap = custom_div_cmap(num_colors=11,
                                                   colors=["cyan", "blue"],
                                                   name='my_custom_m')
                         # print(param)
-                    elif experiment.families[k].election_model in {
+                    elif experiment.families[k].model in {
                         'urn_experiment'}:
                         my_cmap = custom_div_cmap(num_colors=11,
                                                   colors=["gold", "orange",
@@ -489,7 +489,7 @@ def compute_highest_borda1m_map(experiment_id):
 def compute_levels(experiment_id, election_model='identity'):
     model = obj.Experiment(experiment_id)
 
-    # election_model = 'identity'
+    # model = 'identity'
     num_voters = 100
     num_candidates = 10
     x = 'x'
@@ -1090,7 +1090,7 @@ def import_approval_elections(experiment_id, elections_id, params):
     return elections, params
 
 #
-# if election_model == 'crate':
+# if model == 'crate':
                 #     my_size = 9
                 #     # with_edge
                 #     for p in range(my_size):

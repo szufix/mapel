@@ -315,7 +315,8 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
                 if '_path' in family_id:
                     for i in range(experiment.families[family_id].size):
                         election_id = experiment.families[family_id].election_ids[i]
-                        alpha = experiment.elections[election_id].alpha
+                        alpha = experiment.instances[election_id].alpha
+                        alpha = (alpha + 0.2) / 1.2
                         if i == experiment.families[family_id].size - 1:
                             ax.scatter(experiment.points_by_families[family_id][0][i],
                                        experiment.points_by_families[family_id][1][i],
@@ -474,7 +475,8 @@ def basic_background(ax=None, values=None, legend=None, saveas=None,
             pass
 
         if values is None and legend:
-            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+            ax.legend(loc='center left', bbox_to_anchor=(0.85, 0.5))
+            # ax.legend()
             plt.savefig(file_name, bbox_inches='tight')
         else:
             plt.savefig(file_name, bbox_inches='tight')

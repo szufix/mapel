@@ -31,7 +31,7 @@ def get_matching_cost_cooparoval_frequency_vectors(ele_1, ele_2, inner_distance)
     vectors_1 = ele_1.votes_to_cooparoval_frequency_vectors()
     vectors_2 = ele_2.votes_to_cooparoval_frequency_vectors()
     size = ele_1.num_candidates
-    cost_table = [[inner_distance(list(vectors_1[i]), list(vectors_2[j]))
+    cost_table = [[inner_distance(vectors_1[i], vectors_2[j])
                    for i in range(size)] for j in range(size)]
     return cost_table
 

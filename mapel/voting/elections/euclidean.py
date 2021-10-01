@@ -1,64 +1,121 @@
 import random as rand
-
-import matplotlib.pyplot as plt
 import numpy as np
 import math
 
 
-def generate_approval_1d_interval_elections(election_model=None, num_voters=None,
-                                          num_candidates=None):
-    """ helper function: generate simple approval 2d elections"""
+def distance(dim, x_1, x_2):
+    """ compute distance between two points """
 
-    threshold = 0.125
-    election_model = "1d_interval"
+    if dim == 1:
+        return abs(x_1[0] - x_2[0])
 
-    voters = [0 for _ in range(num_voters)]
-    candidates = [0 for _ in range(num_candidates)]
-
-    votes = [set() for _ in range(num_voters)]
-
-    for j in range(num_voters):
-        voters[j] = get_rand(election_model)
-    voters = sorted(voters)
-
-    for j in range(num_candidates):
-        candidates[j] = get_rand(election_model)
-    candidates = sorted(candidates)
-
-    for j in range(num_voters):
-        for k in range(num_candidates):
-            if distance(1, voters[j], candidates[k]) < threshold:
-                votes[j].add(k)
-
-    return votes
+    output = 0.
+    for i in range(dim):
+        output += (x_1[i] - x_2[i]) ** 2
+    return output ** 0.5
 
 
-def generate_approval_2d_disc_elections(election_model=None, num_voters=None,
-                                          num_candidates=None):
-    """ helper function: generate simple approval 2d elections"""
+def generate_approval_euclidean_election(num_voters=None, num_candidates=None, params=None):
 
-    threshold = 0.25
-    election_model = "2d_disc"
+    # 'p' should be lower than 0.5
 
-    voters = [[0, 0] for _ in range(num_voters)]
-    candidates = [[0, 0] for _ in range(num_candidates)]
+    alpha = 4
+    beta = alpha/params['p'] - alpha
 
-    votes = [set() for _ in range(num_voters)]
+    dim = params['dim']
 
-    for j in range(num_voters):
-        voters[j] = get_rand(election_model)
-    voters = sorted(voters)
+    if 'shift' in params:
+        shift = np.array([params['shift']**2 for _ in range(dim)])
+    else:
+        shift = np.array([0 for _ in range(dim)])
 
-    for j in range(num_candidates):
-        candidates[j] = get_rand(election_model)
-    candidates = sorted(candidates)
+    rankings = np.zeros([num_voters, num_candidates], dtype=int)
+    distances = np.zeros([num_voters, num_candidates])
+    votes = []
 
-    for j in range(num_voters):
-        for k in range(num_candidates):
-            if distance(2, voters[j], candidates[k]) < threshold:
-                votes[j].add(k)
+    voters = np.random.rand(num_voters, dim) + shift
+    candidates = np.random.rand(num_candidates, dim)
+
+    for v in range(num_voters):
+        for c in range(num_candidates):
+            rankings[v][c] = c
+            distances[v][c] = distance(dim, voters[v], candidates[c])
+        rankings[v] = [x for _, x in sorted(zip(distances[v], rankings[v]))]
+
+    for v in range(num_voters):
+        k = int(np.random.beta(alpha, beta) * num_candidates)
+        votes.append(set(rankings[v][0:k]))
 
     return votes
+
+
+
+
+
+
+
+
+
+
+####################################################################################################
+####################################################################################################
+####################################################################################################
+
+
+# def generate_approval_1d_interval_elections(model=None, num_voters=None,
+#                                             num_candidates=None):
+#     """ helper function: generate simple approval 2d elections"""
+#
+#     threshold = 0.125
+#     model = "1d_interval"
+#
+#     voters = [0 for _ in range(num_voters)]
+#     candidates = [0 for _ in range(num_candidates)]
+#
+#     votes = [set() for _ in range(num_voters)]
+#
+#     for j in range(num_voters):
+#         voters[j] = get_rand(model)
+#     voters = sorted(voters)
+#
+#     for j in range(num_candidates):
+#         candidates[j] = get_rand(model)
+#     candidates = sorted(candidates)
+#
+#     for j in range(num_voters):
+#         for k in range(num_candidates):
+#             if distance(1, [voters[j]], [candidates[k]]) < threshold:
+#                 votes[j].add(k)
+#
+#     return votes
+#
+#
+# def generate_approval_2d_disc_elections(model=None, num_voters=None,
+#                                           num_candidates=None):
+#     """ helper function: generate simple approval 2d elections"""
+#
+#     threshold = 0.25
+#     model = "2d_disc"
+#
+#     voters = [[0, 0] for _ in range(num_voters)]
+#     candidates = [[0, 0] for _ in range(num_candidates)]
+#
+#     votes = [set() for _ in range(num_voters)]
+#
+#     for j in range(num_voters):
+#         voters[j] = get_rand(model)
+#     voters = sorted(voters)
+#
+#     for j in range(num_candidates):
+#         candidates[j] = get_rand(model)
+#     candidates = sorted(candidates)
+#
+#     for j in range(num_voters):
+#         for k in range(num_candidates):
+#             if distance(2, voters[j], candidates[k]) < threshold:
+#                 votes[j].add(k)
+#
+#     return votes
 
 
 def generate_1d_gaussian_party(election_model=None, num_voters=None,
@@ -74,16 +131,17 @@ def generate_1d_gaussian_party(election_model=None, num_voters=None,
     votes = np.zeros([num_voters, num_candidates], dtype=int)
     distances = np.zeros([num_voters, num_candidates], dtype=float)
 
-    shift = [rand.random()/4.]
-    for j in range(num_voters):
-        voters[j] = [rand.random()+shift[0]]
-    # voters = sorted(voters)
-
     for j in range(params['num_parties']):
         for w in range(params['num_winners']):
             _id = j*params['num_winners'] + w
-            candidates[_id] = [rand.gauss(params['party'][j][0], 0.1)]
-    # candidates = sorted(candidates)
+            candidates[_id] = [rand.gauss(params['party'][j][0], params['var'])]
+
+    _min = min(candidates)[0]
+    _max = max(candidates)[0]
+
+    shift = [rand.random()/4.]
+    for j in range(num_voters):
+        voters[j] = [rand.random() * (_max - _min) + _min + shift[0]]
 
     for j in range(num_voters):
         for k in range(num_candidates):
@@ -108,18 +166,26 @@ def generate_2d_gaussian_party(election_model=None, num_voters=None,
     votes = np.zeros([num_voters, num_candidates], dtype=int)
     distances = np.zeros([num_voters, num_candidates], dtype=float)
 
-    shift = [rand.random()/4., rand.random()/4.]
-    for j in range(num_voters):
-        voters[j] = [rand.random()+shift[0], rand.random()+shift[1]]
-    # voters = sorted(voters)
-
     for j in range(params['num_parties']):
         for w in range(params['num_winners']):
             _id = j*params['num_winners'] + w
             # print(_id)
-            candidates[_id] = [rand.gauss(params['party'][j][0], 0.1),
-                               rand.gauss(params['party'][j][1], 0.1)]
-    # candidates = sorted(candidates)
+            candidates[_id] = [rand.gauss(params['party'][j][0], params['var']),
+                               rand.gauss(params['party'][j][1], params['var'])]
+
+    def column(matrix, i):
+        return [row[i] for row in matrix]
+
+    x_min = min(column(candidates, 0))
+    x_max = max(column(candidates, 0))
+    y_min = min(column(candidates, 1))
+    y_max = max(column(candidates, 1))
+
+    shift = [rand.random()/4., rand.random()/4.]
+    for j in range(num_voters):
+        voters[j] = [rand.random() * (x_max - x_min) + x_min + shift[0],
+                     rand.random() * (y_max - y_min) + y_min + shift[1]]
+
 
     # tmp_v = np.asarray(voters).transpose()
     # plt.scatter(tmp_v[0], tmp_v[1], color='grey')
@@ -389,14 +455,3 @@ def get_rand(elections_model, cat="voters"):
     return point
 
 
-def distance(dim, x_1, x_2):
-    """ compute distance between two points """
-
-    if dim == 1:
-        return abs(x_1 - x_2)
-
-    output = 0.
-    for i in range(dim):
-        output += (x_1[i] - x_2[i]) ** 2
-
-    return output ** 0.5

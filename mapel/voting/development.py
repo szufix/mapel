@@ -46,34 +46,117 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
     all_alternative_shapley_vectors = []
     all_alternative_banzhaf_vectors = []
 
+    all_separated_weight_vectors = []
+
     for _ in range(precision):
         experiment = prepare_experiment()
         experiment.set_default_num_candidates(num_candidates)
         experiment.set_default_num_voters(num_voters)
 
-        experiment.add_family(election_model=election_model, size=num_districts,
-                              params={'num_winners': num_winners, 'num_parties': num_parties,
-                                      'main-phi': 0.5, 'norm-phi': 0.5})
+        ### MALLOWS ###
+        if election_model == 'mallows_party_075':
+            experiment.add_family(election_model='mallows_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'main-phi': 0.75, 'norm-phi': 0.75})
+
+        elif election_model == 'mallows_party_05':
+            experiment.add_family(election_model='mallows_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'main-phi': 0.5, 'norm-phi': 0.75})
+
+        elif election_model == 'mallows_party_025':
+            experiment.add_family(election_model='mallows_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'main-phi': 0.25, 'norm-phi': 0.75})
+
+        ### 2D ###
+        elif election_model == '2d_gaussian_party_005':
+            experiment.add_family(election_model='2d_gaussian_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.05})
+
+        elif election_model == '2d_gaussian_party_01':
+            experiment.add_family(election_model='2d_gaussian_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.1})
+
+        elif election_model == '2d_gaussian_party_02':
+            experiment.add_family(election_model='2d_gaussian_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.2})
+
+        ### 1D ###
+        elif election_model == '1d_gaussian_party_005':
+            experiment.add_family(election_model='1d_gaussian_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.05})
+
+        elif election_model == '1d_gaussian_party_01':
+            experiment.add_family(election_model='1d_gaussian_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.1})
+
+        elif election_model == '1d_gaussian_party_02':
+            experiment.add_family(election_model='1d_gaussian_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.2})
+
+        ### SP by Walsh
+        elif election_model == 'walsh_party_005':
+            experiment.add_family(election_model='walsh_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.05})
+
+        elif election_model == 'walsh_party_01':
+            experiment.add_family(election_model='walsh_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.1})
+
+        elif election_model == 'walsh_party_02':
+            experiment.add_family(election_model='walsh_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.2})
+
+        ### SP by Conitzer
+        elif election_model == 'conitzer_party_005':
+            experiment.add_family(election_model='conitzer_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.05})
+
+        elif election_model == 'conitzer_party_01':
+            experiment.add_family(election_model='conitzer_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.1})
+
+        elif election_model == 'conitzer_party_02':
+            experiment.add_family(election_model='conitzer_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties,
+                                          'var': 0.2})
+
+        ### IC
+        elif election_model == 'ic_party':
+            experiment.add_family(election_model='ic_party', size=num_districts,
+                                  params={'num_winners': num_winners, 'num_parties': num_parties})
 
         experiment.compute_winners(method=method, num_winners=num_winners)
 
         if method == 'dhondt':
             # main election
             parties = [0 for _ in range(num_parties)]
-            for election_id in experiment.elections:
-                for vote in experiment.elections[election_id].votes:
+            for election_id in experiment.instances:
+                for vote in experiment.instances[election_id].votes:
                     parties[int(vote[0] / party_size)] += 1
             denominator = sum(parties)
             for i in range(num_parties):
                 parties[i] /= denominator
             weight_vector = potLadle(parties, num_winners)
 
-            # alternative elections
+            # alternative instances
             alternative_weight_vectors = [[] for _ in range(num_parties)]
             for c in range(num_parties):
                 parties = [0 for _ in range(num_parties)]
-                for election_id in experiment.elections:
-                    for vote in experiment.elections[election_id].votes:
+                for election_id in experiment.instances:
+                    for vote in experiment.instances[election_id].votes:
                         ctr = 0
                         while int(vote[ctr] / party_size) == c:
                             ctr += 1
@@ -90,26 +173,27 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
                                                    num_parties=num_parties)
 
             weight_vector = [0 for _ in range(num_parties)]
+            separated_weight_vectors = []
             alternative_weight_vectors = {}
             for party_id in range(num_parties):
-                alternative_weight_vectors[party_id] = [0 for i in
-                                                        range(num_parties)]
+                alternative_weight_vectors[party_id] = [0 for i in range(num_parties)]
 
-            for election_id in experiment.elections:
-                for w in experiment.elections[election_id].winners:
+            for election_id in experiment.instances:
+                single_vector = [0 for _ in range(num_parties)]
+                for w in experiment.instances[election_id].winners:
                     weight_vector[int(w / party_size)] += 1
+                    single_vector[int(w / party_size)] += 1
+                separated_weight_vectors.append(single_vector)
                 for party_id in range(num_parties):
-                    for w in \
-                            experiment.elections[
-                                election_id].alternative_winners[
-                                party_id]:
-                        alternative_weight_vectors[party_id][
-                            int(w / party_size)] += 1
+                    for w in experiment.instances[election_id].alternative_winners[party_id]:
+                        alternative_weight_vectors[party_id][int(w / party_size)] += 1
+
+            all_separated_weight_vectors.append(separated_weight_vectors)
 
         borda = [0 for _ in range(num_parties)]
-        for election_id in experiment.elections:
+        for election_id in experiment.instances:
             for i in range(num_candidates):
-                borda[int(i / party_size)] += experiment.elections[election_id].borda_points[i]
+                borda[int(i / party_size)] += experiment.instances[election_id].borda_points[i]
 
         denominator = sum(borda)
         borda = [elem / denominator for elem in borda]
@@ -173,7 +257,7 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
     file_name = election_model + '_p' + str(num_parties) + \
                 '_k' + str(num_winners) + \
                 '_' + str(method) + '_small'
-    path = os.path.join(os.getcwd(), 'party', file_name + '.csv')
+    path = os.path.join(os.getcwd(), 'final_party', file_name + '.csv')
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
         writer.writerow(["iteration", "party_id", "weight",
@@ -191,10 +275,24 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
                                  all_banzhaf_spoilers[j][p],
                                  all_borda[j][p]])
 
+    # SAVE TO FILE -- MEDIUM
+    if num_winners == 15 and method != 'dhondt':
+        file_name = election_model + '_p' + str(num_parties) + \
+                    '_k' + str(num_winners) + \
+                    '_' + str(method) + '_medium'
+        path = os.path.join(os.getcwd(), 'final_party', file_name + '.csv')
+        with open(path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+            writer.writerow(["iteration", "district", "vector"])
+
+            for i in range(precision):
+                for j in range(num_districts):
+                    writer.writerow([i,j,all_separated_weight_vectors[i][j]])
+
     # SAVE TO FILE -- BIG
     file_name = election_model + '_p' + str(num_parties) + '_k' + str(
         num_winners) + '_' + str(method) + '_big'
-    path = os.path.join(os.getcwd(), 'party', file_name + '.csv')
+    path = os.path.join(os.getcwd(), 'final_party', file_name + '.csv')
 
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
@@ -217,14 +315,14 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
                                      all_alternative_banzhaf_vectors[j][spoiler_id][party_id]])
 
 
-def prepare_experiment(experiment_id=None, elections=None, distances=None,
+def prepare_experiment(experiment_id=None, instances=None, distances=None,
                        coordinates=None, distance_name='emd-positionwise'):
-    return Experiment("virtual", experiment_id=experiment_id, elections=elections,
+    return Experiment("virtual", experiment_id=experiment_id, instances=instances,
                       distances=distances, coordinates=coordinates, distance_name=distance_name)
 
 
-def generate_experiment(elections=None):
-    return Experiment("virtual", elections=elections)
+def generate_experiment(instances=None):
+    return Experiment("virtual", instances=instances)
 
 
 ###############################################################################
@@ -232,7 +330,7 @@ def generate_experiment(elections=None):
 ## PART 0 ##
 
 def compute_lowest_dodgson(experiment_id, clear=True):
-    """ Compute lowest Dodgson score for all elections in a given experiment """
+    """ Compute lowest Dodgson score for all instances in a given experiment """
 
     experiment = Experiment(experiment_id)
 
@@ -250,7 +348,7 @@ def compute_lowest_dodgson(experiment_id, clear=True):
         file_scores = open(file_name_2, 'w')
         file_scores.close()
 
-    for election in experiment.elections:
+    for election in experiment.instances:
 
         start_time = time.time()
 
@@ -278,15 +376,15 @@ def compute_lowest_dodgson(experiment_id, clear=True):
 
 
 def import_winners(experiment_id, method='hb', algorithm='greedy',
-                   num_winners=10, num_elections=0):
-    """ Import winners for all elections in a given experiment """
+                   num_winners=10, num_instances=0):
+    """ Import winners for all instances in a given experiment """
 
-    winners = [[] for _ in range(num_elections)]
+    winners = [[] for _ in range(num_instances)]
 
     path = "experiments/" + experiment_id + "/controllers/winners/" + method \
            + "_" + algorithm + ".txt"
     with open(path) as file_txt:
-        for i in range(num_elections):
+        for i in range(num_instances):
             for j in range(num_winners):
                 value = int(float(file_txt.readline().strip()))
                 winners[i].append(value)
@@ -330,7 +428,7 @@ def compute_effective_num_candidates(experiment_id, clear=True):
 
     experiment = Experiment(experiment_id=experiment_id, distance_name='swap')
 
-    for election in experiment.elections:
+    for election in experiment.instances:
         score = features.get_effective_num_candidates(election)
 
         file_scores = open(file_name, 'a')
@@ -342,7 +440,7 @@ def compute_condorcet_existence(experiment_id):
     experiment = Experiment(experiment_id)
     path = "experiments/" + experiment_id + "/controllers/winners/condorcet_existence.txt"
     with open(path, 'w') as file_txt:
-        for election in experiment.elections:
+        for election in experiment.instances:
             exists = is_condorect_winner(election)
             file_txt.write(str(exists) + "\n")
 
@@ -445,7 +543,7 @@ def print_chart_condorcet_existence(experiment_id):
     plt.show()
 
 
-## PART 3 ## SUBELECTIONS
+## PART 3 ## SUBinstances
 
 
 ### PART X ###
@@ -514,10 +612,10 @@ def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
     A = []
     B = []
 
-    for i, election_id_1 in enumerate(experiment.elections):
-        for j, election_id_2 in enumerate(experiment.elections):
+    for i, election_id_1 in enumerate(experiment.instances):
+        for j, election_id_2 in enumerate(experiment.instances):
             if i < j:
-                m = experiment.elections[election_id_1].num_candidates
+                m = experiment.instances[election_id_1].num_candidates
                 true_distance = experiment.distances[election_id_1][
                     election_id_2]
                 true_distance /= map_diameter(m)
@@ -568,10 +666,10 @@ def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
 #     st_x = []
 #     st_y = []
 #
-#     for i, election_id_1 in enumerate(experiment.elections):
-#         for j, election_id_2 in enumerate(experiment.elections):
+#     for i, election_id_1 in enumerate(experiment.instances):
+#         for j, election_id_2 in enumerate(experiment.instances):
 #             if i < j:
-#                 m = experiment.elections[election_id_1].num_candidates
+#                 m = experiment.instances[election_id_1].num_candidates
 #                 true_distance = experiment.distances[election_id_1][election_id_2]
 #                 true_distance /= map_diameter(m)
 #

@@ -7,6 +7,9 @@ from threading import Thread
 
 
 from mapel.voting.objects.Election import Election
+from mapel.voting.objects.ApprovalElection import ApprovalElection
+from mapel.voting.objects.OrdinalElection import OrdinalElection
+from mapel.voting.objects.Graph import Graph
 import mapel.voting._elections as el
 
 import csv
@@ -23,12 +26,11 @@ import networkx as nx
 # MAIN FUNCTIONS
 def get_distance(election_1, election_2, distance_name=None):
     """ Main function """
-
-    if election_1.ballot == 'graph':
-        return get_graph_distance(election_1.votes, election_2.votes, distance_name=distance_name)
-    elif election_1.ballot == 'approval':
+    if type(election_1) is Graph:
+        return get_graph_distance(election_1.graph, election_2.graph, distance_name=distance_name)
+    elif type(election_1) is ApprovalElection:
         return get_approval_distance(election_1, election_2, distance_name=distance_name)
-    elif election_1.ballot == 'ordinal':
+    elif type(election_1) is OrdinalElection:
         return get_ordinal_distance(election_1, election_2, distance_name=distance_name)
     else:
         print('No such ballot!')
@@ -116,8 +118,8 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
     for election_id_1, election_id_2 in thread_ids:
 
         start_time = time()
-        distance, matching = get_distance(experiment.elections[election_id_1],
-                                experiment.elections[election_id_2],
+        distance, matching = get_distance(experiment.instances[election_id_1],
+                                experiment.instances[election_id_2],
                                 distance_name=experiment.distance_name)
 
         matchings[election_id_1][election_id_2] = matching
@@ -132,18 +134,18 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
 
 # deprecated
 # def compute_distances(experiment_id, distance_name='emd-positionwise', num_threads=1):
-#     """ Compute distances between elections (using threads)"""
+#     """ Compute distances between instances (using threads)"""
 #
-#     experiment = Experiment(experiment_id, distance_name=distance_name, elections='import', with_matrices=True)
+#     experiment = Experiment(experiment_id, distance_name=distance_name, instances='import', with_matrices=True)
 #     distances = {}
-#     for election_id in experiment.elections:
+#     for election_id in experiment.instances:
 #         distances[election_id] = {}
 #
 #     threads = [{} for _ in range(num_threads)]
 #
 #     ids = []
-#     for i, election_1 in enumerate(experiment.elections):
-#         for j, election_2 in enumerate(experiment.elections):
+#     for i, election_1 in enumerate(experiment.instances):
+#         for j, election_2 in enumerate(experiment.instances):
 #             if i < j:
 #                 ids.append((election_1, election_2))
 #
@@ -169,8 +171,8 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
 #         writer = csv.writer(csv_file, delimiter=',')
 #         writer.writerow(["election_id_1", "election_id_2", "distance"])
 #
-#         for i, election_1 in enumerate(experiment.elections):
-#             for j, election_2 in enumerate(experiment.elections):
+#         for i, election_1 in enumerate(experiment.instances):
+#             for j, election_2 in enumerate(experiment.instances):
 #                 if i < j:
 #                     distance = str(distances[election_1][election_2])
 #                     writer.writerow([election_1, election_2, distance])
@@ -187,16 +189,16 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
 #         experiment = obj..Experiment(experiment_id,
 #         distance_name=distance_name)
 #         distances = {}
-#         for election_id in experiment.elections:
+#         for election_id in experiment.instances:
 #             distances[election_id] = {}
 #     else:
 #         experiment = Experiment_xd(experiment_id,
 #         distance_name=distance_name)
 #         distances = {}
-#         for election_id in experiment.elections:
+#         for election_id in experiment.instances:
 #             distances[election_id] = {}
-#         for i, election_id_1 in enumerate(experiment.elections):
-#             for j, election_id_2 in enumerate(experiment.elections):
+#         for i, election_id_1 in enumerate(experiment.instances):
+#             for j, election_id_2 in enumerate(experiment.instances):
 #                 if i < j:
 #                     try:
 #                         distances[election_id_1][election_id_2] =
@@ -207,8 +209,8 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
 #     threads = [{} for _ in range(num_threads)]
 #
 #     ids = []
-#     for i, election_1 in enumerate(experiment.elections):
-#         for j, election_2 in enumerate(experiment.elections):
+#     for i, election_1 in enumerate(experiment.instances):
+#         for j, election_2 in enumerate(experiment.instances):
 #             if i < j:
 #                 ids.append((election_1, election_2))
 #
@@ -236,8 +238,8 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
 #         writer = csv.writer(csv_file, delimiter=',')
 #         writer.writerow(["election_id_1", "election_id_2", "distance"])
 #
-#         for i, election_1 in enumerate(experiment.elections):
-#             for j, election_2 in enumerate(experiment.elections):
+#         for i, election_1 in enumerate(experiment.instances):
+#             for j, election_2 in enumerate(experiment.instances):
 #                 if i < j:
 #                     distance = str(distances[election_1][election_2])
 #                     writer.writerow([election_1, election_2, distance])
@@ -247,20 +249,20 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
 
 def compute_distances_between_votes(dict_with_votes,
                                     distance_name='emd-positionwise'):
-    elections = {}
+    instances = {}
     for election_id in dict_with_votes:
-        elections[election_id] = Election("virtual", "virtual",
+        instances[election_id] = Election("virtual", "virtual",
                                           votes=dict_with_votes[election_id])
 
     distances = {}
-    for election_id in elections:
+    for election_id in instances:
         distances[election_id] = {}
 
-    for i, election_id_1 in enumerate(elections):
-        for j, election_id_2 in enumerate(elections):
+    for i, election_id_1 in enumerate(instances):
+        for j, election_id_2 in enumerate(instances):
             if i < j:
-                distance = get_distance(elections[election_id_1],
-                                        elections[election_id_2],
+                distance = get_distance(instances[election_id_1],
+                                        instances[election_id_2],
                                         distance_name=distance_name)
                 distances[election_id_1][election_id_2] = distance
                 distances[election_id_2][election_id_1] = \
@@ -289,14 +291,14 @@ def thread_function(experiment, distance_name, all_pairs,
                 local_ctr += 1
 
             # print(params)
-            election_1 = el.generate_elections(
+            election_1 = el.generate_instances(
                 experiment=experiment,
                 election_model=election_models[election_id_1],
                 election_id=election_id_1,
                 num_candidates=num_candidates, num_voters=num_voters,
                 params=params[election_id_1])
             # print('start')
-            election_2 = el.generate_elections(
+            election_2 = el.generate_instances(
                 experiment=experiment,
                 election_model=election_models[election_id_2],
                 election_id=election_id_2,
@@ -347,13 +349,13 @@ def compute_subelection_by_groups(
         for i in range(experiment.families[family_id].size):
             election_id = family_id + '_' + str(i)
             election_models[election_id] = \
-                experiment.families[family_id].election_model
+                experiment.families[family_id].model
             params[election_id] = experiment.families[family_id].params
 
 
     ids = []
-    for i, election_1 in enumerate(experiment.elections):
-        for j, election_2 in enumerate(experiment.elections):
+    for i, election_1 in enumerate(experiment.instances):
+        for j, election_2 in enumerate(experiment.instances):
             if i == j:
                 if self_distances:
                     ids.append((election_1, election_2))
@@ -365,13 +367,13 @@ def compute_subelection_by_groups(
     distances = {}
     matchings = {}
     times = {}
-    for i, election_1 in enumerate(experiment.elections):
+    for i, election_1 in enumerate(experiment.instances):
         all_pairs[election_1] = {}
         std[election_1] = {}
         distances[election_1] = {}
         matchings[election_1] = {}
         times[election_1] = {}
-        for j, election_2 in enumerate(experiment.elections):
+        for j, election_2 in enumerate(experiment.instances):
             if i == j:
                 if self_distances:
                     all_pairs[election_1][election_2] = \
@@ -403,8 +405,8 @@ def compute_subelection_by_groups(
     # print(all_pairs)
 
     # COMPUTE STD
-    for i, election_1 in enumerate(experiment.elections):
-        for j, election_2 in enumerate(experiment.elections):
+    for i, election_1 in enumerate(experiment.instances):
+        for j, election_2 in enumerate(experiment.instances):
             if i == j:
                 if self_distances:
                     value = float(np.std(np.array(all_pairs[election_1][election_2])))
@@ -426,8 +428,8 @@ def compute_subelection_by_groups(
             writer.writerow(
                 ["election_id_1", "election_id_2", "distance", "time", "std"])
 
-            for i, election_1 in enumerate(experiment.elections):
-                for j, election_2 in enumerate(experiment.elections):
+            for i, election_1 in enumerate(experiment.instances):
+                for j, election_2 in enumerate(experiment.instances):
                     if (i == j and self_distances) or i < j:
                         distance = str(distances[election_1][election_2])
                         time = str(times[election_1][election_2])
@@ -442,8 +444,8 @@ def compute_subelection_by_groups(
                             experiment.experiment_id, "distances",
                             str(distance_name) + "_all_pairs.txt")
         with open(path, 'w') as txtfile:
-            for i, election_1 in enumerate(experiment.elections):
-                for j, election_2 in enumerate(experiment.elections):
+            for i, election_1 in enumerate(experiment.instances):
+                for j, election_2 in enumerate(experiment.instances):
                     if (i == j and self_distances) or i < j:
                         for p in range(precision):
 

@@ -23,13 +23,12 @@ def discrete(vector_1, vector_2):
 
 def l1(vector_1, vector_2):
     """ compute L1 metric """
-    return sum([abs(vector_1[i] - vector_2[i]) for i in range(len(vector_1))])
+    return np.linalg.norm(vector_1 - vector_2, ord=1)
 
 
 def l2(vector_1, vector_2):
     """ compute L2 metric """
-    return math.pow(sum([math.pow((vector_1[i] - vector_2[i]), 2)
-                         for i in range(len(vector_1))]), 0.5)
+    return np.linalg.norm(vector_1 - vector_2, ord=2)
 
 
 def chebyshev(vector_1, vector_2):

@@ -118,7 +118,7 @@ import numpy as np
 #         ctr = 0
 #         for family in experiment.families:
 #             for j in range(family.size):
-#                 a = family.election_model + '_' + str(j)
+#                 a = family.model + '_' + str(j)
 #                 x = round(my_pos[rev_perm[ctr]][0], 5)
 #                 y = round(my_pos[rev_perm[ctr]][1], 5)
 #                 writer.writerow([a, x, y])
