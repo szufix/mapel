@@ -5,7 +5,6 @@ import numpy as np
 from time import time
 from threading import Thread
 
-
 from mapel.voting.objects.Election import Election
 from mapel.voting.objects.ApprovalElection import ApprovalElection
 from mapel.voting.objects.OrdinalElection import OrdinalElection
@@ -37,7 +36,6 @@ def get_distance(election_1, election_2, distance_name=None):
 
 
 def get_approval_distance(election_1, election_2, distance_name=None):
-
     inner_distance, main_distance = distance_name.split('-')
 
     metrics_without_params = {
@@ -57,7 +55,6 @@ def get_approval_distance(election_1, election_2, distance_name=None):
 
 
 def get_ordinal_distance(election_1, election_2, distance_name=None):
-
     inner_distance, main_distance = distance_name.split('-')
 
     metrics_without_params = {
@@ -84,7 +81,6 @@ def get_ordinal_distance(election_1, election_2, distance_name=None):
 
 
 def get_graph_distance(graph_1, graph_2, distance_name=''):
-
     graph_simple_metrics = {'closeness_centrality': nx.closeness_centrality,
                             'degree_centrality': nx.degree_centrality,
                             'betweenness_centrality': nx.betweenness_centrality,
@@ -97,7 +93,8 @@ def get_graph_distance(graph_1, graph_2, distance_name=''):
     }
 
     if distance_name in graph_simple_metrics:
-        return mgd.compute_graph_simple_metrics(graph_1, graph_2, graph_simple_metrics[distance_name])
+        return mgd.compute_graph_simple_metrics(graph_1, graph_2,
+                                                graph_simple_metrics[distance_name])
 
     if distance_name in graph_advanced_metrics:
         return graph_advanced_metrics.get(distance_name)(graph_1, graph_2)
@@ -116,11 +113,10 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
     """ Single thread for computing distance """
 
     for election_id_1, election_id_2 in thread_ids:
-
         start_time = time()
         distance, matching = get_distance(experiment.instances[election_id_1],
-                                experiment.instances[election_id_2],
-                                distance_name=experiment.distance_name)
+                                          experiment.instances[election_id_2],
+                                          distance_name=experiment.distance_name)
 
         matchings[election_id_1][election_id_2] = matching
         matchings[election_id_2][election_id_1] = _minus_one(matching)
@@ -275,7 +271,6 @@ def thread_function(experiment, distance_name, all_pairs,
                     num_voters, num_candidates, thread_ids,
                     distances, t, precision,
                     matchings, times):
-
     for election_id_1, election_id_2 in thread_ids:
         # print('hello', election_id_1, election_id_2)
         result = 0
@@ -331,13 +326,12 @@ def compute_subelection_by_groups(
         experiment, distance_name='0-voter_subelection', t=0, num_threads=1,
         precision=10, self_distances=False, num_voters=None,
         num_candidates=None):
-
     if num_candidates is None:
         num_candidates = experiment.default_num_candidates
     if num_voters is None:
         num_voters = experiment.default_num_voters
 
-    num_distances = experiment.num_families * (experiment.num_families+1) / 2
+    num_distances = experiment.num_families * (experiment.num_families + 1) / 2
 
     threads = [None for _ in range(num_threads)]
 
@@ -351,7 +345,6 @@ def compute_subelection_by_groups(
             election_models[election_id] = \
                 experiment.families[family_id].model
             params[election_id] = experiment.families[family_id].params
-
 
     ids = []
     for i, election_1 in enumerate(experiment.instances):
@@ -383,9 +376,8 @@ def compute_subelection_by_groups(
                     [0 for _ in range(precision)]
 
     for t in range(num_threads):
-
         start = int(t * num_distances / num_threads)
-        stop = int((t+1) * num_distances / num_threads)
+        stop = int((t + 1) * num_distances / num_threads)
         thread_ids = ids[start:stop]
         print('t: ', t)
 
@@ -397,11 +389,11 @@ def compute_subelection_by_groups(
                                   precision, matchings, times))
         threads[t].start()
 
-    #"""
+    # """
     for t in range(num_threads):
         threads[t].join()
-    #"""
-    #print(results)
+    # """
+    # print(results)
     # print(all_pairs)
 
     # COMPUTE STD
@@ -448,7 +440,6 @@ def compute_subelection_by_groups(
                 for j, election_2 in enumerate(experiment.instances):
                     if (i == j and self_distances) or i < j:
                         for p in range(precision):
-
                             txtfile.write(str(i) + ' ' + str(j) + ' ' + str(p) + ' ' +
                                           str(all_pairs[election_1][election_2][p]) + '\n')
                             ctr += 1

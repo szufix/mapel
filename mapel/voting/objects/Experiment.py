@@ -197,10 +197,10 @@ class Experiment:
                 model = self.families[family_id].model
 
                 if model in preflib.LIST_OF_PREFLIB_MODELS:
-                    _instances.prepare_preflib_family(
+                    _elections.prepare_preflib_family(
                         experiment=self, model=model, params=params)
                 else:
-                    _instances.prepare_statistical_culture_family(
+                    _elections.prepare_statistical_culture_family(
                         experiment=self, model=model,
                         family_id=family_id, params=params)
 

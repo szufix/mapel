@@ -621,11 +621,10 @@ def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
                 true_distance /= map_diameter(m)
 
                 embedded_distance = l2(experiment.coordinates[election_id_1],
-                                       experiment.coordinates[election_id_2],
-                                       1)
+                                       experiment.coordinates[election_id_2])
                 embedded_distance /= l2(
                     experiment.coordinates['identity_10_100_0'],
-                    experiment.coordinates['uniformity_10_100_0'], 1)
+                    experiment.coordinates['uniformity_10_100_0'])
                 proportion = float(true_distance) / float(embedded_distance)
                 X.append(proportion)
                 A.append(true_distance)

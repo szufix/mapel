@@ -16,17 +16,14 @@ class ApprovalElection(Election):
 
     def votes_to_approval_frequency_vector(self):
         approval_frequency_vector = np.zeros([self.num_candidates])
-
         for vote in self.votes:
             for c in vote:
                 approval_frequency_vector[c] += 1
-
         approval_frequency_vector = approval_frequency_vector / self.num_voters
         return np.sort(approval_frequency_vector)
 
     def votes_to_cooparoval_frequency_vectors(self):
         vectors = np.zeros([self.num_candidates, self.num_candidates * 2])
-
         for vote in self.votes:
             size = len(vote)
             for c in range(self.num_candidates):
@@ -34,5 +31,4 @@ class ApprovalElection(Election):
                     vectors[c][size] += 1
                 else:
                     vectors[c][self.num_candidates + size] += 1
-
         return vectors

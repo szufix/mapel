@@ -9,11 +9,8 @@ from mapel.voting.elections.mallows import get_mallows_vectors
 from mapel.voting.elections.preflib import get_sushi_vectors
 
 from mapel.voting.winners import compute_sntv_winners, compute_borda_winners, compute_stv_winners
-
 from mapel.voting.glossary import PATHS
-
 from mapel.voting.not_in_the_package.__winners import generate_winners
-
 from mapel.voting.objects.Election import Election
 
 
