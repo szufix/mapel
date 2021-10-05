@@ -4,6 +4,8 @@ import math
 
 
 def generate_approval_ic_election(num_voters=None, num_candidates=None, params=None):
+    if 'p' not in params:
+        params['p'] = 0.5
     votes = [0 for _ in range(num_voters)]
     for i in range(num_voters):
         vote = set()
@@ -65,6 +67,7 @@ def generate_ic_party(num_voters=None, num_candidates=None, params=None,
 
 
 def generate_approval_id_election(num_voters=None, num_candidates=None, params=None):
+    # params['p'] /= 2
     k = int(params['p']*num_candidates)
     vote = {i for i in range(k)}
     votes = [vote for _ in range(num_voters)]

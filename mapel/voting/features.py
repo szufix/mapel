@@ -29,6 +29,7 @@ def get_feature(name):
             'worst_distortion_from_guardians': worst_distortion_from_guardians,
             'graph_diameter': graph_diameter,
             'graph_diameter_log': graph_diameter_log,
+            'max_approval_score': max_approval_score,
             }.get(name)
 
 
@@ -284,3 +285,11 @@ def graph_diameter_log(election):
         return math.log(nx.diameter(election.votes))
     except:
         return math.log(100)
+##################################
+
+def max_approval_score(election):
+    score = np.zeros([election.num_candidates])
+    for vote in election.votes:
+        for c in vote:
+            score[c] += 1
+    return max(score)

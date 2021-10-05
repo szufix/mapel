@@ -189,3 +189,57 @@ def generate_approval_mallows_election(num_voters=None, num_candidates=None, par
     return votes
 
 
+def generate_approval_raw_mallows_election(num_voters=None, num_candidates=None, params=None):
+
+    k = int(params['p']*num_candidates)
+    central_vote = {i for i in range(k)}
+
+    votes = [0 for _ in range(num_voters)]
+    for v in range(num_voters):
+        vote = set()
+        for c in range(num_candidates):
+            if c in central_vote:
+                if rand.random() <= params['phi']:
+                    vote.add(c)
+            else:
+                if rand.random() < 1 - params['phi']:
+                    vote.add(c)
+        votes[v] = vote
+
+    return votes
+
+
+def generate_approval_disjoint_mallows_election(num_voters=None, num_candidates=None, params=None):
+
+    k = int(params['p']*num_candidates)
+    votes = [0 for _ in range(num_voters)]
+
+
+    central_vote_1 = {i for i in range(k)}
+
+    for v in range(int(num_voters/2)):
+        vote = set()
+        for c in range(num_candidates):
+            if c in central_vote_1:
+                if rand.random() <= params['phi']:
+                    vote.add(c)
+            else:
+                if rand.random() < 1 - params['phi']:
+                    vote.add(c)
+        votes[v] = vote
+
+
+    central_vote_2 = {i+k for i in range(k)}
+
+    for v in range(int(num_voters/2), num_voters):
+        vote = set()
+        for c in range(num_candidates):
+            if c in central_vote_2:
+                if rand.random() <= params['phi']:
+                    vote.add(c)
+            else:
+                if rand.random() < 1 - params['phi']:
+                    vote.add(c)
+        votes[v] = vote
+
+    return votes

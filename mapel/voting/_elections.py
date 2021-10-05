@@ -4,7 +4,8 @@
 from mapel.voting.elections.group_separable import generate_group_separable_election
 
 from mapel.voting.elections.mallows import generate_mallows_election, \
-    phi_from_relphi, generate_mallows_party, generate_approval_mallows_election
+    phi_from_relphi, generate_mallows_party, generate_approval_mallows_election, \
+    generate_approval_raw_mallows_election, generate_approval_disjoint_mallows_election
 
 from mapel.voting.elections.euclidean import generate_elections_1d_simple, \
     generate_elections_2d_simple, generate_elections_nd_simple, \
@@ -47,7 +48,7 @@ from mapel.voting.objects.Graph import Graph
 import mapel.voting.elections.preflib as preflib
 
 from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, PARTY_MODELS, \
-    APPROVAL_MODELS, GRAPH_MODELS
+    APPROVAL_MODELS, GRAPH_MODELS, APPROVAL_FAKE_MODELS
 
 import networkx as nx
 
@@ -79,13 +80,16 @@ def generate_approval_votes(model=None, num_candidates=None, num_voters=None, pa
     models = {'approval_ic': generate_approval_ic_election,
               'approval_id': generate_approval_id_election,
               'approval_mallows': generate_approval_mallows_election,
+              'approval_raw_mallows': generate_approval_raw_mallows_election,
               'approval_urn': generate_approval_urn_election,
-              'approval_euclidean': generate_approval_euclidean_election,}
+              'approval_euclidean': generate_approval_euclidean_election,
+              'approval_disjoint_mallows': generate_approval_disjoint_mallows_election}
 
     if model in models:
         votes = models.get(model)(num_voters=num_voters, num_candidates=num_candidates,
-                                           params=params)
-
+                                  params=params)
+    elif model in APPROVAL_FAKE_MODELS:
+        votes = []
     else:
         votes = []
         print("No such election model!", model)
@@ -219,69 +223,8 @@ def generate_ordinal_votes(model=None, num_candidates=None, num_voters=None, par
 #
 #         id_ += experiment.families[family_id].size
 
-
-# GENERATE
-def generate_instances(experiment=None, model=None, name=None, num_candidates=None,
-                       num_voters=None, num_nodes=None, params=None, ballot='ordinal',
-                       param_name=None):
-    """ main function: generate instances """
-
-    if params is None:
-        params = {}
-
-    alpha = 1
-
-    if model == 'mallows' and params['phi'] is None:
-        params['phi'] = rand.random()
-    elif model == 'norm-mallows' and params['norm-phi'] is None:
-        params['norm-phi'] = rand.random()
-    elif model == 'urn_model' and params['alpha'] is None:
-        params['alpha'] = gamma.rvs(0.8)
-
-    if model == 'norm-mallows':
-        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
-
-    if model == 'mallows_matrix_path':
-        params['norm-phi'] = params['alpha']
-        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
-
-    if model == 'erdos_renyi_graph' and params['p'] is None:
-        params['p'] = rand.random()
-
-    if param_name is not None:
-        alpha = params[param_name]
-
-    if 'weight' not in params:
-        params['weight'] = 0.
-
-    votes = None
-    graph = None
-
-    if ballot == 'ordinal':
-        votes = generate_ordinal_votes(model=model, num_candidates=num_candidates,
-                                       num_voters=num_voters, params=params)
-        instance = OrdinalElection("virtual", "virtual", votes=votes, model=model,
-                            num_candidates=num_candidates,
-                            num_voters=num_voters, ballot=ballot, alpha=alpha)
-    elif ballot == 'approval':
-        votes = generate_approval_votes(model=model, num_candidates=num_candidates,
-                                        num_voters=num_voters, params=params)
-        instance = ApprovalElection("virtual", "virtual", votes=votes, model=model,
-                            num_candidates=num_candidates,
-                            num_voters=num_voters, ballot=ballot, alpha=alpha)
-    elif ballot == 'graph':
-        graph = generate_graph(model=model, num_nodes=num_nodes, params=params)
-        instance = Graph("virtual", "virtual", graph=graph,
-                         model=model, num_nodes=num_nodes, alpha=alpha)
-
-    else:
-        print("Such ballot does not exist!")
-        instance = None
-
-    experiment.instances[name] = instance
-
-    # For now, storing works only for ordinal ballot
-    if experiment.store:
+# STORE
+def store_instances(experiment, model, name, num_candidates, num_voters, params):
 
         if model in LIST_OF_FAKE_MODELS:
             path = os.path.join("experiments", str(experiment.experiment_id),
@@ -348,6 +291,69 @@ def generate_instances(experiment=None, model=None, name=None, num_candidates=No
                             file_.write(", ")
                         else:
                             file_.write("\n")
+
+
+# GENERATE
+def generate_instances(experiment=None, model=None, name=None, num_candidates=None,
+                       num_voters=None, num_nodes=None, params=None, ballot='ordinal',
+                       param_name=None):
+    """ main function: generate instances """
+
+    if params is None:
+        params = {}
+
+    alpha = 1
+
+    if model == 'mallows' and params['phi'] is None:
+        params['phi'] = rand.random()
+    elif model == 'norm-mallows' and params['norm-phi'] is None:
+        params['norm-phi'] = rand.random()
+    elif model == 'urn_model' and params['alpha'] is None:
+        params['alpha'] = gamma.rvs(0.8)
+
+    if model == 'norm-mallows':
+        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+
+    if model == 'mallows_matrix_path':
+        params['norm-phi'] = params['alpha']
+        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+
+    if model == 'erdos_renyi_graph' and params['p'] is None:
+        params['p'] = rand.random()
+
+    if param_name is not None:
+        alpha = params[param_name]
+
+    if 'weight' not in params:
+        params['weight'] = 0.
+
+
+    if ballot == 'ordinal':
+        votes = generate_ordinal_votes(model=model, num_candidates=num_candidates,
+                                       num_voters=num_voters, params=params)
+        instance = OrdinalElection("virtual", "virtual", votes=votes, model=model,
+                            num_candidates=num_candidates,
+                            num_voters=num_voters, ballot=ballot, alpha=alpha)
+    elif ballot == 'approval':
+        votes = generate_approval_votes(model=model, num_candidates=num_candidates,
+                                        num_voters=num_voters, params=params)
+        instance = ApprovalElection("virtual", "virtual", votes=votes, model=model,
+                            num_candidates=num_candidates,
+                            num_voters=num_voters, ballot=ballot, alpha=alpha)
+    elif ballot == 'graph':
+        graph = generate_graph(model=model, num_nodes=num_nodes, params=params)
+        instance = Graph("virtual", "virtual", graph=graph,
+                         model=model, num_nodes=num_nodes, alpha=alpha)
+
+    else:
+        print("Such ballot does not exist!")
+        instance = None
+
+    experiment.instances[name] = instance
+
+    # For now, storing works only for ordinal ballot
+    if experiment.store:
+        store_instances(experiment, model, name, num_candidates, num_voters, params)
 
     return experiment.instances[name]
 

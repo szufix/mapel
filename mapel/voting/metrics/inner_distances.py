@@ -1,10 +1,11 @@
-
+import copy
 import math
 import numpy as np
 
 ### MAPPING ###
 def map_str_to_func(name):
     return {'l1': l1,
+            'single_l1': single_l1,
             'l2': l2,
             'chebyshev': chebyshev,
             'hellinger': hellinger,
@@ -19,6 +20,11 @@ def discrete(vector_1, vector_2):
         if vector_1[i] != vector_2[i]:
             return 1
     return 0
+
+
+def single_l1(value_1, value_2):
+    """ compute L1 metric """
+    return abs(value_1 - value_2)
 
 
 def l1(vector_1, vector_2):
@@ -48,6 +54,7 @@ def hellinger(vector_1, vector_2):
 
 def emd(vector_1, vector_2):
     """ compute EMD metric """
+    vector_1 = copy.deepcopy(vector_1)
     dirt = 0.
     for i in range(len(vector_1) - 1):
         surplus = vector_1[i] - vector_2[i]

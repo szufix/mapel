@@ -24,17 +24,32 @@ def generate_approval_euclidean_election(num_voters=None, num_candidates=None, p
 
     dim = params['dim']
 
-    if 'shift' in params:
-        shift = np.array([params['shift']**2 for _ in range(dim)])
-    else:
-        shift = np.array([0 for _ in range(dim)])
-
     rankings = np.zeros([num_voters, num_candidates], dtype=int)
     distances = np.zeros([num_voters, num_candidates])
     votes = []
 
-    voters = np.random.rand(num_voters, dim) + shift
-    candidates = np.random.rand(num_candidates, dim)
+    if 'shift' in params:
+        shift = np.array([params['shift']**2 for _ in range(dim)])
+        voters = np.random.rand(num_voters, dim) + shift
+        candidates = np.random.rand(num_candidates, dim)
+    elif 'gauss' in params:
+        voters = np.random.rand(num_voters, dim)
+        params['gauss'] /= 2
+        num_candidates_in_group_a = int(params['gauss'] * num_candidates)
+        num_candidates_in_group_b = num_voters - num_candidates_in_group_a
+        scale_group_a = params['gauss']
+        scale_group_b = 1 - params['gauss']
+        loc_a = [float(1/3) for _ in range(dim)]
+        loc_b = [float(2/3) for _ in range(dim)]
+        candidates_group_a = np.random.normal(loc=loc_a, scale=scale_group_a,
+                                              size=(num_candidates_in_group_a, dim))
+        candidates_group_b = np.random.normal(loc=loc_b, scale=scale_group_b,
+                                              size=(num_candidates_in_group_b, dim))
+        candidates = np.concatenate((candidates_group_a, candidates_group_b), axis=0)
+    else:
+        voters = []
+        candidates = []
+        print("We need params for euclidean model!")
 
     for v in range(num_voters):
         for c in range(num_candidates):

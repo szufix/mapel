@@ -43,7 +43,8 @@ def get_approval_distance(election_1, election_2, distance_name=None):
 
     metrics_with_inner_distance = {
         'approval_frequency': mad.compute_approval_frequency,
-        'coapproval_frequency_vectors': mad.compute_cooparoval_frequency_vectors,
+        'coapproval_frequency_vectors': mad.compute_coapproval_frequency_vectors,
+        'coapproval_pairwise': mad.compute_coapproval_pairwise,
     }
 
     if main_distance in metrics_without_params:
@@ -113,6 +114,7 @@ def single_thread(experiment, distances, times, thread_ids, t, matchings):
     """ Single thread for computing distance """
 
     for election_id_1, election_id_2 in thread_ids:
+        # print(election_id_1, election_id_2)
         start_time = time()
         distance, matching = get_distance(experiment.instances[election_id_1],
                                           experiment.instances[election_id_2],

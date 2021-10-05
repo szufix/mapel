@@ -66,7 +66,12 @@ PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
                 'walsh_party', 'conitzer_party', 'mallows_party'}
 
 APPROVAL_MODELS = {'approval_ic', 'approval_mallows', 'approval_id',
-                   'approval_urn', 'approval_euclidean'}
+                   'approval_urn', 'approval_euclidean', 'approval_raw_mallows',
+                   'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
+                        'approval_half_1', 'approval_half_2', 'approval_disjoint_mallows'}
+
+APPROVAL_FAKE_MODELS = {'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
+                        'approval_half_1', 'approval_half_2'}
 
 GRAPH_MODELS = {'erdos_renyi_graph', 'watts_strogatz_graph', 'barabasi_albert_graph',
                 'random_geometric_graph', 'random_tree',

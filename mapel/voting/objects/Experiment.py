@@ -175,8 +175,8 @@ class Experiment:
 
         return ids
 
-    def add_election(self, **kwargs):
-        return self.add_instance(**kwargs)
+    def add_election(self, name=None, **kwargs):
+        return self.add_instance(election_id=name, **kwargs)
 
     def add_graph(self, name=None, **kwargs):
         return self.add_instance(election_id=name, **kwargs)
@@ -219,6 +219,15 @@ class Experiment:
         """ Compute distances between instances (using threads) """
 
         self.distance_name = distance_name
+
+        # precompute vectors, matrices, etc...
+        if '-approval_frequency' in distance_name:
+            for instance in self.instances.values():
+                instance.votes_to_approval_frequency_vector()
+        elif '-coapproval_frequency_vectors' in distance_name:
+            for instance in self.instances.values():
+                instance.votes_to_coapproval_frequency_vectors()
+        # continue with normal code
 
         matchings = {}
         distances = {}
@@ -903,7 +912,7 @@ class Experiment:
 
         self.points_by_families = points_by_families
 
-    def compute_feature(self, name=None, attraction_factor=1):
+    def compute_feature(self, name=None):
 
         # values = []
         feature_dict = {}
