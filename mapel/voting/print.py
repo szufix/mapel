@@ -316,6 +316,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
                     for i in range(experiment.families[family_id].size):
                         election_id = experiment.families[family_id].election_ids[i]
                         alpha = experiment.instances[election_id].alpha
+                        alpha *= experiment.families[family_id].alpha
                         alpha = (alpha + 0.2) / 1.2
                         if i == experiment.families[family_id].size - 1:
                             ax.scatter(experiment.points_by_families[family_id][0][i],

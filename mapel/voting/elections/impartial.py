@@ -56,18 +56,15 @@ def generate_ic_party(num_voters=None, num_candidates=None, params=None,
         votes[j] = np.random.permutation(num_parties)
 
     new_votes = [[] for _ in range(num_voters)]
-    # print(votes)
     for i in range(num_voters):
         for j in range(num_parties):
             for w in range(party_size):
                 _id = votes[i][j] * party_size + w
                 new_votes[i].append(_id)
-    # print(new_votes)
     return new_votes
 
 
 def generate_approval_id_election(num_voters=None, num_candidates=None, params=None):
-    # params['p'] /= 2
     k = int(params['p']*num_candidates)
     vote = {i for i in range(k)}
     votes = [vote for _ in range(num_voters)]

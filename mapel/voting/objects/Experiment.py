@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import copy
+from abc import ABCMeta, abstractmethod
 
 from mapel.voting.objects.Election import Election
 from mapel.voting.objects.Family import Family
@@ -43,10 +44,12 @@ COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 
 
 
 class Experiment:
+    __metaclass__ = ABCMeta
     """Abstract set of instances."""
 
     def __init__(self, ignore=None, instances=None, distances=None, with_matrices=False,
-                 coordinates=None, distance_name='emd-positionwise', experiment_id=None):
+                 coordinates=None, distance_name='emd-positionwise', experiment_id=None,
+                 instance_type='ordinal'):
 
         self.distance_name = distance_name
         self.instances = {}
@@ -63,6 +66,7 @@ class Experiment:
         self.num_families = None
         self.num_instances = None
         self.main_order = None
+        self.instance_type = instance_type
 
         if experiment_id is None:
             self.store = False
@@ -75,7 +79,7 @@ class Experiment:
 
         if instances is not None:
             if instances == 'import':
-                self.instances = self.add_instances_to_experiment(with_matrices=with_matrices)
+                self.instances = self.add_instances_to_experiment()
             else:
                 self.instances = instances
 
@@ -181,6 +185,9 @@ class Experiment:
     def add_graph(self, name=None, **kwargs):
         return self.add_instance(election_id=name, **kwargs)
 
+    def prepare_elections(self):
+        self.prepare_instances()
+
     def prepare_instances(self):
         """ Prepare instances for a given experiment """
 
@@ -197,12 +204,14 @@ class Experiment:
                 model = self.families[family_id].model
 
                 if model in preflib.LIST_OF_PREFLIB_MODELS:
-                    _elections.prepare_preflib_family(
+                    ids = _elections.prepare_preflib_family(
                         experiment=self, model=model, params=params)
                 else:
-                    _elections.prepare_statistical_culture_family(
+                    ids = _elections.prepare_statistical_culture_family(
                         experiment=self, model=model,
                         family_id=family_id, params=params)
+
+                self.families[family_id].election_ids = ids
 
     def compute_winners(self, method=None, num_winners=1):
         for election_id in self.instances:
@@ -286,6 +295,10 @@ class Experiment:
         self.times = times
         self.matchings = matchings
 
+    @abstractmethod
+    def add_instances_to_experiment(self):
+        pass
+
     def create_structure(self):
 
         # PREPARE STRUCTURE
@@ -359,30 +372,6 @@ class Experiment:
         except FileExistsError:
             print("Experiment already exists!")
 
-    def add_instances_to_experiment(self, with_matrices=False):
-        """ Import instances from a file """
-
-        instances = {}
-
-        for family_id in self.families:
-
-            ids = []
-            if self.families[family_id].single_election:
-                election_id = family_id
-                election = Election(self.experiment_id, election_id, with_matrix=with_matrices)
-                instances[election_id] = election
-                ids.append(str(election_id))
-            else:
-                for j in range(self.families[family_id].size):
-                    election_id = family_id + '_' + str(j)
-                    election = Election(self.experiment_id, election_id, with_matrix=with_matrices)
-                    instances[election_id] = election
-                    ids.append(str(election_id))
-
-            self.families[family_id].election_ids = ids
-
-
-        return instances
 
     def add_distances_to_experiment(self, distance_name=None):
         distances, times, stds = self.import_my_distances(distance_name=distance_name)
@@ -556,8 +545,25 @@ class Experiment:
                 uniformity = self.get_election_id_from_model_name('uniformity')
                 identity = self.get_election_id_from_model_name('identity')
                 antagonism = self.get_election_id_from_model_name('antagonism')
-                stratification = self.get_election_id_from_model_name(
-                    'stratification')
+                stratification = self.get_election_id_from_model_name('stratification')
+
+                d_x = self.coordinates[identity][0] - self.coordinates[uniformity][0]
+                d_y = self.coordinates[identity][1] - self.coordinates[uniformity][1]
+                alpha = math.atan(d_x / d_y)
+                self.rotate(alpha - math.pi / 2.)
+                if self.coordinates[uniformity][0] > self.coordinates[identity][0]:
+                    self.rotate(math.pi)
+
+                if self.coordinates[antagonism][1] < self.coordinates[stratification][1]:
+                    self.reverse()
+            except:
+                pass
+
+            try:
+                uniformity = self.get_election_id_from_model_name('approval_ic_0.5')
+                identity = self.get_election_id_from_model_name('approval_id_0.5')
+                antagonism = self.get_election_id_from_model_name('approval_ones')
+                stratification = self.get_election_id_from_model_name('approval_zeros')
 
                 d_x = self.coordinates[identity][0] - self.coordinates[uniformity][0]
                 d_y = self.coordinates[identity][1] - self.coordinates[uniformity][1]
@@ -769,6 +775,9 @@ class Experiment:
             if 'num_voters' in row.keys():
                 num_voters = int(row['num_voters'])
 
+            if 'path' in row.keys():
+                path = ast.literal_eval(str(row['path']))
+
             family_id = str(row['label'])
             # family_id = model
 
@@ -785,10 +794,10 @@ class Experiment:
                 family_id += '_' + str(float(params['norm-phi']))
 
             single_election = False
-            if label in ["UN", "ID", "AN", "ST", "CON", "WAL", "CAT",
-                         "SHI", "MID"]:
-                single_election = True
-                family_id = label
+            # if label in ["UN", "ID", "AN", "ST", "CON", "WAL", "CAT",
+            #              "SHI", "MID"]:
+            #     single_election = True
+            #     family_id = label
 
             families[family_id] = Family(model=model,
                                          family_id=family_id,
@@ -797,7 +806,7 @@ class Experiment:
                                          size=size, marker=marker,
                                          starting_from=starting_from,
                                          num_candidates=num_candidates,
-                                         num_voters=num_voters,
+                                         num_voters=num_voters, path=path,
                                          single_election=single_election)
             starting_from += size
 

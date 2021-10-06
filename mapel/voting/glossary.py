@@ -42,6 +42,8 @@ NICE_NAME = {
     'real_antagonism': 'Real_Antagonism',
     'real_stratification': 'Real_Stratification',
     'group-separable': 'Group-Separable',
+    'approval_id': 'Approval_ID',
+    'approval_ic': 'Approval_IC',
     }
 
 
@@ -68,7 +70,7 @@ PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
 APPROVAL_MODELS = {'approval_ic', 'approval_mallows', 'approval_id',
                    'approval_urn', 'approval_euclidean', 'approval_raw_mallows',
                    'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
-                        'approval_half_1', 'approval_half_2', 'approval_disjoint_mallows'}
+                   'approval_half_1', 'approval_half_2', 'approval_disjoint_mallows'}
 
 APPROVAL_FAKE_MODELS = {'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
                         'approval_half_1', 'approval_half_2'}

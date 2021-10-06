@@ -9,6 +9,8 @@ import mapel.voting.features as features
 import copy
 
 from mapel.voting.objects.Experiment import Experiment
+from mapel.voting.objects.ApprovalExperiment import ApprovalExperiment
+from mapel.voting.objects.OrdinalExperiment import OrdinalExperiment
 from mapel.voting.metrics.inner_distances import l1, l2
 
 import mapel.voting._metrics as metr
@@ -315,10 +317,18 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
                                      all_alternative_banzhaf_vectors[j][spoiler_id][party_id]])
 
 
-def prepare_experiment(experiment_id=None, instances=None, distances=None,
+def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
                        coordinates=None, distance_name='emd-positionwise'):
-    return Experiment("virtual", experiment_id=experiment_id, instances=instances,
-                      distances=distances, coordinates=coordinates, distance_name=distance_name)
+
+    if instance_type == 'ordinal':
+        return OrdinalExperiment("virtual", experiment_id=experiment_id, instances=instances,
+                          instance_type=instance_type,
+                          distances=distances, coordinates=coordinates, distance_name=distance_name)
+    elif instance_type == 'approval':
+        return ApprovalExperiment("virtual", experiment_id=experiment_id, instances=instances,
+                          instance_type=instance_type,
+                          distances=distances, coordinates=coordinates, distance_name=distance_name)
+
 
 
 def generate_experiment(instances=None):

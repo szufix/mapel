@@ -224,7 +224,7 @@ def generate_ordinal_votes(model=None, num_candidates=None, num_voters=None, par
 #         id_ += experiment.families[family_id].size
 
 # STORE
-def store_instances(experiment, model, name, num_candidates, num_voters, params):
+def store_ordinal_instances(experiment, model, name, num_candidates, num_voters, params):
 
         if model in LIST_OF_FAKE_MODELS:
             path = os.path.join("experiments", str(experiment.experiment_id),
@@ -293,6 +293,60 @@ def store_instances(experiment, model, name, num_candidates, num_voters, params)
                             file_.write("\n")
 
 
+def store_approval_instances(experiment, model, name, num_candidates, num_voters, params):
+
+    if model in APPROVAL_FAKE_MODELS:
+        path = os.path.join("experiments", str(experiment.experiment_id),
+                            "instances", (str(name) + ".soc"))
+        file_ = open(path, 'w')
+        file_.write('$ fake' + '\n')
+        file_.write(str(num_voters) + '\n')
+        file_.write(str(num_candidates) + '\n')
+        file_.write(str(model) + '\n')
+        # if model == 'norm-mallows_matrix':
+        #     file_.write(str(round(params['norm-phi'], 5)) + '\n')
+        # elif model in PATHS:
+        #     file_.write(str(round(params['alpha'], 5)) + '\n')
+        #     if model == 'mallows_matrix_path':
+        #         file_.write(str(round(params['weight'], 5)) + '\n')
+        file_.close()
+
+    else:
+        votes = experiment.instances[name].votes
+        path = os.path.join("experiments",
+                            str(experiment.experiment_id), "instances",
+                            (str(name) + ".soc"))
+        with open(path, 'w') as file_:
+
+            if model in {'approval_id', 'approval_ic'}:
+                file_.write("# " + NICE_NAME[model] + " " +
+                            str(round(params['p'], 5)) + "\n")
+            elif model in NICE_NAME:
+                file_.write("# " + NICE_NAME[model] + "\n")
+            else:
+                file_.write("# " + model + "\n")
+
+            file_.write(str(num_candidates) + "\n")
+
+            for i in range(num_candidates):
+                file_.write(str(i) + ', c' + str(i) + "\n")
+
+            c = Counter(map(tuple, votes))
+            counted_votes = [[count, list(row)] for row, count in c.items()]
+            counted_votes = sorted(counted_votes, reverse=True)
+
+            file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
+                        str(len(counted_votes)) + "\n")
+
+            for i in range(len(counted_votes)):
+                file_.write(str(counted_votes[i][0]) + ', {')
+                for j in range(len(counted_votes[i][1])):
+                    file_.write(str(int(counted_votes[i][1][j])))
+                    if j < len(counted_votes[i][1]) - 1:
+                        file_.write(", ")
+                file_.write("}\n")
+
+
 # GENERATE
 def generate_instances(experiment=None, model=None, name=None, num_candidates=None,
                        num_voters=None, num_nodes=None, params=None, ballot='ordinal',
@@ -349,13 +403,17 @@ def generate_instances(experiment=None, model=None, name=None, num_candidates=No
         print("Such ballot does not exist!")
         instance = None
 
-    experiment.instances[name] = instance
+    if experiment is not None:
+        experiment.instances[name] = instance
 
-    # For now, storing works only for ordinal ballot
-    if experiment.store:
-        store_instances(experiment, model, name, num_candidates, num_voters, params)
+        # For now, storing works only for ordinal ballot
+        if experiment.store:
+            if ballot == 'ordinal':
+                store_ordinal_instances(experiment, model, name, num_candidates, num_voters, params)
+            if ballot == 'approval':
+                store_approval_instances(experiment, model, name, num_candidates, num_voters, params)
 
-    return experiment.instances[name]
+    return instance
 
 
 ###############################################################################
@@ -515,7 +573,8 @@ def prepare_statistical_culture_family(experiment=None, model=None, family_id=No
     for j in range(experiment.families[family_id].size):
 
         param_name = None
-        if experiment.families[family_id].path is not None:
+        path = experiment.families[family_id].path
+        if path is not None and 'param_name' in path:
             new_params, param_name = _get_params_for_paths(experiment, family_id, j)
             params = {**params, **new_params}
 
@@ -536,5 +595,4 @@ def prepare_statistical_culture_family(experiment=None, model=None, family_id=No
                            params=copy.deepcopy(params), ballot=ballot, param_name=param_name)
 
         keys.append(name)
-
     return keys

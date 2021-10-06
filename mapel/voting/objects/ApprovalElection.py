@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
+import os
 
 from mapel.voting.objects.Election import Election
 from mapel.voting.metrics.inner_distances import hamming
@@ -9,7 +10,7 @@ from mapel.voting.metrics.inner_distances import hamming
 class ApprovalElection(Election):
 
     def __init__(self, experiment_id, name, votes=None, with_matrix=False, alpha=None, model=None,
-                 ballot='approval', num_voters=None, num_candidates=None):
+                 ballot='approval', num_voters=None, num_candidates=None, _import=False):
 
         super().__init__(experiment_id, name, votes=votes, with_matrix=with_matrix, alpha=alpha,
                          model=model, ballot=ballot,
@@ -17,6 +18,10 @@ class ApprovalElection(Election):
 
         self.approval_frequency_vector = []
         self.coapproval_frequency_vectors = []
+
+        if _import:
+            self.votes, self.num_voters, self.num_candidates, self.param, \
+                self.election_model = import_app_election(experiment_id, name)
 
     def get_approval_frequency_vector(self):
         return self.approval_frequency_vector
@@ -85,3 +90,49 @@ class ApprovalElection(Election):
                         matrix[c_1][c_2] += 1
         matrix = matrix / self.num_voters
         return matrix
+
+
+def import_app_election(experiment_id, election_id):
+
+    file_name = str(election_id) + ".soc"
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "instances", file_name)
+    my_file = open(path, 'r')
+
+    param = 0
+    first_line = my_file.readline()
+    if first_line[0] != '#':
+        model_name = 'empty'
+        num_candidates = int(first_line)
+    else:
+        first_line = first_line.strip().split()
+        model_name = first_line[1]
+        if any(map(str.isdigit, first_line[len(first_line) - 1])):
+            param = first_line[len(first_line) - 1]
+        num_candidates = int(my_file.readline())
+
+    for _ in range(num_candidates):
+        my_file.readline()
+
+    line = my_file.readline().rstrip("\n").split(',')
+    num_voters = int(line[0])
+    num_options = int(line[2])
+    votes = [set() for _ in range(num_voters)]
+
+    it = 0
+    for j in range(num_options):
+        line = my_file.readline().rstrip("\n").replace("{", '').\
+            replace("}", '').replace(' ', '').split(',')
+        if line[1] != '':
+            quantity = int(line[0])
+            for k in range(quantity):
+                for l in range(len(line)-1):
+                    votes[it].add(int(line[l + 1]))
+                it += 1
+
+    # Shift by -1
+    # if model_name in LIST_OF_PREFLIB_MODELS:
+    #     for i in range(num_voters):
+    #         for j in range(num_candidates):
+    #             votes[i][j] -= 1
+
+    return votes, num_voters, num_candidates, param, model_name

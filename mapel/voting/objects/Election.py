@@ -57,7 +57,7 @@ class Election(Instance):
                         self.num_candidates = import_fake_elections(experiment_id, name)
                 else:
                     self.votes, self.num_voters, self.num_candidates, self.param, \
-                        self.election_model = import_soc_elections(experiment_id, name)
+                        self.election_model = import_soc_election(experiment_id, name)
 
                     self.potes = self.votes_to_potes()
 
@@ -188,9 +188,9 @@ def import_fake_elections(experiment_id, election_id):
     return fake_model_name, params, num_voters, num_candidates
 
 
-def import_soc_elections(experiment_id, election_id):
+def import_soc_election(experiment_id, election_id):
     file_name = str(election_id) + ".soc"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "instances", file_name)
     my_file = open(path, 'r')
 
     param = 0

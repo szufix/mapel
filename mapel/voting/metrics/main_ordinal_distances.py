@@ -27,7 +27,6 @@ def compute_positionwise_distance(election_1, election_2, inner_distance):
         election_1, election_2, map_str_to_func(inner_distance))
     objective_value, matching = solve_matching_vectors(cost_table)
 
-    print(objective_value)
     return objective_value, matching
 
 
@@ -121,31 +120,31 @@ def get_matching_cost_positionwise(ele_1, ele_2, inner_distance):
     vectors_1 = ele_1.get_vectors()
     vectors_2 = ele_2.get_vectors()
 
-    import copy
-    def emd(vector_1, vector_2):
-        """ compute EMD metric """
-        vector_1 = copy.deepcopy(vector_1)
-        dirt = 0.
-        for i in range(len(vector_1) - 1):
-            surplus = vector_1[i] - vector_2[i]
-            dirt += abs(surplus)
-            vector_1[i + 1] += surplus
-        return dirt
-
-    c_2 = []
-    for vector in vectors_2:
-        c_2.append(convert_to_cumulative(vector))
-
-    order = [i for i in range(len(vectors_1))]
-    tmp = [x for _, x in sorted(zip(c_2, order), reverse=True)]
-
-    total = 0
-    for i in range(len(vectors_1)):
-        v1 = np.array(vectors_1[i])
-        v2 = np.array(vectors_2[tmp[i]])
-        val = emd(v1, v2)
-        total += val
-    print(total)
+    # import copy
+    # def emd(vector_1, vector_2):
+    #     """ compute EMD metric """
+    #     vector_1 = copy.deepcopy(vector_1)
+    #     dirt = 0.
+    #     for i in range(len(vector_1) - 1):
+    #         surplus = vector_1[i] - vector_2[i]
+    #         dirt += abs(surplus)
+    #         vector_1[i + 1] += surplus
+    #     return dirt
+    #
+    # c_2 = []
+    # for vector in vectors_2:
+    #     c_2.append(convert_to_cumulative(vector))
+    #
+    # order = [i for i in range(len(vectors_1))]
+    # tmp = [x for _, x in sorted(zip(c_2, order), reverse=True)]
+    #
+    # total = 0
+    # for i in range(len(vectors_1)):
+    #     v1 = np.array(vectors_1[i])
+    #     v2 = np.array(vectors_2[tmp[i]])
+    #     val = emd(v1, v2)
+    #     total += val
+    # print(total)
 
     size = ele_1.num_candidates
     cost_table = [[inner_distance(list(vectors_1[i]), list(vectors_2[j]))

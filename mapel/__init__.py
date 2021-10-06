@@ -1,5 +1,6 @@
 
 import mapel.voting._metrics as metr
+import mapel.voting._elections as ele
 import mapel.voting.print as pr
 import mapel.voting.development as dev
 import mapel.voting.features as features
@@ -29,6 +30,13 @@ def compute_subelection_by_groups(**kwargs):
 def compute_spoilers(**kwargs):
     return dev.compute_spoilers(**kwargs)
 
+
+### WITHOUT EXPERIMENT ###
+def generate_election(**kwargs):
+    return ele.generate_instances(**kwargs)
+
+def compute_distance(*args, **kwargs):
+    return metr.get_distance(*args, **kwargs)
 
 # def shapley(*args, **kwargs):
 #     return features.shapley(*args, **kwargs)
