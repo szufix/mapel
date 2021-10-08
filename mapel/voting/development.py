@@ -9,9 +9,9 @@ import mapel.voting.features as features
 import copy
 
 from mapel.voting.objects.Experiment import Experiment
-from mapel.voting.objects.ApprovalExperiment import ApprovalExperiment
-from mapel.voting.objects.OrdinalExperiment import OrdinalExperiment
-from mapel.voting.metrics.inner_distances import l1, l2
+from mapel.voting.objects.ApprovalElectionExperiment import ApprovalExperiment
+from mapel.voting.objects.OrdinalElectionExperiment import OrdinalExperiment
+from mapel.voting.metrics.inner_distances import l1, l2, chebyshev
 
 import mapel.voting._metrics as metr
 import csv
@@ -211,9 +211,15 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
         # WEIGHT
         weight_spoilers = []
         for party_id in range(num_parties):
-            value = l1(weight_vector, alternative_weight_vectors[party_id])
-            value -= 2 * weight_vector[party_id]
-            weight_spoilers.append(value / (value + borda[party_id]))
+            weight_vector_p = weight_vector
+            weight_vector_p[party_id] = 0.
+            if sum(weight_vector_p) == 0:
+                weight_vector_p = [1. / num_parties for _ in weight_vector_p]
+            weight_vector_p[party_id] = 0
+            _sum = sum(weight_vector_p)
+            weight_vector_p = [x/_sum for x in weight_vector_p]
+            value = chebyshev(weight_vector_p, alternative_weight_vectors[party_id])
+            weight_spoilers.append(value / borda[party_id])
         all_weight_spoilers.append(weight_spoilers)
         all_weight_vectors.append(weight_vector)
 
@@ -236,13 +242,18 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
         banzhaf_vector = features.banzhaf(weight_vector)
         alternative_banzhaf_vectors = []
         for party_id in range(num_parties):
-            alternative_banzhaf_vector = features.banzhaf(
-                alternative_weight_vectors[party_id])
-            alternative_banzhaf_vectors.append(
-                alternative_banzhaf_vector)
-            value = l1(banzhaf_vector, alternative_banzhaf_vector)
-            value -= 2 * banzhaf_vector[party_id]
-            banzhaf_spoilers.append(value / (value + borda[party_id]))
+            alternative_banzhaf_vector = features.banzhaf(alternative_weight_vectors[party_id])
+            alternative_banzhaf_vectors.append(alternative_banzhaf_vector)
+
+            banzhaf_vector_p = banzhaf_vector
+            banzhaf_vector_p[party_id] = 0.
+            if sum(banzhaf_vector_p) == 0.:
+                banzhaf_vector_p = [1. / num_parties for _ in banzhaf_vector_p]
+            banzhaf_vector_p[party_id] = 0
+            _sum = sum(banzhaf_vector_p)
+            banzhaf_vector_p = [x / _sum for x in banzhaf_vector_p]
+            value = chebyshev(banzhaf_vector_p, alternative_banzhaf_vector)
+            banzhaf_spoilers.append(value / borda[party_id])
 
         all_banzhaf_spoilers.append(banzhaf_spoilers)
         all_banzhaf_vectors.append(banzhaf_vector)

@@ -4,19 +4,35 @@ import math
 
 
 def generate_approval_ic_election(num_voters=None, num_candidates=None, params=None):
+    """ Generate (approval) votes from Impartial Culture """
+
+    if params is None:
+        params = {}
     if 'p' not in params:
         params['p'] = 0.5
-    votes = [0 for _ in range(num_voters)]
+    votes = [set() for i in range(num_voters)]
     for i in range(num_voters):
-        vote = set()
         for j in range(num_candidates):
             if rand.random() <= params['p']:
-                vote.add(j)
-        votes[i] = vote
+                votes[i].add(j)
+    return votes
+
+
+def generate_approval_id_election(num_voters=None, num_candidates=None, params=None):
+    """ Generate (approval) votes from Identity for approval """
+
+    if params is None:
+        params = {}
+    if 'p' not in params:
+        params['p'] = 0.5
+    k = int(params['p'] * num_candidates)
+    vote = {i for i in range(k)}
+    votes = [vote for _ in range(num_voters)]
     return votes
 
 
 def generate_impartial_anonymous_culture_election(num_voters=None, num_candidates=None):
+    """ Generate (ordinal) votes from Impartial Anonymous Culture """
     alpha = 1. / math.factorial(num_candidates)
 
     votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
@@ -34,7 +50,7 @@ def generate_impartial_anonymous_culture_election(num_voters=None, num_candidate
 
 
 def generate_impartial_culture_election(num_voters=None, num_candidates=None):
-    """ helper function: generate impartial culture elections """
+    """ Generate (ordinal) votes from Impartial Culture """
 
     votes = np.zeros([num_voters, num_candidates], dtype=int)
 
@@ -46,7 +62,8 @@ def generate_impartial_culture_election(num_voters=None, num_candidates=None):
 
 def generate_ic_party(num_voters=None, num_candidates=None, params=None,
                       election_model=None):
-    """ helper function: generate impartial culture elections """
+    """ Generate (party) votes from Impartial Culture"""
+
     num_parties = params['num_parties']
     party_size = params['num_winners']
 
@@ -63,9 +80,3 @@ def generate_ic_party(num_voters=None, num_candidates=None, params=None,
                 new_votes[i].append(_id)
     return new_votes
 
-
-def generate_approval_id_election(num_voters=None, num_candidates=None, params=None):
-    k = int(params['p']*num_candidates)
-    vote = {i for i in range(k)}
-    votes = [vote for _ in range(num_voters)]
-    return votes

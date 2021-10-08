@@ -5,7 +5,7 @@ import numpy as np
 
 
 def generate_urn_model_election(num_voters=None, num_candidates=None, params=None):
-    """ Generate (ordinal) Polya-Eggenberger urn model election"""
+    """ Generate (ordinal) votes from Polya-Eggenberger model """
 
     alpha = params['alpha']
     votes = np.zeros([num_voters, num_candidates])
@@ -22,7 +22,7 @@ def generate_urn_model_election(num_voters=None, num_candidates=None, params=Non
 
 
 def generate_approval_urn_election(num_voters=None, num_candidates=None, params=None):
-    """ Generate (approval) Polya-Eggenberger urn model election"""
+    """ Generate (approval) votes from Polya-Eggenberger model """
 
     alpha = params['alpha']
     votes = []

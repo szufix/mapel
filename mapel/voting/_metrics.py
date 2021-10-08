@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import csv
 import numpy as np
 from time import time
 from threading import Thread
@@ -11,31 +12,31 @@ from mapel.voting.objects.OrdinalElection import OrdinalElection
 from mapel.voting.objects.Graph import Graph
 import mapel.voting._elections as el
 
-import csv
 
 from mapel.voting.metrics import main_ordinal_distances as mod
 from mapel.voting.metrics import main_approval_distances as mad
 from mapel.voting.metrics import main_graph_distances as mgd
 
-from mapel.voting.metrics.inner_distances import l1
-
 import networkx as nx
 
 
 # MAIN FUNCTIONS
-def get_distance(election_1, election_2, distance_name=None):
-    """ Main function """
-    if type(election_1) is Graph:
-        return get_graph_distance(election_1.graph, election_2.graph, distance_name=distance_name)
-    elif type(election_1) is ApprovalElection:
-        return get_approval_distance(election_1, election_2, distance_name=distance_name)
-    elif type(election_1) is OrdinalElection:
-        return get_ordinal_distance(election_1, election_2, distance_name=distance_name)
+def get_distance(instance_1, instance_2, distance_name=None):
+    """ Get distance between two instances """
+
+    if type(instance_1) is Graph:
+        return get_graph_distance(instance_1.graph, instance_2.graph, distance_name=distance_name)
+    elif type(instance_1) is ApprovalElection:
+        return get_approval_distance(instance_1, instance_2, distance_name=distance_name)
+    elif type(instance_1) is OrdinalElection:
+        return get_ordinal_distance(instance_1, instance_2, distance_name=distance_name)
     else:
-        print('No such ballot!')
+        print('No such instance!')
 
 
 def get_approval_distance(election_1, election_2, distance_name=None):
+    """ Get distance between approval elections """
+
     inner_distance, main_distance = distance_name.split('-')
 
     metrics_without_params = {
@@ -45,6 +46,8 @@ def get_approval_distance(election_1, election_2, distance_name=None):
         'approval_frequency': mad.compute_approval_frequency,
         'coapproval_frequency_vectors': mad.compute_coapproval_frequency_vectors,
         'coapproval_pairwise': mad.compute_coapproval_pairwise,
+        'voterlikeness_vectors': mad.compute_voterlikeness_vectors,
+        'flow': mad.compute_flow,
     }
 
     if main_distance in metrics_without_params:
@@ -56,6 +59,8 @@ def get_approval_distance(election_1, election_2, distance_name=None):
 
 
 def get_ordinal_distance(election_1, election_2, distance_name=None):
+    """ Get distance between ordinal elections """
+
     inner_distance, main_distance = distance_name.split('-')
 
     metrics_without_params = {
@@ -82,6 +87,8 @@ def get_ordinal_distance(election_1, election_2, distance_name=None):
 
 
 def get_graph_distance(graph_1, graph_2, distance_name=''):
+    """ Get distance between two graphs """
+
     graph_simple_metrics = {'closeness_centrality': nx.closeness_centrality,
                             'degree_centrality': nx.degree_centrality,
                             'betweenness_centrality': nx.betweenness_centrality,

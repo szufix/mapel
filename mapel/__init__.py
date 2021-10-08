@@ -35,6 +35,7 @@ def compute_spoilers(**kwargs):
 def generate_election(**kwargs):
     return ele.generate_instances(**kwargs)
 
+
 def compute_distance(*args, **kwargs):
     return metr.get_distance(*args, **kwargs)
 

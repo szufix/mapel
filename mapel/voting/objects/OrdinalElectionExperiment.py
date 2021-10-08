@@ -39,10 +39,10 @@ except ImportError as error:
     Isomap = None
     print(error)
 
-from mapel.voting.objects.Experiment import Experiment
+from mapel.voting.objects.ElectionExperiment import ElectionExperiment
 
 
-class OrdinalExperiment(Experiment):
+class OrdinalExperiment(ElectionExperiment):
     """Abstract set of instances."""
 
     def __init__(self, ignore=None, instances=None, distances=None, with_matrices=False,
@@ -53,7 +53,6 @@ class OrdinalExperiment(Experiment):
                          coordinates=coordinates, distance_name=distance_name,
                          experiment_id=experiment_id,
                          instance_type=instance_type)
-
 
     def add_instances_to_experiment(self, with_matrices=False):
         """ Import instances from a file """

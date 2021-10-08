@@ -54,10 +54,10 @@ class Election(Instance):
                 self.fake = check_if_fake(experiment_id, name)
                 if self.fake:
                     self.election_model, self.fake_param, self.num_voters, \
-                        self.num_candidates = import_fake_elections(experiment_id, name)
+                        self.num_candidates = import_fake_soc_election(experiment_id, name)
                 else:
                     self.votes, self.num_voters, self.num_candidates, self.param, \
-                        self.election_model = import_soc_election(experiment_id, name)
+                        self.election_model = import_real_soc_election(experiment_id, name)
 
                     self.potes = self.votes_to_potes()
 
@@ -85,7 +85,7 @@ class Election(Instance):
         return matrix
 
     def votes_to_potes(self):
-        """ Prepare positional votes """
+        """ Convert votes to positional votes """
         potes = np.zeros([self.num_voters, self.num_candidates])
         for i in range(self.num_voters):
             for j in range(self.num_candidates):
@@ -161,7 +161,9 @@ def check_if_fake(experiment_id, election_id):
     return False
 
 
-def import_fake_elections(experiment_id, election_id):
+def import_fake_soc_election(experiment_id, election_id):
+    """ Import fake ordinal election form .soc file """
+
     file_name = str(election_id) + ".soc"
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
@@ -188,7 +190,9 @@ def import_fake_elections(experiment_id, election_id):
     return fake_model_name, params, num_voters, num_candidates
 
 
-def import_soc_election(experiment_id, election_id):
+def import_real_soc_election(experiment_id, election_id):
+    """ Import real ordinal election form .soc file """
+
     file_name = str(election_id) + ".soc"
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "instances", file_name)
     my_file = open(path, 'r')

@@ -40,10 +40,10 @@ except ImportError as error:
     Isomap = None
     print(error)
 
-from mapel.voting.objects.Experiment import Experiment
+from mapel.voting.objects.ElectionExperiment import ElectionExperiment
 
 
-class ApprovalExperiment(Experiment):
+class ApprovalExperiment(ElectionExperiment):
     """Abstract set of instances."""
 
     def __init__(self, ignore=None, instances=None, distances=None, with_matrices=False,

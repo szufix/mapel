@@ -154,7 +154,7 @@ def generate_1d_gaussian_party(election_model=None, num_voters=None,
     _min = min(candidates)[0]
     _max = max(candidates)[0]
 
-    shift = [rand.random()/4.]
+    shift = [rand.random()/2.-1/4.]
     for j in range(num_voters):
         voters[j] = [rand.random() * (_max - _min) + _min + shift[0]]
 
@@ -196,7 +196,7 @@ def generate_2d_gaussian_party(election_model=None, num_voters=None,
     y_min = min(column(candidates, 1))
     y_max = max(column(candidates, 1))
 
-    shift = [rand.random()/4., rand.random()/4.]
+    shift = [rand.random()/2.-1/4., rand.random()/2.-1/4.]
     for j in range(num_voters):
         voters[j] = [rand.random() * (x_max - x_min) + x_min + shift[0],
                      rand.random() * (y_max - y_min) + y_min + shift[1]]

@@ -5,8 +5,7 @@ from random import *
 from scipy.special import binom
 
 
-def generate_sp_party(model=None, num_voters=None,
-                           num_candidates=None, params=None):
+def generate_sp_party(model=None, num_voters=None, num_candidates=None, params=None):
 
     candidates = [[] for _ in range(num_candidates)]
     _ids = [i for i in range(num_candidates)]
@@ -15,10 +14,8 @@ def generate_sp_party(model=None, num_voters=None,
         for w in range(params['num_winners']):
             _id = j*params['num_winners'] + w
             candidates[_id] = [rand.gauss(params['party'][j][0], params['var'])]
-    # print(candidates)
 
     mapping = [x for _, x in sorted(zip(candidates, _ids))]
-    # print(mapping)
 
     if model == 'conitzer_party':
         votes = generate_conitzer_election(num_voters=num_voters,
@@ -26,11 +23,9 @@ def generate_sp_party(model=None, num_voters=None,
     elif model == 'walsh_party':
         votes = generate_walsh_election(num_voters=num_voters,
                                            num_candidates=num_candidates)
-    # print(votes)
     for i in range(num_voters):
         for j in range(num_candidates):
             votes[i][j] = mapping[votes[i][j]]
-    # print(votes)
 
     return votes
 

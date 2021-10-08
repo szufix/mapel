@@ -83,7 +83,10 @@ def generate_approval_votes(model=None, num_candidates=None, num_voters=None, pa
               'approval_raw_mallows': generate_approval_raw_mallows_election,
               'approval_urn': generate_approval_urn_election,
               'approval_euclidean': generate_approval_euclidean_election,
-              'approval_disjoint_mallows': generate_approval_disjoint_mallows_election}
+              'approval_disjoint_mallows': generate_approval_disjoint_mallows_election,
+              'approval_id_0.5': generate_approval_id_election,
+              'approval_ic_0.5': generate_approval_ic_election,
+              }
 
     if model in models:
         votes = models.get(model)(num_voters=num_voters, num_candidates=num_candidates,
@@ -187,42 +190,6 @@ def generate_ordinal_votes(model=None, num_candidates=None, num_voters=None, par
     return votes
 
 
-# def generate_family(**kwargs):
-#
-#     votes = generate_votes(**kwargs)
-#     election = Family("virtual", "virtual", votes=votes)
-#     return election
-
-
-# deprecated
-# needs update
-# def extend_elections(experiment_id, folder=None, starting_from=0,
-# ending_at=1000000):
-#     """ Prepare elections for a given experiment """
-#     experiment = Experiment(experiment_id, raw=True)
-#
-#     id_ = 0
-#
-#     for family_id in experiment.families:
-#         model = experiment.families[family_id].model
-#         param_1 = experiment.families[family_id].param_1
-#         param_2 = experiment.families[family_id].param_2
-#
-#         if starting_from <= id_ < ending_at:
-#
-#             if model in preflib.LIST_OF_PREFLIB_MODELS:
-#                 prepare_preflib_family(experiment_id, experiment=experiment,
-#                 model=model,
-#                                        param_1=param_1, id_=id_,
-#                                        folder=folder)
-#             else:
-#                 prepare_statistical_culture_family(experiment_id,
-#                 experiment=experiment,
-#                                 model=model,
-#                       param_1=param_1, param_2=param_2)
-#
-#         id_ += experiment.families[family_id].size
-
 # STORE
 def store_ordinal_instances(experiment, model, name, num_candidates, num_voters, params):
 
@@ -297,7 +264,7 @@ def store_approval_instances(experiment, model, name, num_candidates, num_voters
 
     if model in APPROVAL_FAKE_MODELS:
         path = os.path.join("experiments", str(experiment.experiment_id),
-                            "instances", (str(name) + ".soc"))
+                            "instances", (str(name) + ".app"))
         file_ = open(path, 'w')
         file_.write('$ fake' + '\n')
         file_.write(str(num_voters) + '\n')
@@ -315,14 +282,12 @@ def store_approval_instances(experiment, model, name, num_candidates, num_voters
         votes = experiment.instances[name].votes
         path = os.path.join("experiments",
                             str(experiment.experiment_id), "instances",
-                            (str(name) + ".soc"))
+                            (str(name) + ".app"))
         with open(path, 'w') as file_:
 
-            if model in {'approval_id', 'approval_ic'}:
+            if model in NICE_NAME:
                 file_.write("# " + NICE_NAME[model] + " " +
-                            str(round(params['p'], 5)) + "\n")
-            elif model in NICE_NAME:
-                file_.write("# " + NICE_NAME[model] + "\n")
+                            str(params) + "\n")
             else:
                 file_.write("# " + model + "\n")
 
@@ -377,6 +342,7 @@ def generate_instances(experiment=None, model=None, name=None, num_candidates=No
 
     if param_name is not None:
         alpha = params[param_name]
+        params['path_param'] = param_name
 
     if 'weight' not in params:
         params['weight'] = 0.

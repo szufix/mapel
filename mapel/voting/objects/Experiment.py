@@ -2,24 +2,20 @@
 import copy
 from abc import ABCMeta, abstractmethod
 
-from mapel.voting.objects.Election import Election
 from mapel.voting.objects.Family import Family
 
 import mapel.voting._elections as _elections
 import mapel.voting.features as features
-
-from threading import Thread
-from time import sleep
-
 import mapel.voting._metrics as metr
-
 import mapel.voting.print as pr
-
 import mapel.voting.elections.preflib as preflib
 
 import math
 import csv
 import os
+
+from threading import Thread
+from time import sleep
 
 import networkx as nx
 import numpy as np
@@ -47,14 +43,12 @@ class Experiment:
     __metaclass__ = ABCMeta
     """Abstract set of instances."""
 
-    def __init__(self, ignore=None, instances=None, distances=None, with_matrices=False,
+    def __init__(self, ignore=None, instances=None, distances=None,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
                  instance_type='ordinal'):
 
         self.distance_name = distance_name
         self.instances = {}
-        self.default_num_candidates = 10
-        self.default_num_voters = 100
 
         self.families = None
         self.distances = None
@@ -98,28 +92,6 @@ class Experiment:
 
         self.features = {}
 
-    def set_default_num_candidates(self, num_candidates):
-        self.default_num_candidates = num_candidates
-
-    def set_default_num_voters(self, num_voters):
-        self.default_num_voters = num_voters
-
-    def add_instance(self, model="none", params=None, label=None,
-                     color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
-                     num_candidates=None, num_voters=None, election_id=None, num_nodes=None):
-        """ Add election to the experiment """
-
-        if num_candidates is None:
-            num_candidates = self.default_num_candidates
-
-        if num_voters is None:
-            num_voters = self.default_num_voters
-
-        return self.add_family(model=model, params=params, size=size, label=label, color=color,
-                               alpha=alpha, show=show,  marker=marker, starting_from=starting_from,
-                               num_candidates=num_candidates, num_voters=num_voters,
-                               family_id=election_id, num_nodes=num_nodes, single_election=True)[0]
-
     def add_family(self, model="none", params=None, size=1, label=None, color="black",
                    alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,
                    num_voters=None, family_id=None, single_election=False, num_nodes=None,
@@ -128,29 +100,8 @@ class Experiment:
         if name is not None:
             family_id = name
 
-        if num_candidates is None:
-            num_candidates = self.default_num_candidates
-
-        if num_voters is None:
-            num_voters = self.default_num_voters
-
         if self.families is None:
             self.families = {}
-
-        if family_id is None:
-            family_id = model + '_' + str(num_candidates) + '_' + str(num_voters)
-            if model in {'urn_model'} and params['alpha'] is not None:
-                family_id += '_' + str(float(params['alpha']))
-            elif model in {'mallows'} and params['phi'] is not None:
-                family_id += '_' + str(float(params['phi']))
-            elif model in {'norm-mallows', 'norm-mallows_matrix'} \
-                    and params['norm-phi'] is not None:
-                family_id += '_' + str(float(params['norm-phi']))
-
-        if label in ["UN", "ID", "AN", "ST", "CON", "WAL", "CAT",
-                     "SHI", "MID"]:
-            single_election = True
-            family_id = label
 
         elif label is None:
             label = family_id
@@ -160,7 +111,7 @@ class Experiment:
                                           show=show, size=size, marker=marker,
                                           starting_from=starting_from, num_nodes=num_nodes,
                                           num_candidates=num_candidates,
-                                          num_voters=num_voters, path=path,
+                                          path=path,
                                           single_election=single_election)
 
         self.num_families = len(self.families)
@@ -179,8 +130,15 @@ class Experiment:
 
         return ids
 
-    def add_election(self, name=None, **kwargs):
-        return self.add_instance(election_id=name, **kwargs)
+    def add_instance(self, model="none", params=None, label=None,
+                     color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
+                     num_candidates=None, num_voters=None, election_id=None, num_nodes=None):
+        """ Add instance to the experiment """
+
+        return self.add_family(model=model, params=params, size=size, label=label, color=color,
+                               alpha=alpha, show=show,  marker=marker, starting_from=starting_from,
+                               num_candidates=num_candidates, num_voters=num_voters,
+                               family_id=election_id, num_nodes=num_nodes, single_election=True)[0]
 
     def add_graph(self, name=None, **kwargs):
         return self.add_instance(election_id=name, **kwargs)
@@ -233,9 +191,12 @@ class Experiment:
         if '-approval_frequency' in distance_name:
             for instance in self.instances.values():
                 instance.votes_to_approval_frequency_vector()
-        elif '-coapproval_frequency_vectors' in distance_name:
+        elif '-coapproval_frequency_vectors' in distance_name or '-flow' in distance_name:
             for instance in self.instances.values():
                 instance.votes_to_coapproval_frequency_vectors()
+        elif '-voterlikeness_vectors' in distance_name:
+            for instance in self.instances.values():
+                instance.votes_to_voterlikeness_vectors()
         # continue with normal code
 
         matchings = {}
@@ -273,6 +234,8 @@ class Experiment:
 
         for t in range(num_threads):
             threads[t].join()
+
+        # print(distances.keys())
 
         if self.store:
             path = os.path.join(os.getcwd(), "experiments",
@@ -322,14 +285,11 @@ class Experiment:
 
             # PREPARE MAP.CSV FILE
 
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "map.csv")
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,"map.csv")
+
             with open(path, 'w') as file_csv:
-                file_csv.write("size;num_candidates;num_voters;model;params;"
-                    "color;alpha;label;marker;show\n")
-                file_csv.write(
-                    "3;10;100;impartial_culture;{};black;1;"
-                    "Impartial Culture;o;t\n")
+                file_csv.write("size;num_candidates;num_voters;model;params;color;alpha;label;marker;show\n")
+                file_csv.write("3;10;100;impartial_culture;{};black;1;Impartial Culture;o;t\n")
                 file_csv.write("3;10;100;iac;{};black;0.7;IAC;o;t\n")
                 file_csv.write("3;10;100;conitzer;{};limegreen;1;SP by Conitzer;o;t\n")
                 file_csv.write("3;10;100;walsh;{};olivedrab;1;SP by Walsh;o;t\n")
@@ -341,28 +301,18 @@ class Experiment:
                 file_csv.write("3;10;100;3d_cube;{};ForestGreen;0.7;3D Cube;o;t\n")
                 file_csv.write("3;10;100;2d_sphere;{};black;0.2;2D Sphere;o;t\n")
                 file_csv.write("3;10;100;3d_sphere;{};black;0.4;3D Sphere;o;t\n")
-                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;"
-                    "Urn model 0.1;o;t\n")
-                file_csv.write(
-                    "3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;"
-                    "Norm-Mallows 0.5;o;t\n")
-                file_csv.write(
-                    "3;10;100;urn_model;{'alpha':0};orange;1;"
-                    "Urn model (gamma);o;t\n")
-                file_csv.write(
-                    "3;10;100;norm-mallows;{'norm-phi':0};cyan;1;"
-                    "Norm-Mallows (uniform);o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn model 0.1;o;t\n")
+                file_csv.write("3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;Norm-Mallows 0.5;o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0};orange;1;Urn model (gamma);o;t\n")
+                file_csv.write("3;10;100;norm-mallows;{'norm-phi':0};cyan;1;Norm-Mallows (uniform);o;t\n")
                 file_csv.write("1;10;100;identity;{};blue;1;Identity;x;t\n")
                 file_csv.write("1;10;100;uniformity;{};black;1;Uniformity;x;t\n")
                 file_csv.write("1;10;100;antagonism;{};red;1;Antagonism;x;t\n")
                 file_csv.write("1;10;100;stratification;{};green;1;Stratification;x;t\n")
                 file_csv.write("1;10;100;walsh_matrix;{};olivedrab;1;Walsh Matrix;x;t\n")
-                file_csv.write("1;10;100;conitzer_matrix;{};limegreen;1;"
-                    "Conitzer Matrix;x;t\n")
-                file_csv.write("1;10;100;single-crossing_matrix;{};purple;0.6;"
-                    "Single-Crossing Matrix;x;t\n")
-                file_csv.write("1;10;100;gs_caterpillar_matrix;{};green;1;"
-                    "GS Caterpillar Matrix;x;t\n")
+                file_csv.write("1;10;100;conitzer_matrix;{};limegreen;1;Conitzer Matrix;x;t\n")
+                file_csv.write("1;10;100;single-crossing_matrix;{};purple;0.6;Single-Crossing Matrix;x;t\n")
+                file_csv.write("1;10;100;gs_caterpillar_matrix;{};green;1;GS Caterpillar Matrix;x;t\n")
                 file_csv.write("3;10;100;unid;{};blue;1;UNID;3;f\n")
                 file_csv.write("3;10;100;anid;{};black;1;ANID;3;f\n")
                 file_csv.write("3;10;100;stid;{};black;1;STID;3;f\n")
@@ -963,10 +913,9 @@ class Experiment:
         """ Rotate all the points by a given angle """
 
         for election_id in self.instances:
-            self.coordinates[election_id][0], self.coordinates[election_id][
-                1] = self.rotate_point(
-                0.5, 0.5, angle, self.coordinates[election_id][0],
-                self.coordinates[election_id][1])
+            self.coordinates[election_id][0], self.coordinates[election_id][1] = \
+                self.rotate_point(0.5, 0.5, angle, self.coordinates[election_id][0],
+                                  self.coordinates[election_id][1])
 
         self.compute_points_by_families()
 
@@ -975,8 +924,7 @@ class Experiment:
 
         for election_id in self.instances:
             self.coordinates[election_id][0] = self.coordinates[election_id][0]
-            self.coordinates[election_id][1] = -self.coordinates[election_id][
-                1]
+            self.coordinates[election_id][1] = -self.coordinates[election_id][1]
 
         self.compute_points_by_families()
 
@@ -1013,8 +961,7 @@ class Experiment:
 
     def import_distances(self, self_distances=False,
                          distance_name='emd-positionwise'):
-        """ Import precomputed distances between each pair of instances
-        from a file """
+        """ Import precomputed distances between each pair of instances from a file """
 
         file_name = str(distance_name) + '.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
@@ -1041,16 +988,13 @@ class Experiment:
                 hist_data[election_id_2][election_id_1] = \
                     hist_data[election_id_1][election_id_2]
 
-
         return num_distances, hist_data, std
 
     def import_my_distances(self, distance_name='emd-positionwise'):
-        """ Import precomputed distances between each pair of instances
-        from a file """
+        """ Import precomputed distances between each pair of instances from a file """
 
         file_name = str(distance_name) + '.csv'
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "distances", file_name)
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
         distances = {}
         times = {}
         stds = {}

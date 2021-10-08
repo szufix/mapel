@@ -43,7 +43,11 @@ NICE_NAME = {
     'real_stratification': 'Real_Stratification',
     'group-separable': 'Group-Separable',
     'approval_id': 'Approval_ID',
+    'approval_id_0.5': 'Approval_ID_0.5',
     'approval_ic': 'Approval_IC',
+    'approval_ic_0.5': 'Approval_IC_0.5',
+    'approval_mallows': 'Approval_Mallows',
+    'approval_raw_mallows': 'Approval_Raw_Mallows',
     }
 
 
@@ -72,7 +76,7 @@ APPROVAL_MODELS = {'approval_ic', 'approval_mallows', 'approval_id',
                    'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
                    'approval_half_1', 'approval_half_2', 'approval_disjoint_mallows'}
 
-APPROVAL_FAKE_MODELS = {'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
+APPROVAL_FAKE_MODELS = {'approval_zeros', 'approval_ones',
                         'approval_half_1', 'approval_half_2'}
 
 GRAPH_MODELS = {'erdos_renyi_graph', 'watts_strogatz_graph', 'barabasi_albert_graph',

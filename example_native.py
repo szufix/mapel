@@ -12,3 +12,4 @@ if __name__ == "__main__":
     print('votes_2', ele_2.votes)
     print('distance', distance)
     print('mapping', mapping)
+
