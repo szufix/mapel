@@ -2,16 +2,15 @@
 
 import numpy as np
 
+from mapel.voting._winners import generate_winners
 from mapel.voting.elections.group_separable import get_gs_caterpillar_vectors
-from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
-from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 from mapel.voting.elections.mallows import get_mallows_vectors
 from mapel.voting.elections.preflib import get_sushi_vectors
-
-from mapel.voting.winners import compute_sntv_winners, compute_borda_winners, compute_stv_winners
+from mapel.voting.elections.single_crossing import get_single_crossing_vectors
+from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
 from mapel.voting.glossary import PATHS
-from mapel.voting.not_in_the_package.__winners import generate_winners
 from mapel.voting.objects.Election import Election
+from mapel.voting.winners import compute_sntv_winners, compute_borda_winners, compute_stv_winners
 
 
 class OrdinalElection(Election):

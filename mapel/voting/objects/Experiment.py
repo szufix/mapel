@@ -1,26 +1,23 @@
 #!/usr/bin/env python
+import ast
 import copy
-from abc import ABCMeta, abstractmethod
-
-from mapel.voting.objects.Family import Family
-
-import mapel.voting._elections as _elections
-import mapel.voting.features as features
-import mapel.voting._metrics as metr
-import mapel.voting.print as pr
-import mapel.voting.elections.preflib as preflib
-
-import math
 import csv
+import math
 import os
-
+from abc import ABCMeta, abstractmethod
 from threading import Thread
 from time import sleep
 
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import matplotlib.pyplot as plt
-import ast
+
+import mapel.voting._elections as _elections
+import mapel.voting._metrics as metr
+import mapel.voting.elections.preflib as preflib
+import mapel.voting.features as features
+import mapel.voting.print as pr
+from mapel.voting.objects.Family import Family
 
 try:
     from sklearn.manifold import MDS
@@ -45,7 +42,7 @@ class Experiment:
 
     def __init__(self, ignore=None, instances=None, distances=None,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 instance_type='ordinal'):
+                 instance_type='ordinal', attraction_factor=1):
 
         self.distance_name = distance_name
         self.instances = {}
@@ -63,13 +60,14 @@ class Experiment:
         self.instance_type = instance_type
 
         if experiment_id is None:
+            self.experiment_id = 'virtual'
             self.store = False
         else:
             self.store = True
             self.experiment_id = experiment_id
             self.create_structure()
             self.families = self.import_controllers(ignore=ignore)
-            self.attraction_factor = 1
+            self.attraction_factor = attraction_factor
 
         if instances is not None:
             if instances == 'import':
@@ -97,6 +95,7 @@ class Experiment:
                    num_voters=None, family_id=None, single_election=False, num_nodes=None,
                    path=None, name=None):
         """ Add family of instances to the experiment """
+
         if name is not None:
             family_id = name
 
@@ -132,19 +131,16 @@ class Experiment:
 
     def add_instance(self, model="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
-                     num_candidates=None, num_voters=None, election_id=None, num_nodes=None):
+                     num_candidates=None, num_voters=None, name=None, num_nodes=None):
         """ Add instance to the experiment """
 
         return self.add_family(model=model, params=params, size=size, label=label, color=color,
                                alpha=alpha, show=show,  marker=marker, starting_from=starting_from,
                                num_candidates=num_candidates, num_voters=num_voters,
-                               family_id=election_id, num_nodes=num_nodes, single_election=True)[0]
+                               family_id=name, num_nodes=num_nodes, single_election=True)[0]
 
-    def add_graph(self, name=None, **kwargs):
-        return self.add_instance(election_id=name, **kwargs)
-
-    def prepare_elections(self):
-        self.prepare_instances()
+    def add_graph(self, **kwargs):
+        return self.add_instance(**kwargs)
 
     def prepare_instances(self):
         """ Prepare instances for a given experiment """
@@ -182,21 +178,29 @@ class Experiment:
                     method=method, party_id=party_id, num_winners=num_winners)
 
     def compute_distances(self, distance_name='emd-positionwise', num_threads=1,
-                          self_distances=False):
+                          self_distances=False, vector_type='A'):
         """ Compute distances between instances (using threads) """
 
         self.distance_name = distance_name
 
         # precompute vectors, matrices, etc...
-        if '-approval_frequency' in distance_name:
+        if '-approvalwise' in distance_name:
             for instance in self.instances.values():
-                instance.votes_to_approval_frequency_vector()
-        elif '-coapproval_frequency_vectors' in distance_name or '-flow' in distance_name:
+                # print(instance.name)
+                instance.votes_to_approvalwise_vector()
+                # print(instance.approvalwise_vector)
+        elif '-coapproval_frequency' in distance_name or '-flow' in distance_name:
             for instance in self.instances.values():
-                instance.votes_to_coapproval_frequency_vectors()
-        elif '-voterlikeness_vectors' in distance_name:
+                instance.votes_to_coapproval_frequency_vectors(vector_type=vector_type)
+        elif '-voterlikeness' in distance_name:
             for instance in self.instances.values():
-                instance.votes_to_voterlikeness_vectors()
+                instance.votes_to_voterlikeness_vectors(vector_type=vector_type)
+        elif '-candidatelikeness' in distance_name:
+            for instance in self.instances.values():
+                instance.votes_to_tmp_metric_vectors()
+        elif '-approval_pairwise' in distance_name:
+            for instance in self.instances.values():
+                instance.votes_to_approval_pairwise_matrix()
         # continue with normal code
 
         matchings = {}
@@ -228,7 +232,7 @@ class Experiment:
             thread_ids = ids[start:stop]
             copy_t = t
 
-            threads[t] = Thread(target=metr.single_thread, args=(
+            threads[t] = Thread(target=metr.run_single_thread, args=(
                 self, distances, times, thread_ids, copy_t, matchings))
             threads[t].start()
 
@@ -262,66 +266,9 @@ class Experiment:
     def add_instances_to_experiment(self):
         pass
 
+    @abstractmethod
     def create_structure(self):
-
-        # PREPARE STRUCTURE
-
-        if not os.path.isdir("experiments/"):
-            os.mkdir(os.path.join(os.getcwd(), "experiments"))
-
-        if not os.path.isdir("images/"):
-            os.mkdir(os.path.join(os.getcwd(), "images"))
-
-        if not os.path.isdir("trash/"):
-            os.mkdir(os.path.join(os.getcwd(), "trash"))
-
-        try:
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "features"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices"))
-
-            # PREPARE MAP.CSV FILE
-
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,"map.csv")
-
-            with open(path, 'w') as file_csv:
-                file_csv.write("size;num_candidates;num_voters;model;params;color;alpha;label;marker;show\n")
-                file_csv.write("3;10;100;impartial_culture;{};black;1;Impartial Culture;o;t\n")
-                file_csv.write("3;10;100;iac;{};black;0.7;IAC;o;t\n")
-                file_csv.write("3;10;100;conitzer;{};limegreen;1;SP by Conitzer;o;t\n")
-                file_csv.write("3;10;100;walsh;{};olivedrab;1;SP by Walsh;o;t\n")
-                file_csv.write("3;10;100;spoc_conitzer;{};DarkRed;0.7;SPOC;o;t\n")
-                file_csv.write("3;10;100;group-separable;{};blue;1;Group-Separable;o;t\n")
-                file_csv.write("3;10;100;single-crossing;{};purple;0.6;Single-Crossing;o;t\n")
-                file_csv.write("3;10;100;1d_interval;{};DarkGreen;1;1D Interval;o;t\n")
-                file_csv.write("3;10;100;2d_disc;{};Green;1;2D Disc;o;t\n")
-                file_csv.write("3;10;100;3d_cube;{};ForestGreen;0.7;3D Cube;o;t\n")
-                file_csv.write("3;10;100;2d_sphere;{};black;0.2;2D Sphere;o;t\n")
-                file_csv.write("3;10;100;3d_sphere;{};black;0.4;3D Sphere;o;t\n")
-                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn model 0.1;o;t\n")
-                file_csv.write("3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;Norm-Mallows 0.5;o;t\n")
-                file_csv.write("3;10;100;urn_model;{'alpha':0};orange;1;Urn model (gamma);o;t\n")
-                file_csv.write("3;10;100;norm-mallows;{'norm-phi':0};cyan;1;Norm-Mallows (uniform);o;t\n")
-                file_csv.write("1;10;100;identity;{};blue;1;Identity;x;t\n")
-                file_csv.write("1;10;100;uniformity;{};black;1;Uniformity;x;t\n")
-                file_csv.write("1;10;100;antagonism;{};red;1;Antagonism;x;t\n")
-                file_csv.write("1;10;100;stratification;{};green;1;Stratification;x;t\n")
-                file_csv.write("1;10;100;walsh_matrix;{};olivedrab;1;Walsh Matrix;x;t\n")
-                file_csv.write("1;10;100;conitzer_matrix;{};limegreen;1;Conitzer Matrix;x;t\n")
-                file_csv.write("1;10;100;single-crossing_matrix;{};purple;0.6;Single-Crossing Matrix;x;t\n")
-                file_csv.write("1;10;100;gs_caterpillar_matrix;{};green;1;GS Caterpillar Matrix;x;t\n")
-                file_csv.write("3;10;100;unid;{};blue;1;UNID;3;f\n")
-                file_csv.write("3;10;100;anid;{};black;1;ANID;3;f\n")
-                file_csv.write("3;10;100;stid;{};black;1;STID;3;f\n")
-                file_csv.write("3;10;100;anun;{};black;1;ANUN;3;f\n")
-                file_csv.write("3;10;100;stun;{};black;1;STUN;3;f\n")
-                file_csv.write("3;10;100;stan;{};red;1;STAN;3;f\n")
-        except FileExistsError:
-            print("Experiment already exists!")
-
+        pass
 
     def add_distances_to_experiment(self, distance_name=None):
         distances, times, stds = self.import_my_distances(distance_name=distance_name)
@@ -407,7 +354,6 @@ class Experiment:
                                      "coordinates",
                                      distance_name + "_" + str(dim) + "d_a" +
                                      str(float(attraction_factor)) + ".csv")
-
             with open(file_name, 'w', newline='') as csvfile:
 
                 writer = csv.writer(csvfile, delimiter=';')
@@ -488,6 +434,7 @@ class Experiment:
             roads = []
 
         self.compute_points_by_families()
+        # self.attraction_factor = attraction_factor
 
         if adjust:
 
@@ -512,8 +459,8 @@ class Experiment:
             try:
                 uniformity = self.get_election_id_from_model_name('approval_ic_0.5')
                 identity = self.get_election_id_from_model_name('approval_id_0.5')
-                antagonism = self.get_election_id_from_model_name('approval_ones')
-                stratification = self.get_election_id_from_model_name('approval_zeros')
+                antagonism = self.get_election_id_from_model_name('approval_full')
+                stratification = self.get_election_id_from_model_name('approval_empty')
 
                 d_x = self.coordinates[identity][0] - self.coordinates[uniformity][0]
                 d_y = self.coordinates[identity][1] - self.coordinates[uniformity][1]
@@ -533,7 +480,7 @@ class Experiment:
         if reverse:
             self.reverse()
 
-        if adjust or update:
+        if self.store and (adjust or update):
             self.update()
 
         if cmap is None:
@@ -552,6 +499,8 @@ class Experiment:
             plt.axis('off')
 
 
+        pr.add_skeleton(experiment=self, skeleton=skeleton, ax=ax)
+
         # COLORING
         if feature is not None:
             pr.color_map_by_feature(experiment=self, fig=fig, ax=ax,
@@ -561,9 +510,9 @@ class Experiment:
                                     xticklabels=xticklabels, ms=ms, cmap=cmap,
                                     ticks=ticks)
         else:
+
             if event in {'skeleton'}:
                 pr.skeleton_coloring(experiment=self, ax=ax, ms=ms, dim=dim)
-                pr.add_skeleton(experiment=self, skeleton=skeleton, ax=ax)
                 pr.add_roads(experiment=self, roads=roads, ax=ax)
             else:
                 if shading:
@@ -743,7 +692,11 @@ class Experiment:
                     and params['norm-phi'] is not None:
                 family_id += '_' + str(float(params['norm-phi']))
 
-            single_election = False
+            if size == 1:
+                single_election = True
+            else:
+                single_election = False
+
             # if label in ["UN", "ID", "AN", "ST", "CON", "WAL", "CAT",
             #              "SHI", "MID"]:
             #     single_election = True
@@ -850,22 +803,19 @@ class Experiment:
         else:
 
             for family_id in self.families:
+
+                print(family_id)
                 points_by_families[family_id] = [[] for _ in range(3)]
 
                 for i in range(self.families[family_id].size):
-                    # print(i)
-                    # print(self.coordinates)
-                    if self.families[family_id].single_election:
+                    if self.families[family_id].size == 1:
                         election_id = family_id
                     else:
                         election_id = family_id + '_' + str(i)
-                    points_by_families[family_id][0].append(
-                        self.coordinates[election_id][0])
-                    points_by_families[family_id][1].append(
-                        self.coordinates[election_id][1])
+                    points_by_families[family_id][0].append(self.coordinates[election_id][0])
+                    points_by_families[family_id][1].append(self.coordinates[election_id][1])
                     try:
-                        points_by_families[family_id][2].append(
-                            self.coordinates[election_id][2])
+                        points_by_families[family_id][2].append(self.coordinates[election_id][2])
                     except:
                         pass
 
@@ -877,6 +827,7 @@ class Experiment:
         feature_dict = {}
 
         for election_id in self.instances:
+            print(election_id)
             feature = features.get_feature(name)
             election = self.instances[election_id]
             # print(election_id, election)

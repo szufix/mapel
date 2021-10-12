@@ -6,7 +6,6 @@ import mapel.voting.development as dev
 import mapel.voting.features as features
 
 
-
 def hello():
     print("Hello!")
 

@@ -11,10 +11,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 # from skopt import gp_minimize
 
-from mapel.voting import elections as el
+from mapel.voting import elections as el, _winners as win
 from mapel.voting import metrics as metr
 from mapel.voting import objects as obj
-from mapel.voting.not_in_the_package import __winners as win
 import copy
 
 

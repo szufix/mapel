@@ -54,7 +54,7 @@ def get_values_from_file(experiment, feature, normalizing_func=None,
     for family_id in experiment.families:
 
         for k in range(experiment.families[family_id].size):
-            if experiment.families[family_id].single_election:
+            if experiment.families[family_id].size == 1:
                 election_id = family_id
             else:
                 election_id = family_id + '_' + str(k)
@@ -482,9 +482,8 @@ def basic_background(ax=None, values=None, legend=None, saveas=None,
         else:
             plt.savefig(file_name, bbox_inches='tight')
 
-    elif legend:
-        ax.legend()
-
+    elif values is None and legend:
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 
 def saveas_tex(saveas=None):

@@ -21,38 +21,37 @@ def _minus_one(vector):
 
 # MAIN DISTANCES
 def compute_positionwise_distance(election_1, election_2, inner_distance):
-    """ Compute Positionwise distance between elections """
+    """ Compute Positionwise distance between ordinal elections """
 
     cost_table = get_matching_cost_positionwise(
         election_1, election_2, map_str_to_func(inner_distance))
     objective_value, matching = solve_matching_vectors(cost_table)
-
     return objective_value, matching
 
 
 def compute_agg_voterlikeness_distance(election_1, election_2, inner_distance):
-    """ Compute Aggregated-Voterlikeness distance between elections """
+    """ Compute Aggregated-Voterlikeness distance between ordinal elections """
     vector_1, num_possible_scores = election_1.votes_to_agg_voterlikeness_vector()
     vector_2, _ = election_2.votes_to_agg_voterlikeness_vector()
     inner_distance = map_str_to_func(inner_distance)
-    return inner_distance(vector_1, vector_2, num_possible_scores)
+    return inner_distance(vector_1, vector_2, num_possible_scores), None
 
 
 def compute_bordawise_distance(election_1, election_2, inner_distance):
-    """ Compute Bordawise distance between elections """
+    """ Compute Bordawise distance between ordinal elections """
     vector_1, num_possible_scores = election_1.votes_to_bordawise_vector()
     vector_2, _ = election_2.votes_to_bordawise_vector()
     inner_distance = map_str_to_func(inner_distance)
-    return inner_distance(vector_1, vector_2, num_possible_scores)
+    return inner_distance(vector_1, vector_2, num_possible_scores), None
 
 
 def compute_pairwise_distance(election_1, election_2, inner_distance):
-    """ Compute Pairwise distance between elections """
+    """ Compute Pairwise distance between ordinal elections """
     length = election_1.num_candidates
     matrix_1 = election_1.votes_to_pairwise_matrix()
     matrix_2 = election_2.votes_to_pairwise_matrix()
     matching_cost = solve_matching_matrices(matrix_1, matrix_2, length, inner_distance)
-    return matching_cost
+    return matching_cost, None
 
 
 def compute_voterlikeness_distance(election_1, election_2, inner_distance):
@@ -62,7 +61,7 @@ def compute_voterlikeness_distance(election_1, election_2, inner_distance):
     matrix_2 = election_2.votes_to_voterlikeness_matrix()
     matching_cost = \
         solve_matching_matrices(matrix_1, matrix_2, length, inner_distance)
-    return matching_cost
+    return matching_cost, None
 
 
 def compute_spearman_distance(election_1, election_2):
@@ -70,16 +69,14 @@ def compute_spearman_distance(election_1, election_2):
 
     votes_1 = election_1.votes
     votes_2 = election_2.votes
-    params = {'voters': election_1.num_voters,
-              'candidates': election_1.num_candidates}
+    params = {'voters': election_1.num_voters, 'candidates': election_1.num_candidates}
 
     file_name = str(rand.random()) + '.lp'
     path = os.path.join(os.getcwd(), "trash", file_name)
     lp.generate_ilp_distance(path, votes_1, votes_2, params, 'spearman')
-    objective_value = lp.solve_ilp_distance(path, votes_1,
-                                            votes_2, params, 'spearman')
+    objective_value = lp.solve_ilp_distance(path, votes_1, votes_2, params, 'spearman')
     lp.remove_lp_file(path)
-    return objective_value
+    return objective_value, None
 
 
 def compute_discrete_distance(election_1, election_2):

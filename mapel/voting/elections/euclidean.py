@@ -20,7 +20,7 @@ def generate_approval_euclidean_election(num_voters=None, num_candidates=None, p
     # 'p' should be lower than 0.5
 
     alpha = 4
-    beta = alpha/params['p'] - alpha
+    beta = alpha/(params['p']) - alpha
 
     dim = params['dim']
 
@@ -133,7 +133,7 @@ def generate_approval_euclidean_election(num_voters=None, num_candidates=None, p
 #     return votes
 
 
-def generate_1d_gaussian_party(election_model=None, num_voters=None,
+def generate_1d_gaussian_party(model=None, num_voters=None,
                            num_candidates=None, params=None):
     if params is None:
         params = {}
@@ -168,7 +168,7 @@ def generate_1d_gaussian_party(election_model=None, num_voters=None,
     return votes
 
 
-def generate_2d_gaussian_party(election_model=None, num_voters=None,
+def generate_2d_gaussian_party(model=None, num_voters=None,
                            num_candidates=None, params=None):
     if params is None:
         params = {}
@@ -185,8 +185,10 @@ def generate_2d_gaussian_party(election_model=None, num_voters=None,
         for w in range(params['num_winners']):
             _id = j*params['num_winners'] + w
             # print(_id)
-            candidates[_id] = [rand.gauss(params['party'][j][0], params['var']),
-                               rand.gauss(params['party'][j][1], params['var'])]
+            # print(rand.gauss(params['party'][j][1], params['var']))
+            # print(candidates[_id])
+            candidates[_id] = [rand.gauss(params['party'][j][0][0], params['var']),
+                               rand.gauss(params['party'][j][0][1], params['var'])]
 
     def column(matrix, i):
         return [row[i] for row in matrix]
@@ -222,7 +224,7 @@ def generate_2d_gaussian_party(election_model=None, num_voters=None,
     return votes
 
 
-def generate_elections_1d_simple(election_model=None, num_voters=None,
+def generate_elections_1d_simple(model=None, num_voters=None,
                                  num_candidates=None):
     """ helper function: generate simple 1d elections"""
 
@@ -232,11 +234,11 @@ def generate_elections_1d_simple(election_model=None, num_voters=None,
     distances = np.zeros([num_voters, num_candidates], dtype=float)
 
     for j in range(num_voters):
-        voters[j] = get_rand(election_model)
+        voters[j] = get_rand(model)
     voters = sorted(voters)
 
     for j in range(num_candidates):
-        candidates[j] = get_rand(election_model)
+        candidates[j] = get_rand(model)
     candidates = sorted(candidates)
 
     for j in range(num_voters):
@@ -249,7 +251,7 @@ def generate_elections_1d_simple(election_model=None, num_voters=None,
     return votes
 
 
-def generate_elections_2d_grid(election_model=None, num_voters=None,
+def generate_elections_2d_grid(model=None, num_voters=None,
                                num_candidates=None):
 
     voters = [[0, 0] for _ in range(num_voters)]
@@ -282,7 +284,7 @@ def generate_elections_2d_grid(election_model=None, num_voters=None,
     return votes
 
 
-def generate_elections_2d_simple(election_model=None, num_voters=None,
+def generate_elections_2d_simple(model=None, num_voters=None,
                                  num_candidates=None):
     """ helper function: generate simple 2d elections"""
 
@@ -293,11 +295,11 @@ def generate_elections_2d_simple(election_model=None, num_voters=None,
     distances = np.zeros([num_voters, num_candidates], dtype=float)
 
     for j in range(num_voters):
-        voters[j] = get_rand(election_model)
+        voters[j] = get_rand(model)
     voters = sorted(voters)
 
     for j in range(num_candidates):
-        candidates[j] = get_rand(election_model)
+        candidates[j] = get_rand(model)
     candidates = sorted(candidates)
 
     for j in range(num_voters):
@@ -310,28 +312,28 @@ def generate_elections_2d_simple(election_model=None, num_voters=None,
     return votes
 
 
-def generate_elections_nd_simple(election_model=None, num_voters=None,
+def generate_elections_nd_simple(model=None, num_voters=None,
                                  num_candidates=None):
     """ helper function: generate simple nd elections"""
 
     n_dim = 0
 
-    if election_model == "3d_sphere" or election_model == "3d_cube" or \
-            election_model == "3d_ball":
+    if model == "3d_sphere" or model == "3d_cube" or \
+            model == "3d_ball":
         n_dim = 3
-    elif election_model == "4d_sphere" or election_model == "4d_cube" or \
-            election_model == "4d_ball":
+    elif model == "4d_sphere" or model == "4d_cube" or \
+            model == "4d_ball":
         n_dim = 4
-    elif election_model == "5d_sphere" or election_model == "5d_cube" or \
-            election_model == "5d_ball":
+    elif model == "5d_sphere" or model == "5d_cube" or \
+            model == "5d_ball":
         n_dim = 5
-    elif election_model == "10d_cube":
+    elif model == "10d_cube":
         n_dim = 10
-    elif election_model == "15d_cube":
+    elif model == "15d_cube":
         n_dim = 15
-    elif election_model == "20d_cube":
+    elif model == "20d_cube":
         n_dim = 20
-    elif election_model == "40d_cube" or election_model == "40d_ball":
+    elif model == "40d_cube" or model == "40d_ball":
         n_dim = 40
 
     voters = [[0 for _ in range(n_dim)] for _ in range(num_voters)]
@@ -340,11 +342,11 @@ def generate_elections_nd_simple(election_model=None, num_voters=None,
     distances = np.zeros([num_voters, num_candidates], dtype=float)
 
     for j in range(num_voters):
-        voters[j] = get_rand(election_model)
+        voters[j] = get_rand(model)
     voters = sorted(voters)
 
     for j in range(num_candidates):
-        candidates[j] = get_rand(election_model)
+        candidates[j] = get_rand(model)
     candidates = sorted(candidates)
 
     for j in range(num_voters):

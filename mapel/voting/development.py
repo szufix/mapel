@@ -1,21 +1,18 @@
 #!/usr/bin/env python
 
+import csv
 import os
 import time
 
 import matplotlib.pyplot as plt
-
-import mapel.voting.features as features
-import copy
-
-from mapel.voting.objects.Experiment import Experiment
-from mapel.voting.objects.ApprovalElectionExperiment import ApprovalExperiment
-from mapel.voting.objects.OrdinalElectionExperiment import OrdinalExperiment
-from mapel.voting.metrics.inner_distances import l1, l2, chebyshev
+import numpy as np
 
 import mapel.voting._metrics as metr
-import csv
-import numpy as np
+import mapel.voting.features as features
+from mapel.voting.metrics.inner_distances import l2, chebyshev
+from mapel.voting.objects.ApprovalElectionExperiment import ApprovalExperiment
+from mapel.voting.objects.Experiment import Experiment
+from mapel.voting.objects.OrdinalElectionExperiment import OrdinalExperiment
 
 
 def potLadle(v, m):
@@ -31,7 +28,7 @@ def potLadle(v, m):
     return list(s)
 
 
-def compute_spoilers(election_model=None, method=None, num_winners=None, num_parties=None,
+def compute_spoilers(model=None, method=None, num_winners=None, num_parties=None,
                      num_voters=100, num_districts=100, precision=100):
     party_size = num_winners
     num_candidates = num_parties * num_winners
@@ -51,93 +48,93 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
     all_separated_weight_vectors = []
 
     for _ in range(precision):
-        experiment = prepare_experiment()
+        experiment = prepare_experiment(instance_type='ordinal')
         experiment.set_default_num_candidates(num_candidates)
         experiment.set_default_num_voters(num_voters)
 
         ### MALLOWS ###
-        if election_model == 'mallows_party_075':
-            experiment.add_family(election_model='mallows_party', size=num_districts,
+        if model == 'mallows_party_075':
+            experiment.add_election_family(model='mallows_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'main-phi': 0.75, 'norm-phi': 0.75})
 
-        elif election_model == 'mallows_party_05':
-            experiment.add_family(election_model='mallows_party', size=num_districts,
+        elif model == 'mallows_party_05':
+            experiment.add_election_family(model='mallows_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'main-phi': 0.5, 'norm-phi': 0.75})
 
-        elif election_model == 'mallows_party_025':
-            experiment.add_family(election_model='mallows_party', size=num_districts,
+        elif model == 'mallows_party_025':
+            experiment.add_election_family(model='mallows_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'main-phi': 0.25, 'norm-phi': 0.75})
 
         ### 2D ###
-        elif election_model == '2d_gaussian_party_005':
-            experiment.add_family(election_model='2d_gaussian_party', size=num_districts,
+        elif model == '2d_gaussian_party_005':
+            experiment.add_election_family(model='2d_gaussian_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.05})
 
-        elif election_model == '2d_gaussian_party_01':
-            experiment.add_family(election_model='2d_gaussian_party', size=num_districts,
+        elif model == '2d_gaussian_party_01':
+            experiment.add_election_family(model='2d_gaussian_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.1})
 
-        elif election_model == '2d_gaussian_party_02':
-            experiment.add_family(election_model='2d_gaussian_party', size=num_districts,
+        elif model == '2d_gaussian_party_02':
+            experiment.add_election_family(model='2d_gaussian_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.2})
 
         ### 1D ###
-        elif election_model == '1d_gaussian_party_005':
-            experiment.add_family(election_model='1d_gaussian_party', size=num_districts,
+        elif model == '1d_gaussian_party_005':
+            experiment.add_election_family(model='1d_gaussian_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.05})
 
-        elif election_model == '1d_gaussian_party_01':
-            experiment.add_family(election_model='1d_gaussian_party', size=num_districts,
+        elif model == '1d_gaussian_party_01':
+            experiment.add_election_family(model='1d_gaussian_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.1})
 
-        elif election_model == '1d_gaussian_party_02':
-            experiment.add_family(election_model='1d_gaussian_party', size=num_districts,
+        elif model == '1d_gaussian_party_02':
+            experiment.add_election_family(model='1d_gaussian_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.2})
 
         ### SP by Walsh
-        elif election_model == 'walsh_party_005':
-            experiment.add_family(election_model='walsh_party', size=num_districts,
+        elif model == 'walsh_party_005':
+            experiment.add_election_family(model='walsh_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.05})
 
-        elif election_model == 'walsh_party_01':
-            experiment.add_family(election_model='walsh_party', size=num_districts,
+        elif model == 'walsh_party_01':
+            experiment.add_election_family(model='walsh_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.1})
 
-        elif election_model == 'walsh_party_02':
-            experiment.add_family(election_model='walsh_party', size=num_districts,
+        elif model == 'walsh_party_02':
+            experiment.add_election_family(model='walsh_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.2})
 
         ### SP by Conitzer
-        elif election_model == 'conitzer_party_005':
-            experiment.add_family(election_model='conitzer_party', size=num_districts,
+        elif model == 'conitzer_party_005':
+            experiment.add_election_family(model='conitzer_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.05})
 
-        elif election_model == 'conitzer_party_01':
-            experiment.add_family(election_model='conitzer_party', size=num_districts,
+        elif model == 'conitzer_party_01':
+            experiment.add_election_family(model='conitzer_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.1})
 
-        elif election_model == 'conitzer_party_02':
-            experiment.add_family(election_model='conitzer_party', size=num_districts,
+        elif model == 'conitzer_party_02':
+            experiment.add_election_family(model='conitzer_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties,
                                           'var': 0.2})
 
         ### IC
-        elif election_model == 'ic_party':
-            experiment.add_family(election_model='ic_party', size=num_districts,
+        elif model == 'ic_party':
+            experiment.add_election_family(model='ic_party', size=num_districts,
                                   params={'num_winners': num_winners, 'num_parties': num_parties})
 
         experiment.compute_winners(method=method, num_winners=num_winners)
@@ -214,10 +211,10 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
             weight_vector_p = weight_vector
             weight_vector_p[party_id] = 0.
             if sum(weight_vector_p) == 0:
-                weight_vector_p = [1. / num_parties for _ in weight_vector_p]
+                weight_vector_p = [1. / float(num_parties) for _ in weight_vector_p]
             weight_vector_p[party_id] = 0
             _sum = sum(weight_vector_p)
-            weight_vector_p = [x/_sum for x in weight_vector_p]
+            weight_vector_p = [x / _sum for x in weight_vector_p]
             value = chebyshev(weight_vector_p, alternative_weight_vectors[party_id])
             weight_spoilers.append(value / borda[party_id])
         all_weight_spoilers.append(weight_spoilers)
@@ -242,13 +239,14 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
         banzhaf_vector = features.banzhaf(weight_vector)
         alternative_banzhaf_vectors = []
         for party_id in range(num_parties):
-            alternative_banzhaf_vector = features.banzhaf(alternative_weight_vectors[party_id])
+            alternative_banzhaf_vector = features.banzhaf(
+                alternative_weight_vectors[party_id])
             alternative_banzhaf_vectors.append(alternative_banzhaf_vector)
 
             banzhaf_vector_p = banzhaf_vector
             banzhaf_vector_p[party_id] = 0.
             if sum(banzhaf_vector_p) == 0.:
-                banzhaf_vector_p = [1. / num_parties for _ in banzhaf_vector_p]
+                banzhaf_vector_p = [1. / float(num_parties) for _ in banzhaf_vector_p]
             banzhaf_vector_p[party_id] = 0
             _sum = sum(banzhaf_vector_p)
             banzhaf_vector_p = [x / _sum for x in banzhaf_vector_p]
@@ -267,10 +265,10 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
         all_alternative_banzhaf_vectors.append(alternative_banzhaf_vectors)
 
     # SAVE TO FILE -- SMALL
-    file_name = election_model + '_p' + str(num_parties) + \
+    file_name = model + '_p' + str(num_parties) + \
                 '_k' + str(num_winners) + \
                 '_' + str(method) + '_small'
-    path = os.path.join(os.getcwd(), 'final_party', file_name + '.csv')
+    path = os.path.join(os.getcwd(), 'final_tmp', file_name + '.csv')
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
         writer.writerow(["iteration", "party_id", "weight",
@@ -289,11 +287,11 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
                                  all_borda[j][p]])
 
     # SAVE TO FILE -- MEDIUM
-    if num_winners == 15 and method != 'dhondt':
-        file_name = election_model + '_p' + str(num_parties) + \
+    if method != 'dhondt':
+        file_name = model + '_p' + str(num_parties) + \
                     '_k' + str(num_winners) + \
                     '_' + str(method) + '_medium'
-        path = os.path.join(os.getcwd(), 'final_party', file_name + '.csv')
+        path = os.path.join(os.getcwd(), 'final_tmp', file_name + '.csv')
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(["iteration", "district", "vector"])
@@ -303,9 +301,9 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
                     writer.writerow([i,j,all_separated_weight_vectors[i][j]])
 
     # SAVE TO FILE -- BIG
-    file_name = election_model + '_p' + str(num_parties) + '_k' + str(
+    file_name = model + '_p' + str(num_parties) + '_k' + str(
         num_winners) + '_' + str(method) + '_big'
-    path = os.path.join(os.getcwd(), 'final_party', file_name + '.csv')
+    path = os.path.join(os.getcwd(), 'final_tmp', file_name + '.csv')
 
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
@@ -329,15 +327,15 @@ def compute_spoilers(election_model=None, method=None, num_winners=None, num_par
 
 
 def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
-                       coordinates=None, distance_name='emd-positionwise'):
+                       coordinates=None, distance_name='emd-positionwise', attraction_factor=1):
 
     if instance_type == 'ordinal':
         return OrdinalExperiment("virtual", experiment_id=experiment_id, instances=instances,
-                          instance_type=instance_type,
+                          instance_type=instance_type, attraction_factor=attraction_factor,
                           distances=distances, coordinates=coordinates, distance_name=distance_name)
     elif instance_type == 'approval':
         return ApprovalExperiment("virtual", experiment_id=experiment_id, instances=instances,
-                          instance_type=instance_type,
+                          instance_type=instance_type, attraction_factor=attraction_factor,
                           distances=distances, coordinates=coordinates, distance_name=distance_name)
 
 
@@ -628,7 +626,6 @@ def get_borda_ranking(votes, num_voters, num_candidates):
 
 ### DISTORTION SECTION ###
 def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
-    # experiment = Experiment_2d(experiment_id, attraction_factor=attraction_factor)
     X = []
     A = []
     B = []
@@ -657,87 +654,3 @@ def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
     name = 'images/' + saveas + '.png'
     plt.savefig(name)
     plt.show()
-
-    # for i in [1, 0.99, 0.95, 0.9]:
-    #     X = sorted(X)
-    #     X = X[0:int(i*len(X))]
-    #     X = [X[i] for i in range(len(X))]  # normalize by median
-    #     #X = [math.log(X[i]) for i in range(len(X))] # use log scale
-    #     plt.plot(X)
-    #     plt.title(i)
-    #     plt.ylabel('true_distance/diameter / embedded_distance/diameter')
-    #     plt.xlabel('meaningless')
-    #     name = 'images/' + str(i)+'_' + str(attraction_factor) + '.png'
-    #     plt.savefig(name)
-    #     plt.show()
-
-# def compute_distortion_paths(experiment_id, attraction_factor=1, saveas='tmp'):
-#     experiment = Experiment_2d(experiment_id, attraction_factor=attraction_factor)
-#     X = []
-#     A = []
-#     B = []
-#
-#     id_x = []
-#     id_y = []
-#     un_x = []
-#     un_y = []
-#     an_x = []
-#     an_y = []
-#     st_x = []
-#     st_y = []
-#
-#     for i, election_id_1 in enumerate(experiment.instances):
-#         for j, election_id_2 in enumerate(experiment.instances):
-#             if i < j:
-#                 m = experiment.instances[election_id_1].num_candidates
-#                 true_distance = experiment.distances[election_id_1][election_id_2]
-#                 true_distance /= map_diameter(m)
-#
-#                 embedded_distance = l2(experiment.points[election_id_1], experiment.points[election_id_2], 1)
-#                 embedded_distance /= l2(experiment.points['identity_10_100_0'], experiment.points['uniformity_10_100_0'], 1)
-#                 # print(true_distance, embedded_distance)
-#                 proportion = float(true_distance) / float(embedded_distance)
-#                 X.append(proportion)
-#                 A.append(true_distance)
-#                 B.append(embedded_distance)
-#
-#                 if election_id_1 == 'identity_10_100_0' or election_id_2 == 'identity_10_100_0':
-#                     id_x.append(true_distance)
-#                     id_y.append(embedded_distance)
-#
-#                 if election_id_1 == 'uniformity_10_100_0' or election_id_2 == 'uniformity_10_100_0':
-#                     un_x.append(true_distance)
-#                     un_y.append(embedded_distance)
-#
-#                 if election_id_1 == 'stratification_10_100_0' or election_id_2 == 'stratification_10_100_0':
-#                     st_x.append(true_distance)
-#                     st_y.append(embedded_distance)
-#
-#                 if election_id_1 == 'antagonism_10_100_0' or election_id_2 == 'antagonism_10_100_0':
-#                     an_x.append(true_distance)
-#                     an_y.append(embedded_distance)
-#
-#
-#     plt.scatter(id_x, id_y, color='blue', label='ID')
-#     plt.scatter(un_x, un_y, color='black', label='UN')
-#     plt.scatter(st_x, st_y, color='green', label='ST')
-#     plt.scatter(an_x, an_y, color='red', label='AN')
-#     plt.legend()
-#     plt.xlabel('true_distance/diameter')
-#     plt.ylabel('embedded_distance/diameter')
-#     name = 'images/' + saveas + '.png'
-#     plt.savefig(name)
-#     plt.show()
-#
-#     # for i in [1, 0.99, 0.95, 0.9]:
-#     #     X = sorted(X)
-#     #     X = X[0:int(i*len(X))]
-#     #     X = [X[i] for i in range(len(X))]  # normalize by median
-#     #     #X = [math.log(X[i]) for i in range(len(X))] # use log scale
-#     #     plt.plot(X)
-#     #     plt.title(i)
-#     #     plt.ylabel('true_distance/diameter / embedded_distance/diameter')
-#     #     plt.xlabel('meaningless')
-#     #     name = 'images/' + str(i)+'_' + str(attraction_factor) + '.png'
-#     #     plt.savefig(name)
-#     #     plt.show()

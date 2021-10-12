@@ -1,25 +1,20 @@
 #!/usr/bin/env python
 
-import os
-
-import numpy as np
-import random as rand
 import math
-import itertools
+import random as rand
 import struct
 
-
+import networkx as nx
+import numpy as np
 from numpy import ceil
 from pulp import *
 
+import scipy.special
 
-from mapel.voting.metrics import lp
 import mapel.voting.development as dev
-
+from mapel.voting.metrics import lp
 from mapel.voting.metrics.inner_distances import l2
 from mapel.voting.objects.ApprovalElection import ApprovalElection
-
-import networkx as nx
 
 
 # MAPPING #
@@ -37,7 +32,21 @@ def get_feature(name):
             'graph_diameter_log': graph_diameter_log,
             'max_approval_score': max_approval_score,
             'largest_cohesive_group': count_largest_cohesiveness_level_l_of_cohesive_group,
+            'abstract': abstract,
             }.get(name)
+
+
+def abstract(election):
+    n = election.num_voters
+    election.votes_to_approvalwise_vector()
+    vector = election.approvalwise_vector
+    total_value = 0
+    for i in range(election.num_candidates):
+        k = vector[i] * n
+        value = scipy.special.binom(n, k)
+        value = math.log(value)
+        total_value += value
+    return total_value
 
 
 def borda_std(election):
@@ -330,7 +339,7 @@ def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElect
     if election.model == 'approval_zeros':
         return 0
     elif election.model == 'approval_ones':
-        return election.num_candidates
+        return election.k
 
     l_ans = 0
     for l in range(1, election.num_voters + 1):

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import numpy as np
-import os
 import ast
+import os
 
-from mapel.voting.objects.Election import Election
+import numpy as np
+
 from mapel.voting.metrics.inner_distances import hamming
-from mapel.voting.glossary import APPROVAL_FAKE_MODELS
+from mapel.voting.objects.Election import Election
 
 
 class ApprovalElection(Election):
@@ -18,16 +18,15 @@ class ApprovalElection(Election):
                          model=model, ballot=ballot,
                          num_voters=num_voters, num_candidates=num_candidates)
 
-        self.approval_frequency_vector = []
+        self.approvalwise_vector = []
+
         self.coapproval_frequency_vectors = []
         self.voterlikeness_vectors = []
-        self.coapproval_pairwise_matrix = []
+        self.approval_pairwise_matrix = []
+        self.tmp_metric_vectors = []
         self.model = model
 
-        if votes is not None and len(votes) > 0:
-            self.k = max([len(x) for x in votes])
-        else:
-            self.k = 1
+        self.k = 10
 
         if _import:
             fake = check_if_fake(experiment_id, name)
@@ -42,76 +41,46 @@ class ApprovalElection(Election):
                 except:
                     pass
 
-            if votes is not None and len(votes) > 0:
-                self.k = max([len(x) for x in votes])
-            else:
-                self.k = 1
-
-    def get_approval_frequency_vector(self):
-        return self.approval_frequency_vector
-
-    def get_coapproval_frequency_vectors(self):
-        return self.coapproval_frequency_vectors
-
-    def get_voterlikeness_vectors(self):
-        return self.voterlikeness_vectors
-
-    def votes_to_approval_frequency_vector(self):
+    def votes_to_approvalwise_vector(self):
         """ Convert votes to ... """
 
-        if self.model == 'approval_zeros':
-            self.approval_frequency_vector = np.zeros([self.num_candidates])
-        elif self.model == 'approval_ones':
-            self.approval_frequency_vector = np.array([1 for _ in range(self.num_candidates)])
-        elif self.model == 'approval_id_0.5':
-            self.approval_frequency_vector = np.sort(np.array([1 for _ in range(int(self.num_candidates/2))] +
-                            [0 for _ in range(int(self.num_candidates/2))]))
-        elif self.model == 'approval_ic_0.5':
-            self.approval_frequency_vector = np. array([0.5 for _ in range(self.num_candidates)])
-        elif self.model == 'approval_half_1':
-            self.approval_frequency_vector = np.sort(np.array([0.75 for _ in range(int(self.num_candidates / 2))] +
+        if self.model == 'approval_half_1':
+            self.approvalwise_vector = np.sort(np.array([0.75 for _ in range(int(self.num_candidates / 2))] +
                                     [0.25 for _ in range(int(self.num_candidates / 2))]))
         elif self.model == 'approval_half_2':
-            self.approval_frequency_vector = np.sort(np.array([i/(self.num_candidates-1) for i in range(self.num_candidates)]))
+            self.approvalwise_vector = np.sort(np.array([i/(self.num_candidates-1) for i in range(self.num_candidates)]))
         else:
-            approval_frequency_vector = np.zeros([self.num_candidates])
+            approvalwise_vector = np.zeros([self.num_candidates])
             for vote in self.votes:
                 for c in vote:
-                    approval_frequency_vector[c] += 1
-            approval_frequency_vector = approval_frequency_vector / self.num_voters
-            self.approval_frequency_vector =  np.sort(approval_frequency_vector)
+                    approvalwise_vector[c] += 1
+            approvalwise_vector = approvalwise_vector / self.num_voters
+            self.approvalwise_vector = np.sort(approvalwise_vector)
 
-    def votes_to_coapproval_frequency_vectors(self):
+    def votes_to_coapproval_frequency_vectors(self, vector_type='A'):
         """ Convert votes to ... """
-
-        if self.model == 'approval_zeros':
-            vectors = np.zeros([self.num_candidates, self.num_candidates * 2])
-            for i in range(self.num_candidates):
-                vectors[i][self.num_candidates] = 1
-                # vectors[i][2*self.num_candidates - 1] = 1
-                # vectors[i][0] = 1
-            self.coapproval_frequency_vectors = vectors
-        elif self.model == 'approval_ones':
-            vectors = np.zeros([self.num_candidates, self.num_candidates * 2])
-            for i in range(self.num_candidates):
-                vectors[i][self.num_candidates-1] = 1
-                # vectors[i][2*self.num_candidates - 1] = 1
-            self.coapproval_frequency_vectors = vectors
-        else:
-            vectors = np.zeros([self.num_candidates, self.num_candidates * 2])
-            for vote in self.votes:
-                size = len(vote)
+        vectors = np.zeros([self.num_candidates, self.num_candidates * 2])
+        for vote in self.votes:
+            size = len(vote)
+            for c in range(self.num_candidates):
                 for c in range(self.num_candidates):
                     if c in vote:
-                        vectors[c][2*size-1] += 1
+                        if vector_type in ['A', 'B']:
+                            vectors[c][size - 1] += 1
+                        elif vector_type == 'C':
+                            vectors[c][2 * size - 1] += 1
                     else:
-                        vectors[c][self.num_candidates + size] += 1
-                        # vectors[c][2*self.num_candidates - size - 1] += 1
-                        # vectors[c][2*size] += 1
-            vectors = vectors / self.num_voters
-            self.coapproval_frequency_vectors = vectors
+                        if vector_type == 'A':
+                            vectors[c][self.num_candidates + size] += 1
+                        elif vector_type == 'B':
+                            vectors[c][2 * self.num_candidates - size - 1] += 1
+                        elif vector_type == 'C':
+                            vectors[c][2 * size] += 1
+        vectors = vectors / self.num_voters
+        vectors = vectors / self.num_candidates
+        self.coapproval_frequency_vectors = vectors
 
-    def votes_to_coapproval_pairwise_matrix(self):
+    def votes_to_approval_pairwise_matrix(self):
         """ Convert votes to ... """
         matrix = np.zeros([self.num_candidates, self.num_candidates])
 
@@ -121,16 +90,36 @@ class ApprovalElection(Election):
                     if (c_1 in vote and c_2 in vote) or (c_1 not in vote and c_2 not in vote):
                         matrix[c_1][c_2] += 1
         matrix = matrix / self.num_voters
-        self.coapproval_pairwise_matrix = matrix
+        self.approval_pairwise_matrix = matrix
 
-    def votes_to_voterlikeness_vectors(self):
+    def votes_to_tmp_metric_vectors(self):
+        """ Convert votes to ... """
+        matrix = np.zeros([self.num_candidates, self.num_candidates])
+
+        for c_1 in range(self.num_candidates):
+            for c_2 in range(self.num_candidates):
+                for vote in self.votes:
+                    if (c_1 in vote and c_2 in vote) or (c_1 not in vote and c_2 not in vote):
+                        matrix[c_1][c_2] += 1
+        matrix = matrix / self.num_voters
+
+        matrix.sort()
+
+        self.tmp_metric_vectors = matrix
+
+    def votes_to_voterlikeness_vectors(self, vector_type='hamming'):
         """ Convert votes to ... """
 
         vectors = np.zeros([self.num_voters, self.num_voters])
 
         for i in range(self.num_voters):
             for j in range(self.num_voters):
-                vectors[i][j] = hamming(self.votes[i], self.votes[j])
+                A = self.votes[i]
+                B = self.votes[j]
+                if vector_type == 'hamming':
+                    vectors[i][j] = hamming(A, B)
+                elif vector_type == 'martin':
+                    vectors[i][j] = len(A.intersection(B)) - len(A)
             vectors[i] = sorted(vectors[i])
 
         self.voterlikeness_vectors = vectors
@@ -151,7 +140,10 @@ def import_real_app_election(experiment_id, election_id):
     else:
         first_line = first_line.strip().split()
         model_name = first_line[1]
-        params = ast.literal_eval(" ".join(first_line[2:]))
+        if len(first_line) <= 2:
+            params = {}
+        else:
+            params = ast.literal_eval(" ".join(first_line[2:]))
 
         num_candidates = int(my_file.readline())
 

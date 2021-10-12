@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 
+import copy
 import csv
 import os
+
 import numpy as np
-import copy
 
-
-from mapel.voting.winners import compute_sntv_winners, compute_borda_winners, compute_stv_winners
-
+from mapel.voting._winners import generate_winners
 from mapel.voting.glossary import LIST_OF_FAKE_MODELS, LIST_OF_PREFLIB_MODELS, PATHS
-
-from mapel.voting.not_in_the_package.__winners import generate_winners
-
 from mapel.voting.objects.Instance import Instance
+from mapel.voting.winners import compute_sntv_winners, compute_borda_winners, compute_stv_winners
 
 
 class Election(Instance):

@@ -1,27 +1,10 @@
 #!/usr/bin/env python
 import copy
-from abc import ABCMeta, abstractmethod, ABC
-
-from mapel.voting.objects.Family import Family
-from mapel.voting.objects.Experiment import Experiment
-
-import mapel.voting._elections as _elections
-import mapel.voting.features as features
-import mapel.voting._metrics as metr
-import mapel.voting.print as pr
-import mapel.voting.elections.preflib as preflib
-
-import math
-import csv
 import os
 
-from threading import Thread
-from time import sleep
-
-import networkx as nx
-import numpy as np
-import matplotlib.pyplot as plt
-import ast
+import mapel.voting._elections as _elections
+from mapel.voting.objects.Experiment import Experiment
+from mapel.voting.objects.Family import Family
 
 try:
     from sklearn.manifold import MDS
@@ -44,25 +27,27 @@ class ElectionExperiment(Experiment):
 
     def __init__(self, ignore=None, instances=None, distances=None, with_matrices=False,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 instance_type='ordinal'):
+                 instance_type='ordinal', attraction_factor=1):
 
         super().__init__(ignore=ignore, instances=instances, distances=distances,
                          coordinates=coordinates, distance_name=distance_name,
                          experiment_id=experiment_id,
-                         instance_type=instance_type)
+                         instance_type=instance_type, attraction_factor=attraction_factor)
 
         self.default_num_candidates = 10
         self.default_num_voters = 100
 
     def set_default_num_candidates(self, num_candidates):
+        """ Set default number of candidates """
         self.default_num_candidates = num_candidates
 
     def set_default_num_voters(self, num_voters):
+        """ Set default number of voters """
         self.default_num_voters = num_voters
 
     def add_election(self, model="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
-                     num_candidates=None, num_voters=None, election_id=None, num_nodes=None):
+                     num_candidates=None, num_voters=None, name=None, num_nodes=None):
         """ Add election to the experiment """
 
         if num_candidates is None:
@@ -71,10 +56,10 @@ class ElectionExperiment(Experiment):
         if num_voters is None:
             num_voters = self.default_num_voters
 
-        return self.add_family(model=model, params=params, size=size, label=label, color=color,
+        return self.add_election_family(model=model, params=params, size=size, label=label, color=color,
                                alpha=alpha, show=show,  marker=marker, starting_from=starting_from,
                                num_candidates=num_candidates, num_voters=num_voters,
-                               family_id=election_id, num_nodes=num_nodes, single_election=True)[0]
+                               family_id=name, num_nodes=num_nodes, single_election=True)[0]
 
     def add_election_family(self, model="none", params=None, size=1, label=None, color="black",
                    alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,
@@ -112,6 +97,7 @@ class ElectionExperiment(Experiment):
         elif label is None:
             label = family_id
 
+
         self.families[family_id] = Family(model=model, family_id=family_id,
                                           params=params, label=label, color=color, alpha=alpha,
                                           show=show, size=size, marker=marker,
@@ -135,3 +121,73 @@ class ElectionExperiment(Experiment):
         self.families[family_id].election_ids = ids
 
         return ids
+
+    def prepare_elections(self):
+        """ Prepare elections based on the map.csv file """
+        self.prepare_instances()
+
+    def create_structure(self):
+
+        # PREPARE STRUCTURE
+
+        if not os.path.isdir("experiments/"):
+            os.mkdir(os.path.join(os.getcwd(), "experiments"))
+
+        if not os.path.isdir("images/"):
+            os.mkdir(os.path.join(os.getcwd(), "images"))
+
+        if not os.path.isdir("trash/"):
+            os.mkdir(os.path.join(os.getcwd(), "trash"))
+
+        try:
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "features"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices"))
+
+            # PREPARE MAP.CSV FILE
+
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
+
+            with open(path, 'w') as file_csv:
+                file_csv.write(
+                    "size;num_candidates;num_voters;model;params;color;alpha;label;marker;show\n")
+                file_csv.write("3;10;100;impartial_culture;{};black;1;Impartial Culture;o;t\n")
+                file_csv.write("3;10;100;iac;{};black;0.7;IAC;o;t\n")
+                file_csv.write("3;10;100;conitzer;{};limegreen;1;SP by Conitzer;o;t\n")
+                file_csv.write("3;10;100;walsh;{};olivedrab;1;SP by Walsh;o;t\n")
+                file_csv.write("3;10;100;spoc_conitzer;{};DarkRed;0.7;SPOC;o;t\n")
+                file_csv.write("3;10;100;group-separable;{};blue;1;Group-Separable;o;t\n")
+                file_csv.write("3;10;100;single-crossing;{};purple;0.6;Single-Crossing;o;t\n")
+                file_csv.write("3;10;100;1d_interval;{};DarkGreen;1;1D Interval;o;t\n")
+                file_csv.write("3;10;100;2d_disc;{};Green;1;2D Disc;o;t\n")
+                file_csv.write("3;10;100;3d_cube;{};ForestGreen;0.7;3D Cube;o;t\n")
+                file_csv.write("3;10;100;2d_sphere;{};black;0.2;2D Sphere;o;t\n")
+                file_csv.write("3;10;100;3d_sphere;{};black;0.4;3D Sphere;o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn model 0.1;o;t\n")
+                file_csv.write(
+                    "3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;Norm-Mallows 0.5;o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0};orange;1;Urn model (gamma);o;t\n")
+                file_csv.write(
+                    "3;10;100;norm-mallows;{'norm-phi':0};cyan;1;Norm-Mallows (uniform);o;t\n")
+                file_csv.write("1;10;100;identity;{};blue;1;Identity;x;t\n")
+                file_csv.write("1;10;100;uniformity;{};black;1;Uniformity;x;t\n")
+                file_csv.write("1;10;100;antagonism;{};red;1;Antagonism;x;t\n")
+                file_csv.write("1;10;100;stratification;{};green;1;Stratification;x;t\n")
+                file_csv.write("1;10;100;walsh_matrix;{};olivedrab;1;Walsh Matrix;x;t\n")
+                file_csv.write("1;10;100;conitzer_matrix;{};limegreen;1;Conitzer Matrix;x;t\n")
+                file_csv.write(
+                    "1;10;100;single-crossing_matrix;{};purple;0.6;Single-Crossing Matrix;x;t\n")
+                file_csv.write(
+                    "1;10;100;gs_caterpillar_matrix;{};green;1;GS Caterpillar Matrix;x;t\n")
+                file_csv.write("3;10;100;unid;{};blue;1;UNID;3;f\n")
+                file_csv.write("3;10;100;anid;{};black;1;ANID;3;f\n")
+                file_csv.write("3;10;100;stid;{};black;1;STID;3;f\n")
+                file_csv.write("3;10;100;anun;{};black;1;ANUN;3;f\n")
+                file_csv.write("3;10;100;stun;{};black;1;STUN;3;f\n")
+                file_csv.write("3;10;100;stan;{};red;1;STAN;3;f\n")
+        except FileExistsError:
+            print("Experiment already exists!")
+

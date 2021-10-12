@@ -10,7 +10,7 @@ def generate_approval_ic_election(num_voters=None, num_candidates=None, params=N
         params = {}
     if 'p' not in params:
         params['p'] = 0.5
-    votes = [set() for i in range(num_voters)]
+    votes = [set() for _ in range(num_voters)]
     for i in range(num_voters):
         for j in range(num_candidates):
             if rand.random() <= params['p']:
@@ -28,6 +28,19 @@ def generate_approval_id_election(num_voters=None, num_candidates=None, params=N
     k = int(params['p'] * num_candidates)
     vote = {i for i in range(k)}
     votes = [vote for _ in range(num_voters)]
+    return votes
+
+def generate_approval_full(num_voters=None, num_candidates=None, params=None):
+    """ Generate (approval) votes from Identity for approval """
+
+    vote = {i for i in range(num_candidates)}
+    votes = [vote for _ in range(num_voters)]
+    return votes
+
+def generate_approval_empty(num_voters=None, num_candidates=None, params=None):
+    """ Generate (approval) votes from Identity for approval """
+
+    votes = [set() for _ in range(num_voters)]
     return votes
 
 
@@ -53,10 +66,8 @@ def generate_impartial_culture_election(num_voters=None, num_candidates=None):
     """ Generate (ordinal) votes from Impartial Culture """
 
     votes = np.zeros([num_voters, num_candidates], dtype=int)
-
     for j in range(num_voters):
         votes[j] = np.random.permutation(num_candidates)
-
     return votes
 
 

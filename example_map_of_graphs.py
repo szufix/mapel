@@ -10,11 +10,11 @@ if __name__ == "__main__":
                           color='blue', alpha=1, name='erdos_path', size=50,
                           path={'param_name': 'p'})
 
-    experiment.add_family(model='erdos_renyi_graph', num_nodes=num_nodes,
-                          color='black', alpha=1, name='complete', params={'p': 1}, size=1)
+    experiment.add_graph(model='erdos_renyi_graph', num_nodes=num_nodes,
+                          color='black', alpha=1, name='complete', params={'p': 1})
 
-    experiment.add_family(model='erdos_renyi_graph',  num_nodes=num_nodes,
-                          color='cyan', alpha=1, name='empty', params={'p': 0}, size=1)
+    experiment.add_graph(model='erdos_renyi_graph',  num_nodes=num_nodes,
+                          color='cyan', alpha=1, name='empty', params={'p': 0})
 
     experiment.add_family(model='watts_strogatz_graph',  num_nodes=num_nodes,
                           color='green', alpha=0.4,
@@ -52,8 +52,8 @@ if __name__ == "__main__":
     experiment.compute_distances(distance_name=distance_name)
 
     experiment.embed(algorithm='spring', num_iterations=1000)
-    experiment.print_map(saveas='graphs/'+distance_name, shading=True,
-                         title=distance_name+' n='+str(num_nodes))
+    experiment.print_map(saveas=f'graphs/{distance_name}', shading=True,
+                         title=f'{distance_name}, n={str(num_nodes)}')
 
     # experiment.compute_feature(name=distance_name)
     # experiment.compute_feature(name='graph_diameter_log')
