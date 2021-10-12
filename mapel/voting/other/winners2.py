@@ -3,7 +3,6 @@
 import math
 import os
 import random as rand
-import time
 
 import numpy as np
 

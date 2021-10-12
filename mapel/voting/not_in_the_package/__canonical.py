@@ -11,11 +11,37 @@ import matplotlib.pyplot as plt
 import numpy as np
 # from skopt import gp_minimize
 
-from mapel.voting import elections as el, _winners as win
+from mapel.voting import elections as el
+from mapel.voting.other import winners2 as win
 from mapel.voting import metrics as metr
 from mapel.voting import objects as obj
 import copy
 
+def prepare_approx_cc_order(experiment_id, metric="positionwise"):
+    """ Copy all the elections and the change the order according to approx_cc order """
+
+    file_name = os.path.join(os.getcwd(), "experiments", str(experiment_id),
+                             "controllers", "orders",
+                             str(metric) + "_approx_cc.txt")
+    file_ = open(file_name, 'r')
+
+    file_.readline()  # skip this line
+    num_elections = int(file_.readline())
+    file_.readline()  # skip this line
+
+    for i in range(num_elections):
+        target = str(file_.readline().replace("\n", ""))
+
+        src = os.path.join(os.getcwd(), "experiments", str(experiment_id),
+                           "elections", "soc_original",
+                           "core_" + str(target) + ".soc")
+
+        dst = os.path.join(os.getcwd(), "experiments", str(experiment_id),
+                           "elections",
+                           "soc_" + str(metric) + "_approx_cc",
+                           "core_" + str(i) + ".soc")
+
+        copyfile(src, dst)
 
 ### VERIONS WITH DICT INSTEAD OF LIST
 def compute_plurality_winners(election=None, num_winners=1):

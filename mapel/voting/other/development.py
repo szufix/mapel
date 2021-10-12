@@ -3,16 +3,17 @@
 import csv
 import os
 import time
+import math
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 import mapel.voting._metrics as metr
-import mapel.voting.features as features
+import mapel.voting._features as features
 from mapel.voting.metrics.inner_distances import l2, chebyshev
-from mapel.voting.objects.ApprovalElectionExperiment import ApprovalExperiment
+from mapel.voting.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.voting.objects.Experiment import Experiment
-from mapel.voting.objects.OrdinalElectionExperiment import OrdinalExperiment
+from mapel.voting.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 
 
 def potLadle(v, m):
@@ -48,7 +49,7 @@ def compute_spoilers(model=None, method=None, num_winners=None, num_parties=None
     all_separated_weight_vectors = []
 
     for _ in range(precision):
-        experiment = prepare_experiment(instance_type='ordinal')
+        experiment = prepare_experiment(election_type='ordinal')
         experiment.set_default_num_candidates(num_candidates)
         experiment.set_default_num_voters(num_voters)
 
@@ -142,20 +143,20 @@ def compute_spoilers(model=None, method=None, num_winners=None, num_parties=None
         if method == 'dhondt':
             # main election
             parties = [0 for _ in range(num_parties)]
-            for election_id in experiment.instances:
-                for vote in experiment.instances[election_id].votes:
+            for election_id in experiment.elections:
+                for vote in experiment.elections[election_id].votes:
                     parties[int(vote[0] / party_size)] += 1
             denominator = sum(parties)
             for i in range(num_parties):
                 parties[i] /= denominator
             weight_vector = potLadle(parties, num_winners)
 
-            # alternative instances
+            # alternative elections
             alternative_weight_vectors = [[] for _ in range(num_parties)]
             for c in range(num_parties):
                 parties = [0 for _ in range(num_parties)]
-                for election_id in experiment.instances:
-                    for vote in experiment.instances[election_id].votes:
+                for election_id in experiment.elections:
+                    for vote in experiment.elections[election_id].votes:
                         ctr = 0
                         while int(vote[ctr] / party_size) == c:
                             ctr += 1
@@ -177,22 +178,22 @@ def compute_spoilers(model=None, method=None, num_winners=None, num_parties=None
             for party_id in range(num_parties):
                 alternative_weight_vectors[party_id] = [0 for i in range(num_parties)]
 
-            for election_id in experiment.instances:
+            for election_id in experiment.elections:
                 single_vector = [0 for _ in range(num_parties)]
-                for w in experiment.instances[election_id].winners:
+                for w in experiment.elections[election_id].winners:
                     weight_vector[int(w / party_size)] += 1
                     single_vector[int(w / party_size)] += 1
                 separated_weight_vectors.append(single_vector)
                 for party_id in range(num_parties):
-                    for w in experiment.instances[election_id].alternative_winners[party_id]:
+                    for w in experiment.elections[election_id].alternative_winners[party_id]:
                         alternative_weight_vectors[party_id][int(w / party_size)] += 1
 
             all_separated_weight_vectors.append(separated_weight_vectors)
 
         borda = [0 for _ in range(num_parties)]
-        for election_id in experiment.instances:
+        for election_id in experiment.elections:
             for i in range(num_candidates):
-                borda[int(i / party_size)] += experiment.instances[election_id].borda_points[i]
+                borda[int(i / party_size)] += experiment.elections[election_id].borda_points[i]
 
         denominator = sum(borda)
         borda = [elem / denominator for elem in borda]
@@ -326,22 +327,22 @@ def compute_spoilers(model=None, method=None, num_winners=None, num_parties=None
                                      all_alternative_banzhaf_vectors[j][spoiler_id][party_id]])
 
 
-def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
+def prepare_experiment(experiment_id=None, elections=None, distances=None, election_type='ordinal',
                        coordinates=None, distance_name='emd-positionwise', attraction_factor=1):
 
-    if instance_type == 'ordinal':
-        return OrdinalExperiment("virtual", experiment_id=experiment_id, instances=instances,
-                          instance_type=instance_type, attraction_factor=attraction_factor,
+    if election_type == 'ordinal':
+        return OrdinalElectionExperiment("virtual", experiment_id=experiment_id, elections=elections,
+                          election_type=election_type, attraction_factor=attraction_factor,
                           distances=distances, coordinates=coordinates, distance_name=distance_name)
-    elif instance_type == 'approval':
-        return ApprovalExperiment("virtual", experiment_id=experiment_id, instances=instances,
-                          instance_type=instance_type, attraction_factor=attraction_factor,
+    elif election_type == 'approval':
+        return ApprovalElectionExperiment("virtual", experiment_id=experiment_id, elections=elections,
+                          election_type=election_type, attraction_factor=attraction_factor,
                           distances=distances, coordinates=coordinates, distance_name=distance_name)
 
 
 
-def generate_experiment(instances=None):
-    return Experiment("virtual", instances=instances)
+def generate_experiment(elections=None):
+    return Experiment("virtual", elections=elections)
 
 
 ###############################################################################
@@ -349,7 +350,7 @@ def generate_experiment(instances=None):
 ## PART 0 ##
 
 def compute_lowest_dodgson(experiment_id, clear=True):
-    """ Compute lowest Dodgson score for all instances in a given experiment """
+    """ Compute lowest Dodgson score for all elections in a given experiment """
 
     experiment = Experiment(experiment_id)
 
@@ -367,7 +368,7 @@ def compute_lowest_dodgson(experiment_id, clear=True):
         file_scores = open(file_name_2, 'w')
         file_scores.close()
 
-    for election in experiment.instances:
+    for election in experiment.elections:
 
         start_time = time.time()
 
@@ -395,15 +396,15 @@ def compute_lowest_dodgson(experiment_id, clear=True):
 
 
 def import_winners(experiment_id, method='hb', algorithm='greedy',
-                   num_winners=10, num_instances=0):
-    """ Import winners for all instances in a given experiment """
+                   num_winners=10, num_elections=0):
+    """ Import winners for all elections in a given experiment """
 
-    winners = [[] for _ in range(num_instances)]
+    winners = [[] for _ in range(num_elections)]
 
     path = "experiments/" + experiment_id + "/controllers/winners/" + method \
            + "_" + algorithm + ".txt"
     with open(path) as file_txt:
-        for i in range(num_instances):
+        for i in range(num_elections):
             for j in range(num_winners):
                 value = int(float(file_txt.readline().strip()))
                 winners[i].append(value)
@@ -447,7 +448,7 @@ def compute_effective_num_candidates(experiment_id, clear=True):
 
     experiment = Experiment(experiment_id=experiment_id, distance_name='swap')
 
-    for election in experiment.instances:
+    for election in experiment.elections:
         score = features.get_effective_num_candidates(election)
 
         file_scores = open(file_name, 'a')
@@ -459,7 +460,7 @@ def compute_condorcet_existence(experiment_id):
     experiment = Experiment(experiment_id)
     path = "experiments/" + experiment_id + "/controllers/winners/condorcet_existence.txt"
     with open(path, 'w') as file_txt:
-        for election in experiment.instances:
+        for election in experiment.elections:
             exists = is_condorect_winner(election)
             file_txt.write(str(exists) + "\n")
 
@@ -562,13 +563,13 @@ def print_chart_condorcet_existence(experiment_id):
     plt.show()
 
 
-## PART 3 ## SUBinstances
+## PART 3 ## SUBelections
 
 
 ### PART X ###
 
 
-import math
+
 
 
 def is_condorect_winner(election):
@@ -630,10 +631,10 @@ def compute_distortion(experiment, attraction_factor=1, saveas='tmp'):
     A = []
     B = []
 
-    for i, election_id_1 in enumerate(experiment.instances):
-        for j, election_id_2 in enumerate(experiment.instances):
+    for i, election_id_1 in enumerate(experiment.elections):
+        for j, election_id_2 in enumerate(experiment.elections):
             if i < j:
-                m = experiment.instances[election_id_1].num_candidates
+                m = experiment.elections[election_id_1].num_candidates
                 true_distance = experiment.distances[election_id_1][
                     election_id_2]
                 true_distance /= map_diameter(m)

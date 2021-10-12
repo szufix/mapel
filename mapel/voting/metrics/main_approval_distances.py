@@ -51,7 +51,7 @@ def compute_approval_pairwise(ele_1, ele_2, inner_distance):
     return matching_cost, None
 
 
-def compute_flow(ele_1, ele_2, inner_distance):
+def compute_flow(ele_1, ele_2):
     cost_table = get_flow_helper_1(ele_1, ele_2)
     objective_value, matching = solve_matching_vectors(cost_table)
     objective_value /= 1000.

@@ -1,13 +1,10 @@
 
+import csv
 import os
-from shutil import copyfile
 
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 import numpy as np
 from PIL import Image
-
-import csv
 
 
 def get_values_from_csv_file(experiment, feature):
@@ -140,20 +137,18 @@ def get_values_from_file_old(experiment, experiment_id, values,
 
 def get_values_from_file_3d(experiment, experiment_id, values,
                             normalizing_func):
-    path = os.path.join(os.getcwd(), "experiments", experiment_id,
-                        "controllers", "advanced",
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
                         str(values) + ".txt")
-
     _min = 0
     _max = 0
     values = []
-    with open(path, 'r') as txtfile:
+    with open(path, 'r') as txt_file:
         for _ in range(experiment.num_elections):
-            values.append(float(txtfile.readline()))
+            values.append(float(txt_file.readline()))
     _min = min(values)
     _max = max(values)
 
-    with open(path, 'r') as txtfile:
+    with open(path, 'r') as txt_file:
 
         shades = []
         xx = []
@@ -165,7 +160,7 @@ def get_values_from_file_3d(experiment, experiment_id, values,
         for k in range(experiment.num_families):
             for _ in range(experiment.families[k].size):
 
-                shade = float(txtfile.readline())
+                shade = float(txt_file.readline())
                 if normalizing_func is not None:
                     shade = normalizing_func(shade)
                 else:
@@ -189,8 +184,7 @@ def get_values_from_file_3d(experiment, experiment_id, values,
 
 
 def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
-                         normalizing_func=None,
-                         marker_func=None, xticklabels=None, ms=None,
+                         normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
                          cmap=None, ticks=None, dim=2):
     xx, yy, zz, shades, markers, _min, _max = get_values_from_file(
         experiment, feature, normalizing_func, marker_func, dim=dim)
@@ -226,6 +220,7 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
             cb.ax.set_xticklabels(xticklabels)
 
 
+# HELPER FUNCTIONS FOR PRINT_3D
 def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
                                       values=None, cmap=None, ms=None,
                                       normalizing_func=None):
@@ -241,6 +236,7 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
                         vmin=0, vmax=1, cmap=cmap, marker=um, s=ms)])
 
 
+# COLORING
 def skeleton_coloring(experiment=None, ax=None, ms=None, dim=2, tex=False):
     for family_id in experiment.families:
         if experiment.families[family_id].show:
@@ -315,7 +311,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
                 if '_path' in family_id:
                     for i in range(experiment.families[family_id].size):
                         election_id = experiment.families[family_id].election_ids[i]
-                        alpha = experiment.instances[election_id].alpha
+                        alpha = experiment.elections[election_id].alpha
                         alpha *= experiment.families[family_id].alpha
                         alpha = (alpha + 0.2) / 1.2
                         if i == experiment.families[family_id].size - 1:
@@ -331,8 +327,6 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
                                        color=experiment.families[family_id].color,
                                        alpha=alpha, s=ms,
                                        marker=experiment.families[family_id].marker)
-
-
                 else:
                     ax.scatter(experiment.points_by_families[family_id][0],
                                experiment.points_by_families[family_id][1],
@@ -350,13 +344,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
                            marker=experiment.families[family_id].marker)
 
 
-LIST_OF_PREFLIB_ELECTIONS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
-                             'tshirt', 'cities_survey', 'aspen', 'ers',
-                             'marble', 'cycling_tdf', 'cycling_gdi',
-                             'ice_races',
-                             'grenoble'}
-
-
+# BACKGROUNDS
 def mask_background(fig=None, ax=None, black=None, saveas=None, tex=None):
     fig.set_size_inches(10, 10)
     corners = [[-1, 1, 1, -1], [1, 1, -1, -1]]
@@ -458,8 +446,7 @@ def level_background(fig=None, ax=None, saveas=None, tex=None):
         tikzplotlib.save(path)
 
 
-def basic_background(ax=None, values=None, legend=None, saveas=None,
-                     xlabel=None, title=None):
+def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None, title=None):
     file_name = os.path.join(os.getcwd(), "images", str(saveas))
     # print(file_name)
 
@@ -486,6 +473,7 @@ def basic_background(ax=None, values=None, legend=None, saveas=None,
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 
+# TEX
 def saveas_tex(saveas=None):
     import tikzplotlib
     try:
@@ -498,12 +486,8 @@ def saveas_tex(saveas=None):
 
 
 # MAIN FUNCTIONS
-
-
-def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix",
-                 show=True,
-                 self_distances=False, yticks='left', with_std=False,
-                 time=False):
+def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", show=True,
+                 self_distances=False, yticks='left', with_std=False, time=False):
     """Print the matrix with average distances between each pair of experiments """
 
     # CREATE MAPPING FOR BUCKETS
@@ -641,36 +625,8 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix",
         plt.show()
 
 
-def prepare_approx_cc_order(experiment_id, metric="positionwise"):
-    """ Copy all the elections and the change the order according to approx_cc order """
-
-    file_name = os.path.join(os.getcwd(), "experiments", str(experiment_id),
-                             "controllers", "orders",
-                             str(metric) + "_approx_cc.txt")
-    file_ = open(file_name, 'r')
-
-    file_.readline()  # skip this line
-    num_elections = int(file_.readline())
-    file_.readline()  # skip this line
-
-    for i in range(num_elections):
-        target = str(file_.readline().replace("\n", ""))
-
-        src = os.path.join(os.getcwd(), "experiments", str(experiment_id),
-                           "elections", "soc_original",
-                           "core_" + str(target) + ".soc")
-
-        dst = os.path.join(os.getcwd(), "experiments", str(experiment_id),
-                           "elections",
-                           "soc_" + str(metric) + "_approx_cc",
-                           "core_" + str(i) + ".soc")
-
-        copyfile(src, dst)
-
-
 # HELPER FUNCTIONS
-def custom_div_cmap(num_colors=101, name='custom_div_cmap',
-                    colors=None):
+def custom_div_cmap(num_colors=101, name='custom_div_cmap',colors=None):
     if colors is None:
         colors = ["lightgreen", "yellow", "orange", "red", "black"]
 
@@ -679,15 +635,6 @@ def custom_div_cmap(num_colors=101, name='custom_div_cmap',
     cmap = LinearSegmentedColormap.from_list(name=name, colors=colors,
                                              N=num_colors)
     return cmap
-
-
-def temporary_shade(shade):
-    if shade == 1.:
-        return 0.2, "purple", "x"
-    elif shade >= 0.91:
-        shade = 1 - (shade - 0.9) * 10
-        return shade, "purple", "o"
-    return 1, "purple", "o"
 
 
 def add_margin(pil_img, top, right, bottom, left, color):
@@ -699,6 +646,54 @@ def add_margin(pil_img, top, right, bottom, left, color):
     return result
 
 
+def map_diameter(c):
+    """ Compute the diameter """
+    return 1. / 3. * float((c + 1) * (c - 1))
+
+
+# SKELETON RELATED
+def add_skeleton(experiment=None, skeleton=None, ax=None):
+    def my_text(x1, y1, text, color="black", alpha=1., size=14):
+        ax.text(x1, y1, text, size=size, rotation=0., ha="center",
+                va="center",
+                color=color, alpha=alpha, zorder=100,
+                bbox=dict(boxstyle="round", ec="black", fc="white"))
+
+    for name in skeleton:
+        x = experiment.coordinates[name][0]
+        y = experiment.coordinates[name][1]
+        my_text(x, y, name)
+
+
+def add_roads(experiment=None, roads=None, ax=None):
+
+    def my_line(x1, y1, x2, y2, text):
+        ax.arrow(x1, y1, x2 - x1, y2 - y1, head_width=0., head_length=0.,
+                 fc='k', ec='k')
+        dx = x1 + (x2-x1)/2
+        dy = y1 + (y2-y1)/2
+        ax.annotate(text,xy=(dx, dy),size=12)
+
+    for road in roads:
+        x1 = experiment.coordinates[road[0]][0]
+        y1 = experiment.coordinates[road[0]][1]
+        x2 = experiment.coordinates[road[1]][0]
+        y2 = experiment.coordinates[road[1]][1]
+        pos_dist = experiment.distances[road[0]][road[1]]
+        pos_dist /= map_diameter(experiment.default_num_candidates)
+        pos_dist = round(pos_dist,2)
+        text = str(pos_dist)
+        # print(road)
+        if experiment.default_num_candidates == 10 and road in [['WAL', 'UN'], ['UN', 'WAL']]:
+            x1 -= 0.5
+            y1 -= 2
+            x2 -= 0.5
+            y2 -= 2
+
+        my_line(x1,y1,x2,y2, text)
+
+
+# PROBABLY DEPRECATED
 def add_mask_100_100(fig, ax, black=False):
     def my_arrow(x1, y1, x2, y2):
         ax.arrow(x1, y1, x2 - x1, y2 - y1, head_width=0.02, head_length=0.05,
@@ -893,59 +888,6 @@ def add_mask_100_100(fig, ax, black=False):
     my_number(0.77, 0.13, "0.2", color="orangered")
     my_number(0.82, -0.03, "0.5", color="orangered")
 
-
-####################
-####################
-
-####################
-####################
-
-####################
-####################
-
-####################
-####################
-def map_diameter(c):
-    """ Compute the diameter """
-    return 1. / 3. * float((c + 1) * (c - 1))
-
-
-def add_skeleton(experiment=None, skeleton=None, ax=None):
-    def my_text(x1, y1, text, color="black", alpha=1., size=14):
-        ax.text(x1, y1, text, size=size, rotation=0., ha="center",
-                va="center",
-                color=color, alpha=alpha, zorder=100,
-                bbox=dict(boxstyle="round", ec="black", fc="white"))
-
-    for name in skeleton:
-        x = experiment.coordinates[name][0]
-        y = experiment.coordinates[name][1]
-        my_text(x, y, name)
-
-
-def add_roads(experiment=None, roads=None, ax=None):
-
-    def my_line(x1, y1, x2, y2, text):
-        ax.arrow(x1, y1, x2 - x1, y2 - y1, head_width=0., head_length=0.,
-                 fc='k', ec='k')
-        dx = x1 + (x2-x1)/2
-        dy = y1 + (y2-y1)/2
-        ax.annotate(text,xy=(dx, dy),size=12)
-
-    for road in roads:
-        x1 = experiment.coordinates[road[0]][0]
-        y1 = experiment.coordinates[road[0]][1]
-        x2 = experiment.coordinates[road[1]][0]
-        y2 = experiment.coordinates[road[1]][1]
-        pos_dist = experiment.distances[road[0]][road[1]]
-        pos_dist /= map_diameter(experiment.default_num_candidates)
-        pos_dist = round(pos_dist,2)
-        text = str(pos_dist)
-        # print(road)
-        if experiment.default_num_candidates == 10 and road in [['WAL', 'UN'], ['UN', 'WAL']]:
-            x1 -= 0.5
-            y1 -= 2
-            x2 -= 0.5
-            y2 -= 2
-
-        my_line(x1,y1,x2,y2, text)
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 12.10.2021 #
+# # # # # # # # # # # # # # # #

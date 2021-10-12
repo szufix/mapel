@@ -159,12 +159,10 @@ if __name__ == "__main__":
     experiment.set_default_num_voters(n)
 
     # Compass Matrices
-    experiment.add_election(election_model="uniformity", election_id="UN", color=(1, 0.5, 0.5),
-                            marker="X")
-    experiment.add_election(election_model="identity", election_id="ID", color="red", marker="X")
-    experiment.add_election(election_model="antagonism", election_id="AN", color="black",
-                            marker="o")
-    experiment.add_election(election_model="stratification", election_id="ST", color="black")
+    experiment.add_election(model="uniformity", name="UN", color=(1, 0.5, 0.5), marker="X")
+    experiment.add_election(model="identity", name="ID", color="red", marker="X")
+    experiment.add_election(model="antagonism", name="AN", color="black", marker="o")
+    experiment.add_election(model="stratification", name="ST", color="black")
 
     # Paths
     base = 30
@@ -174,29 +172,33 @@ if __name__ == "__main__":
     anun = int(0.5 * base) - 2
     stid = int(0.5 * base) - 2
     stan = int(13.0 / 16.0 * base) - 2
-    experiment.add_family(election_model='anid', size=anid, color='gray', marker=".")
-    experiment.add_family(election_model='stid', size=stid, color='gray', marker=".")
-    experiment.add_family(election_model='anun', size=anun, color='gray', marker=".")
-    experiment.add_family(election_model='stun', size=stun, color='gray', marker=".")
+    experiment.add_election_family(model='anid', size=anid, color='gray', marker=".", name='anid',
+                          path={'variable': 'alpha'})
+    experiment.add_election_family(model='stid', size=stid, color='gray', marker=".", name='stid',
+                          path={'variable': 'alpha'})
+    experiment.add_election_family(model='anun', size=anun, color='gray', marker=".", name='anun',
+                          path={'variable': 'alpha'})
+    experiment.add_election_family(model='stun', size=stun, color='gray', marker=".", name='stun',
+                          path={'variable': 'alpha'})
     #    experiment.add_family(model='unid', size=unid, color='gray', param_1=4)
     #    experiment.add_family(model='stan', size=stan, color='gray', param_1=4)
 
     # Single-Peaked
-    experiment.add_election(election_model="conitzer_matrix", election_id="CON", color="blue")
-    experiment.add_election(election_model="walsh_matrix", election_id="WAL", color="cyan")
+    experiment.add_election(model="conitzer_matrix", name="CON", color="blue")
+    experiment.add_election(model="walsh_matrix", name="WAL", color="cyan")
 
     # Caterpillar
-    experiment.add_election(election_model="gs_caterpillar_matrix", election_id="CAT", color="pink")
+    experiment.add_election(model="gs_caterpillar_matrix", name="CAT", color="pink")
 
-    experiment.add_election(election_model="sushi_matrix", election_id="SHI", color="green")
-    experiment.add_election(election_model="2d_grid", election_id="SHI", color="magenta")
-    #    experiment.add_election(model="single-crossing_matrix", election_id="SCR", color="gray")
+    experiment.add_election(model="sushi_matrix", name="SHI", color="green")
+    experiment.add_election(model="2d_grid", name="SHI", color="magenta")
+    #    experiment.add_election(model="single-crossing_matrix", name="SCR", color="gray")
 
     # Mallows
     MAL_COUNT = 10
     for i in range(1, MAL_COUNT):
         normphi = 1.0 / MAL_COUNT * i
-        experiment.add_election(election_model="norm-mallows_matrix", election_id=("MAL0%d" % i),
+        experiment.add_election(model="norm-mallows_matrix", name=("MAL0%d" % i),
                                 color=(normphi, normphi, 1), params={"norm-phi": normphi})
 
     experiment.compute_distances()

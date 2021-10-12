@@ -13,18 +13,17 @@ from mapel.voting.objects.Graph import Graph
 from mapel.voting.objects.OrdinalElection import OrdinalElection
 
 
-# MAIN FUNCTIONS
-def get_distance(instance_1, instance_2, distance_name=None):
-    """ Get distance between two instances """
+def get_distance(election_1, election_2, distance_name=None):
+    """ Get distance between two elections """
 
-    if type(instance_1) is Graph:
-        return get_graph_distance(instance_1.graph, instance_2.graph, distance_name=distance_name)
-    elif type(instance_1) is ApprovalElection:
-        return get_approval_distance(instance_1, instance_2, distance_name=distance_name)
-    elif type(instance_1) is OrdinalElection:
-        return get_ordinal_distance(instance_1, instance_2, distance_name=distance_name)
+    if type(election_1) is Graph:
+        return get_graph_distance(election_1.graph, election_2.graph, distance_name=distance_name)
+    elif type(election_1) is ApprovalElection:
+        return get_approval_distance(election_1, election_2, distance_name=distance_name)
+    elif type(election_1) is OrdinalElection:
+        return get_ordinal_distance(election_1, election_2, distance_name=distance_name)
     else:
-        print('No such instance!')
+        print('No such election!')
 
 
 def get_approval_distance(ele_1, ele_2, distance_name=None):
@@ -32,15 +31,16 @@ def get_approval_distance(ele_1, ele_2, distance_name=None):
 
     inner_distance, main_distance = distance_name.split('-')
 
-    metrics_without_params = {}
+    metrics_without_params = {
+        'flow': mad.compute_flow,
+    }
 
     metrics_with_inner_distance = {
         'approvalwise': mad.compute_approvalwise,
         'coapproval_frequency': mad.compute_coapproval_frequency_vectors,
         'approval_pairwise': mad.compute_approval_pairwise,
         'voterlikeness': mad.compute_voterlikeness_vectors,
-        'flow': mad.compute_flow,
-        'candidatelikeness': mad.compute_candidatelikeness
+        'candidatelikeness': mad.compute_candidatelikeness,
     }
 
     if main_distance in metrics_without_params:
@@ -99,25 +99,27 @@ def get_graph_distance(graph_1, graph_2, distance_name=''):
         return graph_advanced_metrics.get(distance_name)(graph_1, graph_2)
 
 
-def run_single_thread(experiment, distances, times, thread_ids, t, matchings):
+def run_single_thread(experiment, thread_ids, distances, times, matchings):
     """ Single thread for computing distance """
 
     for election_id_1, election_id_2 in thread_ids:
-        # print(election_id_1, election_id_2)
         start_time = time()
 
-        distance, matching = get_distance(experiment.instances[election_id_1],
-                                          experiment.instances[election_id_2],
-                                          distance_name=experiment.distance_name)
+        distance = get_distance(experiment.elections[election_id_1],
+                                experiment.elections[election_id_2],
+                                distance_name=experiment.distance_name)
 
-        matching = np.array(matching)
+        if len(distance) == 2:
+            distance, matching = distance
+            matching = np.array(matching)
+            matchings[election_id_1][election_id_2] = matching
+            matchings[election_id_2][election_id_1] = np.argsort(matching)
 
-        matchings[election_id_1][election_id_2] = matching
-        matchings[election_id_2][election_id_1] = np.argsort(matching)
         distances[election_id_1][election_id_2] = distance
         distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
         times[election_id_1][election_id_2] = time() - start_time
         times[election_id_2][election_id_1] = times[election_id_1][election_id_2]
 
-    print("Thread " + str(t) + " is ready. ")
-
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 12.10.2021 #
+# # # # # # # # # # # # # # # #

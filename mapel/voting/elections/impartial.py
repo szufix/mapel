@@ -1,6 +1,7 @@
-import random as rand
-import numpy as np
 import math
+import random as rand
+
+import numpy as np
 
 
 def generate_approval_ic_election(num_voters=None, num_candidates=None, params=None):
@@ -30,31 +31,29 @@ def generate_approval_id_election(num_voters=None, num_candidates=None, params=N
     votes = [vote for _ in range(num_voters)]
     return votes
 
-def generate_approval_full(num_voters=None, num_candidates=None, params=None):
-    """ Generate (approval) votes from Identity for approval """
 
+def generate_approval_full(num_voters=None, num_candidates=None):
+    """ Generate (approval) votes from Identity for approval """
     vote = {i for i in range(num_candidates)}
-    votes = [vote for _ in range(num_voters)]
-    return votes
+    return [vote for _ in range(num_voters)]
 
-def generate_approval_empty(num_voters=None, num_candidates=None, params=None):
+
+def generate_approval_empty(num_voters=None):
     """ Generate (approval) votes from Identity for approval """
-
-    votes = [set() for _ in range(num_voters)]
-    return votes
+    return [set() for _ in range(num_voters)]
 
 
 def generate_impartial_anonymous_culture_election(num_voters=None, num_candidates=None):
     """ Generate (ordinal) votes from Impartial Anonymous Culture """
     alpha = 1. / math.factorial(num_candidates)
 
-    votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
+    votes = [list() for _ in range(num_voters)]
 
     urn_size = 1.
     for j in range(num_voters):
         rho = rand.random()
         if rho <= urn_size:
-            votes[j] = np.random.permutation(num_candidates)
+            votes[j] = list(np.random.permutation(num_candidates))
         else:
             votes[j] = votes[rand.randint(0, j - 1)]
         urn_size = 1. / (1. + alpha * (j + 1.))
@@ -64,17 +63,14 @@ def generate_impartial_anonymous_culture_election(num_voters=None, num_candidate
 
 def generate_impartial_culture_election(num_voters=None, num_candidates=None):
     """ Generate (ordinal) votes from Impartial Culture """
-
     votes = np.zeros([num_voters, num_candidates], dtype=int)
     for j in range(num_voters):
         votes[j] = np.random.permutation(num_candidates)
     return votes
 
 
-def generate_ic_party(num_voters=None, num_candidates=None, params=None,
-                      election_model=None):
+def generate_ic_party(num_voters=None, params=None):
     """ Generate (party) votes from Impartial Culture"""
-
     num_parties = params['num_parties']
     party_size = params['num_winners']
 
@@ -91,3 +87,6 @@ def generate_ic_party(num_voters=None, num_candidates=None, params=None,
                 new_votes[i].append(_id)
     return new_votes
 
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 12.10.2021 #
+# # # # # # # # # # # # # # # #

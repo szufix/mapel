@@ -8,6 +8,8 @@ import numpy as np
 from mapel.voting.metrics.inner_distances import hamming
 from mapel.voting.objects.Election import Election
 
+from mapel.voting.glossary import NICE_NAME
+
 
 class ApprovalElection(Election):
 
@@ -35,9 +37,9 @@ class ApprovalElection(Election):
                     import_fake_app_election(experiment_id, name)
             else:
                 self.votes, self.num_voters, self.num_candidates, self.params, \
-                    self.election_model = import_real_app_election(experiment_id, name)
+                    self.model = import_real_app_election(experiment_id, name)
                 try:
-                    self.alpha = self.params[self.params['path_param']]
+                    self.alpha = self.params[self.params['variable']]
                 except:
                     pass
 
@@ -129,7 +131,7 @@ def import_real_app_election(experiment_id, election_id):
     """ Import real approval election from .app file """
 
     file_name = str(election_id) + ".app"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "instances", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
 
     params = 0
@@ -171,6 +173,10 @@ def import_real_app_election(experiment_id, election_id):
     #     for i in range(num_voters):
     #         for j in range(num_candidates):
     #             votes[i][j] -= 1
+    if model_name in NICE_NAME.values():
+        rev_dict = dict(zip(NICE_NAME.values(), NICE_NAME.keys()))
+        model_name = rev_dict[model_name]
+    # print(model_name)
 
     return votes, num_voters, num_candidates, params, model_name
 
@@ -179,7 +185,7 @@ def import_fake_app_election(experiment_id, election_id):
     """ Import fake approval election from .app file """
 
     file_name = str(election_id) + ".app"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "instances", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     my_file.readline()  # line with $ fake
 
@@ -193,7 +199,7 @@ def import_fake_app_election(experiment_id, election_id):
 
 def check_if_fake(experiment_id, election_id):
     file_name = str(election_id) + ".app"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "instances", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     line = my_file.readline().strip()
     if line[0] == '$':

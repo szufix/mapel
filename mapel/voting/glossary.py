@@ -56,6 +56,7 @@ LIST_OF_PREFLIB_MODELS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
                           'marble', 'cycling_tdf', 'cycling_gdi',
                           'ice_races', 'grenoble'}
 
+
 LIST_OF_FAKE_MODELS = {'identity', 'uniformity', 'antagonism',
                        'stratification', 'mallows_matrix_path',
                        'unid', 'anid', 'stid', 'anun', 'stun', 'stan',
@@ -85,3 +86,6 @@ GRAPH_MODELS = {'erdos_renyi_graph', 'watts_strogatz_graph', 'barabasi_albert_gr
                 'erdos_renyi_graph_path'}
 
 
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 12.10.2021 #
+# # # # # # # # # # # # # # # #

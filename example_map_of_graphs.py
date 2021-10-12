@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     experiment.add_family(model='erdos_renyi_graph', num_nodes=num_nodes,
                           color='blue', alpha=1, name='erdos_path', size=50,
-                          path={'param_name': 'p'})
+                          path={'variable': 'p'})
 
     experiment.add_graph(model='erdos_renyi_graph', num_nodes=num_nodes,
                           color='black', alpha=1, name='complete', params={'p': 1})
@@ -34,7 +34,7 @@ if __name__ == "__main__":
                           name='barabasi_2', params={'m': 2}, size=15)
 
     experiment.add_family(model='random_geometric_graph', num_nodes=num_nodes, color='orange',
-                          name='geometric_path', size=15, path={'param_name': 'radius'})
+                          name='geometric_path', size=15, path={'variable': 'radius'})
 
     experiment.add_family(model='random_geometric_graph', num_nodes=num_nodes, color='red',
                           name='geometric_0.1', params={'radius': 0.1}, size=15)

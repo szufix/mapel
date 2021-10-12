@@ -116,17 +116,18 @@ def mallowsMatrix(num_candidates,lphi,pos,normalize=True):
 
 
 def get_mallows_matrix(num_candidates, params,normalize=True):
+
     lphi=params['norm-phi']
     weight=params['weight']
     # print(lphi, weight)
     try:
-        path = os.path.join(os.getcwd(), 'mapel','voting', 'elections', 'mallows_positionmatrices',str(num_candidates) + "_matrix.txt")
+        path = os.path.join(os.getcwd(), 'elections', 'mallows_positionmatrices', str(num_candidates) + "_matrix.txt")
+        # print(path)
         with open(path, "rb") as file:
-            #print(path)
             pos = pickle.load(file)
     except FileNotFoundError:
         print("Mallows matrix only supported for up to 30 candidates")
-    #print(pos)
+    # print(pos)
     mat1 = mallowsMatrix(num_candidates, lphi, pos,normalize)
     res = np.zeros([num_candidates,num_candidates])
     for i in range(num_candidates):
@@ -227,7 +228,6 @@ def generate_approval_disjoint_mallows_election(num_voters=None, num_candidates=
                 if rand.random() < 1 - params['phi']:
                     vote.add(c)
         votes[v] = vote
-
 
     central_vote_2 = {i+k for i in range(k)}
 

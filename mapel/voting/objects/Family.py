@@ -3,15 +3,10 @@
 class Family:
     """ Family of elections: a set of elections from the same election model """
 
-    def __init__(self, model="none", family_id='none', params=None,
-                 size=1, label="none", color="black", alpha=1., show=True, marker='o',
-                 starting_from=0, num_candidates=None, num_voters=None, single_election=False,
+    def __init__(self, model="none", family_id='none', params=None, size=1, label="none",
+                 color="black", alpha=1., show=True, marker='o', starting_from=0,
+                 num_candidates=None, num_voters=None, single_election=False,
                  election_ids=None, ballot='ordinal', path=None, num_nodes=None):
-
-        if params is None:
-            params = {}
-        if election_ids is None:
-            election_ids = []
 
         self.family_id = family_id
         self.model = model
@@ -30,3 +25,7 @@ class Family:
         self.ballot = ballot
         self.path = path
         self.num_nodes = num_nodes
+
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 12.10.2021 #
+# # # # # # # # # # # # # # # #

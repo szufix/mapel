@@ -10,12 +10,8 @@ import networkx as nx
 import numpy as np
 from scipy.stats import gamma
 
-import mapel.voting.elections.preflib as preflib
-from mapel.voting.elections.euclidean import generate_elections_1d_simple, \
-    generate_elections_2d_simple, generate_elections_nd_simple, \
-    generate_elections_2d_grid, generate_2d_gaussian_party, \
-    generate_1d_gaussian_party, \
-    generate_approval_euclidean_election
+import mapel.voting.elections.euclidean as euclidean
+
 from mapel.voting.elections.group_separable import generate_group_separable_election
 from mapel.voting.elections.guardians import \
     generate_real_antagonism_election, \
@@ -66,29 +62,30 @@ def generate_graph(model=None, num_nodes=None, params=None):
 
 
 def generate_approval_votes(model=None, num_candidates=None, num_voters=None, params=None):
-    models = {'approval_ic': generate_approval_ic_election,
-              'approval_id': generate_approval_id_election,
-              'approval_mallows': generate_approval_mallows_election,
-              'approval_raw_mallows': generate_approval_raw_mallows_election,
-              'approval_urn': generate_approval_urn_election,
-              'approval_euclidean': generate_approval_euclidean_election,
-              'approval_disjoint_mallows': generate_approval_disjoint_mallows_election,
-              'approval_id_0.5': generate_approval_id_election,
-              'approval_ic_0.5': generate_approval_ic_election,
-              'approval_empty': generate_approval_empty,
-              'approval_full': generate_approval_full,
-              }
+    models_with_params = {'approval_ic': generate_approval_ic_election,
+                          'approval_id': generate_approval_id_election,
+                          'approval_mallows': generate_approval_mallows_election,
+                          'approval_raw_mallows': generate_approval_raw_mallows_election,
+                          'approval_urn': generate_approval_urn_election,
+                          'approval_euclidean': euclidean.generate_approval_euclidean_election,
+                          'approval_disjoint_mallows': generate_approval_disjoint_mallows_election,
+                          'approval_id_0.5': generate_approval_id_election,
+                          'approval_ic_0.5': generate_approval_ic_election,
+                          }
 
-    if model in models:
-        votes = models.get(model)(num_voters=num_voters, num_candidates=num_candidates,
-                                  params=params)
+    if model in models_with_params:
+        return models_with_params.get(model)(num_voters=num_voters, num_candidates=num_candidates,
+                                             params=params)
+    elif model in ['approval_full']:
+        return generate_approval_full(num_voters=num_voters, num_candidates=num_candidates)
+    elif model in ['approval_empty']:
+        return generate_approval_empty(num_voters=num_voters)
+
     elif model in APPROVAL_FAKE_MODELS:
-        votes = []
+        return []
     else:
-        votes = []
         print("No such election model!", model)
-
-    return votes
+        return []
 
 
 def generate_ordinal_votes(model=None, num_candidates=None, num_voters=None, params=None):
@@ -107,32 +104,32 @@ def generate_ordinal_votes(model=None, num_candidates=None, num_voters=None, par
                     'real_stratification':
                         generate_real_stratification_election}
 
-    euclidean_models = {'1d_interval': generate_elections_1d_simple,
-                        '1d_gaussian': generate_elections_1d_simple,
-                        '1d_one_sided_triangle': generate_elections_1d_simple,
-                        '1d_full_triangle': generate_elections_1d_simple,
-                        '1d_two_party': generate_elections_1d_simple,
-                        '2d_disc': generate_elections_2d_simple,
-                        '2d_square': generate_elections_2d_simple,
-                        '2d_gaussian': generate_elections_2d_simple,
-                        '3d_cube': generate_elections_nd_simple,
-                        '4d_cube': generate_elections_nd_simple,
-                        '5d_cube': generate_elections_nd_simple,
-                        '10d_cube': generate_elections_nd_simple,
-                        '15d_cube': generate_elections_nd_simple,
-                        '20d_cube': generate_elections_nd_simple,
-                        '40d_cube': generate_elections_nd_simple,
-                        '2d_sphere': generate_elections_2d_simple,
-                        '3d_sphere': generate_elections_nd_simple,
-                        '4d_sphere': generate_elections_nd_simple,
-                        '5d_sphere': generate_elections_nd_simple,
-                        '4d_ball': generate_elections_nd_simple,
-                        '5d_ball': generate_elections_nd_simple,
-                        '40d_ball': generate_elections_nd_simple,
-                        '2d_grid': generate_elections_2d_grid}
+    euclidean_models = {'1d_interval': euclidean.generate_elections_1d_simple,
+                        '1d_gaussian': euclidean.generate_elections_1d_simple,
+                        '1d_one_sided_triangle': euclidean.generate_elections_1d_simple,
+                        '1d_full_triangle': euclidean.generate_elections_1d_simple,
+                        '1d_two_party': euclidean.generate_elections_1d_simple,
+                        '2d_disc': euclidean.generate_elections_2d_simple,
+                        '2d_square': euclidean.generate_elections_2d_simple,
+                        '2d_gaussian': euclidean.generate_elections_2d_simple,
+                        '3d_cube': euclidean.generate_elections_nd_simple,
+                        '4d_cube': euclidean.generate_elections_nd_simple,
+                        '5d_cube': euclidean.generate_elections_nd_simple,
+                        '10d_cube': euclidean.generate_elections_nd_simple,
+                        '15d_cube': euclidean.generate_elections_nd_simple,
+                        '20d_cube': euclidean.generate_elections_nd_simple,
+                        '40d_cube': euclidean.generate_elections_nd_simple,
+                        '2d_sphere': euclidean.generate_elections_2d_simple,
+                        '3d_sphere': euclidean.generate_elections_nd_simple,
+                        '4d_sphere': euclidean.generate_elections_nd_simple,
+                        '5d_sphere': euclidean.generate_elections_nd_simple,
+                        '4d_ball': euclidean.generate_elections_nd_simple,
+                        '5d_ball': euclidean.generate_elections_nd_simple,
+                        '40d_ball': euclidean.generate_elections_nd_simple,
+                        '2d_grid': euclidean.generate_elections_2d_grid}
 
-    party_models = {'1d_gaussian_party': generate_1d_gaussian_party,
-                    '2d_gaussian_party': generate_2d_gaussian_party,
+    party_models = {'1d_gaussian_party': euclidean.generate_1d_gaussian_party,
+                    '2d_gaussian_party': euclidean.generate_2d_gaussian_party,
                     'walsh_party': generate_sp_party,
                     'conitzer_party': generate_sp_party,
                     'mallows_party': generate_mallows_party,
@@ -175,143 +172,99 @@ def generate_ordinal_votes(model=None, num_candidates=None, num_voters=None, par
         print("No such election model!", model)
 
     if model not in LIST_OF_FAKE_MODELS:
-        # print(votes)
         votes = [[int(x) for x in row] for row in votes]
 
     return votes
 
 
-# STORE
-def store_ordinal_instances(experiment, model, name, num_candidates, num_voters, params):
-    if model in LIST_OF_FAKE_MODELS:
-        path = os.path.join("experiments", str(experiment.experiment_id),
-                            "elections", (str(name) + ".soc"))
-        file_ = open(path, 'w')
-        file_.write('$ fake' + '\n')
-        file_.write(str(num_voters) + '\n')
-        file_.write(str(num_candidates) + '\n')
-        file_.write(str(model) + '\n')
-        if model == 'norm-mallows_matrix':
-            file_.write(str(round(params['norm-phi'], 5)) + '\n')
-        elif model in PATHS:
-            file_.write(str(round(params['alpha'], 5)) + '\n')
-            if model == 'mallows_matrix_path':
-                file_.write(str(round(params['weight'], 5)) + '\n')
-        file_.close()
-
-    else:
-
-        votes = experiment.elections[name].votes
-        path = os.path.join("experiments",
-                            str(experiment.experiment_id), "elections",
-                            (str(name) + ".soc"))
-        with open(path, 'w') as file_:
-
-            if model in {'urn_model'}:
-                file_.write("# " + NICE_NAME[model] + " " +
-                            str(round(params['alpha'], 5)) + "\n")
-            elif model in ["mallows"]:
-                file_.write("# " + NICE_NAME[model] + " " +
-                            str(round(params['phi'], 5)) + "\n")
-            elif model in ["norm-mallows"]:
-                file_.write("# " + NICE_NAME[model] + " " +
-                            str(round(params['norm-phi'], 5)) + "\n")
-            elif model in ['group-separable']:
-                try:
-                    file_.write("# " + NICE_NAME[model] + " " +
-                                str(round(params['param_1'], 5)) + "\n")
-                except Exception:
-                    pass
-
-            elif model in NICE_NAME:
-                file_.write("# " + NICE_NAME[model] + "\n")
-            else:
-                file_.write("# " + model + "\n")
-
-            file_.write(str(num_candidates) + "\n")
-
-            for i in range(num_candidates):
-                file_.write(str(i) + ', c' + str(i) + "\n")
-
-            c = Counter(map(tuple, votes))
-            counted_votes = [[count, list(row)] for row, count in c.items()]
-            counted_votes = sorted(counted_votes, reverse=True)
-
-            file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
-                        str(len(counted_votes)) + "\n")
-
-            for i in range(len(counted_votes)):
-                file_.write(str(counted_votes[i][0]) + ', ')
-                for j in range(num_candidates):
-                    file_.write(str(int(counted_votes[i][1][j])))
-                    if j < num_candidates - 1:
-                        file_.write(", ")
-                    else:
-                        file_.write("\n")
-
-
-def store_approval_instances(experiment, model, name, num_candidates, num_voters, params):
-    if model in APPROVAL_FAKE_MODELS:
-        path = os.path.join("experiments", str(experiment.experiment_id),
-                            "instances", (str(name) + ".app"))
-        file_ = open(path, 'w')
-        file_.write('$ fake' + '\n')
-        file_.write(str(num_voters) + '\n')
-        file_.write(str(num_candidates) + '\n')
-        file_.write(str(model) + '\n')
-        # if model == 'norm-mallows_matrix':
-        #     file_.write(str(round(params['norm-phi'], 5)) + '\n')
-        # elif model in PATHS:
-        #     file_.write(str(round(params['alpha'], 5)) + '\n')
-        #     if model == 'mallows_matrix_path':
-        #         file_.write(str(round(params['weight'], 5)) + '\n')
-        file_.close()
-
-    else:
-        votes = experiment.instances[name].votes
-        path = os.path.join("experiments",
-                            str(experiment.experiment_id), "instances",
-                            (str(name) + ".app"))
-        with open(path, 'w') as file_:
-
-            if model in NICE_NAME:
-                file_.write("# " + NICE_NAME[model] + " " +
-                            str(params) + "\n")
-            else:
-                file_.write("# " + model + "\n")
-
-            file_.write(str(num_candidates) + "\n")
-
-            for i in range(num_candidates):
-                file_.write(str(i) + ', c' + str(i) + "\n")
-
-            c = Counter(map(tuple, votes))
-            counted_votes = [[count, list(row)] for row, count in c.items()]
-            counted_votes = sorted(counted_votes, reverse=True)
-
-            file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
-                        str(len(counted_votes)) + "\n")
-
-            for i in range(len(counted_votes)):
-                file_.write(str(counted_votes[i][0]) + ', {')
-                for j in range(len(counted_votes[i][1])):
-                    file_.write(str(int(counted_votes[i][1][j])))
-                    if j < len(counted_votes[i][1]) - 1:
-                        file_.write(", ")
-                file_.write("}\n")
-
-
 # GENERATE
-def generate_instances(experiment=None, model=None, name=None, num_candidates=None,
-                       num_voters=None, num_nodes=None, params=None, ballot='ordinal',
-                       param_name=None):
-    """ main function: generate instances """
+def generate_election(experiment=None, model=None, name=None, num_candidates=None,
+                      num_voters=None, num_nodes=None, params=None, ballot='ordinal',
+                      variable=None):
+    """ main function: generate elections """
 
     if params is None:
         params = {}
+    params, alpha = update_params(params, variable, model, num_candidates)
 
-    alpha = 1
+    if ballot == 'ordinal':
+        votes = generate_ordinal_votes(model=model, num_candidates=num_candidates,
+                                       num_voters=num_voters, params=params)
+        election = OrdinalElection("virtual", "virtual", votes=votes, model=model,
+                                   num_candidates=num_candidates,
+                                   num_voters=num_voters, ballot=ballot, alpha=alpha)
+    elif ballot == 'approval':
+        votes = generate_approval_votes(model=model, num_candidates=num_candidates,
+                                        num_voters=num_voters, params=params)
+        election = ApprovalElection(experiment.experiment_id, name, votes=votes, model=model,
+                                    num_candidates=num_candidates,
+                                    num_voters=num_voters, ballot=ballot, alpha=alpha)
+    elif ballot == 'graph':
+        graph = generate_graph(model=model, num_nodes=num_nodes, params=params)
+        election = Graph("virtual", "virtual", graph=graph,
+                         model=model, num_nodes=num_nodes, alpha=alpha)
+    else:
+        print("Such ballot does not exist!")
+        election = None
 
+    if experiment is not None:
+        experiment.elections[name] = election
+
+        if experiment.store:
+            if ballot == 'ordinal':
+                store_ordinal_election(experiment, model, name, num_candidates, num_voters, params)
+            if ballot == 'approval':
+                store_approval_election(experiment, model, name, num_candidates, num_voters,
+                                        params)
+
+    return election
+
+
+def prepare_statistical_culture_family(experiment=None, model=None, family_id=None, params=None):
+    keys = []
+    ballot = get_ballot_from_model(model)
+
+    if model in PARTY_MODELS:
+        params['party'] = prepare_parties(params=params, model=model)
+
+    for j in range(experiment.families[family_id].size):
+
+        variable = None
+        path = experiment.families[family_id].path
+        if path is not None and 'variable' in path:
+            new_params, variable = _get_params_for_paths(experiment, family_id, j)
+            params = {**params, **new_params}
+
+        if model in {'crate'}:
+            new_params = _get_params_for_crate(j)
+            params = {**params, **new_params}
+
+        if experiment.families[family_id].single_election:
+            name = family_id
+        else:
+            name = family_id + '_' + str(j)
+
+        generate_election(experiment=experiment, model=model, name=name,
+                          num_voters=experiment.families[family_id].num_voters,
+                          num_candidates=experiment.families[family_id].num_candidates,
+                          num_nodes=experiment.families[family_id].num_nodes,
+                          params=copy.deepcopy(params), ballot=ballot, variable=variable)
+
+        keys.append(name)
+    return keys
+
+
+# HELPER FUNCTIONS
+def get_ballot_from_model(model):
+    if model in APPROVAL_MODELS:
+        return 'approval'
+    elif model in GRAPH_MODELS:
+        return 'graph'
+    else:
+        return 'ordinal'
+
+
+def update_params(params, variable, model, num_candidates):
     if model == 'mallows' and params['phi'] is None:
         params['phi'] = rand.random()
     elif model == 'norm-mallows' and params['norm-phi'] is None:
@@ -329,48 +282,16 @@ def generate_instances(experiment=None, model=None, name=None, num_candidates=No
     if model == 'erdos_renyi_graph' and params['p'] is None:
         params['p'] = rand.random()
 
-    if param_name is not None:
-        alpha = params[param_name]
-        params['path_param'] = param_name
+    alpha = 1
+    if variable is not None:
+        alpha = params[variable]
+        params['variable'] = variable
 
     if 'weight' not in params:
         params['weight'] = 0.
 
-    if ballot == 'ordinal':
-        votes = generate_ordinal_votes(model=model, num_candidates=num_candidates,
-                                       num_voters=num_voters, params=params)
-        instance = OrdinalElection("virtual", "virtual", votes=votes, model=model,
-                                   num_candidates=num_candidates,
-                                   num_voters=num_voters, ballot=ballot, alpha=alpha)
-    elif ballot == 'approval':
-        votes = generate_approval_votes(model=model, num_candidates=num_candidates,
-                                        num_voters=num_voters, params=params)
-        instance = ApprovalElection(experiment.experiment_id, name, votes=votes, model=model,
-                                    num_candidates=num_candidates,
-                                    num_voters=num_voters, ballot=ballot, alpha=alpha)
-    elif ballot == 'graph':
-        graph = generate_graph(model=model, num_nodes=num_nodes, params=params)
-        instance = Graph("virtual", "virtual", graph=graph,
-                         model=model, num_nodes=num_nodes, alpha=alpha)
+    return params, alpha
 
-    else:
-        print("Such ballot does not exist!")
-        instance = None
-
-    if experiment is not None:
-        experiment.instances[name] = instance
-
-        if experiment.store:
-            if ballot == 'ordinal':
-                store_ordinal_instances(experiment, model, name, num_candidates, num_voters, params)
-            if ballot == 'approval':
-                store_approval_instances(experiment, model, name, num_candidates, num_voters,
-                                         params)
-
-    return instance
-
-
-###############################################################################
 
 # IMPORT
 def import_election(experiment_id, election_id):
@@ -379,84 +300,6 @@ def import_election(experiment_id, election_id):
 
 
 # HELPER FUNCTIONS #
-def prepare_preflib_family(experiment=None, model=None, params=None,
-                           id_=None, folder=None):
-    # NEEDS UPDATE #
-
-    selection_method = 'random'
-
-    # list of IDs larger than 10
-    if model == 'irish':
-        folder = 'irish_s1'
-        # folder = 'irish_f'
-        ids = [1, 3]
-    elif model == 'glasgow':
-        folder = 'glasgow_s1'
-        # folder = 'glasgow_f'
-        ids = [2, 3, 4, 5, 6, 7, 8, 9, 11, 13, 16, 19, 21]
-    elif model == 'formula':
-        folder = 'formula_s1'
-        # 17 races or more
-        ids = [17, 35, 37, 40, 41, 42, 44, 45, 46, 47, 48]
-    elif model == 'skate':
-        folder = 'skate_ic'
-        # 9 judges
-        ids = [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-               25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-               35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 47, 48]
-    elif model == 'sushi':
-        folder = 'sushi_ff'
-        ids = [1]
-    elif model == 'grenoble':
-        folder = 'grenoble_ff'
-        ids = [1]
-    elif model == 'tshirt':
-        folder = 'tshirt_ff'
-        ids = [1]
-    elif model == 'cities_survey':
-        folder = 'cities_survey_s1'
-        ids = [1, 2]
-    elif model == 'aspen':
-        folder = 'aspen_s1'
-        ids = [1]
-    elif model == 'marble':
-        folder = 'marble_ff'
-        ids = [1, 2, 3, 4, 5]
-    elif model == 'cycling_tdf':
-        folder = 'cycling_tdf_s1'
-        # ids = [e for e in range(1, 69+1)]
-        selection_method = 'random'
-        ids = [14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26]
-    elif model == 'cycling_gdi':
-        folder = 'cycling_gdi_s1'
-        ids = [i for i in range(2, 23 + 1)]
-    elif model == 'ers':
-        folder = 'ers_s1'
-        # folder = 'ers_f'
-        # 500 voters or more
-        ids = [3, 9, 23, 31, 32, 33, 36, 38, 40, 68, 77, 79, 80]
-    elif model == 'ice_races':
-        folder = 'ice_races_s1'
-        # 80 voters or more
-        ids = [4, 5, 8, 9, 15, 20, 23, 24, 31, 34, 35, 37, 43, 44, 49]
-    else:
-        ids = []
-
-    rand_ids = rand.choices(ids, k=experiment.families[model].size)
-    for ri in rand_ids:
-        election_id = "core_" + str(id_)
-        tmp_election_type = model + '_' + str(ri)
-
-        preflib.generate_elections_preflib(
-            experiment=experiment, model=tmp_election_type,
-            elections_id=election_id,
-            num_voters=experiment.families[model].num_voters,
-            num_candidates=experiment.families[model].num_candidates,
-            special=params,
-            folder=folder, selection_method=selection_method)
-        id_ += 1
-
-
 def _get_params_for_crate(j):
     base = []
     my_size = 10
@@ -478,27 +321,24 @@ def _get_params_for_crate(j):
 def _get_params_for_paths(experiment, family_id, j, with_extremes=False):
     path = experiment.families[family_id].path
 
-    param_name = path['param_name']
+    variable = path['variable']
 
     if 'with_extremes' in path:
         with_extremes = path['with_extremes']
 
     params = {}
     if with_extremes:
-        params[param_name] = j / (experiment.families[family_id].size - 1)
+        params[variable] = j / (experiment.families[family_id].size - 1)
     elif not with_extremes:
-        params[param_name] = (j + 1) / (experiment.families[family_id].size + 1)
+        params[variable] = (j + 1) / (experiment.families[family_id].size + 1)
 
     if 'scale' in path:
-        params[param_name] *= path['scale']
+        params[variable] *= path['scale']
 
-    # print(params[param_name])
-
-    return params, param_name
+    return params, variable
 
 
-def prepare_parties(experiment=None, model=None,
-                    family_id=None, params=None):
+def prepare_parties(model=None, params=None):
     parties = []
 
     if model == '2d_gaussian_party':
@@ -514,43 +354,89 @@ def prepare_parties(experiment=None, model=None,
     return parties
 
 
-def prepare_statistical_culture_family(experiment=None, model=None, family_id=None,
-                                       params=None):
-    keys = []
-    ballot = 'ordinal'
+# STORE
+def store_ordinal_election(experiment, model, name, num_candidates, num_voters, params):
+    """ Store ordinal election in a .soc file """
 
-    if model in APPROVAL_MODELS:
-        ballot = 'approval'
-    elif model in GRAPH_MODELS:
-        ballot = 'graph'
+    if model in LIST_OF_FAKE_MODELS:
+        path = os.path.join("experiments", str(experiment.experiment_id),
+                            "elections", (str(name) + ".soc"))
+        file_ = open(path, 'w')
+        file_.write('$ fake' + '\n')
+        file_.write(str(num_voters) + '\n')
+        file_.write(str(num_candidates) + '\n')
+        file_.write(str(model) + '\n')
+        if model == 'norm-mallows_matrix':
+            file_.write(str(round(params['norm-phi'], 5)) + '\n')
+        elif model in PATHS:
+            file_.write(str(round(params['alpha'], 5)) + '\n')
+            if model == 'mallows_matrix_path':
+                file_.write(str(round(params['weight'], 5)) + '\n')
+        file_.close()
 
-    if model in PARTY_MODELS:
-        params['party'] = prepare_parties(experiment=experiment, params=params,
-                                          model=model, family_id=family_id)
+    else:
 
-    for j in range(experiment.families[family_id].size):
+        path = os.path.join("experiments",
+                            str(experiment.experiment_id), "elections",
+                            (str(name) + ".soc"))
 
-        param_name = None
-        path = experiment.families[family_id].path
-        if path is not None and 'param_name' in path:
-            new_params, param_name = _get_params_for_paths(experiment, family_id, j)
-            params = {**params, **new_params}
+        store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path)
 
-        if model in {'crate'}:
-            new_params = _get_params_for_crate(j)
-            params = {**params, **new_params}
 
-        if experiment.families[family_id].single_election:
-            name = family_id
+def store_approval_election(experiment, model, name, num_candidates, num_voters, params):
+    """ Store approval election in an .app file """
+
+    if model in APPROVAL_FAKE_MODELS:
+        path = os.path.join("experiments", str(experiment.experiment_id),
+                            "elections", (str(name) + ".app"))
+        file_ = open(path, 'w')
+        file_.write('$ fake' + '\n')
+        file_.write(str(num_voters) + '\n')
+        file_.write(str(num_candidates) + '\n')
+        file_.write(str(model) + '\n')
+        file_.close()
+
+    else:
+        path = os.path.join("experiments",
+                            str(experiment.experiment_id), "elections",
+                            (str(name) + ".app"))
+
+        store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path)
+
+
+def store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path):
+    """ Store votes in a file """
+
+    votes = experiment.elections[name].votes
+
+    with open(path, 'w') as file_:
+
+        if model in NICE_NAME:
+            file_.write("# " + NICE_NAME[model] + " " +
+                        str(params) + "\n")
         else:
-            name = family_id + '_' + str(j)
+            file_.write("# " + model + "\n")
 
-        generate_instances(experiment=experiment, model=model,
-                           name=name,
-                           num_voters=experiment.families[family_id].num_voters,
-                           num_candidates=experiment.families[family_id].num_candidates,
-                           num_nodes=experiment.families[family_id].num_nodes,
-                           params=copy.deepcopy(params), ballot=ballot, param_name=param_name)
+        file_.write(str(num_candidates) + "\n")
 
-        keys.append(name)
-    return keys
+        for i in range(num_candidates):
+            file_.write(str(i) + ', c' + str(i) + "\n")
+
+        c = Counter(map(tuple, votes))
+        counted_votes = [[count, list(row)] for row, count in c.items()]
+        counted_votes = sorted(counted_votes, reverse=True)
+
+        file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
+                    str(len(counted_votes)) + "\n")
+
+        for i in range(len(counted_votes)):
+            file_.write(str(counted_votes[i][0]) + ', {')
+            for j in range(len(counted_votes[i][1])):
+                file_.write(str(int(counted_votes[i][1][j])))
+                if j < len(counted_votes[i][1]) - 1:
+                    file_.write(", ")
+            file_.write("}\n")
+
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 12.10.2021 #
+# # # # # # # # # # # # # # # #

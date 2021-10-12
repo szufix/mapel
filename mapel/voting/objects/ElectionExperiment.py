@@ -25,14 +25,14 @@ COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 
 
 class ElectionExperiment(Experiment):
 
-    def __init__(self, ignore=None, instances=None, distances=None, with_matrices=False,
+    def __init__(self, ignore=None, elections=None, distances=None, with_matrices=False,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 instance_type='ordinal', attraction_factor=1):
+                 election_type='ordinal', attraction_factor=1):
 
-        super().__init__(ignore=ignore, instances=instances, distances=distances,
+        super().__init__(ignore=ignore, elections=elections, distances=distances,
                          coordinates=coordinates, distance_name=distance_name,
                          experiment_id=experiment_id,
-                         instance_type=instance_type, attraction_factor=attraction_factor)
+                         election_type=election_type, attraction_factor=attraction_factor)
 
         self.default_num_candidates = 10
         self.default_num_voters = 100
@@ -107,8 +107,8 @@ class ElectionExperiment(Experiment):
                                           single_election=single_election)
 
         self.num_families = len(self.families)
-        self.num_instances = sum([self.families[family_id].size for family_id in self.families])
-        self.main_order = [i for i in range(self.num_instances)]
+        self.num_elections = sum([self.families[family_id].size for family_id in self.families])
+        self.main_order = [i for i in range(self.num_elections)]
 
         params = self.families[family_id].params
         model = self.families[family_id].model
@@ -121,10 +121,6 @@ class ElectionExperiment(Experiment):
         self.families[family_id].election_ids = ids
 
         return ids
-
-    def prepare_elections(self):
-        """ Prepare elections based on the map.csv file """
-        self.prepare_instances()
 
     def create_structure(self):
 
@@ -144,7 +140,7 @@ class ElectionExperiment(Experiment):
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances"))
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "features"))
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections"))
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices"))
 
             # PREPARE MAP.CSV FILE

@@ -15,7 +15,7 @@ import numpy as np
 import mapel.voting._elections as _elections
 import mapel.voting._metrics as metr
 import mapel.voting.elections.preflib as preflib
-import mapel.voting.features as features
+import mapel.voting._features as features
 import mapel.voting.print as pr
 from mapel.voting.objects.Family import Family
 
@@ -38,14 +38,14 @@ COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 
 
 class Experiment:
     __metaclass__ = ABCMeta
-    """Abstract set of instances."""
+    """Abstract set of elections."""
 
-    def __init__(self, ignore=None, instances=None, distances=None,
+    def __init__(self, ignore=None, elections=None, distances=None,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 instance_type='ordinal', attraction_factor=1):
+                 election_type='ordinal', attraction_factor=1):
 
         self.distance_name = distance_name
-        self.instances = {}
+        self.elections = {}
 
         self.families = None
         self.distances = None
@@ -55,9 +55,9 @@ class Experiment:
         self.matchings = None
 
         self.num_families = None
-        self.num_instances = None
+        self.num_elections = None
         self.main_order = None
-        self.instance_type = instance_type
+        self.election_type = election_type
 
         if experiment_id is None:
             self.experiment_id = 'virtual'
@@ -69,11 +69,11 @@ class Experiment:
             self.families = self.import_controllers(ignore=ignore)
             self.attraction_factor = attraction_factor
 
-        if instances is not None:
-            if instances == 'import':
-                self.instances = self.add_instances_to_experiment()
+        if elections is not None:
+            if elections == 'import':
+                self.elections = self.add_elections_to_experiment()
             else:
-                self.instances = instances
+                self.elections = elections
 
         if distances is not None:
             if distances == 'import':
@@ -94,7 +94,7 @@ class Experiment:
                    alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,
                    num_voters=None, family_id=None, single_election=False, num_nodes=None,
                    path=None, name=None):
-        """ Add family of instances to the experiment """
+        """ Add family of elections to the experiment """
 
         if name is not None:
             family_id = name
@@ -114,8 +114,8 @@ class Experiment:
                                           single_election=single_election)
 
         self.num_families = len(self.families)
-        self.num_instances = sum([self.families[family_id].size for family_id in self.families])
-        self.main_order = [i for i in range(self.num_instances)]
+        self.num_elections = sum([self.families[family_id].size for family_id in self.families])
+        self.main_order = [i for i in range(self.num_elections)]
 
         params = self.families[family_id].params
         model = self.families[family_id].model
@@ -129,10 +129,10 @@ class Experiment:
 
         return ids
 
-    def add_instance(self, model="none", params=None, label=None,
+    def add_election(self, model="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
                      num_candidates=None, num_voters=None, name=None, num_nodes=None):
-        """ Add instance to the experiment """
+        """ Add election to the experiment """
 
         return self.add_family(model=model, params=params, size=size, label=label, color=color,
                                alpha=alpha, show=show,  marker=marker, starting_from=starting_from,
@@ -140,16 +140,16 @@ class Experiment:
                                family_id=name, num_nodes=num_nodes, single_election=True)[0]
 
     def add_graph(self, **kwargs):
-        return self.add_instance(**kwargs)
+        return self.add_election(**kwargs)
 
-    def prepare_instances(self):
-        """ Prepare instances for a given experiment """
+    def prepare_elections(self):
+        """ Prepare elections for a given experiment """
 
-        if self.instances is None:
-            self.instances = {}
+        if self.elections is None:
+            self.elections = {}
 
         if self.store:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances")
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
             for file_name in os.listdir(path):
                 os.remove(os.path.join(path, file_name))
 
@@ -168,45 +168,45 @@ class Experiment:
                 self.families[family_id].election_ids = ids
 
     def compute_winners(self, method=None, num_winners=1):
-        for election_id in self.instances:
-            self.instances[election_id].compute_winners(method=method, num_winners=num_winners)
+        for election_id in self.elections:
+            self.elections[election_id].compute_winners(method=method, num_winners=num_winners)
 
     def compute_alternative_winners(self, method=None, num_winners=None, num_parties=None):
-        for election_id in self.instances:
+        for election_id in self.elections:
             for party_id in range(num_parties):
-                self.instances[election_id].compute_alternative_winners(
+                self.elections[election_id].compute_alternative_winners(
                     method=method, party_id=party_id, num_winners=num_winners)
 
     def compute_distances(self, distance_name='emd-positionwise', num_threads=1,
                           self_distances=False, vector_type='A'):
-        """ Compute distances between instances (using threads) """
+        """ Compute distances between elections (using threads) """
 
         self.distance_name = distance_name
 
         # precompute vectors, matrices, etc...
         if '-approvalwise' in distance_name:
-            for instance in self.instances.values():
-                # print(instance.name)
-                instance.votes_to_approvalwise_vector()
-                # print(instance.approvalwise_vector)
+            for election in self.elections.values():
+                # print(election.name)
+                election.votes_to_approvalwise_vector()
+                # print(election.approvalwise_vector)
         elif '-coapproval_frequency' in distance_name or '-flow' in distance_name:
-            for instance in self.instances.values():
-                instance.votes_to_coapproval_frequency_vectors(vector_type=vector_type)
+            for election in self.elections.values():
+                election.votes_to_coapproval_frequency_vectors(vector_type=vector_type)
         elif '-voterlikeness' in distance_name:
-            for instance in self.instances.values():
-                instance.votes_to_voterlikeness_vectors(vector_type=vector_type)
+            for election in self.elections.values():
+                election.votes_to_voterlikeness_vectors(vector_type=vector_type)
         elif '-candidatelikeness' in distance_name:
-            for instance in self.instances.values():
-                instance.votes_to_tmp_metric_vectors()
+            for election in self.elections.values():
+                election.votes_to_tmp_metric_vectors()
         elif '-approval_pairwise' in distance_name:
-            for instance in self.instances.values():
-                instance.votes_to_approval_pairwise_matrix()
+            for election in self.elections.values():
+                election.votes_to_approval_pairwise_matrix()
         # continue with normal code
 
         matchings = {}
         distances = {}
         times = {}
-        for election_id in self.instances:
+        for election_id in self.elections:
             distances[election_id] = {}
             times[election_id] = {}
             matchings[election_id] = {}
@@ -214,8 +214,8 @@ class Experiment:
         threads = [{} for _ in range(num_threads)]
 
         ids = []
-        for i, election_1 in enumerate(self.instances):
-            for j, election_2 in enumerate(self.instances):
+        for i, election_1 in enumerate(self.elections):
+            for j, election_2 in enumerate(self.elections):
                 if i == j:
                     if self_distances:
                         ids.append((election_1, election_2))
@@ -230,17 +230,13 @@ class Experiment:
             start = int(t * num_distances / num_threads)
             stop = int((t + 1) * num_distances / num_threads)
             thread_ids = ids[start:stop]
-            copy_t = t
 
-            threads[t] = Thread(target=metr.run_single_thread, args=(
-                self, distances, times, thread_ids, copy_t, matchings))
+            threads[t] = Thread(target=metr.run_single_thread, args=(self, thread_ids,
+                                                                     distances, times, matchings))
             threads[t].start()
 
         for t in range(num_threads):
             threads[t].join()
-
-        # print(distances.keys())
-
         if self.store:
             path = os.path.join(os.getcwd(), "experiments",
                                 self.experiment_id, "distances",
@@ -251,11 +247,11 @@ class Experiment:
                 writer.writerow(
                     ["election_id_1", "election_id_2", "distance", "time"])
 
-                for i, election_1 in enumerate(self.instances):
-                    for j, election_2 in enumerate(self.instances):
+                for i, election_1 in enumerate(self.elections):
+                    for j, election_2 in enumerate(self.elections):
                         if i < j:
                             distance = str(distances[election_1][election_2])
-                            time = str(distances[election_1][election_2])
+                            time = str(times[election_1][election_2])
                             writer.writerow([election_1, election_2, distance, time])
 
         self.distances = distances
@@ -263,7 +259,7 @@ class Experiment:
         self.matchings = matchings
 
     @abstractmethod
-    def add_instances_to_experiment(self):
+    def add_elections_to_experiment(self):
         pass
 
     @abstractmethod
@@ -282,9 +278,9 @@ class Experiment:
               num_iterations=1000, radius=np.infty, dim=2,
               distance_name='emd-positionwise', num_neighbors=None,
               method='standard'):
-        num_instances = len(self.distances)
+        num_elections = len(self.distances)
 
-        x = np.zeros((num_instances, num_instances))
+        x = np.zeros((num_elections, num_elections))
 
         for i, election_1_id in enumerate(self.distances):
             for j, election_2_id in enumerate(self.distances):
@@ -403,13 +399,15 @@ class Experiment:
             plt.show()
 
     def get_election_id_from_model_name(self, model_name):
-        for election_id in self.instances:
-            if self.instances[election_id].model == model_name:
+        # print('model:', model_name)
+        for election_id in self.elections:
+            # print(self.elections[election_id].model, model_name)
+            if self.elections[election_id].model == model_name:
                 return election_id
 
     def print_map(self, dim=2, **kwargs):
         """ Print the two-dimensional embedding of multi-dimensional
-        map of the instances """
+        map of the elections """
         if dim == 2:
             self.print_map_2d(**kwargs)
         elif dim == 3:
@@ -464,6 +462,7 @@ class Experiment:
 
                 d_x = self.coordinates[identity][0] - self.coordinates[uniformity][0]
                 d_y = self.coordinates[identity][1] - self.coordinates[uniformity][1]
+
                 alpha = math.atan(d_x / d_y)
                 self.rotate(alpha - math.pi / 2.)
                 if self.coordinates[uniformity][0] > self.coordinates[identity][0]:
@@ -590,7 +589,7 @@ class Experiment:
             plt.show()
 
     # def add_matrices_to_experiment(self):
-    #     """ Import instances from a file """
+    #     """ Import elections from a file """
     #
     #     matrices = {}
     #     vectors = {}
@@ -609,7 +608,7 @@ class Experiment:
     #     file_name = election_id + '.csv'
     #     path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
     #     'matrices', file_name)
-    #     num_candidates = self.instances[election_id].num_candidates
+    #     num_candidates = self.elections[election_id].num_candidates
     #     matrix = np.zeros([num_candidates, num_candidates])
     #
     #     with open(path, 'r', newline='') as csv_file:
@@ -714,9 +713,9 @@ class Experiment:
             starting_from += size
 
         self.num_families = len(families)
-        self.num_instances = sum(
+        self.num_elections = sum(
             [families[family_id].size for family_id in families])
-        self.main_order = [i for i in range(self.num_instances)]
+        self.main_order = [i for i in range(self.num_elections)]
 
         if ignore is None:
             ignore = []
@@ -750,7 +749,7 @@ class Experiment:
             ctr = 0
 
             for row in reader:
-                if self.main_order[ctr] < self.num_instances and \
+                if self.main_order[ctr] < self.num_elections and \
                         self.main_order[ctr] not in ignore:
                     points[row['election_id']] = [float(row['x']), float(row['y'])]
                 ctr += 1
@@ -764,8 +763,8 @@ class Experiment:
 
         if self.families is None:
             self.families = {}
-            for i, election_id in enumerate(self.instances):
-                ele = self.instances[election_id]
+            for i, election_id in enumerate(self.elections):
+                ele = self.elections[election_id]
                 # print(ele)
                 model = ele.model
                 family_id = model
@@ -804,7 +803,6 @@ class Experiment:
 
             for family_id in self.families:
 
-                print(family_id)
                 points_by_families[family_id] = [[] for _ in range(3)]
 
                 for i in range(self.families[family_id].size):
@@ -826,10 +824,10 @@ class Experiment:
         # values = []
         feature_dict = {}
 
-        for election_id in self.instances:
+        for election_id in self.elections:
             print(election_id)
             feature = features.get_feature(name)
-            election = self.instances[election_id]
+            election = self.elections[election_id]
             # print(election_id, election)
             if name in {'avg_distortion_from_guardians',
                         'worst_distortion_from_guardians'}:
@@ -863,7 +861,7 @@ class Experiment:
     def rotate(self, angle):
         """ Rotate all the points by a given angle """
 
-        for election_id in self.instances:
+        for election_id in self.elections:
             self.coordinates[election_id][0], self.coordinates[election_id][1] = \
                 self.rotate_point(0.5, 0.5, angle, self.coordinates[election_id][0],
                                   self.coordinates[election_id][1])
@@ -873,7 +871,7 @@ class Experiment:
     def reverse(self):
         """ Reverse all the points"""
 
-        for election_id in self.instances:
+        for election_id in self.elections:
             self.coordinates[election_id][0] = self.coordinates[election_id][0]
             self.coordinates[election_id][1] = -self.coordinates[election_id][1]
 
@@ -890,7 +888,7 @@ class Experiment:
             writer = csv.writer(csvfile, delimiter=';')
             writer.writerow(["election_id", "x", "y"])
 
-            for election_id in self.instances:
+            for election_id in self.elections:
                 x = round(self.coordinates[election_id][0], 5)
                 y = round(self.coordinates[election_id][1], 5)
                 writer.writerow([election_id, x, y])
@@ -912,12 +910,12 @@ class Experiment:
 
     def import_distances(self, self_distances=False,
                          distance_name='emd-positionwise'):
-        """ Import precomputed distances between each pair of instances from a file """
+        """ Import precomputed distances between each pair of elections from a file """
 
         file_name = str(distance_name) + '.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                             "distances", file_name)
-        num_points = self.num_instances
+        num_points = self.num_elections
         num_distances = int(num_points * (num_points - 1) / 2)
 
         hist_data = {}
@@ -942,7 +940,7 @@ class Experiment:
         return num_distances, hist_data, std
 
     def import_my_distances(self, distance_name='emd-positionwise'):
-        """ Import precomputed distances between each pair of instances from a file """
+        """ Import precomputed distances between each pair of elections from a file """
 
         file_name = str(distance_name) + '.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
