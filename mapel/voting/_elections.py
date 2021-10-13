@@ -220,6 +220,10 @@ def generate_election(experiment=None, model=None, name=None, num_candidates=Non
     return election
 
 
+def prepare_preflib_family(experiment=None, model=None, params=None):
+    pass
+
+
 def prepare_statistical_culture_family(experiment=None, model=None, family_id=None, params=None):
     keys = []
     ballot = get_ballot_from_model(model)
@@ -318,22 +322,24 @@ def _get_params_for_crate(j):
     return params
 
 
-def _get_params_for_paths(experiment, family_id, j, with_extremes=False):
+def _get_params_for_paths(experiment, family_id, j, extremes=False):
     path = experiment.families[family_id].path
 
     variable = path['variable']
 
-    if 'with_extremes' in path:
-        with_extremes = path['with_extremes']
+    if 'extremes' in path:
+        extremes = path['extremes']
 
     params = {}
-    if with_extremes:
+    if extremes:
         params[variable] = j / (experiment.families[family_id].size - 1)
-    elif not with_extremes:
+    elif not extremes:
         params[variable] = (j + 1) / (experiment.families[family_id].size + 1)
 
     if 'scale' in path:
         params[variable] *= path['scale']
+    if 'start' in path:
+        params[variable] += path['start']
 
     return params, variable
 

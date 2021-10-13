@@ -21,7 +21,6 @@ class ApprovalElection(Election):
                          num_voters=num_voters, num_candidates=num_candidates)
 
         self.approvalwise_vector = []
-
         self.coapproval_frequency_vectors = []
         self.voterlikeness_vectors = []
         self.approval_pairwise_matrix = []
@@ -40,17 +39,20 @@ class ApprovalElection(Election):
                     self.model = import_real_app_election(experiment_id, name)
                 try:
                     self.alpha = self.params[self.params['variable']]
-                except:
+                except KeyError:
                     pass
 
     def votes_to_approvalwise_vector(self):
         """ Convert votes to ... """
 
         if self.model == 'approval_half_1':
-            self.approvalwise_vector = np.sort(np.array([0.75 for _ in range(int(self.num_candidates / 2))] +
-                                    [0.25 for _ in range(int(self.num_candidates / 2))]))
+            self.approvalwise_vector = np.sort(np.array([0.75 for _ in
+                                                         range(int(self.num_candidates / 2))] +
+                                                        [0.25 for _ in
+                                                         range(int(self.num_candidates / 2))]))
         elif self.model == 'approval_half_2':
-            self.approvalwise_vector = np.sort(np.array([i/(self.num_candidates-1) for i in range(self.num_candidates)]))
+            self.approvalwise_vector = np.sort(np.array([i / (self.num_candidates - 1) for i in
+                                                         range(self.num_candidates)]))
         else:
             approvalwise_vector = np.zeros([self.num_candidates])
             for vote in self.votes:
@@ -65,21 +67,20 @@ class ApprovalElection(Election):
         for vote in self.votes:
             size = len(vote)
             for c in range(self.num_candidates):
-                for c in range(self.num_candidates):
-                    if c in vote:
-                        if vector_type in ['A', 'B']:
-                            vectors[c][size - 1] += 1
-                        elif vector_type == 'C':
-                            vectors[c][2 * size - 1] += 1
-                    else:
-                        if vector_type == 'A':
-                            vectors[c][self.num_candidates + size] += 1
-                        elif vector_type == 'B':
-                            vectors[c][2 * self.num_candidates - size - 1] += 1
-                        elif vector_type == 'C':
-                            vectors[c][2 * size] += 1
+                if c in vote:
+                    if vector_type in ['A', 'B']:
+                        vectors[c][size - 1] += 1
+                    elif vector_type == 'C':
+                        vectors[c][2 * size - 1] += 1
+                else:
+                    if vector_type == 'A':
+                        vectors[c][self.num_candidates + size] += 1
+                    elif vector_type == 'B':
+                        vectors[c][2 * self.num_candidates - size - 1] += 1
+                    elif vector_type == 'C':
+                        vectors[c][2 * size] += 1
         vectors = vectors / self.num_voters
-        vectors = vectors / self.num_candidates
+        # vectors = vectors / self.num_candidates
         self.coapproval_frequency_vectors = vectors
 
     def votes_to_approval_pairwise_matrix(self):
@@ -104,9 +105,7 @@ class ApprovalElection(Election):
                     if (c_1 in vote and c_2 in vote) or (c_1 not in vote and c_2 not in vote):
                         matrix[c_1][c_2] += 1
         matrix = matrix / self.num_voters
-
         matrix.sort()
-
         self.tmp_metric_vectors = matrix
 
     def votes_to_voterlikeness_vectors(self, vector_type='hamming'):
@@ -116,12 +115,12 @@ class ApprovalElection(Election):
 
         for i in range(self.num_voters):
             for j in range(self.num_voters):
-                A = self.votes[i]
-                B = self.votes[j]
+                set_a = self.votes[i]
+                set_b = self.votes[j]
                 if vector_type == 'hamming':
-                    vectors[i][j] = hamming(A, B)
+                    vectors[i][j] = hamming(set_a, set_b)
                 elif vector_type == 'martin':
-                    vectors[i][j] = len(A.intersection(B)) - len(A)
+                    vectors[i][j] = len(set_a.intersection(set_b)) - len(set_a)
             vectors[i] = sorted(vectors[i])
 
         self.voterlikeness_vectors = vectors
@@ -159,13 +158,13 @@ def import_real_app_election(experiment_id, election_id):
 
     it = 0
     for j in range(num_options):
-        line = my_file.readline().rstrip("\n").replace("{", '').\
+        line = my_file.readline().rstrip("\n").replace("{", ''). \
             replace("}", '').replace(' ', '').split(',')
         if line[1] != '':
             quantity = int(line[0])
             for k in range(quantity):
-                for l in range(len(line)-1):
-                    votes[it].add(int(line[l + 1]))
+                for el in range(len(line) - 1):
+                    votes[it].add(int(line[el + 1]))
                 it += 1
 
     # Shift by -1

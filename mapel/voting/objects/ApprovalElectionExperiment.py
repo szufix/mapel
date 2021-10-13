@@ -24,12 +24,12 @@ class ApprovalElectionExperiment(ElectionExperiment):
 
     def __init__(self, ignore=None, elections=None, distances=None, with_matrices=False,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', attraction_factor=1):
+                 election_type='ordinal', attraction_factor=1, _import=True):
 
         super().__init__(ignore=ignore, elections=elections, distances=distances,
                          with_matrices=with_matrices,
                          coordinates=coordinates, distance_name=distance_name,
-                         experiment_id=experiment_id,
+                         experiment_id=experiment_id, _import=_import,
                          election_type=election_type, attraction_factor=attraction_factor)
 
     def add_elections_to_experiment(self):
@@ -42,13 +42,13 @@ class ApprovalElectionExperiment(ElectionExperiment):
             ids = []
             if self.families[family_id].single_election:
                 election_id = family_id
-                election = ApprovalElection(self.experiment_id, election_id, _import=True)
+                election = ApprovalElection(self.experiment_id, election_id, _import=self._import)
                 elections[election_id] = election
                 ids.append(str(election_id))
             else:
                 for j in range(self.families[family_id].size):
                     election_id = family_id + '_' + str(j)
-                    election = ApprovalElection(self.experiment_id, election_id, _import=True)
+                    election = ApprovalElection(self.experiment_id, election_id, _import=self._import)
                     elections[election_id] = election
                     ids.append(str(election_id))
 

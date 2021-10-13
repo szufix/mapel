@@ -11,7 +11,8 @@ from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
 from mapel.voting.glossary import PATHS
 from mapel.voting.objects.Election import Election
-from mapel.voting.other.winners import compute_sntv_winners, compute_borda_winners, compute_stv_winners
+from mapel.voting.other.winners import compute_sntv_winners, compute_borda_winners, \
+    compute_stv_winners
 from mapel.voting.glossary import LIST_OF_FAKE_MODELS, LIST_OF_PREFLIB_MODELS
 
 
@@ -42,10 +43,10 @@ class OrdinalElection(Election):
             self.fake = check_if_fake(experiment_id, name)
             if self.fake:
                 self.election_model, self.fake_param, self.num_voters, \
-                self.num_candidates = import_fake_soc_election(experiment_id, name)
+                    self.num_candidates = import_fake_soc_election(experiment_id, name)
             else:
                 self.votes, self.num_voters, self.num_candidates, self.param, \
-                self.election_model = import_real_soc_election(experiment_id, name)
+                    self.election_model = import_real_soc_election(experiment_id, name)
 
                 self.potes = self.votes_to_potes()
 
@@ -54,6 +55,8 @@ class OrdinalElection(Election):
             self.vectors = self.matrix.transpose()
         else:
             self.votes_to_positionwise_vectors()
+
+        self.borda_points = []
 
     def get_vectors(self):
         if self.vectors is not None:
@@ -85,16 +88,16 @@ class OrdinalElection(Election):
         elif self.election_model in {'norm-mallows_matrix', 'mallows_matrix_path'}:
             vectors = get_mallows_vectors(self.num_candidates, self.fake_param)
         elif self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-            vectors = get_fake_vectors_single(self.election_model, self.num_candidates,
-                                              self.num_voters)
+            vectors = get_fake_vectors_single(self.election_model, self.num_candidates)
         elif self.election_model in {'walsh_path', 'conitzer_path'}:
-            vectors = get_fake_multiplication(self.num_candidates, self.fake_param, self.election_model)
+            vectors = get_fake_multiplication(self.num_candidates, self.fake_param,
+                                              self.election_model)
         elif self.election_model in PATHS:
             vectors = get_fake_convex(self.election_model, self.num_candidates, self.num_voters,
                                       self.fake_param, get_fake_vectors_single)
         elif self.election_model == 'crate':
-            vectors = get_fake_vectors_crate(self.election_model, self.num_candidates,
-                                             self.num_voters, self.fake_param)
+            vectors = get_fake_vectors_crate(num_candidates=self.num_candidates,
+                                             fake_param=self.fake_param)
         else:
             for i in range(self.num_voters):
                 pos = 0
@@ -107,7 +110,6 @@ class OrdinalElection(Election):
             for i in range(self.num_candidates):
                 for j in range(self.num_candidates):
                     vectors[i][j] /= float(self.num_voters)
-
 
         self.vectors = vectors
         self.matrix = self.vectors.transpose()
@@ -125,8 +127,7 @@ class OrdinalElection(Election):
 
             if self.election_model in {'identity', 'uniformity',
                                        'antagonism', 'stratification'}:
-                matrix = get_fake_matrix_single(self.election_model, self.num_candidates,
-                                                self.num_voters)
+                matrix = get_fake_matrix_single(self.election_model, self.num_candidates)
             elif self.election_model in PATHS:
                 matrix = get_fake_convex(self.election_model, self.num_candidates, self.num_voters,
                                          self.fake_param, get_fake_matrix_single)
@@ -238,8 +239,8 @@ class OrdinalElection(Election):
         if self.votes[0][0] == -1:
 
             vector = [0 for _ in range(num_possible_scores)]
-            peak = sum([i for i in range(self.num_candidates)]) * \
-                       float(self.num_voters) / float(self.num_candidates)
+            peak = sum([i for i in range(self.num_candidates)])
+            peak *= float(self.num_voters) / float(self.num_candidates)
             vector[int(peak)] = self.num_candidates
 
         else:
@@ -252,22 +253,22 @@ class OrdinalElection(Election):
 
         return vector, num_possible_scores
 
-    def votes_to_viper_vectors(self):
-
-        vectors = [[0. for _ in range(self.num_voters)]
-                   for _ in range(self.num_voters)]
-
-        c = self.num_candidates
-        v = self.num_voters
-        borda_vector = [sum([vectors[j][i] * (c - i - 1)
-                             for i in range(c)]) * v
-                        for j in range(self.num_candidates)]
-
-        for i in range(self.num_candidates):
-            for j in range(self.num_candidates):
-                vectors[i][j] /= float(self.num_voters)
-
-        return vectors
+    # def votes_to_viper_vectors(self):
+    #
+    #     vectors = [[0. for _ in range(self.num_voters)]
+    #                for _ in range(self.num_voters)]
+    #
+    #     c = self.num_candidates
+    #     v = self.num_voters
+    #     borda_vector = [sum([vectors[j][i] * (c - i - 1)
+    #                          for i in range(c)]) * v
+    #                     for j in range(self.num_candidates)]
+    #
+    #     for i in range(self.num_candidates):
+    #         for j in range(self.num_candidates):
+    #             vectors[i][j] /= float(self.num_voters)
+    #
+    #     return vectors
 
     def compute_winners(self, method=None, num_winners=None):
 
@@ -292,12 +293,11 @@ def get_fake_multiplication(num_candidates, params, election_model):
     elif election_model == 'walsh_path':
         main_matrix = get_walsh_vectors(num_candidates).transpose()
     mallows_matrix = get_mallows_vectors(num_candidates, params).transpose()
-    # mallows_matrix = np.linalg.inv(mallows_matrix) # JUST FOR FUN
     output = np.matmul(main_matrix, mallows_matrix).transpose()
     return output
 
 
-def get_fake_vectors_single(fake_model_name, num_candidates, num_voters):
+def get_fake_vectors_single(fake_model_name, num_candidates):
     vectors = np.zeros([num_candidates, num_candidates])
 
     if fake_model_name == 'identity':
@@ -333,11 +333,11 @@ def get_fake_vectors_single(fake_model_name, num_candidates, num_voters):
     return vectors
 
 
-def get_fake_vectors_crate(fake_model_name, num_candidates, num_voters, fake_param):
-    base_1 = get_fake_vectors_single('uniformity', num_candidates, num_voters)
-    base_2 = get_fake_vectors_single('identity', num_candidates, num_voters)
-    base_3 = get_fake_vectors_single('antagonism', num_candidates, num_voters)
-    base_4 = get_fake_vectors_single('stratification', num_candidates, num_voters)
+def get_fake_vectors_crate(num_candidates=None, fake_param=None):
+    base_1 = get_fake_vectors_single('uniformity', num_candidates)
+    base_2 = get_fake_vectors_single('identity', num_candidates)
+    base_3 = get_fake_vectors_single('antagonism', num_candidates)
+    base_4 = get_fake_vectors_single('stratification', num_candidates)
 
     return crate_combination(base_1, base_2, base_3, base_4, length=num_candidates,
                              alpha=fake_param)
@@ -398,7 +398,7 @@ def crate_combination(base_1, base_2, base_3, base_4, length=0, alpha=None):
     return vectors
 
 
-def get_fake_matrix_single(fake_model_name, num_candidates, num_voters):
+def get_fake_matrix_single(fake_model_name, num_candidates):
     matrix = np.zeros([num_candidates, num_candidates])
 
     if fake_model_name == 'identity':
@@ -537,8 +537,8 @@ def import_real_soc_election(experiment_id, election_id):
         quantity = int(line[0])
 
         for k in range(quantity):
-            for l in range(num_candidates):
-                votes[it][l] = int(line[l + 1])
+            for el in range(num_candidates):
+                votes[it][el] = int(line[el + 1])
             it += 1
 
     # Shift by -1

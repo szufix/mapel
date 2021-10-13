@@ -6,6 +6,7 @@ except:
     pass
 
 import numpy as np
+from mapel.voting.metrics.inner_distances import hamming
 
 
 # FOR SUBELECTIONS
@@ -1076,12 +1077,16 @@ def generate_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
     for k in range(params['voters']):
         for l in range(params['voters']):
 
-            pote_1 = [0] * params['candidates']
-            pote_2 = [0] * params['candidates']
+            vote_1 = votes_1[k]
+            vote_2 = votes_2[l]
 
-            for i in range(params['candidates']):
-                pote_1[votes_1[k][i]] = i
-                pote_2[votes_2[l][i]] = i
+            if metric_name == 'spearman':
+                pote_1 = [0] * params['candidates']
+                pote_2 = [0] * params['candidates']
+
+                for i in range(params['candidates']):
+                    pote_1[vote_1[i]] = i
+                    pote_2[vote_2[i]] = i
 
             for i in range(params['candidates']):
                 for j in range(params['candidates']):
@@ -1093,6 +1098,8 @@ def generate_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
                         weight = abs(pote_1[i] - pote_2[j])
                     elif metric_name == "alt":
                         weight = float(abs(pote_1[i] - pote_2[j]) ** (2)) / float(1. + min(pote_1[i], pote_2[j]))
+                    elif metric_name == 'hamming':
+                        weight = hamming(vote_1, vote_2)
                     else:
                         weight = 0
 

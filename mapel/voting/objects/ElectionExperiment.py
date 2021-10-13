@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import copy
 import os
+from abc import ABC
 
 import mapel.voting._elections as _elections
 from mapel.voting.objects.Experiment import Experiment
 from mapel.voting.objects.Family import Family
+import mapel.voting.other.rules as rules
 
 try:
     from sklearn.manifold import MDS
@@ -27,15 +29,17 @@ class ElectionExperiment(Experiment):
 
     def __init__(self, ignore=None, elections=None, distances=None, with_matrices=False,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', attraction_factor=1):
+                 election_type='ordinal', attraction_factor=1, _import=True):
 
         super().__init__(ignore=ignore, elections=elections, distances=distances,
                          coordinates=coordinates, distance_name=distance_name,
-                         experiment_id=experiment_id,
+                         experiment_id=experiment_id, _import=_import,
                          election_type=election_type, attraction_factor=attraction_factor)
 
         self.default_num_candidates = 10
         self.default_num_voters = 100
+
+        self.all_committees = {}
 
     def set_default_num_candidates(self, num_candidates):
         """ Set default number of candidates """
@@ -56,15 +60,18 @@ class ElectionExperiment(Experiment):
         if num_voters is None:
             num_voters = self.default_num_voters
 
-        return self.add_election_family(model=model, params=params, size=size, label=label, color=color,
-                               alpha=alpha, show=show,  marker=marker, starting_from=starting_from,
-                               num_candidates=num_candidates, num_voters=num_voters,
-                               family_id=name, num_nodes=num_nodes, single_election=True)[0]
+        return \
+            self.add_election_family(model=model, params=params, size=size, label=label,
+                                     color=color,
+                                     alpha=alpha, show=show, marker=marker,
+                                     starting_from=starting_from,
+                                     num_candidates=num_candidates, num_voters=num_voters,
+                                     family_id=name, num_nodes=num_nodes, single_election=True)[0]
 
     def add_election_family(self, model="none", params=None, size=1, label=None, color="black",
-                   alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,
-                   num_voters=None, family_id=None, single_election=False, num_nodes=None,
-                   path=None, name=None):
+                            alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,
+                            num_voters=None, family_id=None, single_election=False, num_nodes=None,
+                            path=None, name=None):
         """ Add family of elections to the experiment """
 
         if name is not None:
@@ -96,7 +103,6 @@ class ElectionExperiment(Experiment):
 
         elif label is None:
             label = family_id
-
 
         self.families[family_id] = Family(model=model, family_id=family_id,
                                           params=params, label=label, color=color, alpha=alpha,
@@ -187,3 +193,12 @@ class ElectionExperiment(Experiment):
         except FileExistsError:
             print("Experiment already exists!")
 
+    def compute_rules(self, list_of_rules, committee_size=1):
+        for rule_name in list_of_rules:
+            print('Computing', rule_name)
+            rules.compute_rule(experiment=self, rule_name=rule_name, committee_size=committee_size)
+
+    def import_committees(self, list_of_rules):
+        for rule_name in list_of_rules:
+            self.all_committees[rule_name] = rules.import_committees_from_file(
+                experiment_id=self.experiment_id, rule_name=rule_name)

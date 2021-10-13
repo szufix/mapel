@@ -14,9 +14,9 @@ def hello():
     print("Hello!")
 
 
-
 def prepare_experiment(experiment_id=None, elections=None, distances=None, election_type='ordinal',
-                       coordinates=None, distance_name='emd-positionwise', attraction_factor=1):
+                       coordinates=None, distance_name='emd-positionwise', attraction_factor=1,
+                       _import=True):
     if election_type == 'ordinal':
         return OrdinalElectionExperiment("virtual", experiment_id=experiment_id,
                                          elections=elections,
@@ -26,11 +26,12 @@ def prepare_experiment(experiment_id=None, elections=None, distances=None, elect
                                          distance_name=distance_name)
     elif election_type == 'approval':
         return ApprovalElectionExperiment("virtual", experiment_id=experiment_id,
-                                          elections=elections,
+                                          elections=elections, _import=_import,
                                           election_type=election_type,
                                           attraction_factor=attraction_factor,
                                           distances=distances, coordinates=coordinates,
                                           distance_name=distance_name)
+
 
 def custom_div_cmap(**kwargs):
     return pr.custom_div_cmap(**kwargs)

@@ -1,15 +1,18 @@
-
 import csv
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
+import tikzplotlib
+import deprecation as dep
 
 
 def get_values_from_csv_file(experiment, feature):
-    path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-                        "features", feature + ".csv")
+    """Import values for a feature from a .csv file """
+
+    path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id,
+                        'features', f'{feature}.csv')
 
     values = {}
     with open(path, 'r', newline='') as csv_file:
@@ -24,8 +27,9 @@ def get_values_from_csv_file(experiment, feature):
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
-def get_values_from_file(experiment, feature, normalizing_func=None,
-                         marker_func=None, dim=2):
+def import_values_for_feature(experiment, feature, normalizing_func=None, marker_func=None, dim=2):
+    """ Import values for a feature """
+
     if isinstance(feature, str):
         if feature in experiment.features:
             values = experiment.features[feature]
@@ -36,10 +40,8 @@ def get_values_from_file(experiment, feature, normalizing_func=None,
 
     _min = 0
     _max = 0
-    # print(values)
     _min = min(values.values())
     _max = max(values.values())
-
     shades = []
     xx = []
     yy = []
@@ -85,58 +87,7 @@ def get_values_from_file(experiment, feature, normalizing_func=None,
     return xx, yy, zz, shades, markers, _min, _max
 
 
-def get_values_from_file_old(experiment, experiment_id, values,
-                             normalizing_func=None, marker_func=None):
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "features",
-                        str(values) + ".txt")
-
-    _min = 0
-    _max = 0
-    values = []
-    with open(path, 'r') as txtfile:
-        for _ in range(experiment.num_elections):
-            values.append(float(txtfile.readline()))
-    _min = min(values)
-    _max = max(values)
-
-    with open(path, 'r') as txtfile:
-
-        shades = []
-        xx = []
-        yy = []
-        markers = []
-
-        ctr = 0
-        for family_id in experiment.families:
-            for k in range(experiment.families[family_id].size):
-                election_id = family_id + '_' + str(k)
-
-                shade = float(txtfile.readline())
-                if normalizing_func is not None:
-                    shade = normalizing_func(shade)
-                else:
-                    shade = (shade - _min) / (_max - _min)
-                shades.append(shade)
-
-                marker = experiment.families[family_id].marker
-                if marker_func is not None:
-                    marker = marker_func(shade)
-                markers.append(marker)
-
-                xx.append(experiment.points[election_id][0])
-                yy.append(experiment.points[election_id][1])
-
-                ctr += 1
-
-        xx = np.asarray(xx)
-        yy = np.asarray(yy)
-        shades = np.asarray(shades)
-        markers = np.asarray(markers)
-        return xx, yy, shades, markers, _min, _max
-
-
-def get_values_from_file_3d(experiment, experiment_id, values,
-                            normalizing_func):
+def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func):
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
                         str(values) + ".txt")
     _min = 0
@@ -186,7 +137,7 @@ def get_values_from_file_3d(experiment, experiment_id, values,
 def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
                          cmap=None, ticks=None, dim=2):
-    xx, yy, zz, shades, markers, _min, _max = get_values_from_file(
+    xx, yy, zz, shades, markers, _min, _max = import_values_for_feature(
         experiment, feature, normalizing_func, marker_func, dim=dim)
     unique_markers = set(markers)
     images = []
@@ -194,13 +145,11 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
     for um in unique_markers:
         masks = (markers == um)
         if dim == 2:
-            images.append(ax.scatter(xx[masks], yy[masks], c=shades[masks],
-                                     vmin=0, vmax=1, cmap=cmap,
-                                     marker=um, s=ms))
-        elif dim == 3:
-            images.append(ax.scatter(xx[masks], yy[masks], zz[masks],
-                                     c=shades[masks], vmin=0, vmax=1,
+            images.append(ax.scatter(xx[masks], yy[masks], c=shades[masks], vmin=0, vmax=1,
                                      cmap=cmap, marker=um, s=ms))
+        elif dim == 3:
+            images.append(ax.scatter(xx[masks], yy[masks], zz[masks], c=shades[masks], vmin=0,
+                                     vmax=1, cmap=cmap, marker=um, s=ms))
 
     if dim == 2:
 
@@ -237,53 +186,7 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
 
 
 # COLORING
-def skeleton_coloring(experiment=None, ax=None, ms=None, dim=2, tex=False):
-    for family_id in experiment.families:
-        if experiment.families[family_id].show:
-            if dim == 2:
-                if family_id in {'A', 'B', 'C', 'D', 'E'}:
-                    MAL_COUNT = len(experiment.points_by_families[family_id][0])
-                    print(MAL_COUNT)
-                    for i in range(MAL_COUNT):
-                        normphi = 1.0 / MAL_COUNT * i
-                        if family_id == 'A':    # Mal 0.
-                            color = (normphi, normphi, 1)
-                        elif family_id == 'B':  # Mal 0.25
-                            color = (normphi, 0.75, normphi)
-                        elif family_id == 'C':  # Mal 0.5
-                            color = (1, normphi, normphi)
-                        elif family_id == 'D':  # Walsh
-                            color = (1, normphi, 1)
-                        elif family_id == 'E':  # Conitzer
-                            color = (1, 0.5, normphi)
-                        ax.scatter([experiment.points_by_families[family_id][0][i] for _ in range(2)],
-                                   [experiment.points_by_families[family_id][1][i] for _ in range(2)],
-                                   color=color,
-                                   alpha=1., s=ms+6,
-                                   marker=experiment.families[family_id].marker)
-                else:
-                    if len(experiment.points_by_families[family_id][0]) == 1:
-                        ax.scatter([experiment.points_by_families[family_id][0][0] for _ in range(2)],
-                                   [experiment.points_by_families[family_id][1][0] for _ in range(2)],
-                                   color=experiment.families[family_id].color,
-                                   label=experiment.families[family_id].label,
-                                   alpha=1,
-                                   s=ms,
-                                   marker=experiment.families[
-                                       family_id].marker)
-
-                    else:
-                        ax.scatter(experiment.points_by_families[family_id][0],
-                                   experiment.points_by_families[family_id][1],
-                                   color=experiment.families[family_id].color,
-                                   label=experiment.families[family_id].label,
-                                   alpha=0.8,
-                                   s=ms,
-                                   marker=experiment.families[family_id].marker)
-
-
 def basic_coloring(experiment=None, ax=None, ms=None, dim=2):
-
     for family_id in experiment.families:
         if experiment.families[family_id].show:
             if dim == 2:
@@ -304,7 +207,6 @@ def basic_coloring(experiment=None, ax=None, ms=None, dim=2):
 
 
 def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
-
     for family_id in experiment.families:
         if experiment.families[family_id].show:
             if dim == 2:
@@ -367,86 +269,8 @@ def mask_background(fig=None, ax=None, black=None, saveas=None, tex=None):
         tikzplotlib.save(path)
 
 
-def level_background(fig=None, ax=None, saveas=None, tex=None):
-    fig.set_size_inches(10, 10)
-
-    # corners = [[-1, 1, 1, -1], [1, 1, -1, -1]]
-    # ax.scatter(corners[0], corners[1], alpha=0)
-
-    def my_line(x1, y1, x2, y2):
-        ax.arrow(x1, y1, x2 - x1, y2 - y1, head_width=0., head_length=0.,
-                 fc='k', ec='k')
-
-    def my_plot(points, color='black', type='--'):
-        x = [p[0] for p in points]
-        y = [p[1] for p in points]
-        from scipy.interpolate import interp1d
-
-        t = np.arange(len(x))
-        ti = np.linspace(0, t.max(), 10 * t.size)
-
-        xi = interp1d(t, x, kind='cubic')(ti)
-        yi = interp1d(t, y, kind='cubic')(ti)
-
-        ax.plot(xi, yi, type, color=color)
-
-    """
-    points = [[-0.97, 0.95], [-0.37, 0.97], [0.11, 1.33], [0.27, 1.75]]
-    my_plot(points)
-
-    points = [[-0.58, 0.22], [0, 0.45], [0.38, 0.87], [0.57, 1.6]]
-    my_plot(points)
-
-    points = [[-0.1, -0.02], [0.3, 0.42], [0.57, 0.88], [0.69, 1.42]]
-    my_plot(points)
-
-    points = [[0.21, -0.07], [0.46, 0.36], [0.69, 0.86], [0.84, 1.33]]
-    my_plot(points)
-    """
-
-    """
-    # FROM ID
-    points = [[0.74, -0.18], [0.92, 0.33], [0.97, 1.06], [0.93, 1.63]]
-    my_plot(points)
-    points = [[1.55, -0.5], [1.61, 0.15], [1.55, 0.77], [1.38, 1.45]]
-    my_plot(points)
-    points = [[2.04, -0.11], [1.98, 0.38], [1.92, 0.78], [1.84, 1.2]]
-    my_plot(points)
-    """
-
-    # FROM UN
-    my_plot([[0.55, 0.01], [0.76, 0.48], [0.76, 0.87], [0.5, 1.16]],
-            color='darkblue')
-    my_plot([[0.96, -0.28], [1.5, 0.45], [1.32, 1.15], [1.06, 1.54]],
-            color='darkblue')
-    my_plot([[1.64, -0.44], [1.8, 0.08], [1.9, 0.67], [1.85, 1.2]],
-            color='darkblue')
-
-    # FROM ST
-    my_plot([[1.06, -0.36], [1.36, 0.06], [1.76, 0.23], [2.19, 0.02]],
-            color='darkred')
-    my_plot([[0.58, -0.02], [1.05, 0.87], [1.63, 1.03], [2.32, 0.81]],
-            color='darkred')
-    my_plot([[0.11, 0.57], [0.52, 0.96], [0.91, 1.3], [1.22, 1.45]],
-            color='darkred')
-
-    # plt.legend(bbox_to_anchor=(1.25, 1.))
-    file_name = saveas + ".png"
-    path = os.path.join(os.getcwd(), "images", file_name)
-    plt.savefig(path, bbox_inches='tight')
-    plt.grid(True)
-
-    # plt.xlim(-1.4, 1.3)
-    # plt.ylim(-1.4, 1.3)
-
-    if tex:
-        import tikzplotlib
-        file_name = saveas + ".tex"
-        path = os.path.join(os.getcwd(), "images", "tex", file_name)
-        tikzplotlib.save(path)
-
-
-def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None, title=None):
+def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None, title=None,
+                     shift_legend=1):
     file_name = os.path.join(os.getcwd(), "images", str(saveas))
     # print(file_name)
 
@@ -463,19 +287,18 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
             pass
 
         if values is None and legend:
-            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+            ax.legend(loc='center left', bbox_to_anchor=(shift_legend, 0.5))
             # ax.legend()
             plt.savefig(file_name, bbox_inches='tight')
         else:
             plt.savefig(file_name, bbox_inches='tight')
 
     elif values is None and legend:
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        ax.legend(loc='center left', bbox_to_anchor=(shift_legend, 0.5))
 
 
 # TEX
 def saveas_tex(saveas=None):
-    import tikzplotlib
     try:
         os.mkdir(os.path.join(os.getcwd(), "images", "tex"))
     except FileExistsError:
@@ -491,8 +314,7 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
     """Print the matrix with average distances between each pair of experiments """
 
     # CREATE MAPPING FOR BUCKETS
-    bucket = np.array([[family_id
-                        for _ in range(experiment.families[family_id].size)]
+    bucket = np.array([[family_id for _ in range(experiment.families[family_id].size)]
                        for family_id in experiment.families]).flatten()
 
     # CREATE MAPPING FOR ELECTIONS
@@ -526,8 +348,7 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
                 # print('map', mapping[i], mapping[j])
                 # print(experiment.distances)
                 # print(experiment.distances[mapping[i]][mapping[j]])
-                matrix[bucket[i]][bucket[j]] += \
-                    experiment.distances[mapping[i]][mapping[j]]
+                matrix[bucket[i]][bucket[j]] += experiment.distances[mapping[i]][mapping[j]]
             quantities[bucket[i]][bucket[j]] += 1
     #
     # for i, family_id_1 in enumerate(experiment.families):
@@ -626,18 +447,15 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
 
 
 # HELPER FUNCTIONS
-def custom_div_cmap(num_colors=101, name='custom_div_cmap',colors=None):
+def custom_div_cmap(num_colors=101, name='custom_div_cmap', colors=None):
     if colors is None:
         colors = ["lightgreen", "yellow", "orange", "red", "black"]
-
     from matplotlib.colors import LinearSegmentedColormap
-
-    cmap = LinearSegmentedColormap.from_list(name=name, colors=colors,
-                                             N=num_colors)
-    return cmap
+    return LinearSegmentedColormap.from_list(name=name, colors=colors, N=num_colors)
 
 
 def add_margin(pil_img, top, right, bottom, left, color):
+    """ Add margin to the picture """
     width, height = pil_img.size
     new_width = width + right + left
     new_height = height + top + bottom
@@ -652,8 +470,9 @@ def map_diameter(c):
 
 
 # SKELETON RELATED
-def add_skeleton(experiment=None, skeleton=None, ax=None):
-    def my_text(x1, y1, text, color="black", alpha=1., size=14):
+def add_skeleton(experiment=None, skeleton=None, ax=None, size=12):
+    """ Add skeleton """
+    def my_text(x1, y1, text, color="black", alpha=1., size=size):
         ax.text(x1, y1, text, size=size, rotation=0., ha="center",
                 va="center",
                 color=color, alpha=alpha, zorder=100,
@@ -666,13 +485,12 @@ def add_skeleton(experiment=None, skeleton=None, ax=None):
 
 
 def add_roads(experiment=None, roads=None, ax=None):
-
     def my_line(x1, y1, x2, y2, text):
         ax.arrow(x1, y1, x2 - x1, y2 - y1, head_width=0., head_length=0.,
                  fc='k', ec='k')
-        dx = x1 + (x2-x1)/2
-        dy = y1 + (y2-y1)/2
-        ax.annotate(text,xy=(dx, dy),size=12)
+        dx = x1 + (x2 - x1) / 2
+        dy = y1 + (y2 - y1) / 2
+        ax.annotate(text, xy=(dx, dy), size=12)
 
     for road in roads:
         x1 = experiment.coordinates[road[0]][0]
@@ -681,7 +499,7 @@ def add_roads(experiment=None, roads=None, ax=None):
         y2 = experiment.coordinates[road[1]][1]
         pos_dist = experiment.distances[road[0]][road[1]]
         pos_dist /= map_diameter(experiment.default_num_candidates)
-        pos_dist = round(pos_dist,2)
+        pos_dist = round(pos_dist, 2)
         text = str(pos_dist)
         # print(road)
         if experiment.default_num_candidates == 10 and road in [['WAL', 'UN'], ['UN', 'WAL']]:
@@ -690,10 +508,60 @@ def add_roads(experiment=None, roads=None, ax=None):
             x2 -= 0.5
             y2 -= 2
 
-        my_line(x1,y1,x2,y2, text)
+        my_line(x1, y1, x2, y2, text)
+
+def skeleton_coloring(experiment=None, ax=None, ms=None, dim=2):
+    for family_id in experiment.families:
+        if experiment.families[family_id].show:
+            if dim == 2:
+                if family_id in {'A', 'B', 'C', 'D', 'E'}:
+                    MAL_COUNT = len(experiment.points_by_families[family_id][0])
+                    print(MAL_COUNT)
+                    for i in range(MAL_COUNT):
+                        normphi = 1.0 / MAL_COUNT * i
+                        if family_id == 'A':  # Mal 0.
+                            color = (normphi, normphi, 1)
+                        elif family_id == 'B':  # Mal 0.25
+                            color = (normphi, 0.75, normphi)
+                        elif family_id == 'C':  # Mal 0.5
+                            color = (1, normphi, normphi)
+                        elif family_id == 'D':  # Walsh
+                            color = (1, normphi, 1)
+                        elif family_id == 'E':  # Conitzer
+                            color = (1, 0.5, normphi)
+                        else:
+                            color = 'black'
+                        ax.scatter([experiment.points_by_families[family_id][0][i]
+                                    for _ in range(2)],
+                                   [experiment.points_by_families[family_id][1][i]
+                                    for _ in range(2)],
+                                   color=color,
+                                   alpha=1., s=ms + 6,
+                                   marker=experiment.families[family_id].marker)
+                else:
+                    if len(experiment.points_by_families[family_id][0]) == 1:
+                        ax.scatter([experiment.points_by_families[family_id][0][0]
+                                    for _ in range(2)],
+                                   [experiment.points_by_families[family_id][1][0]
+                                    for _ in range(2)],
+                                   color=experiment.families[family_id].color,
+                                   label=experiment.families[family_id].label,
+                                   alpha=1,
+                                   s=ms,
+                                   marker=experiment.families[
+                                       family_id].marker)
+
+                    else:
+                        ax.scatter(experiment.points_by_families[family_id][0],
+                                   experiment.points_by_families[family_id][1],
+                                   color=experiment.families[family_id].color,
+                                   label=experiment.families[family_id].label,
+                                   alpha=0.8,
+                                   s=ms,
+                                   marker=experiment.families[family_id].marker)
 
 
-# PROBABLY DEPRECATED
+@dep.deprecated()
 def add_mask_100_100(fig, ax, black=False):
     def my_arrow(x1, y1, x2, y2):
         ax.arrow(x1, y1, x2 - x1, y2 - y1, head_width=0.02, head_length=0.05,
@@ -887,6 +755,138 @@ def add_mask_100_100(fig, ax, black=False):
     my_number(0.26, 0.75, "0.1", color="orangered")
     my_number(0.77, 0.13, "0.2", color="orangered")
     my_number(0.82, -0.03, "0.5", color="orangered")
+
+
+@dep.deprecated()
+def level_background(fig=None, ax=None, saveas=None, tex=None):
+    fig.set_size_inches(10, 10)
+
+    # corners = [[-1, 1, 1, -1], [1, 1, -1, -1]]
+    # ax.scatter(corners[0], corners[1], alpha=0)
+
+    def my_line(x1, y1, x2, y2):
+        ax.arrow(x1, y1, x2 - x1, y2 - y1, head_width=0., head_length=0.,
+                 fc='k', ec='k')
+
+    def my_plot(points, color='black', type='--'):
+        x = [p[0] for p in points]
+        y = [p[1] for p in points]
+        from scipy.interpolate import interp1d
+
+        t = np.arange(len(x))
+        ti = np.linspace(0, t.max(), 10 * t.size)
+
+        xi = interp1d(t, x, kind='cubic')(ti)
+        yi = interp1d(t, y, kind='cubic')(ti)
+
+        ax.plot(xi, yi, type, color=color)
+
+    """
+    points = [[-0.97, 0.95], [-0.37, 0.97], [0.11, 1.33], [0.27, 1.75]]
+    my_plot(points)
+
+    points = [[-0.58, 0.22], [0, 0.45], [0.38, 0.87], [0.57, 1.6]]
+    my_plot(points)
+
+    points = [[-0.1, -0.02], [0.3, 0.42], [0.57, 0.88], [0.69, 1.42]]
+    my_plot(points)
+
+    points = [[0.21, -0.07], [0.46, 0.36], [0.69, 0.86], [0.84, 1.33]]
+    my_plot(points)
+    """
+
+    """
+    # FROM ID
+    points = [[0.74, -0.18], [0.92, 0.33], [0.97, 1.06], [0.93, 1.63]]
+    my_plot(points)
+    points = [[1.55, -0.5], [1.61, 0.15], [1.55, 0.77], [1.38, 1.45]]
+    my_plot(points)
+    points = [[2.04, -0.11], [1.98, 0.38], [1.92, 0.78], [1.84, 1.2]]
+    my_plot(points)
+    """
+
+    # FROM UN
+    my_plot([[0.55, 0.01], [0.76, 0.48], [0.76, 0.87], [0.5, 1.16]],
+            color='darkblue')
+    my_plot([[0.96, -0.28], [1.5, 0.45], [1.32, 1.15], [1.06, 1.54]],
+            color='darkblue')
+    my_plot([[1.64, -0.44], [1.8, 0.08], [1.9, 0.67], [1.85, 1.2]],
+            color='darkblue')
+
+    # FROM ST
+    my_plot([[1.06, -0.36], [1.36, 0.06], [1.76, 0.23], [2.19, 0.02]],
+            color='darkred')
+    my_plot([[0.58, -0.02], [1.05, 0.87], [1.63, 1.03], [2.32, 0.81]],
+            color='darkred')
+    my_plot([[0.11, 0.57], [0.52, 0.96], [0.91, 1.3], [1.22, 1.45]],
+            color='darkred')
+
+    # plt.legend(bbox_to_anchor=(1.25, 1.))
+    file_name = saveas + ".png"
+    path = os.path.join(os.getcwd(), "images", file_name)
+    plt.savefig(path, bbox_inches='tight')
+    plt.grid(True)
+
+    # plt.xlim(-1.4, 1.3)
+    # plt.ylim(-1.4, 1.3)
+
+    if tex:
+        import tikzplotlib
+        file_name = saveas + ".tex"
+        path = os.path.join(os.getcwd(), "images", "tex", file_name)
+        tikzplotlib.save(path)
+
+
+@dep.deprecated()
+def get_values_from_file_old(experiment, experiment_id, values,
+                             normalizing_func=None, marker_func=None):
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "features",
+                        str(values) + ".txt")
+
+    _min = 0
+    _max = 0
+    values = []
+    with open(path, 'r') as txtfile:
+        for _ in range(experiment.num_elections):
+            values.append(float(txtfile.readline()))
+    _min = min(values)
+    _max = max(values)
+
+    with open(path, 'r') as txtfile:
+
+        shades = []
+        xx = []
+        yy = []
+        markers = []
+
+        ctr = 0
+        for family_id in experiment.families:
+            for k in range(experiment.families[family_id].size):
+                election_id = family_id + '_' + str(k)
+
+                shade = float(txtfile.readline())
+                if normalizing_func is not None:
+                    shade = normalizing_func(shade)
+                else:
+                    shade = (shade - _min) / (_max - _min)
+                shades.append(shade)
+
+                marker = experiment.families[family_id].marker
+                if marker_func is not None:
+                    marker = marker_func(shade)
+                markers.append(marker)
+
+                xx.append(experiment.points[election_id][0])
+                yy.append(experiment.points[election_id][1])
+
+                ctr += 1
+
+        xx = np.asarray(xx)
+        yy = np.asarray(yy)
+        shades = np.asarray(shades)
+        markers = np.asarray(markers)
+        return xx, yy, shades, markers, _min, _max
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

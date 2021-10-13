@@ -172,7 +172,9 @@ def generate_approval_mallows_election(num_voters=None, num_candidates=None, par
     # for c in range(num_candidates):
     #     if rand.random() <= params['p']:
     #         central_vote.add(c)
+
     k = int(params['p']*num_candidates)
+    # print(k)
     central_vote = {i for i in range(k)}
 
     votes = [0 for _ in range(num_voters)]
@@ -212,33 +214,36 @@ def generate_approval_raw_mallows_election(num_voters=None, num_candidates=None,
 
 def generate_approval_disjoint_mallows_election(num_voters=None, num_candidates=None, params=None):
 
-    k = int(params['p']*num_candidates)
-    votes = [0 for _ in range(num_voters)]
+    k = int(params['p'] * num_candidates)
 
+    size_1 = int((params['size'])*num_voters)
+    # print(k, size_1, params['p'])
+
+    votes = [0 for _ in range(num_voters)]
 
     central_vote_1 = {i for i in range(k)}
 
-    for v in range(int(num_voters/2)):
+    for v in range(size_1):
         vote = set()
         for c in range(num_candidates):
-            if c in central_vote_1:
-                if rand.random() <= params['phi']:
+            if rand.random() <= params['phi']:
+                if rand.random() <= params['p']:
                     vote.add(c)
             else:
-                if rand.random() < 1 - params['phi']:
+                if c in central_vote_1:
                     vote.add(c)
         votes[v] = vote
 
     central_vote_2 = {i+k for i in range(k)}
 
-    for v in range(int(num_voters/2), num_voters):
+    for v in range(size_1, num_voters):
         vote = set()
         for c in range(num_candidates):
-            if c in central_vote_2:
-                if rand.random() <= params['phi']:
+            if rand.random() <= params['phi']:
+                if rand.random() <= params['p']:
                     vote.add(c)
             else:
-                if rand.random() < 1 - params['phi']:
+                if c in central_vote_2:
                     vote.add(c)
         votes[v] = vote
 

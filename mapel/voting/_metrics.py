@@ -33,6 +33,7 @@ def get_approval_distance(ele_1, ele_2, distance_name=None):
 
     metrics_without_params = {
         'flow': mad.compute_flow,
+        'hamming': mad.compute_hamming,
     }
 
     metrics_with_inner_distance = {
@@ -99,10 +100,12 @@ def get_graph_distance(graph_1, graph_2, distance_name=''):
         return graph_advanced_metrics.get(distance_name)(graph_1, graph_2)
 
 
-def run_single_thread(experiment, thread_ids, distances, times, matchings):
+def run_single_thread(experiment, thread_ids, distances, times, matchings, printing):
     """ Single thread for computing distance """
 
     for election_id_1, election_id_2 in thread_ids:
+        if printing:
+            print(election_id_1, election_id_2)
         start_time = time()
 
         distance = get_distance(experiment.elections[election_id_1],
@@ -119,6 +122,7 @@ def run_single_thread(experiment, thread_ids, distances, times, matchings):
         distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
         times[election_id_1][election_id_2] = time() - start_time
         times[election_id_2][election_id_1] = times[election_id_1][election_id_2]
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

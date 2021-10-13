@@ -14,6 +14,7 @@ from mapel.voting.metrics.inner_distances import l2, chebyshev
 from mapel.voting.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.voting.objects.Experiment import Experiment
 from mapel.voting.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
+import mapel.voting.features.power_index as power_index
 
 
 def potLadle(v, m):
@@ -56,87 +57,103 @@ def compute_spoilers(model=None, method=None, num_winners=None, num_parties=None
         ### MALLOWS ###
         if model == 'mallows_party_075':
             experiment.add_election_family(model='mallows_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'main-phi': 0.75, 'norm-phi': 0.75})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'main-phi': 0.75, 'norm-phi': 0.75})
 
         elif model == 'mallows_party_05':
             experiment.add_election_family(model='mallows_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'main-phi': 0.5, 'norm-phi': 0.75})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'main-phi': 0.5, 'norm-phi': 0.75})
 
         elif model == 'mallows_party_025':
             experiment.add_election_family(model='mallows_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'main-phi': 0.25, 'norm-phi': 0.75})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'main-phi': 0.25, 'norm-phi': 0.75})
 
         ### 2D ###
         elif model == '2d_gaussian_party_005':
             experiment.add_election_family(model='2d_gaussian_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.05})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.05})
 
         elif model == '2d_gaussian_party_01':
             experiment.add_election_family(model='2d_gaussian_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.1})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.1})
 
         elif model == '2d_gaussian_party_02':
             experiment.add_election_family(model='2d_gaussian_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.2})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.2})
 
         ### 1D ###
         elif model == '1d_gaussian_party_005':
             experiment.add_election_family(model='1d_gaussian_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.05})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.05})
 
         elif model == '1d_gaussian_party_01':
             experiment.add_election_family(model='1d_gaussian_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.1})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.1})
 
         elif model == '1d_gaussian_party_02':
             experiment.add_election_family(model='1d_gaussian_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.2})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.2})
 
         ### SP by Walsh
         elif model == 'walsh_party_005':
             experiment.add_election_family(model='walsh_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.05})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.05})
 
         elif model == 'walsh_party_01':
             experiment.add_election_family(model='walsh_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.1})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.1})
 
         elif model == 'walsh_party_02':
             experiment.add_election_family(model='walsh_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.2})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.2})
 
         ### SP by Conitzer
         elif model == 'conitzer_party_005':
             experiment.add_election_family(model='conitzer_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.05})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.05})
 
         elif model == 'conitzer_party_01':
             experiment.add_election_family(model='conitzer_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.1})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.1})
 
         elif model == 'conitzer_party_02':
             experiment.add_election_family(model='conitzer_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties,
-                                          'var': 0.2})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties,
+                                                   'var': 0.2})
 
         ### IC
         elif model == 'ic_party':
             experiment.add_election_family(model='ic_party', size=num_districts,
-                                  params={'num_winners': num_winners, 'num_parties': num_parties})
+                                           params={'num_winners': num_winners,
+                                                   'num_parties': num_parties})
 
         experiment.compute_winners(method=method, num_winners=num_winners)
 
@@ -237,10 +254,10 @@ def compute_spoilers(model=None, method=None, num_winners=None, num_parties=None
 
         # BANZHAF
         banzhaf_spoilers = []
-        banzhaf_vector = features.banzhaf(weight_vector)
+        banzhaf_vector = power_index.banzhaf(weight_vector)
         alternative_banzhaf_vectors = []
         for party_id in range(num_parties):
-            alternative_banzhaf_vector = features.banzhaf(
+            alternative_banzhaf_vector = power_index.banzhaf(
                 alternative_weight_vectors[party_id])
             alternative_banzhaf_vectors.append(alternative_banzhaf_vector)
 
@@ -299,7 +316,7 @@ def compute_spoilers(model=None, method=None, num_winners=None, num_parties=None
 
             for i in range(precision):
                 for j in range(num_districts):
-                    writer.writerow([i,j,all_separated_weight_vectors[i][j]])
+                    writer.writerow([i, j, all_separated_weight_vectors[i][j]])
 
     # SAVE TO FILE -- BIG
     file_name = model + '_p' + str(num_parties) + '_k' + str(
@@ -316,29 +333,34 @@ def compute_spoilers(model=None, method=None, num_winners=None, num_parties=None
             for party_id in range(num_parties):
                 writer.writerow([j, "NULL", party_id,
                                  all_weight_vectors[j][party_id],
-                                 "NULL", # all_shapley_vectors[j][party_id],
+                                 "NULL",  # all_shapley_vectors[j][party_id],
                                  all_banzhaf_vectors[j][party_id]])
 
             for spoiler_id in range(num_parties):
                 for party_id in range(num_parties):
                     writer.writerow([j, spoiler_id, party_id,
                                      all_alternative_weight_vectors[j][spoiler_id][party_id],
-                                     "NULL",  # all_alternative_shapley_vectors[j][spoiler_id][party_id],
+                                     "NULL",
+                                     # all_alternative_shapley_vectors[j][spoiler_id][party_id],
                                      all_alternative_banzhaf_vectors[j][spoiler_id][party_id]])
 
 
 def prepare_experiment(experiment_id=None, elections=None, distances=None, election_type='ordinal',
                        coordinates=None, distance_name='emd-positionwise', attraction_factor=1):
-
     if election_type == 'ordinal':
-        return OrdinalElectionExperiment("virtual", experiment_id=experiment_id, elections=elections,
-                          election_type=election_type, attraction_factor=attraction_factor,
-                          distances=distances, coordinates=coordinates, distance_name=distance_name)
+        return OrdinalElectionExperiment("virtual", experiment_id=experiment_id,
+                                         elections=elections,
+                                         election_type=election_type,
+                                         attraction_factor=attraction_factor,
+                                         distances=distances, coordinates=coordinates,
+                                         distance_name=distance_name)
     elif election_type == 'approval':
-        return ApprovalElectionExperiment("virtual", experiment_id=experiment_id, elections=elections,
-                          election_type=election_type, attraction_factor=attraction_factor,
-                          distances=distances, coordinates=coordinates, distance_name=distance_name)
-
+        return ApprovalElectionExperiment("virtual", experiment_id=experiment_id,
+                                          elections=elections,
+                                          election_type=election_type,
+                                          attraction_factor=attraction_factor,
+                                          distances=distances, coordinates=coordinates,
+                                          distance_name=distance_name)
 
 
 def generate_experiment(elections=None):
@@ -467,7 +489,7 @@ def compute_condorcet_existence(experiment_id):
 
 def print_chart_overlapping_of_winners(experiment_id, method='hb',
                                        algorithm='greedy', num_winners=10):
-    experiment = Experiment(experiment_id, raw=True)
+    experiment = Experiment(experiment_id)
 
     mallows = []
     norm_mallows = []
@@ -513,7 +535,7 @@ def print_chart_overlapping_of_winners(experiment_id, method='hb',
 
 
 def print_chart_condorcet_existence(experiment_id):
-    experiment = Experiment(experiment_id, raw=True)
+    experiment = Experiment(experiment_id)
 
     mallows = []
     norm_mallows = []
@@ -567,9 +589,6 @@ def print_chart_condorcet_existence(experiment_id):
 
 
 ### PART X ###
-
-
-
 
 
 def is_condorect_winner(election):

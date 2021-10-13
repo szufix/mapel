@@ -24,12 +24,12 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
     def __init__(self, ignore=None, elections=None, distances=None, with_matrices=False,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', attraction_factor=1,):
+                 election_type='ordinal', attraction_factor=1, ):
         super().__init__(ignore=ignore, elections=elections, distances=distances,
                          with_matrices=with_matrices,
                          coordinates=coordinates, distance_name=distance_name,
                          experiment_id=experiment_id,
-                         election_type=election_type, attraction_factor=attraction_factor,)
+                         election_type=election_type, attraction_factor=attraction_factor, )
 
     def add_elections_to_experiment(self, with_matrices=False):
         """ Import elections from a file """
@@ -41,14 +41,15 @@ class OrdinalElectionExperiment(ElectionExperiment):
             ids = []
             if self.families[family_id].single_election:
                 election_id = family_id
-                election = OrdinalElection(self.experiment_id, election_id, with_matrix=with_matrices)
+                election = OrdinalElection(self.experiment_id, election_id,
+                                           with_matrix=with_matrices)
                 elections[election_id] = election
                 ids.append(str(election_id))
             else:
                 for j in range(self.families[family_id].size):
                     election_id = family_id + '_' + str(j)
                     election = OrdinalElection(self.experiment_id, election_id,
-                                        with_matrix=with_matrices)
+                                               with_matrix=with_matrices)
                     elections[election_id] = election
                     ids.append(str(election_id))
 

@@ -32,7 +32,23 @@ def compute_candidatelikeness(ele_1, ele_2, inner_distance):
     cost_table = get_matching_cost_candidatelikeness(
         ele_1, ele_2, map_str_to_func(inner_distance))
     objective_value, matching = solve_matching_vectors(cost_table)
+    # print(objective_value)
     return objective_value, matching
+
+
+def compute_hamming(ele_1, ele_2):
+    """ Compute Hamming distance between two elections """
+
+    votes_1 = ele_1.votes
+    votes_2 = ele_2.votes
+    params = {'voters': ele_1.num_voters, 'candidates': ele_1.num_candidates}
+
+    file_name = str(rand.random()) + '.lp'
+    path = os.path.join(os.getcwd(), "trash", file_name)
+    lp.generate_ilp_distance(path, votes_1, votes_2, params, 'hamming')
+    objective_value = lp.solve_ilp_distance(path, votes_1, votes_2, params, 'hamming')
+    lp.remove_lp_file(path)
+    return objective_value, None
 
 
 def compute_voterlikeness_vectors(ele_1, ele_2, inner_distance):
@@ -158,6 +174,7 @@ def get_matching_cost_candidatelikeness(ele_1, ele_2, inner_distance):
     size = ele_1.num_candidates
     cost_table = [[inner_distance(vectors_1[i], vectors_2[j])
                    for i in range(size)] for j in range(size)]
+    # print(cost_table)
     return cost_table
 
 

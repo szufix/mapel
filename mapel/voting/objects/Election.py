@@ -77,15 +77,17 @@ class Election(Instance):
         if method == 'sntv':
             winners_without_party_id = compute_sntv_winners(election=election_without_party_id,
                                                             num_winners=num_winners)
-        if method == 'borda':
+        elif method == 'borda':
             winners_without_party_id = compute_borda_winners(election=election_without_party_id,
                                                              num_winners=num_winners)
-        if method == 'stv':
+        elif method == 'stv':
             winners_without_party_id = compute_stv_winners(election=election_without_party_id,
                                                            num_winners=num_winners)
-        if method in {'approx_cc', 'approx_hb', 'approx_pav'}:
+        elif method in {'approx_cc', 'approx_hb', 'approx_pav'}:
             winners_without_party_id = generate_winners(election=election_without_party_id,
                                                         num_winners=num_winners, method=method)
+        else:
+            winners_without_party_id = []
 
         winners_without_party_id = unmap_the_winners(winners_without_party_id, party_id, num_winners)
 

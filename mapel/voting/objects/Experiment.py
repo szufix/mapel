@@ -42,7 +42,9 @@ class Experiment:
 
     def __init__(self, ignore=None, elections=None, distances=None,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', attraction_factor=1):
+                 election_type='ordinal', attraction_factor=1, _import=True):
+
+        self._import = _import
 
         self.distance_name = distance_name
         self.elections = {}
@@ -178,7 +180,7 @@ class Experiment:
                     method=method, party_id=party_id, num_winners=num_winners)
 
     def compute_distances(self, distance_name='emd-positionwise', num_threads=1,
-                          self_distances=False, vector_type='A'):
+                          self_distances=False, vector_type='A', printing=False):
         """ Compute distances between elections (using threads) """
 
         self.distance_name = distance_name
@@ -186,9 +188,7 @@ class Experiment:
         # precompute vectors, matrices, etc...
         if '-approvalwise' in distance_name:
             for election in self.elections.values():
-                # print(election.name)
                 election.votes_to_approvalwise_vector()
-                # print(election.approvalwise_vector)
         elif '-coapproval_frequency' in distance_name or '-flow' in distance_name:
             for election in self.elections.values():
                 election.votes_to_coapproval_frequency_vectors(vector_type=vector_type)
@@ -225,14 +225,15 @@ class Experiment:
         num_distances = len(ids)
 
         for t in range(num_threads):
-            print('thread: ', t)
+            print('Starting thread: ', t)
             sleep(0.1)
             start = int(t * num_distances / num_threads)
             stop = int((t + 1) * num_distances / num_threads)
             thread_ids = ids[start:stop]
 
             threads[t] = Thread(target=metr.run_single_thread, args=(self, thread_ids,
-                                                                     distances, times, matchings))
+                                                                     distances, times, matchings,
+                                                                     printing))
             threads[t].start()
 
         for t in range(num_threads):
@@ -359,17 +360,15 @@ class Experiment:
                     writer.writerow(["election_id", "x", "y", "z"])
 
                 ctr = 0
-                for model_id in self.families:
-                    for election_id in \
-                            self.families[model_id].election_ids:
-                        x = round(points[election_id][0], 5)
-                        y = round(points[election_id][1], 5)
-                        if dim == 2:
-                            writer.writerow([election_id, x, y])
-                        elif dim == 3:
-                            z = round(my_pos[ctr][2], 5)
-                            writer.writerow([election_id, x, y, z])
-                        ctr += 1
+                for election_id in self.elections:
+                    x = round(points[election_id][0], 5)
+                    y = round(points[election_id][1], 5)
+                    if dim == 2:
+                        writer.writerow([election_id, x, y])
+                    elif dim == 3:
+                        z = round(my_pos[ctr][2], 5)
+                        writer.writerow([election_id, x, y, z])
+                    ctr += 1
 
         self.coordinates = points
 
@@ -414,7 +413,7 @@ class Experiment:
             self.print_map_3d(**kwargs)
 
     def print_map_2d(self, mask=False, mixed=False, fuzzy_paths=True,
-                     xlabel=None, shading=False,
+                     xlabel=None, shading=False, shift_legend=1,
                      angle=0, reverse=False, update=False, feature=None,
                      attraction_factor=2, axis=False,
                      distance_name="emd-positionwise", guardians=False,
@@ -470,7 +469,7 @@ class Experiment:
 
                 if self.coordinates[antagonism][1] < self.coordinates[stratification][1]:
                     self.reverse()
-            except:
+            except Exception:
                 pass
 
         if angle != 0:
@@ -497,7 +496,6 @@ class Experiment:
         if not axis:
             plt.axis('off')
 
-
         pr.add_skeleton(experiment=self, skeleton=skeleton, ax=ax)
 
         # COLORING
@@ -519,11 +517,10 @@ class Experiment:
                 else:
                     pr.basic_coloring(experiment=self, ax=ax, ms=ms, dim=dim)
 
-
         # BACKGROUND
         pr.basic_background(ax=ax, values=feature, legend=legend,
                             saveas=saveas, xlabel=xlabel,
-                            title=title)
+                            title=title, shift_legend=shift_legend)
 
         if tex:
             pr.saveas_tex(saveas=saveas)
@@ -541,7 +538,7 @@ class Experiment:
                      saveas="map_2d", show=True, ms=20, normalizing_func=None,
                      xticklabels=None, cmap=None,
                      ignore=None, marker_func=None, tex=False, black=False,
-                     legend=True, levels=False, tmp=False):
+                     legend=True):
 
         self.compute_points_by_families()
 
@@ -790,14 +787,11 @@ class Experiment:
             for family_id in self.families:
 
                 points_by_families[family_id] = [[] for _ in range(3)]
-                points_by_families[family_id][0].append(
-                    self.coordinates[family_id][0])
-                points_by_families[family_id][1].append(
-                    self.coordinates[family_id][1])
+                points_by_families[family_id][0].append(self.coordinates[family_id][0])
+                points_by_families[family_id][1].append(self.coordinates[family_id][1])
                 try:
-                    points_by_families[family_id][2].append(
-                        self.coordinates[family_id][2])
-                except:
+                    points_by_families[family_id][2].append(self.coordinates[family_id][2])
+                except Exception:
                     pass
         else:
 
@@ -814,7 +808,7 @@ class Experiment:
                     points_by_families[family_id][1].append(self.coordinates[election_id][1])
                     try:
                         points_by_families[family_id][2].append(self.coordinates[election_id][2])
-                    except:
+                    except Exception:
                         pass
 
         self.points_by_families = points_by_families
@@ -908,8 +902,7 @@ class Experiment:
 
         return px, py
 
-    def import_distances(self, self_distances=False,
-                         distance_name='emd-positionwise'):
+    def import_distances(self, self_distances=False, distance_name='emd-positionwise'):
         """ Import precomputed distances between each pair of elections from a file """
 
         file_name = str(distance_name) + '.csv'
@@ -941,18 +934,16 @@ class Experiment:
 
     def import_my_distances(self, distance_name='emd-positionwise'):
         """ Import precomputed distances between each pair of elections from a file """
-
         file_name = str(distance_name) + '.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
         distances = {}
         times = {}
         stds = {}
 
-        for family_id in self.families:
-            for election_id in self.families[family_id].election_ids:
-                distances[election_id] = {}
-                times[election_id] = {}
-                stds[election_id] = {}
+        for election_id in self.elections:
+            distances[election_id] = {}
+            times[election_id] = {}
+            stds[election_id] = {}
 
         with open(path, 'r', newline='') as csv_file:
             reader = csv.DictReader(csv_file, delimiter=';')
@@ -962,22 +953,17 @@ class Experiment:
                 election_id_2 = row['election_id_2']
 
                 distances[election_id_1][election_id_2] = float(row['distance'])
-                distances[election_id_2][election_id_1] = \
-                    distances[election_id_1][election_id_2]
+                distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
                 try:
                     times[election_id_1][election_id_2] = float(row['time'])
-                    times[election_id_2][election_id_1] = \
-                        times[election_id_1][election_id_2]
-                except:
+                    times[election_id_2][election_id_1] = times[election_id_1][election_id_2]
+                except Exception:
                     pass
 
                 try:
                     stds[election_id_1][election_id_2] = float(row['std'])
-                    stds[election_id_2][election_id_1] = \
-                        stds[election_id_1][election_id_2]
-                except:
+                    stds[election_id_2][election_id_1] = stds[election_id_1][election_id_2]
+                except Exception:
                     pass
 
         return distances, times, stds
-
-
