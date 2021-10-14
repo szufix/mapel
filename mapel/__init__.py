@@ -1,9 +1,9 @@
 
-import mapel.voting._metrics as metr
-import mapel.voting._elections as ele
-import mapel.voting.print as pr
+import mapel.voting.metrics_main as metr
+import mapel.voting.elections_main as ele
+import mapel.voting._print as pr
 import mapel.voting.other.development as dev
-import mapel.voting._features as features
+import mapel.voting.features_main as features
 
 
 from mapel.voting.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
@@ -15,20 +15,17 @@ def hello():
 
 
 def prepare_experiment(experiment_id=None, elections=None, distances=None, election_type='ordinal',
-                       coordinates=None, distance_name='emd-positionwise', attraction_factor=1,
-                       _import=True):
+                       coordinates=None, distance_name='emd-positionwise', _import=True):
     if election_type == 'ordinal':
-        return OrdinalElectionExperiment("virtual", experiment_id=experiment_id,
+        return OrdinalElectionExperiment(experiment_id=experiment_id,
                                          elections=elections,
                                          election_type=election_type,
-                                         attraction_factor=attraction_factor,
                                          distances=distances, coordinates=coordinates,
                                          distance_name=distance_name)
     elif election_type == 'approval':
-        return ApprovalElectionExperiment("virtual", experiment_id=experiment_id,
+        return ApprovalElectionExperiment(experiment_id=experiment_id,
                                           elections=elections, _import=_import,
                                           election_type=election_type,
-                                          attraction_factor=attraction_factor,
                                           distances=distances, coordinates=coordinates,
                                           distance_name=distance_name)
 

@@ -8,26 +8,26 @@ import numpy as np
 from mapel.voting.metrics.inner_distances import hamming
 from mapel.voting.objects.Election import Election
 
-from mapel.voting.glossary import NICE_NAME
+from mapel.voting._glossary import NICE_NAME
 
 
 class ApprovalElection(Election):
 
-    def __init__(self, experiment_id, name, votes=None, with_matrix=False, alpha=1, model=None,
+    def __init__(self, experiment_id, name, votes=None, alpha=1, model=None,
                  ballot='approval', num_voters=None, num_candidates=None, _import=False):
 
-        super().__init__(experiment_id, name, votes=votes, with_matrix=with_matrix, alpha=alpha,
-                         model=model, ballot=ballot,
-                         num_voters=num_voters, num_candidates=num_candidates)
+        super().__init__(experiment_id, name, votes=votes, alpha=alpha,
+                         model=model, ballot=ballot, num_voters=num_voters,
+                         num_candidates=num_candidates)
 
         self.approvalwise_vector = []
         self.coapproval_frequency_vectors = []
         self.voterlikeness_vectors = []
-        self.approval_pairwise_matrix = []
-        self.tmp_metric_vectors = []
+        self.pairwise_matrix = []
+        self.candidatelikeness_original_vectors = []
+        self.candidatelikeness_sorted_vectors = []
         self.model = model
-
-        self.k = 10
+        self.hamming_candidates = []
 
         if _import:
             fake = check_if_fake(experiment_id, name)
@@ -42,7 +42,7 @@ class ApprovalElection(Election):
                 except KeyError:
                     pass
 
-    def votes_to_approvalwise_vector(self):
+    def votes_to_approvalwise_vector(self) -> None:
         """ Convert votes to ... """
 
         if self.model == 'approval_half_1':
@@ -61,7 +61,7 @@ class ApprovalElection(Election):
             approvalwise_vector = approvalwise_vector / self.num_voters
             self.approvalwise_vector = np.sort(approvalwise_vector)
 
-    def votes_to_coapproval_frequency_vectors(self, vector_type='A'):
+    def votes_to_coapproval_frequency_vectors(self, vector_type='A') -> None:
         """ Convert votes to ... """
         vectors = np.zeros([self.num_candidates, self.num_candidates * 2])
         for vote in self.votes:
@@ -80,10 +80,10 @@ class ApprovalElection(Election):
                     elif vector_type == 'C':
                         vectors[c][2 * size] += 1
         vectors = vectors / self.num_voters
-        # vectors = vectors / self.num_candidates
+        # vectors = vectors / experiment.num_candidates
         self.coapproval_frequency_vectors = vectors
 
-    def votes_to_approval_pairwise_matrix(self):
+    def votes_to_pairwise_matrix(self) -> None:
         """ Convert votes to ... """
         matrix = np.zeros([self.num_candidates, self.num_candidates])
 
@@ -93,22 +93,26 @@ class ApprovalElection(Election):
                     if (c_1 in vote and c_2 in vote) or (c_1 not in vote and c_2 not in vote):
                         matrix[c_1][c_2] += 1
         matrix = matrix / self.num_voters
-        self.approval_pairwise_matrix = matrix
+        self.pairwise_matrix = matrix
 
-    def votes_to_tmp_metric_vectors(self):
+    def votes_to_candidatelikeness_original_vectors(self) -> None:
         """ Convert votes to ... """
         matrix = np.zeros([self.num_candidates, self.num_candidates])
 
         for c_1 in range(self.num_candidates):
             for c_2 in range(self.num_candidates):
                 for vote in self.votes:
-                    if (c_1 in vote and c_2 in vote) or (c_1 not in vote and c_2 not in vote):
+                    if (c_1 in vote and c_2 not in vote) or (c_1 not in vote and c_2 in vote):
                         matrix[c_1][c_2] += 1
         matrix = matrix / self.num_voters
-        matrix.sort()
-        self.tmp_metric_vectors = matrix
+        self.candidatelikeness_original_vectors = matrix
 
-    def votes_to_voterlikeness_vectors(self, vector_type='hamming'):
+    def votes_to_candidatelikeness_sorted_vectors(self) -> None:
+        """ Convert votes to ... """
+        self.votes_to_candidatelikeness_original_vectors()
+        self.candidatelikeness_sorted_vectors = np.sort(self.candidatelikeness_original_vectors)
+
+    def votes_to_voterlikeness_vectors(self, vector_type='hamming') -> None:
         """ Convert votes to ... """
 
         vectors = np.zeros([self.num_voters, self.num_voters])
@@ -126,7 +130,8 @@ class ApprovalElection(Election):
         self.voterlikeness_vectors = vectors
 
 
-def import_real_app_election(experiment_id, election_id):
+
+def import_real_app_election(experiment_id: str, election_id: str):
     """ Import real approval election from .app file """
 
     file_name = str(election_id) + ".app"
@@ -180,10 +185,10 @@ def import_real_app_election(experiment_id, election_id):
     return votes, num_voters, num_candidates, params, model_name
 
 
-def import_fake_app_election(experiment_id, election_id):
+def import_fake_app_election(experiment_id: str, election_id: str):
     """ Import fake approval election from .app file """
 
-    file_name = str(election_id) + ".app"
+    file_name = f'{election_id}.app'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     my_file.readline()  # line with $ fake
@@ -196,11 +201,9 @@ def import_fake_app_election(experiment_id, election_id):
     return fake_model_name, params, num_voters, num_candidates
 
 
-def check_if_fake(experiment_id, election_id):
+def check_if_fake(experiment_id: str, election_id: str) -> bool:
     file_name = str(election_id) + ".app"
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     line = my_file.readline().strip()
-    if line[0] == '$':
-        return True
-    return False
+    return line[0] == '$'

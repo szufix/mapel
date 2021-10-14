@@ -6,22 +6,23 @@ from pulp import *
 from mapel.voting.objects.ApprovalElection import ApprovalElection
 
 
-def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElection):
+def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElection,
+                                                         committee_size: int = 10):
     if election.model == 'approval_zeros':
         return 0
     elif election.model == 'approval_ones':
-        return election.k
+        return min(committee_size, election.num_candidates)
 
     l_ans = 0
     for l in range(1, election.num_voters + 1):
-        if solve_ilp_instance(election, l):
+        if solve_ilp_instance(election, committee_size, l):
             l_ans = l
         else:
             break
     return l_ans
 
 
-def solve_ilp_instance(election: ApprovalElection, l: int = 1) -> bool:
+def solve_ilp_instance(election: ApprovalElection, committee_size: int, l: int = 1) -> bool:
 
     model = LpProblem("cohesiveness_level_l", LpMaximize)
     X = [LpVariable("x_" + str(i), cat='Binary') for i in
@@ -29,7 +30,7 @@ def solve_ilp_instance(election: ApprovalElection, l: int = 1) -> bool:
     Y = [LpVariable("y_" + str(j), cat='Binary') for j in
          range(election.num_candidates)]  # Y[j] = 1 if we select j-th candidate, otherwise 0
     s = int(ceil(
-        l * election.num_voters / election.k))  # If there is any valid l-cohesive group, then there is also at least one with minimum possible size
+        l * election.num_voters / committee_size))  # If there is any valid l-cohesive group, then there is also at least one with minimum possible size
 
     objective = l
     model += objective  # We want to maximize cohesiveness level l (but l is constant, only convention)

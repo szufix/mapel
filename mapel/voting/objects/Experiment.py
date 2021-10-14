@@ -8,15 +8,14 @@ from abc import ABCMeta, abstractmethod
 from threading import Thread
 from time import sleep
 
-import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 
-import mapel.voting._elections as _elections
-import mapel.voting._metrics as metr
+import mapel.voting.elections_main as _elections
+import mapel.voting.metrics_main as metr
 import mapel.voting.elections.preflib as preflib
-import mapel.voting._features as features
-import mapel.voting.print as pr
+import mapel.voting.features_main as features
+import mapel.voting._print as pr
 from mapel.voting.objects.Family import Family
 
 try:
@@ -40,9 +39,9 @@ class Experiment:
     __metaclass__ = ABCMeta
     """Abstract set of elections."""
 
-    def __init__(self, ignore=None, elections=None, distances=None,
+    def __init__(self, elections=None, distances=None,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', attraction_factor=1, _import=True):
+                 election_type='ordinal', _import=True):
 
         self._import = _import
 
@@ -68,8 +67,7 @@ class Experiment:
             self.store = True
             self.experiment_id = experiment_id
             self.create_structure()
-            self.families = self.import_controllers(ignore=ignore)
-            self.attraction_factor = attraction_factor
+            self.families = self.import_controllers()
 
         if elections is not None:
             if elections == 'import':
@@ -94,7 +92,7 @@ class Experiment:
 
     def add_family(self, model="none", params=None, size=1, label=None, color="black",
                    alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,
-                   num_voters=None, family_id=None, single_election=False, num_nodes=None,
+                   family_id=None, single_election=False, num_nodes=None,
                    path=None, name=None):
         """ Add family of elections to the experiment """
 
@@ -137,8 +135,8 @@ class Experiment:
         """ Add election to the experiment """
 
         return self.add_family(model=model, params=params, size=size, label=label, color=color,
-                               alpha=alpha, show=show,  marker=marker, starting_from=starting_from,
-                               num_candidates=num_candidates, num_voters=num_voters,
+                               alpha=alpha, show=show, marker=marker, starting_from=starting_from,
+                               num_candidates=num_candidates,
                                family_id=name, num_nodes=num_nodes, single_election=True)[0]
 
     def add_graph(self, **kwargs):
@@ -180,7 +178,7 @@ class Experiment:
                     method=method, party_id=party_id, num_winners=num_winners)
 
     def compute_distances(self, distance_name='emd-positionwise', num_threads=1,
-                          self_distances=False, vector_type='A', printing=False):
+                          self_distances=False, vector_type='A', printing=False) -> None:
         """ Compute distances between elections (using threads) """
 
         self.distance_name = distance_name
@@ -197,10 +195,10 @@ class Experiment:
                 election.votes_to_voterlikeness_vectors(vector_type=vector_type)
         elif '-candidatelikeness' in distance_name:
             for election in self.elections.values():
-                election.votes_to_tmp_metric_vectors()
-        elif '-approval_pairwise' in distance_name:
+                election.votes_to_candidatelikeness_sorted_vectors()
+        elif '-pairwise' in distance_name:
             for election in self.elections.values():
-                election.votes_to_approval_pairwise_matrix()
+                election.votes_to_pairwise_matrix()
         # continue with normal code
 
         matchings = {}
@@ -272,13 +270,17 @@ class Experiment:
         return distances, times, stds
 
     def add_coordinates_to_experiment(self):
-        coordinates = self.import_cooridnates()
-        return coordinates
+        return self.import_cooridnates()
 
-    def embed(self, attraction_factor=1, algorithm='spring',
-              num_iterations=1000, radius=np.infty, dim=2,
-              distance_name='emd-positionwise', num_neighbors=None,
-              method='standard'):
+    def embed(self, attraction_factor=None, algorithm='spring',
+              num_iterations=1000, radius=np.infty, dim=2, num_neighbors=None,
+              method='standard') -> None:
+
+        if algorithm == 'spring':
+            attraction_factor = 2
+        else:
+            attraction_factor = 1
+
         num_elections = len(self.distances)
 
         x = np.zeros((num_elections, num_elections))
@@ -290,17 +292,16 @@ class Experiment:
                         self.distances[election_1_id][election_2_id] = 0.01
                     if algorithm in {'spring'}:
                         normal = True
-                        if self.distances[election_1_id][election_2_id] \
-                                > radius:
+                        if self.distances[election_1_id][election_2_id] > radius:
                             x[i][j] = 0.
                             normal = False
                         if num_neighbors is not None:
                             tmp = self.distances[election_1_id]
-                            sorted_list_1 = list((dict(sorted(tmp.items(), key=lambda item:
-                                                              item[1]))).keys())
+                            sorted_list_1 = list((dict(sorted(tmp.items(),
+                                                              key=lambda item: item[1]))).keys())
                             tmp = self.distances[election_2_id]
-                            sorted_list_2 = list((dict(sorted(tmp.items(),key=lambda item:
-                                                              item[1]))).keys())
+                            sorted_list_2 = list((dict(sorted(tmp.items(),
+                                                              key=lambda item: item[1]))).keys())
                             if (election_1_id not in sorted_list_2[0:num_neighbors]) and (
                                     election_2_id not in sorted_list_1[0:num_neighbors]):
                                 x[i][j] = 0.
@@ -346,12 +347,10 @@ class Experiment:
             points[election_id] = [my_pos[i][d] for d in range(dim)]
 
         if self.store:
-            file_name = os.path.join(os.getcwd(), "experiments",
-                                     self.experiment_id,
-                                     "coordinates",
-                                     distance_name + "_" + str(dim) + "d_a" +
-                                     str(float(attraction_factor)) + ".csv")
-            with open(file_name, 'w', newline='') as csvfile:
+            file_name = f'{self.distance_name}_{str(dim)}d.csv'
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                "coordinates", file_name)
+            with open(path, 'w', newline='') as csvfile:
 
                 writer = csv.writer(csvfile, delimiter=';')
                 if dim == 2:
@@ -372,240 +371,40 @@ class Experiment:
 
         self.coordinates = points
 
-    def print_map_tmp(self, group_by=None, saveas=None):
-        if group_by is None:
-
-            for election_id in self.coordinates:
-                plt.scatter(self.coordinates[election_id][0], self.coordinates[election_id][1],
-                            label=election_id)
-            plt.legend()
-            plt.show()
-
-        else:
-
-            for color in group_by:
-                x_array = []
-                y_array = []
-                for election_id in group_by[color]:
-                    x_array.append(self.coordinates[election_id][0])
-                    y_array.append(self.coordinates[election_id][1])
-                plt.scatter(x_array, y_array, label=group_by[color][0],color=color)
-            plt.legend()
-            if saveas is not None:
-                file_name = saveas + ".png"
-                path = os.path.join(os.getcwd(), file_name)
-                plt.savefig(path, bbox_inches='tight')
-            plt.show()
-
-    def get_election_id_from_model_name(self, model_name):
-        # print('model:', model_name)
+    def get_election_id_from_model_name(self, model: str) -> str:
         for election_id in self.elections:
-            # print(self.elections[election_id].model, model_name)
-            if self.elections[election_id].model == model_name:
+            if self.elections[election_id].model == model:
                 return election_id
 
-    def print_map(self, dim=2, **kwargs):
+    def print_map(self, dim: int = 2, **kwargs) -> None:
         """ Print the two-dimensional embedding of multi-dimensional
         map of the elections """
         if dim == 2:
-            self.print_map_2d(**kwargs)
+            pr.print_map_2d(self, **kwargs)
         elif dim == 3:
-            self.print_map_3d(**kwargs)
+            pr.print_map_3d(self, **kwargs)
 
-    def print_map_2d(self, mask=False, mixed=False, fuzzy_paths=True,
-                     xlabel=None, shading=False, shift_legend=1,
-                     angle=0, reverse=False, update=False, feature=None,
-                     attraction_factor=2, axis=False,
-                     distance_name="emd-positionwise", guardians=False,
-                     ticks=None, skeleton=None, roads=None,
-                     title=None, dim=2, event='none',
-                     saveas=None, show=True, ms=20, normalizing_func=None,
-                     xticklabels=None, cmap=None,
-                     ignore=None, marker_func=None, tex=False, black=False,
-                     legend=True, levels=False, tmp=False, adjust=False):
-
-        if skeleton is None:
-            skeleton = []
-
-        if roads is None:
-            roads = []
-
-        self.compute_points_by_families()
-        # self.attraction_factor = attraction_factor
-
-        if adjust:
-
-            try:
-                uniformity = self.get_election_id_from_model_name('uniformity')
-                identity = self.get_election_id_from_model_name('identity')
-                antagonism = self.get_election_id_from_model_name('antagonism')
-                stratification = self.get_election_id_from_model_name('stratification')
-
-                d_x = self.coordinates[identity][0] - self.coordinates[uniformity][0]
-                d_y = self.coordinates[identity][1] - self.coordinates[uniformity][1]
-                alpha = math.atan(d_x / d_y)
-                self.rotate(alpha - math.pi / 2.)
-                if self.coordinates[uniformity][0] > self.coordinates[identity][0]:
-                    self.rotate(math.pi)
-
-                if self.coordinates[antagonism][1] < self.coordinates[stratification][1]:
-                    self.reverse()
-            except:
-                pass
-
-            try:
-                uniformity = self.get_election_id_from_model_name('approval_ic_0.5')
-                identity = self.get_election_id_from_model_name('approval_id_0.5')
-                antagonism = self.get_election_id_from_model_name('approval_full')
-                stratification = self.get_election_id_from_model_name('approval_empty')
-
-                d_x = self.coordinates[identity][0] - self.coordinates[uniformity][0]
-                d_y = self.coordinates[identity][1] - self.coordinates[uniformity][1]
-
-                alpha = math.atan(d_x / d_y)
-                self.rotate(alpha - math.pi / 2.)
-                if self.coordinates[uniformity][0] > self.coordinates[identity][0]:
-                    self.rotate(math.pi)
-
-                if self.coordinates[antagonism][1] < self.coordinates[stratification][1]:
-                    self.reverse()
-            except Exception:
-                pass
-
-        if angle != 0:
-            self.rotate(angle)
-
-        if reverse:
-            self.reverse()
-
-        if self.store and (adjust or update):
-            self.update()
-
-        if cmap is None:
-            cmap = pr.custom_div_cmap()
-
-        if feature is not None:
-            fig = plt.figure(figsize=(6.4, 6.4 + 0.48))
-        else:
-            fig = plt.figure()
-
-        ax = fig.add_subplot()
-
-        plt.axis('equal')
-
-        if not axis:
-            plt.axis('off')
-
-        pr.add_skeleton(experiment=self, skeleton=skeleton, ax=ax)
-
-        # COLORING
-        if feature is not None:
-            pr.color_map_by_feature(experiment=self, fig=fig, ax=ax,
-                                    feature=feature,
-                                    normalizing_func=normalizing_func,
-                                    marker_func=marker_func,
-                                    xticklabels=xticklabels, ms=ms, cmap=cmap,
-                                    ticks=ticks)
-        else:
-
-            if event in {'skeleton'}:
-                pr.skeleton_coloring(experiment=self, ax=ax, ms=ms, dim=dim)
-                pr.add_roads(experiment=self, roads=roads, ax=ax)
-            else:
-                if shading:
-                    pr.basic_coloring_with_shading(experiment=self, ax=ax, ms=ms, dim=dim)
-                else:
-                    pr.basic_coloring(experiment=self, ax=ax, ms=ms, dim=dim)
-
-        # BACKGROUND
-        pr.basic_background(ax=ax, values=feature, legend=legend,
-                            saveas=saveas, xlabel=xlabel,
-                            title=title, shift_legend=shift_legend)
-
-        if tex:
-            pr.saveas_tex(saveas=saveas)
-
-        if show:
-            plt.show()
-
-    def print_map_3d(self, mask=False, mixed=False, fuzzy_paths=True,
-                     xlabel=None,
-                     angle=0, reverse=False, update=False, feature=None,
-                     attraction_factor=1, axis=False,
-                     distance_name="emd-positionwise", guardians=False,
-                     ticks=None, dim=3,
-                     title=None, shading=False,
-                     saveas="map_2d", show=True, ms=20, normalizing_func=None,
-                     xticklabels=None, cmap=None,
-                     ignore=None, marker_func=None, tex=False, black=False,
-                     legend=True):
-
-        self.compute_points_by_families()
-
-        # if angle != 0:
-        #     self.rotate(angle)
-
-        # if reverse:
-        #     self.reverse()
-
-        # if update:
-        #     self.update()
-
-        if cmap is None:
-            cmap = pr.custom_div_cmap()
-
-        if feature is not None:
-            fig = plt.figure(figsize=(6.4, 4.8 + 0.48))
-        else:
-            fig = plt.figure()
-        ax = fig.add_subplot(projection='3d')
-
-        if not axis:
-            plt.axis('off')
-
-        # COLORING
-        if feature is not None:
-            pr.color_map_by_feature(experiment=self, fig=fig, ax=ax,
-                                    feature=feature,
-                                    normalizing_func=normalizing_func,
-                                    marker_func=marker_func,
-                                    xticklabels=xticklabels, ms=ms, cmap=cmap,
-                                    ticks=ticks, dim=dim)
-        else:
-            pr.basic_coloring(experiment=self, ax=ax, ms=ms, dim=dim)
-
-        # BACKGROUND
-        pr.basic_background(ax=ax, values=feature, legend=legend,
-                            saveas=saveas, xlabel=xlabel,
-                            title=title)
-
-        if tex:
-            pr.saveas_tex(saveas=saveas)
-
-        if show:
-            plt.show()
-
-    # def add_matrices_to_experiment(self):
+    # def add_matrices_to_experiment(experiment):
     #     """ Import elections from a file """
     #
     #     matrices = {}
     #     vectors = {}
     #
-    #     for family_id in self.families:
-    #         for j in range(self.families[family_id].size):
+    #     for family_id in experiment.families:
+    #         for j in range(experiment.families[family_id].size):
     #             election_id = family_id + '_' + str(j)
-    #             matrix = self.import_matrix(election_id)
+    #             matrix = experiment.import_matrix(election_id)
     #             matrices[election_id] = matrix
     #             vectors[election_id] = matrix.transpose()
     #
     #     return matrices, vectors
 
-    # def import_matrix(self, election_id):
+    # def import_matrix(experiment, election_id):
     #
     #     file_name = election_id + '.csv'
-    #     path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+    #     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
     #     'matrices', file_name)
-    #     num_candidates = self.elections[election_id].num_candidates
+    #     num_candidates = experiment.elections[election_id].num_candidates
     #     matrix = np.zeros([num_candidates, num_candidates])
     #
     #     with open(path, 'r', newline='') as csv_file:
@@ -618,7 +417,7 @@ class Experiment:
     def print_matrix(self, **kwargs):
         pr.print_matrix(experiment=self, **kwargs)
 
-    def import_controllers(self, ignore=None):
+    def import_controllers(self):
         """ Import controllers from a file """
 
         families = {}
@@ -693,11 +492,6 @@ class Experiment:
             else:
                 single_election = False
 
-            # if label in ["UN", "ID", "AN", "ST", "CON", "WAL", "CAT",
-            #              "SHI", "MID"]:
-            #     single_election = True
-            #     family_id = label
-
             families[family_id] = Family(model=model,
                                          family_id=family_id,
                                          params=params, label=label,
@@ -714,19 +508,10 @@ class Experiment:
             [families[family_id].size for family_id in families])
         self.main_order = [i for i in range(self.num_elections)]
 
-        if ignore is None:
-            ignore = []
-
         file_.close()
         return families
 
-    def import_points(self, ignore=None):
-        """ Import from a file precomputed coordinates of all the points --
-        each point refer to one election """
-
-        return self.import_cooridnates(ignore=ignore)
-
-    def import_cooridnates(self, ignore=None):
+    def import_cooridnates(self, ignore=None) -> dict:
         """ Import from a file precomputed coordinates of all the points --
         each point refer to one election """
 
@@ -735,8 +520,7 @@ class Experiment:
 
         points = {}
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "coordinates", self.distance_name + "_2d_a" + str(
-                float(self.attraction_factor)) + ".csv")
+                            "coordinates", f'{self.distance_name}_2d.csv')
 
         with open(path, 'r', newline='') as csv_file:
 
@@ -753,7 +537,7 @@ class Experiment:
 
         return points
 
-    def compute_points_by_families(self):
+    def compute_points_by_families(self) -> None:
         """ Group all points by their families """
 
         points_by_families = {}
@@ -813,9 +597,8 @@ class Experiment:
 
         self.points_by_families = points_by_families
 
-    def compute_feature(self, name=None):
+    def compute_feature(self, name: str = None, committee_size: int = 10) -> dict:
 
-        # values = []
         feature_dict = {}
 
         for election_id in self.elections:
@@ -823,7 +606,10 @@ class Experiment:
             feature = features.get_feature(name)
             election = self.elections[election_id]
             # print(election_id, election)
-            if name in {'avg_distortion_from_guardians',
+            if name in ['largest_cohesive_group']:
+                value = feature(election, committee_size)
+
+            elif name in {'avg_distortion_from_guardians',
                         'worst_distortion_from_guardians'}:
                 value = feature(self, election_id)
             else:
@@ -852,7 +638,7 @@ class Experiment:
 
         return math.sqrt(distance)
 
-    def rotate(self, angle):
+    def rotate(self, angle) -> None:
         """ Rotate all the points by a given angle """
 
         for election_id in self.elections:
@@ -862,7 +648,7 @@ class Experiment:
 
         self.compute_points_by_families()
 
-    def reverse(self):
+    def reverse(self) -> None:
         """ Reverse all the points"""
 
         for election_id in self.elections:
@@ -871,12 +657,11 @@ class Experiment:
 
         self.compute_points_by_families()
 
-    def update(self):
+    def update(self) -> None:
         """ Save current coordinates of all the points to the original file"""
 
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "coordinates", self.distance_name + "_2d_a" +
-                            str(float(self.attraction_factor)) + ".csv")
+                            "coordinates", f'{self.distance_name}_2d.csv')
 
         with open(path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=';')
@@ -888,7 +673,7 @@ class Experiment:
                 writer.writerow([election_id, x, y])
 
     @staticmethod
-    def rotate_point(cx, cy, angle, px, py):
+    def rotate_point(cx, cy, angle, px, py) -> (float, float):
         """ Rotate two-dimensional point by an angle """
 
         s = math.sin(angle)
@@ -932,7 +717,7 @@ class Experiment:
 
         return num_distances, hist_data, std
 
-    def import_my_distances(self, distance_name='emd-positionwise'):
+    def import_my_distances(self, distance_name: str = 'emd-positionwise') -> (dict, dict, dict):
         """ Import precomputed distances between each pair of elections from a file """
         file_name = str(distance_name) + '.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
@@ -957,13 +742,13 @@ class Experiment:
                 try:
                     times[election_id_1][election_id_2] = float(row['time'])
                     times[election_id_2][election_id_1] = times[election_id_1][election_id_2]
-                except Exception:
+                except KeyError:
                     pass
 
                 try:
                     stds[election_id_1][election_id_2] = float(row['std'])
                     stds[election_id_2][election_id_1] = stds[election_id_1][election_id_2]
-                except Exception:
+                except KeyError:
                     pass
 
         return distances, times, stds

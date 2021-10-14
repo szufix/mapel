@@ -2,7 +2,7 @@ import copy
 import math
 import numpy as np
 
-### MAPPING ###
+
 def map_str_to_func(name):
     return {'l1': l1,
             'single_l1': single_l1,
@@ -27,13 +27,13 @@ def single_l1(value_1, value_2):
     return abs(value_1 - value_2)
 
 
-def l1(vector_1, vector_2):
-    """ compute L1 metric """
+def l1(vector_1: np.ndarray, vector_2: np.ndarray) -> float:
+    """ Return: L1 distance """
     return np.linalg.norm(vector_1 - vector_2, ord=1)
 
 
-def l2(vector_1, vector_2):
-    """ compute L2 metric """
+def l2(vector_1: np.ndarray, vector_2: np.ndarray) -> float:
+    """ Return: L2 distance """
     return np.linalg.norm(vector_1 - vector_2, ord=2)
 
 
@@ -63,6 +63,10 @@ def emd(vector_1, vector_2):
     return dirt
 
 
-def hamming(set_1, set_2):
-    """ Compute HAMMING metric """
+def hamming(set_1: set, set_2: set) -> float:
+    """ Return: HAMMING distance """
     return len(set_1) + len(set_2) - 2 * len(set_1.intersection(set_2))
+
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 12.10.2021 #
+# # # # # # # # # # # # # # # #

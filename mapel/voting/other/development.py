@@ -8,8 +8,8 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 
-import mapel.voting._metrics as metr
-import mapel.voting._features as features
+import mapel.voting.metrics_main as metr
+import mapel.voting.features_main as features
 from mapel.voting.metrics.inner_distances import l2, chebyshev
 from mapel.voting.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.voting.objects.Experiment import Experiment
@@ -365,7 +365,6 @@ def prepare_experiment(experiment_id=None, elections=None, distances=None, elect
 
 def generate_experiment(elections=None):
     return Experiment("virtual", elections=elections)
-
 
 ###############################################################################
 

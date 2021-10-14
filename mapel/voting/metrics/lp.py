@@ -1201,8 +1201,8 @@ def solve_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
     cp_lp = cplex.Cplex(lp_file_name)
     cp_lp.set_results_stream(None)
 
-    cp_lp.parameters.threads.set(1)
-    cp_lp.parameters.timelimit.set(60)
+    # cp_lp.parameters.threads.set(1)
+    # cp_lp.parameters.timelimit.set(60)
 
     try:
         cp_lp.solve()
@@ -1211,33 +1211,6 @@ def solve_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
         print("Exception raised during solve")
         return
 
-    """
-    total = 0
-    for k in range(params['voters']):
-        for l in range(params['voters']):
-
-            pote_1 = [0] * params['candidates']
-            pote_2 = [0] * params['candidates']
-
-            for i in range(params['candidates']):
-                pote_1[votes_1[k][i]] = i
-                pote_2[votes_2[l][i]] = i
-
-            for i in range(params['candidates']):
-                for j in range(params['candidates']):
-
-                    if metric_name == "spearman":
-                        weight = abs(pote_1[i] - pote_2[j])
-                    elif metric_name == "alt":
-                        weight = float(abs(pote_1[i] - pote_2[j]) ** (2)) / float(1. + min(pote_1[i], pote_2[j]))
-                    else:
-                        weight = 0
-
-                    A = "P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j)
-
-
-                    total += weight * int(cp_lp.solution.get_values(A))
-    """
     total = cp_lp.solution.get_objective_value()
     return total
 

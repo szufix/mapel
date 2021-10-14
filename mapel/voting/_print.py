@@ -1,5 +1,6 @@
 import csv
 import os
+import math
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,8 +8,141 @@ from PIL import Image
 import tikzplotlib
 import deprecation as dep
 
+# from mapel.voting.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
+# from mapel.voting.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 
-def get_values_from_csv_file(experiment, feature):
+
+
+
+
+# Main functions
+def print_map_2d(experiment, mask=False, mixed=False, fuzzy_paths=True,
+                 xlabel=None, shading=False, shift_legend=1,
+                 angle=0, reverse=False, update=False, feature=None,
+                 attraction_factor=2, axis=False,
+                 distance_name="emd-positionwise", guardians=False,
+                 ticks=None, skeleton=None, roads=None,
+                 title=None, dim=2, event='none',
+                 saveas=None, show=True, ms=20, normalizing_func=None,
+                 xticklabels=None, cmap=None,
+                 ignore=None, marker_func=None, tex=False, black=False,
+                 legend=True, tmp=False, adjust=False) -> None:
+    if skeleton is None:
+        skeleton = []
+
+    if roads is None:
+        roads = []
+
+    experiment.compute_points_by_families()
+    # experiment.attraction_factor = attraction_factor
+
+    if adjust:
+        adjust_the_map(experiment)
+
+    if angle != 0:
+        experiment.rotate(angle)
+
+    if reverse:
+        experiment.reverse()
+
+    if experiment.store and (adjust or update):
+        experiment.update()
+
+    if cmap is None:
+        cmap = custom_div_cmap()
+
+    if feature is not None:
+        fig = plt.figure(figsize=(6.4, 6.4 + 0.48))
+    else:
+        fig = plt.figure()
+
+    ax = fig.add_subplot()
+
+    plt.axis('equal')
+
+    if not axis:
+        plt.axis('off')
+
+    add_skeleton(experiment=experiment, skeleton=skeleton, ax=ax)
+
+    # COLORING
+    if feature is not None:
+        color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
+                             feature=feature,
+                             normalizing_func=normalizing_func,
+                             marker_func=marker_func,
+                             xticklabels=xticklabels, ms=ms, cmap=cmap,
+                             ticks=ticks)
+    else:
+
+        if event in {'skeleton'}:
+            skeleton_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim)
+            add_roads(experiment=experiment, roads=roads, ax=ax)
+        else:
+            if shading:
+                basic_coloring_with_shading(experiment=experiment, ax=ax, ms=ms, dim=dim)
+            else:
+                basic_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim)
+
+    # BACKGROUND
+    basic_background(ax=ax, values=feature, legend=legend,
+                     saveas=saveas, xlabel=xlabel,
+                     title=title, shift_legend=shift_legend)
+
+    if tex:
+        saveas_tex(saveas=saveas)
+
+    if show:
+        plt.show()
+
+
+def print_map_3d(experiment,
+                 xlabel=None, reverse=False, feature=None,
+                 attraction_factor=1, axis=False,
+                 distance_name="emd-positionwise",
+                 ticks=None, dim=3,
+                 title=None, shading=False,
+                 saveas="map_2d", show=True, ms=20, normalizing_func=None,
+                 xticklabels=None, cmap=None, marker_func=None, tex=False,
+                 legend=True):
+    experiment.compute_points_by_families()
+
+    if cmap is None:
+        cmap = custom_div_cmap()
+
+    if feature is not None:
+        fig = plt.figure(figsize=(6.4, 4.8 + 0.48))
+    else:
+        fig = plt.figure()
+    ax = fig.add_subplot(projection='3d')
+
+    if not axis:
+        plt.axis('off')
+
+    # COLORING
+    if feature is not None:
+        color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
+                             feature=feature,
+                             normalizing_func=normalizing_func,
+                             marker_func=marker_func,
+                             xticklabels=xticklabels, ms=ms, cmap=cmap,
+                             ticks=ticks, dim=dim)
+    else:
+        basic_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim)
+
+    # BACKGROUND
+    basic_background(ax=ax, values=feature, legend=legend,
+                     saveas=saveas, xlabel=xlabel,
+                     title=title)
+
+    if tex:
+        saveas_tex(saveas=saveas)
+
+    if show:
+        plt.show()
+
+
+def get_values_from_csv_file(experiment, feature) -> dict:
     """Import values for a feature from a .csv file """
 
     path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id,
@@ -187,23 +321,24 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
 
 # COLORING
 def basic_coloring(experiment=None, ax=None, ms=None, dim=2):
-    for family_id in experiment.families:
-        if experiment.families[family_id].show:
+    for family in experiment.families.values():
+
+        if family.show:
             if dim == 2:
-                ax.scatter(experiment.points_by_families[family_id][0],
-                           experiment.points_by_families[family_id][1],
-                           color=experiment.families[family_id].color,
-                           label=experiment.families[family_id].label,
-                           alpha=experiment.families[family_id].alpha, s=ms,
-                           marker=experiment.families[family_id].marker)
+                ax.scatter(experiment.points_by_families[family.family_id][0],
+                           experiment.points_by_families[family.family_id][1],
+                           color=family.color,
+                           label=family.label,
+                           alpha=family.alpha, s=ms,
+                           marker=family.marker)
             elif dim == 3:
-                ax.scatter(experiment.points_by_families[family_id][0],
-                           experiment.points_by_families[family_id][1],
-                           experiment.points_by_families[family_id][2],
-                           color=experiment.families[family_id].color,
-                           label=experiment.families[family_id].label,
-                           alpha=experiment.families[family_id].alpha, s=ms,
-                           marker=experiment.families[family_id].marker)
+                ax.scatter(experiment.points_by_families[family.family_id][0],
+                           experiment.points_by_families[family.family_id][1],
+                           experiment.points_by_families[family.family_id][2],
+                           color=family.color,
+                           label=family.label,
+                           alpha=family.alpha, s=ms,
+                           marker=family.marker)
 
 
 def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
@@ -472,6 +607,7 @@ def map_diameter(c):
 # SKELETON RELATED
 def add_skeleton(experiment=None, skeleton=None, ax=None, size=12):
     """ Add skeleton """
+
     def my_text(x1, y1, text, color="black", alpha=1., size=size):
         ax.text(x1, y1, text, size=size, rotation=0., ha="center",
                 va="center",
@@ -509,6 +645,7 @@ def add_roads(experiment=None, roads=None, ax=None):
             y2 -= 2
 
         my_line(x1, y1, x2, y2, text)
+
 
 def skeleton_coloring(experiment=None, ax=None, ms=None, dim=2):
     for family_id in experiment.families:
@@ -887,6 +1024,59 @@ def get_values_from_file_old(experiment, experiment_id, values,
         markers = np.asarray(markers)
         return xx, yy, shades, markers, _min, _max
 
+
+# Adjusting the map
+# def adjust_the_map_on_four_points(experiment, left, right, up, down):
+#     try:
+#         d_x = experiment.coordinates[right][0] - experiment.coordinates[left][0]
+#         d_y = experiment.coordinates[right][1] - experiment.coordinates[left][1]
+#         alpha = math.atan(d_x / d_y)
+#         experiment.rotate(alpha - math.pi / 2.)
+#         if experiment.coordinates[left][0] > experiment.coordinates[right][0]:
+#             experiment.rotate(math.pi)
+#         if experiment.coordinates[up][1] < experiment.coordinates[down][1]:
+#             experiment.reverse()
+#     except Exception:
+#         pass
+
+
+def adjust_the_map_on_three_points(experiment, left, right, down):
+    try:
+        d_x = experiment.coordinates[right][0] - experiment.coordinates[left][0]
+        d_y = experiment.coordinates[right][1] - experiment.coordinates[left][1]
+        alpha = math.atan(d_x / d_y)
+        experiment.rotate(alpha - math.pi / 2.)
+        if experiment.coordinates[left][0] > experiment.coordinates[right][0]:
+            experiment.rotate(math.pi)
+        if experiment.coordinates[left][1] < experiment.coordinates[down][1]:
+            experiment.reverse()
+    except Exception:
+        pass
+
+
+def adjust_the_map(experiment) -> None:
+    # if type(experiment) is OrdinalElectionExperiment:
+    if experiment.election_type == 'ordinal':
+
+        try:
+            left = experiment.get_election_id_from_model_name('uniformity')
+            right = experiment.get_election_id_from_model_name('identity')
+            # up = experiment.get_election_id_from_model_name('antagonism')
+            down = experiment.get_election_id_from_model_name('stratification')
+            adjust_the_map_on_three_points(experiment, left, right, down)
+        except Exception:
+            pass
+
+    # elif type(experiment) is ApprovalElectionExperiment:
+    elif experiment.election_type == 'approval':
+        try:
+            left = experiment.get_election_id_from_model_name('approval_ic_0.5')
+            right = experiment.get_election_id_from_model_name('approval_id_0.5')
+            # up = experiment.get_election_id_from_model_name('approval_full')
+            down = experiment.get_election_id_from_model_name('approval_empty')
+            adjust_the_map_on_three_points(experiment, left, right, down)
+        except Exception:
+            pass
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

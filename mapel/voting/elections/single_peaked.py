@@ -5,24 +5,21 @@ from random import *
 from scipy.special import binom
 
 
-def generate_sp_party(model=None, num_voters=None, num_candidates=None, params=None):
-
+def generate_sp_party(model=None, num_voters=None, num_candidates=None, params=None) -> np.ndarray:
     candidates = [[] for _ in range(num_candidates)]
     _ids = [i for i in range(num_candidates)]
 
     for j in range(params['num_parties']):
         for w in range(params['num_winners']):
-            _id = j*params['num_winners'] + w
+            _id = j * params['num_winners'] + w
             candidates[_id] = [rand.gauss(params['party'][j][0], params['var'])]
 
     mapping = [x for _, x in sorted(zip(candidates, _ids))]
 
     if model == 'conitzer_party':
-        votes = generate_conitzer_election(num_voters=num_voters,
-                                           num_candidates=num_candidates)
+        votes = generate_conitzer_election(num_voters=num_voters, num_candidates=num_candidates)
     elif model == 'walsh_party':
-        votes = generate_walsh_election(num_voters=num_voters,
-                                           num_candidates=num_candidates)
+        votes = generate_walsh_election(num_voters=num_voters, num_candidates=num_candidates)
     for i in range(num_voters):
         for j in range(num_candidates):
             votes[i][j] = mapping[votes[i][j]]
@@ -30,10 +27,10 @@ def generate_sp_party(model=None, num_voters=None, num_candidates=None, params=N
     return votes
 
 
-def generate_conitzer_election(num_voters=None, num_candidates=None):
+def generate_conitzer_election(num_voters=None, num_candidates=None) -> np.ndarray:
     """ helper function: generate conitzer single-peaked elections """
 
-    votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
+    votes = np.zeors([num_candidates, num_voters])
 
     for j in range(num_voters):
         votes[j][0] = rand.randint(0, num_candidates - 1)
@@ -59,10 +56,10 @@ def generate_conitzer_election(num_voters=None, num_candidates=None):
     return votes
 
 
-def generate_spoc_conitzer_election(num_voters=None, num_candidates=None):
+def generate_spoc_conitzer_election(num_voters=None, num_candidates=None) -> np.ndarray:
     """ helper function: generate spoc_conitzer single-peaked elections"""
 
-    votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
+    votes = np.zeors([num_candidates, num_voters])
 
     for j in range(num_voters):
         votes[j][0] = rand.randint(0, num_candidates - 1)
@@ -84,7 +81,7 @@ def generate_spoc_conitzer_election(num_voters=None, num_candidates=None):
     return votes
 
 
-def generate_walsh_election(num_voters=None, num_candidates=None):
+def generate_walsh_election(num_voters=None, num_candidates=None) -> np.ndarray:
     """ helper function: generate walsh single-peaked elections"""
 
     votes = np.zeros([num_voters, num_candidates])
@@ -198,7 +195,7 @@ def get_walsh_matrix(m):
 
 
 def get_conitzer_vectors(m):
-    P = np.zeros([m,m])
+    P = np.zeros([m, m])
     for i in range(m):
         for j in range(m):
             P[i][j] = probC(m, i + 1, j + 1)
@@ -223,7 +220,7 @@ def simconitzer(m):
 
 
 def get_walsh_vectors(m):
-    P = np.zeros([m,m])
+    P = np.zeros([m, m])
     for i in range(m):
         for t in range(m):
             P[i][t] = probW(m, i + 1, t + 1)

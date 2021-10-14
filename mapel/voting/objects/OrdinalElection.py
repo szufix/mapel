@@ -9,19 +9,19 @@ from mapel.voting.elections.mallows import get_mallows_vectors
 from mapel.voting.elections.preflib import get_sushi_vectors
 from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
-from mapel.voting.glossary import PATHS
+from mapel.voting._glossary import PATHS
 from mapel.voting.objects.Election import Election
 from mapel.voting.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
-from mapel.voting.glossary import LIST_OF_FAKE_MODELS, LIST_OF_PREFLIB_MODELS
+from mapel.voting._glossary import LIST_OF_FAKE_MODELS, LIST_OF_PREFLIB_MODELS
 
 
 class OrdinalElection(Election):
 
     def __init__(self, experiment_id, name, votes=None, with_matrix=False, alpha=None, model=None,
-                 ballot='ordinal', num_voters=None, num_candidates=None):
+                 ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None):
 
-        super().__init__(experiment_id, name, votes=votes, with_matrix=with_matrix, alpha=alpha,
+        super().__init__(experiment_id, name, votes=votes, alpha=alpha,
                          model=model, ballot=ballot,
                          num_voters=num_voters, num_candidates=num_candidates)
 
@@ -72,7 +72,7 @@ class OrdinalElection(Election):
 
     def votes_to_positionwise_vectors(self):
 
-        # print(self.num_candidates)
+        # print(experiment.num_candidates)
         vectors = np.zeros([self.num_candidates, self.num_candidates])
 
         if self.election_model == 'conitzer_matrix':
@@ -119,7 +119,7 @@ class OrdinalElection(Election):
     def votes_to_positionwise_matrix(self):
         return self.votes_to_positionwise_vectors().transpose()
 
-    def votes_to_pairwise_matrix(self):
+    def votes_to_pairwise_matrix(self) -> np.ndarray:
         """ convert VOTES to pairwise MATRIX """
         matrix = np.zeros([self.num_candidates, self.num_candidates])
 
@@ -147,7 +147,7 @@ class OrdinalElection(Election):
 
         return matrix
 
-    def votes_to_bordawise_vector(self):
+    def votes_to_bordawise_vector(self) -> (np.ndarray, int):
         """ convert VOTES to Borda vector """
 
         borda_vector = np.zeros([self.num_candidates])
@@ -173,7 +173,7 @@ class OrdinalElection(Election):
 
         return borda_vector, len(borda_vector)
 
-    def votes_to_positionwise_intervals(self, precision=None):
+    def votes_to_positionwise_intervals(self, precision=None) -> list:
 
         vectors = self.votes_to_positionwise_matrix()
         intervals = []
@@ -183,15 +183,15 @@ class OrdinalElection(Election):
 
         return intervals
 
-    def votes_to_voterlikeness_matrix(self):
+    def votes_to_voterlikeness_matrix(self) -> np.ndarray:
         """ convert VOTES to voter-likeness MATRIX """
         matrix = np.zeros([self.num_voters, self.num_voters])
 
         for v1 in range(self.num_voters):
             for v2 in range(self.num_voters):
                 # Spearman distance between votes
-                # matrix[v1][v2] = sum([abs(self.potes[v1][c]
-                # - self.potes[v2][c]) for c in range(self.num_candidates)])
+                # matrix[v1][v2] = sum([abs(experiment.potes[v1][c]
+                # - experiment.potes[v2][c]) for c in range(experiment.num_candidates)])
 
                 # Swap distance between votes
                 swap_distance = 0
@@ -207,7 +207,7 @@ class OrdinalElection(Election):
         # VOTERLIKENESS IS SYMETRIC
         for i in range(self.num_voters):
             for j in range(i + 1, self.num_voters):
-                # matrix[i][j] /= float(self.num_candidates)
+                # matrix[i][j] /= float(experiment.num_candidates)
                 matrix[j][i] = matrix[i][j]
 
         return matrix
@@ -253,20 +253,20 @@ class OrdinalElection(Election):
 
         return vector, num_possible_scores
 
-    # def votes_to_viper_vectors(self):
+    # def votes_to_viper_vectors(experiment):
     #
-    #     vectors = [[0. for _ in range(self.num_voters)]
-    #                for _ in range(self.num_voters)]
+    #     vectors = [[0. for _ in range(experiment.num_voters)]
+    #                for _ in range(experiment.num_voters)]
     #
-    #     c = self.num_candidates
-    #     v = self.num_voters
+    #     c = experiment.num_candidates
+    #     v = experiment.num_voters
     #     borda_vector = [sum([vectors[j][i] * (c - i - 1)
     #                          for i in range(c)]) * v
-    #                     for j in range(self.num_candidates)]
+    #                     for j in range(experiment.num_candidates)]
     #
-    #     for i in range(self.num_candidates):
-    #         for j in range(self.num_candidates):
-    #             vectors[i][j] /= float(self.num_voters)
+    #     for i in range(experiment.num_candidates):
+    #         for j in range(experiment.num_candidates):
+    #             vectors[i][j] /= float(experiment.num_voters)
     #
     #     return vectors
 

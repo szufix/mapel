@@ -5,7 +5,7 @@ from mapel.voting.elections.single_peaked import get_walsh_vectors, \
     get_conitzer_vectors
 from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 
-import mapel.voting._elections as el
+import mapel.voting.elections_main as el
 
 from mapel.voting.objects.Election import Election, get_fake_vectors_single, \
     get_fake_convex

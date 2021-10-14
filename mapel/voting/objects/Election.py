@@ -7,15 +7,15 @@ import os
 import numpy as np
 
 from mapel.voting.other.winners2 import generate_winners
-from mapel.voting.glossary import LIST_OF_FAKE_MODELS
+from mapel.voting._glossary import LIST_OF_FAKE_MODELS
 from mapel.voting.objects.Instance import Instance
 from mapel.voting.other.winners import compute_sntv_winners, compute_borda_winners, compute_stv_winners
 
 
 class Election(Instance):
 
-    def __init__(self, experiment_id, name, votes=None, with_matrix=False, alpha=None, model=None,
-                 ballot='ordinal', num_voters=None, num_candidates=None):
+    def __init__(self, experiment_id, name, votes=None, alpha=None, model=None,
+                 ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None):
 
         super().__init__(experiment_id, name, model=model, alpha=alpha)
 
@@ -27,18 +27,12 @@ class Election(Instance):
         self.winners = None
         self.alternative_winners = {}
 
-        if model in LIST_OF_FAKE_MODELS:
-            self.fake = True
-        else:
-            self.fake = False
+        self.fake = model in LIST_OF_FAKE_MODELS
 
-        if ballot == 'ordinal':
-            pass
-        elif ballot in ['approval']:
-            self.votes = votes
-            self.election_model = model
+        self.votes = votes
+        self.election_model = model
 
-    def import_matrix(self):
+    def import_matrix(self) -> np.ndarray:
 
         file_name = self.election_id + '.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, 'matrices', file_name)
@@ -51,7 +45,7 @@ class Election(Instance):
                     matrix[i][j] = row[candidate_id]
         return matrix
 
-    def votes_to_potes(self):
+    def votes_to_potes(self) -> np.ndarray:
         """ Convert votes to positional votes """
         potes = np.zeros([self.num_voters, self.num_candidates])
         for i in range(self.num_voters):
@@ -59,7 +53,7 @@ class Election(Instance):
                 potes[i][self.votes[i][j]] = j
         return potes
 
-    def vector_to_interval(self, vector, precision=None):
+    def vector_to_interval(self, vector, precision=None) -> list:
         # discreet version for now
         interval = []
         w = int(precision / self.num_candidates)
@@ -94,7 +88,7 @@ class Election(Instance):
         self.alternative_winners[party_id] = winners_without_party_id
 
 
-def map_the_votes(election, party_id, party_size):
+def map_the_votes(election, party_id, party_size) -> Election:
     new_votes = [[] for _ in range(election.num_voters)]
     for i in range(election.num_voters):
         for j in range(election.num_candidates):
@@ -116,7 +110,7 @@ def unmap_the_winners(winners, party_id, party_size):
     return new_winners
 
 
-def remove_candidate_from_election(election, party_id, party_size):
+def remove_candidate_from_election(election, party_id, party_size) -> Election:
     for vote in election.votes:
         for i in range(party_size):
             _id = party_id*party_size + i

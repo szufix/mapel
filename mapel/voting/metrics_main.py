@@ -5,31 +5,40 @@ from time import time
 import networkx as nx
 import numpy as np
 
+from typing import Union, Callable
+
 from mapel.voting.metrics import main_approval_distances as mad
 from mapel.voting.metrics import main_graph_distances as mgd
 from mapel.voting.metrics import main_ordinal_distances as mod
+
+import mapel.voting.objects as obj
+from mapel.voting.objects.Election import Election
 from mapel.voting.objects.ApprovalElection import ApprovalElection
-from mapel.voting.objects.Graph import Graph
 from mapel.voting.objects.OrdinalElection import OrdinalElection
+from mapel.voting.objects.Graph import Graph
+from mapel.voting.objects.Experiment import Experiment
+from mapel.voting.metrics.inner_distances import map_str_to_func
 
 
-def get_distance(election_1, election_2, distance_name=None):
-    """ Get distance between two elections """
+def get_distance(election_1: Union[Election or Graph], election_2: Union[Election or Graph],
+                 distance_name: str = None) -> float or (float, list):
+    """ Return: distance between instances, (if applicable) optimal matching """
 
-    if type(election_1) is Graph:
+    if type(election_1) is Graph and type(election_2) is Graph:
         return get_graph_distance(election_1.graph, election_2.graph, distance_name=distance_name)
-    elif type(election_1) is ApprovalElection:
+    elif type(election_1) is ApprovalElection and type(election_2) is ApprovalElection:
         return get_approval_distance(election_1, election_2, distance_name=distance_name)
-    elif type(election_1) is OrdinalElection:
+    elif type(election_1) is OrdinalElection and type(election_2) is OrdinalElection:
         return get_ordinal_distance(election_1, election_2, distance_name=distance_name)
     else:
-        print('No such election!')
+        print('No such instance!')
 
 
-def get_approval_distance(ele_1, ele_2, distance_name=None):
-    """ Get distance between approval elections """
+def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElection,
+                          distance_name: str = None) -> float or (float, list):
+    """ Return: distance between approval elections, (if applicable) optimal matching """
 
-    inner_distance, main_distance = distance_name.split('-')
+    inner_distance, main_distance = extract_distance_name(distance_name)
 
     metrics_without_params = {
         'flow': mad.compute_flow,
@@ -39,22 +48,24 @@ def get_approval_distance(ele_1, ele_2, distance_name=None):
     metrics_with_inner_distance = {
         'approvalwise': mad.compute_approvalwise,
         'coapproval_frequency': mad.compute_coapproval_frequency_vectors,
-        'approval_pairwise': mad.compute_approval_pairwise,
-        'voterlikeness': mad.compute_voterlikeness_vectors,
+        'pairwise': mad.compute_pairwise,
+        'voterlikeness': mad.compute_voterlikeness,
         'candidatelikeness': mad.compute_candidatelikeness,
     }
 
     if main_distance in metrics_without_params:
-        return metrics_without_params.get(main_distance)(ele_1, ele_2)
+        return metrics_without_params.get(main_distance)(election_1, election_2)
 
     elif main_distance in metrics_with_inner_distance:
-        return metrics_with_inner_distance.get(main_distance)(ele_1, ele_2, inner_distance)
+        return metrics_with_inner_distance.get(main_distance)(election_1, election_2,
+                                                              inner_distance)
 
 
-def get_ordinal_distance(ele_1, ele_2, distance_name=None):
-    """ Get distance between ordinal elections """
+def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElection,
+                         distance_name: str = None) -> float or (float, list):
+    """ Return: distance between ordinal elections, (if applicable) optimal matching """
 
-    inner_distance, main_distance = distance_name.split('-')
+    inner_distance, main_distance = extract_distance_name(distance_name)
 
     metrics_without_params = {
         'discrete': mod.compute_voter_subelection,
@@ -72,14 +83,15 @@ def get_ordinal_distance(ele_1, ele_2, distance_name=None):
     }
 
     if main_distance in metrics_without_params:
-        return metrics_without_params.get(main_distance)(ele_1, ele_2)
+        return metrics_without_params.get(main_distance)(election_1, election_2)
 
     elif main_distance in metrics_with_inner_distance:
-        return metrics_with_inner_distance.get(main_distance)(ele_1, ele_2, inner_distance)
+        return metrics_with_inner_distance.get(main_distance)(election_1, election_2,
+                                                              inner_distance)
 
 
-def get_graph_distance(graph_1, graph_2, distance_name=''):
-    """ Get distance between two graphs """
+def get_graph_distance(graph_1, graph_2, distance_name: str = None) -> float or (float, list):
+    """ Return: distance between graphs, (if applicable) optimal matching """
 
     graph_simple_metrics = {'closeness_centrality': nx.closeness_centrality,
                             'degree_centrality': nx.degree_centrality,
@@ -100,30 +112,37 @@ def get_graph_distance(graph_1, graph_2, distance_name=''):
         return graph_advanced_metrics.get(distance_name)(graph_1, graph_2)
 
 
-def run_single_thread(experiment, thread_ids, distances, times, matchings, printing):
-    """ Single thread for computing distance """
+def extract_distance_name(distance_name: str) -> (Callable, str):
+    if '-' in distance_name:
+        inner_distance, main_distance = distance_name.split('-')
+        inner_distance = map_str_to_func(inner_distance)
+    else:
+        main_distance = distance_name
+        inner_distance = None
+    return inner_distance, main_distance
 
+
+def run_single_thread(experiment: Experiment, thread_ids: list,
+                      distances: dict, times: dict, matchings: dict,
+                      printing: bool) -> None:
+    """ Single thread for computing distances """
     for election_id_1, election_id_2 in thread_ids:
         if printing:
             print(election_id_1, election_id_2)
         start_time = time()
-
         distance = get_distance(experiment.elections[election_id_1],
                                 experiment.elections[election_id_2],
                                 distance_name=experiment.distance_name)
-
-        if len(distance) == 2:
+        if type(distance) is tuple:
             distance, matching = distance
             matching = np.array(matching)
             matchings[election_id_1][election_id_2] = matching
             matchings[election_id_2][election_id_1] = np.argsort(matching)
-
         distances[election_id_1][election_id_2] = distance
         distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
         times[election_id_1][election_id_2] = time() - start_time
         times[election_id_2][election_id_1] = times[election_id_1][election_id_2]
 
-
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 12.10.2021 #
+# LAST CLEANUP ON: 13.10.2021 #
 # # # # # # # # # # # # # # # #

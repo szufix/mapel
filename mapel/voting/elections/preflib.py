@@ -8,7 +8,7 @@ from collections import Counter
 import numpy as np
 from scipy.stats import gamma
 
-from mapel.voting.glossary import LIST_OF_PREFLIB_MODELS
+from mapel.voting._glossary import LIST_OF_PREFLIB_MODELS
 
 
 # MATRICES

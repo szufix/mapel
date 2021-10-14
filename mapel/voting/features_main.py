@@ -6,7 +6,7 @@ import networkx as nx
 import numpy as np
 import scipy.special
 
-import mapel.voting.other.development as dev
+# import mapel.voting.other.development as dev
 import mapel.voting.features.cohesive as cohesive
 import mapel.voting.features.scores as scores
 from mapel.voting.metrics.inner_distances import l2
@@ -31,7 +31,7 @@ def get_feature(name):
             }.get(name)
 
 
-def abstract(election):
+def abstract(election) -> float:
     n = election.num_voters
     election.votes_to_approvalwise_vector()
     vector = election.approvalwise_vector
@@ -57,7 +57,7 @@ def borda_std(election):
     return std
 
 
-def separation(election):
+def separation(election) -> float:
 
     if election.fake:
         return 0
@@ -83,13 +83,13 @@ def separation(election):
     return distance
 
 
-def both(election):
+def both(election) -> float:
     v1 = borda_std(election) / 2.9
     v2 = separation(election) / 1235.
     return v1 + v2
 
 
-def get_effective_num_candidates(election, mode='Borda'):
+def get_effective_num_candidates(election, mode='Borda') -> float:
     """ Compute effective number of candidates """
 
     c = election.num_candidates
@@ -107,12 +107,12 @@ def get_effective_num_candidates(election, mode='Borda'):
 
 
 ########################################################################
-def map_diameter(c):
+def map_diameter(c: int) -> float:
     """ Compute the diameter """
     return 1 / 3 * (c + 1) * (c - 1)
 
 
-def distortion_from_guardians(experiment, election_id):
+def distortion_from_guardians(experiment, election_id) -> np.ndarray:
     values = np.array([])
     election_id_1 = election_id
 
@@ -149,14 +149,14 @@ def worst_distortion_from_guardians(experiment, election_id):
 def graph_diameter(election):
     try:
         return nx.diameter(election.votes)
-    except:
+    except Exception:
         return 100
 
 
 def graph_diameter_log(election):
     try:
         return math.log(nx.diameter(election.votes))
-    except:
+    except Exception:
         return math.log(100)
 ##################################
 

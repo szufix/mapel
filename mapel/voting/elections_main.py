@@ -9,6 +9,7 @@ from collections import Counter
 import networkx as nx
 import numpy as np
 from scipy.stats import gamma
+from typing import Union
 
 import mapel.voting.elections.euclidean as euclidean
 
@@ -31,7 +32,7 @@ from mapel.voting.elections.single_peaked import generate_conitzer_election, \
     generate_sp_party
 from mapel.voting.elections.urn_model import generate_urn_model_election, \
     generate_approval_urn_election
-from mapel.voting.glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, PARTY_MODELS, \
+from mapel.voting._glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, PARTY_MODELS, \
     APPROVAL_MODELS, GRAPH_MODELS, APPROVAL_FAKE_MODELS
 from mapel.voting.objects.ApprovalElection import ApprovalElection
 from mapel.voting.objects.Election import Election
@@ -61,7 +62,8 @@ def generate_graph(model=None, num_nodes=None, params=None):
         return nx.random_geometric_graph(num_nodes, params['radius'])
 
 
-def generate_approval_votes(model=None, num_candidates=None, num_voters=None, params=None):
+def generate_approval_votes(model: str = None, num_candidates: int = None, num_voters: int = None,
+                            params: dict = None) -> Union[list, np.ndarray]:
     models_with_params = {'approval_ic': generate_approval_ic_election,
                           'approval_id': generate_approval_id_election,
                           'approval_mallows': generate_approval_mallows_election,
@@ -88,10 +90,8 @@ def generate_approval_votes(model=None, num_candidates=None, num_voters=None, pa
         return []
 
 
-def generate_ordinal_votes(model=None, num_candidates=None, num_voters=None, params=None):
-    if params is None:
-        params = {}
-
+def generate_ordinal_votes(model: str = None, num_candidates: int = None, num_voters: int = None,
+                           params: dict = None) -> Union[list, np.ndarray]:
     naked_models = {'impartial_culture': generate_impartial_culture_election,
                     'iac': generate_impartial_anonymous_culture_election,
                     'conitzer': generate_conitzer_election,
@@ -178,9 +178,10 @@ def generate_ordinal_votes(model=None, num_candidates=None, num_voters=None, par
 
 
 # GENERATE
-def generate_election(experiment=None, model=None, name=None, num_candidates=None,
-                      num_voters=None, num_nodes=None, params=None, ballot='ordinal',
-                      variable=None):
+def generate_election(experiment=None, model=None, name=None,
+                      num_candidates: int = None, num_voters: int = None, num_nodes: int = None,
+                      params: dict = None, ballot: str = 'ordinal',
+                      variable=None) -> Election:
     """ main function: generate elections """
 
     if params is None:
@@ -224,7 +225,8 @@ def prepare_preflib_family(experiment=None, model=None, params=None):
     pass
 
 
-def prepare_statistical_culture_family(experiment=None, model=None, family_id=None, params=None):
+def prepare_statistical_culture_family(experiment=None, model=None, family_id=None,
+                                       params=None) -> list:
     keys = []
     ballot = get_ballot_from_model(model)
 
@@ -259,7 +261,7 @@ def prepare_statistical_culture_family(experiment=None, model=None, family_id=No
 
 
 # HELPER FUNCTIONS
-def get_ballot_from_model(model):
+def get_ballot_from_model(model: str) -> str:
     if model in APPROVAL_MODELS:
         return 'approval'
     elif model in GRAPH_MODELS:
@@ -295,12 +297,6 @@ def update_params(params, variable, model, num_candidates):
         params['weight'] = 0.
 
     return params, alpha
-
-
-# IMPORT
-def import_election(experiment_id, election_id):
-    """ main function: import single election """
-    return Election(experiment_id, election_id)
 
 
 # HELPER FUNCTIONS #
@@ -444,5 +440,5 @@ def store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, p
             file_.write("}\n")
 
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 12.10.2021 #
+# LAST CLEANUP ON: 13.10.2021 #
 # # # # # # # # # # # # # # # #

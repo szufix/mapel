@@ -73,7 +73,7 @@ def get_ordinal_winners(params, votes, rule):
             all_winners += winners
         return all_winners
 
-    elif rule['type'] == 'self':
+    elif rule['type'] == 'experiment':
         all_winners = []
         for i in range(params['elections']):
             winners = []

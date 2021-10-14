@@ -5,8 +5,9 @@ import random as rand
 import numpy as np
 
 
-def generate_urn_model_election(num_voters=None, num_candidates=None, params=None):
-    """ Generate (ordinal) votes from Polya-Eggenberger model """
+def generate_urn_model_election(num_voters: int = None, num_candidates: int = None,
+                                params: dict = None) -> np.ndarray:
+    """ Return: ordinal votes from Polya-Eggenberger model """
 
     votes = np.zeros([num_voters, num_candidates])
     urn_size = 1.
@@ -16,13 +17,14 @@ def generate_urn_model_election(num_voters=None, num_candidates=None, params=Non
             votes[j] = np.random.permutation(num_candidates)
         else:
             votes[j] = votes[rand.randint(0, j - 1)]
-        urn_size +=  params['alpha']
+        urn_size += params['alpha']
 
     return votes
 
 
-def generate_approval_urn_election(num_voters=None, num_candidates=None, params=None):
-    """ Generate (approval) votes from Polya-Eggenberger model """
+def generate_approval_urn_election(num_voters: int = None, num_candidates: int = None,
+                                   params: dict = None) -> list:
+    """ Return: approval votes from Polya-Eggenberger model """
 
     votes = []
     urn_size = 1.
@@ -41,5 +43,5 @@ def generate_approval_urn_election(num_voters=None, num_candidates=None, params=
     return votes
 
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 12.10.2021 #
+# LAST CLEANUP ON: 14.10.2021 #
 # # # # # # # # # # # # # # # #
