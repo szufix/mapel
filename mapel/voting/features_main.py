@@ -28,7 +28,27 @@ def get_feature(name):
             'max_approval_score': max_approval_score,
             'largest_cohesive_group': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
             'abstract': abstract,
+            'monotonicity': monotonicity,
             }.get(name)
+
+
+def monotonicity(experiment, election) -> float:
+    e0 = election.election_id
+    c0 = np.array(experiment.coordinates[e0])
+    distortion = 0
+    for i, e1 in enumerate(experiment.elections):
+        for j, e2 in enumerate(experiment.elections):
+            if i < j and e1 != e0 and e2 != e0:
+                original_d1 = experiment.distances[e0][e1]
+                original_d2 = experiment.distances[e0][e2]
+                original_proportion = original_d1 / original_d2
+                embedded_d1 = np.linalg.norm(c0 - experiment.coordinates[e1])
+                embedded_d2 = np.linalg.norm(c0 - experiment.coordinates[e2])
+                embedded_proportion = embedded_d1 / embedded_d2
+                _max = max(original_proportion, embedded_proportion)
+                _min = min(original_proportion, embedded_proportion)
+                distortion += _max / _min
+    return distortion
 
 
 def abstract(election) -> float:
