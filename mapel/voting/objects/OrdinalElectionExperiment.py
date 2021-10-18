@@ -24,11 +24,11 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
     def __init__(self, elections=None, distances=None,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', attraction_factor=1, ):
+                 election_type='ordinal'):
         super().__init__(elections=elections, distances=distances,
                          coordinates=coordinates, distance_name=distance_name,
                          experiment_id=experiment_id,
-                         election_type=election_type, attraction_factor=attraction_factor, )
+                         election_type=election_type )
 
     def add_elections_to_experiment(self, with_matrices=False):
         """ Import elections from a file """

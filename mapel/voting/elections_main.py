@@ -24,7 +24,8 @@ from mapel.voting.elections.impartial import generate_impartial_culture_election
     generate_approval_empty, generate_approval_full
 from mapel.voting.elections.mallows import generate_mallows_election, \
     phi_from_relphi, generate_mallows_party, generate_approval_mallows_election, \
-    generate_approval_raw_mallows_election, generate_approval_disjoint_mallows_election
+    generate_approval_raw_mallows_election, generate_approval_disjoint_mallows_election, \
+    generate_approval_truncated_mallows
 from mapel.voting.elections.single_crossing import \
     generate_single_crossing_election
 from mapel.voting.elections.single_peaked import generate_conitzer_election, \
@@ -73,6 +74,8 @@ def generate_approval_votes(model: str = None, num_candidates: int = None, num_v
                           'approval_disjoint_mallows': generate_approval_disjoint_mallows_election,
                           'approval_id_0.5': generate_approval_id_election,
                           'approval_ic_0.5': generate_approval_ic_election,
+                          'approval_vcr': euclidean.generate_approval_vcr_election,
+                          'approval_truncated_mallows': generate_approval_truncated_mallows,
                           }
 
     if model in models_with_params:

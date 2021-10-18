@@ -3,8 +3,12 @@
 import os
 import csv
 import ast
+import sys
+
+
 
 try:
+    sys.path.append('/Users/szufa/PycharmProjects/abcvoting/')
     from abcvoting.preferences import Profile
     from abcvoting import abcrules
 except ImportError:
@@ -42,10 +46,10 @@ def compute_rule(experiment=None, rule_name=None, committee_size=1, printing=Fal
             print(election.election_id)
         profile = Profile(election.num_candidates)
         profile.add_voters(election.votes)
-        try:
-            winning_committees = rule(profile, committee_size)
-        except Exception:
-            winning_committees = [{}]
+        # try:
+        winning_committees = rule(profile, committee_size, algorithm="gurobi")
+        # except Exception:
+        #     winning_committees = [{}]
         all_winning_committees[election.election_id] = winning_committees
     store_committees_to_file(experiment.experiment_id, rule_name, all_winning_committees)
 

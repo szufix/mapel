@@ -7,12 +7,56 @@ from numpy import random, linalg
 ####################################################################################################
 # Approval Euclidean Election Models
 ####################################################################################################
+def generate_approval_vcr_election(num_voters: int = None, num_candidates: int = None,
+                                   params: dict = None) -> list:
+    v_a = 1.2  # params['v_a']
+    v_b = 6  # params['v_b']
+    c_a = 1.2  # params['c_a']
+    c_b = 6  # params['c_b']
+
+    dim = params['dim']
+
+    votes = []
+
+    voters = np.random.rand(num_voters, dim)
+    candidates = np.random.rand(num_candidates, dim)
+
+    # Voter range
+    rankings = np.zeros([num_voters, num_candidates], dtype=int)
+    distances = np.zeros([num_voters, num_candidates], dtype=float)
+    for v in range(num_voters):
+        for c in range(num_candidates):
+            rankings[v][c] = c
+            distances[v][c] = np.linalg.norm(voters[v] - candidates[c])
+        rankings[v] = [x for _, x in sorted(zip(distances[v], rankings[v]))]
+
+    for v in range(num_voters):
+        k = int(np.random.beta(v_a, v_b) * num_candidates)
+        votes.append(set(rankings[v][0:k]))
+
+    # Candidate range
+    rankings = np.zeros([num_candidates, num_voters], dtype=int)
+    distances = np.zeros([num_candidates, num_voters], dtype=float)
+    for c in range(num_candidates):
+        for v in range(num_voters):
+            rankings[c][v] = v
+            distances[c][v] = np.linalg.norm(voters[v] - candidates[c])
+        rankings[c] = [x for _, x in sorted(zip(distances[c], rankings[c]))]
+
+    for c in range(num_candidates):
+        k = int(np.random.beta(c_a, c_b) * num_voters)
+        for t in rankings[c][0:k]:
+            votes[t].add(c)
+    # print(votes)
+    return votes
+
+
 def generate_approval_euclidean_election(num_voters: int = None, num_candidates: int = None,
                                          params: dict = None) -> list:
     # 'p' should be lower than 0.5
 
     alpha = 4
-    beta = alpha/(params['p']) - alpha
+    beta = alpha / (params['p']) - alpha
 
     dim = params['dim']
 
@@ -21,7 +65,7 @@ def generate_approval_euclidean_election(num_voters: int = None, num_candidates:
     votes = []
 
     if 'shift' in params:
-        shift = np.array([params['shift']**2 for _ in range(dim)])
+        shift = np.array([params['shift'] ** 2 for _ in range(dim)])
         voters = np.random.rand(num_voters, dim) + shift
         candidates = np.random.rand(num_candidates, dim)
     elif 'gauss' in params:
@@ -31,17 +75,20 @@ def generate_approval_euclidean_election(num_voters: int = None, num_candidates:
         num_candidates_in_group_b = num_voters - num_candidates_in_group_a
         scale_group_a = params['gauss']
         scale_group_b = 1 - params['gauss']
-        loc_a = [1./3 for _ in range(dim)]
-        loc_b = [2./3 for _ in range(dim)]
+        loc_a = [1. / 3 for _ in range(dim)]
+        loc_b = [2. / 3 for _ in range(dim)]
         candidates_group_a = np.random.normal(loc=loc_a, scale=scale_group_a,
                                               size=(num_candidates_in_group_a, dim))
         candidates_group_b = np.random.normal(loc=loc_b, scale=scale_group_b,
                                               size=(num_candidates_in_group_b, dim))
         candidates = np.concatenate((candidates_group_a, candidates_group_b), axis=0)
+    elif 'model' in params:
+        model = params['model']
+        voters = np.array([get_rand(model) for _ in range(num_voters)])
+        candidates = np.array([get_rand(model) for _ in range(num_candidates)])
     else:
-        voters = []
-        candidates = []
-        print("We need params for euclidean model!")
+        voters = np.random.rand(num_voters, dim)
+        candidates = np.random.rand(num_candidates, dim)
 
     for v in range(num_voters):
         for c in range(num_candidates):
@@ -73,13 +120,13 @@ def generate_1d_gaussian_party(num_voters=None, num_candidates=None, params=None
 
     for j in range(params['num_parties']):
         for w in range(params['num_winners']):
-            _id = j*params['num_winners'] + w
+            _id = j * params['num_winners'] + w
             candidates[_id] = [rand.gauss(params['party'][j][0], params['var'])]
 
     _min = min(candidates)[0]
     _max = max(candidates)[0]
 
-    shift = [rand.random()/2. - 1/4.]
+    shift = [rand.random() / 2. - 1 / 4.]
     for j in range(num_voters):
         voters[j] = [rand.random() * (_max - _min) + _min + shift[0]]
 
@@ -107,7 +154,7 @@ def generate_2d_gaussian_party(num_voters=None, num_candidates=None, params=None
 
     for j in range(params['num_parties']):
         for w in range(params['num_winners']):
-            _id = j*params['num_winners'] + w
+            _id = j * params['num_winners'] + w
             candidates[_id] = [rand.gauss(params['party'][j][0][0], params['var']),
                                rand.gauss(params['party'][j][0][1], params['var'])]
 
@@ -119,7 +166,7 @@ def generate_2d_gaussian_party(num_voters=None, num_candidates=None, params=None
     y_min = min(column(candidates, 1))
     y_max = max(column(candidates, 1))
 
-    shift = [rand.random()/2.-1/4., rand.random()/2.-1/4.]
+    shift = [rand.random() / 2. - 1 / 4., rand.random() / 2. - 1 / 4.]
     for j in range(num_voters):
         voters[j] = [rand.random() * (x_max - x_min) + x_min + shift[0],
                      rand.random() * (y_max - y_min) + y_min + shift[1]]
@@ -140,7 +187,6 @@ def generate_2d_gaussian_party(num_voters=None, num_candidates=None, params=None
 def generate_ordinal_euclidean_election(model: str = None, num_voters: int = None,
                                         num_candidates: int = None,
                                         params: dict = None) -> np.ndarray:
-
     voters = np.zeros([num_voters, params['dim']])
     candidates = np.zeros([num_voters, params['dim']])
     votes = np.zeros([num_voters, num_candidates], dtype=int)
@@ -165,7 +211,6 @@ def generate_ordinal_euclidean_election(model: str = None, num_voters: int = Non
 
 
 def generate_elections_2d_grid(num_voters=None, num_candidates=None):
-
     voters = np.zeros([num_voters, 2])
     candidates = []
 
@@ -176,13 +221,13 @@ def generate_elections_2d_grid(num_voters=None, num_candidates=None):
         voters[j] = get_rand('2d_square')
     voters = sorted(voters)
 
-    sq = int(num_candidates**0.5)
-    d = 1./sq
+    sq = int(num_candidates ** 0.5)
+    d = 1. / sq
 
     for i in range(sq):
         for j in range(sq):
-            x = d/2. + d*i
-            y = d/2. + d*j
+            x = d / 2. + d * i
+            y = d / 2. + d * j
             point = [x, y]
             candidates.append(point)
 
@@ -282,5 +327,3 @@ def get_rand(model: str, cat: str = "voters") -> list:
         print('unknown model')
         point = [0, 0]
     return point
-
-

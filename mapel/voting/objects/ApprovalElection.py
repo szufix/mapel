@@ -60,6 +60,7 @@ class ApprovalElection(Election):
                     approvalwise_vector[c] += 1
             approvalwise_vector = approvalwise_vector / self.num_voters
             self.approvalwise_vector = np.sort(approvalwise_vector)
+            # print(self.approvalwise_vector)
 
     def votes_to_coapproval_frequency_vectors(self, vector_type='A') -> None:
         """ Convert votes to ... """

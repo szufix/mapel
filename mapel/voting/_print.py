@@ -11,15 +11,29 @@ import deprecation as dep
 # from mapel.voting.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 # from mapel.voting.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 
+from scipy.stats import norm
+
+# Plot between -10 and 10 with .001 steps.
+
+# Mean = 0, SD = 2.
 
 
+def print_approvals_histogram(election):
+    plt.title(election.model)
+    plt.hist([len(vote) for vote in election.votes])
+    # x_axis = np.arange(0, 100, 0.01)
+    # plt.plot(x_axis, norm.pdf(x_axis, 50, 2)*2000)
+    plt.ylim([0, 5000])
+    plt.xlim([35, 65])
+    plt.savefig(election.model)
+    plt.show()
 
 
 # Main functions
 def print_map_2d(experiment, mask=False, mixed=False, fuzzy_paths=True,
                  xlabel=None, shading=False, shift_legend=1,
                  angle=0, reverse=False, update=False, feature=None,
-                 attraction_factor=2, axis=False,
+                 attraction_factor=2, axis=False, rounding=1,
                  distance_name="emd-positionwise", guardians=False,
                  ticks=None, skeleton=None, roads=None,
                  title=None, dim=2, event='none',
@@ -68,7 +82,7 @@ def print_map_2d(experiment, mask=False, mixed=False, fuzzy_paths=True,
     # COLORING
     if feature is not None:
         color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
-                             feature=feature,
+                             feature=feature, rounding=rounding,
                              normalizing_func=normalizing_func,
                              marker_func=marker_func,
                              xticklabels=xticklabels, ms=ms, cmap=cmap,
@@ -270,7 +284,7 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
 
 def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
-                         cmap=None, ticks=None, dim=2):
+                         cmap=None, ticks=None, dim=2, rounding=1):
     xx, yy, zz, shades, markers, _min, _max = import_values_for_feature(
         experiment, feature, normalizing_func, marker_func, dim=dim)
     unique_markers = set(markers)
@@ -293,12 +307,15 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
 
         if xticklabels is None:
             lin = np.linspace(_min, _max, 6)
-            xticklabels = [np.round(lin[i], 1) for i in range(6)]
+            if rounding == 0:
+                xticklabels = [int(lin[i]) for i in range(6)]
+            else:
+                xticklabels = [np.round(lin[i], rounding) for i in range(6)]
 
         cb = fig.colorbar(images[0], cax=cax, orientation="horizontal",
                           shrink=1, ticks=ticks)  # shrink not working
         cb.ax.locator_params(nbins=len(xticklabels), tight=True)
-        cb.ax.tick_params(labelsize=16)
+        cb.ax.tick_params(labelsize=14)
         if xticklabels is not None:
             cb.ax.set_xticklabels(xticklabels)
 
@@ -1048,10 +1065,11 @@ def adjust_the_map_on_three_points(experiment, left, right, down):
         experiment.rotate(alpha - math.pi / 2.)
         if experiment.coordinates[left][0] > experiment.coordinates[right][0]:
             experiment.rotate(math.pi)
-        if experiment.coordinates[left][1] < experiment.coordinates[down][1]:
-            experiment.reverse()
     except Exception:
         pass
+
+    if experiment.coordinates[left][1] < experiment.coordinates[down][1]:
+        experiment.reverse()
 
 
 def adjust_the_map(experiment) -> None:

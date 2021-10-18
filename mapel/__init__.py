@@ -29,6 +29,9 @@ def prepare_experiment(experiment_id=None, elections=None, distances=None, elect
                                           distances=distances, coordinates=coordinates,
                                           distance_name=distance_name)
 
+def print_approvals_histogram(*args):
+    pr.print_approvals_histogram(*args)
+
 
 def custom_div_cmap(**kwargs):
     return pr.custom_div_cmap(**kwargs)

@@ -606,7 +606,7 @@ class Experiment:
             feature = features.get_feature(name)
             election = self.elections[election_id]
             # print(election_id, election)
-            if name in ['monotonicity']:
+            if name in ['monotonicity_1', 'monotonicity_2']:
                 value = feature(self, election)
 
             elif name in ['largest_cohesive_group']:

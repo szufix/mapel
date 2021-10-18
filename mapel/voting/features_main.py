@@ -28,11 +28,12 @@ def get_feature(name):
             'max_approval_score': max_approval_score,
             'largest_cohesive_group': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
             'abstract': abstract,
-            'monotonicity': monotonicity,
+            'monotonicity_1': monotonicity_1,
+            'monotonicity_2': monotonicity_2,
             }.get(name)
 
 
-def monotonicity(experiment, election) -> float:
+def monotonicity_1(experiment, election) -> float:
     e0 = election.election_id
     c0 = np.array(experiment.coordinates[e0])
     distortion = 0
@@ -48,6 +49,27 @@ def monotonicity(experiment, election) -> float:
                 _max = max(original_proportion, embedded_proportion)
                 _min = min(original_proportion, embedded_proportion)
                 distortion += _max / _min
+    return distortion
+
+
+def monotonicity_2(experiment, election) -> float:
+    epsilon = 0.1
+    e0 = election.election_id
+    c0 = np.array(experiment.coordinates[e0])
+    distortion = 0.
+    ctr = 0.
+    for i, e1 in enumerate(experiment.elections):
+        for j, e2 in enumerate(experiment.elections):
+            if i < j and e1 != e0 and e2 != e0:
+                original_d1 = experiment.distances[e0][e1]
+                original_d2 = experiment.distances[e0][e2]
+                embedded_d1 = np.linalg.norm(c0 - experiment.coordinates[e1])
+                embedded_d2 = np.linalg.norm(c0 - experiment.coordinates[e2])
+                if (original_d1 < original_d2 and embedded_d1 > embedded_d2 * (1. + epsilon)) or \
+                        (original_d2 < original_d1 and embedded_d2 > embedded_d1 * (1. + epsilon)):
+                    distortion += 1.
+                ctr += 1.
+    distortion /= ctr
     return distortion
 
 

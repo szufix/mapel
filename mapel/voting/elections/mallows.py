@@ -60,7 +60,7 @@ def mallowsVote(m,insertion_probabilites_list):
     return vote
 
 
-def generate_mallows_election(num_voters, num_candidates,params):
+def generate_mallows_election(num_voters, num_candidates, params):
     insertion_probabilites_list = []
     for i in range(1, num_candidates):
         insertion_probabilites_list.append(computeInsertionProbas(i, params['phi']))
@@ -246,5 +246,23 @@ def generate_approval_disjoint_mallows_election(num_voters=None, num_candidates=
                 if c in central_vote_2:
                     vote.add(c)
         votes[v] = vote
+
+    return votes
+
+
+def generate_approval_truncated_mallows(num_voters=None, num_candidates=None, params=None):
+    # k = int(params['p'] * num_candidates)
+
+
+    params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+
+    ordinal_votes = generate_mallows_election(num_voters, num_candidates, params)
+    votes = []
+    for v in range(num_voters):
+        k = -1
+        while k not in range(0, num_candidates + 1):
+            k = int(np.random.normal(params['p'], params['norm-phi']/(num_candidates**0.5)) * num_candidates)
+            # k = int(np.random.normal(params['p'], 0.05) * num_candidates)
+        votes.append(set(ordinal_votes[v][0:k]))
 
     return votes
