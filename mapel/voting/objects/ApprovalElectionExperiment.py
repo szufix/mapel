@@ -30,8 +30,32 @@ class ApprovalElectionExperiment(ElectionExperiment):
                          experiment_id=experiment_id, _import=_import,
                          election_type=election_type)
 
+    def add_folders_to_experiment(self) -> dict:
+        """ Return: elections imported from folders """
+
+        elections = {}
+
+        for family_id in self.families:
+
+            ids = []
+
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                "elections", self.families[family_id].model)
+            for election_id in os.listdir(path):
+                election_id = os.path.splitext(election_id)[0]
+                election_id = self.families[family_id].model + '/' + election_id
+                print(election_id)
+                election = ApprovalElection(self.experiment_id, election_id,
+                                            _import=self._import)
+                elections[election_id] = election
+                ids.append(str(election_id))
+
+            self.families[family_id].election_ids = ids
+
+        return elections
+
     def add_elections_to_experiment(self) -> dict:
-        """ Return: elections imported from files"""
+        """ Return: elections imported from files """
 
         elections = {}
 

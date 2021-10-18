@@ -15,9 +15,10 @@ def hello():
 
 
 def prepare_experiment(experiment_id=None, elections=None, distances=None, election_type='ordinal',
-                       coordinates=None, distance_name='emd-positionwise', _import=True):
+                       coordinates=None, distance_name='emd-positionwise', _import=True,
+                       shift=False):
     if election_type == 'ordinal':
-        return OrdinalElectionExperiment(experiment_id=experiment_id,
+        return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
                                          elections=elections,
                                          election_type=election_type,
                                          distances=distances, coordinates=coordinates,

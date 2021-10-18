@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import ast
 import os
 import numpy as np
 
@@ -19,7 +20,8 @@ from mapel.voting._glossary import LIST_OF_FAKE_MODELS, LIST_OF_PREFLIB_MODELS
 class OrdinalElection(Election):
 
     def __init__(self, experiment_id, name, votes=None, with_matrix=False, alpha=None, model=None,
-                 ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None):
+                 ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None,
+                 _import: bool = False, shift: bool = False):
 
         super().__init__(experiment_id, name, votes=votes, alpha=alpha,
                          model=model, ballot=ballot,
@@ -46,7 +48,7 @@ class OrdinalElection(Election):
                     self.num_candidates = import_fake_soc_election(experiment_id, name)
             else:
                 self.votes, self.num_voters, self.num_candidates, self.param, \
-                    self.election_model = import_real_soc_election(experiment_id, name)
+                    self.election_model = import_real_soc_election(experiment_id, name, shift)
 
                 self.potes = self.votes_to_potes()
 
@@ -345,23 +347,23 @@ def get_fake_vectors_crate(num_candidates=None, fake_param=None):
 
 def get_fake_convex(fake_model_name, num_candidates, num_voters, params, function_name):
     if fake_model_name == 'unid':
-        base_1 = function_name('uniformity', num_candidates, num_voters)
-        base_2 = function_name('identity', num_candidates, num_voters)
+        base_1 = function_name('uniformity', num_candidates)
+        base_2 = function_name('identity', num_candidates)
     elif fake_model_name == 'anid':
-        base_1 = function_name('antagonism', num_candidates, num_voters)
-        base_2 = function_name('identity', num_candidates, num_voters)
+        base_1 = function_name('antagonism', num_candidates)
+        base_2 = function_name('identity', num_candidates)
     elif fake_model_name == 'stid':
-        base_1 = function_name('stratification', num_candidates, num_voters)
-        base_2 = function_name('identity', num_candidates, num_voters)
+        base_1 = function_name('stratification', num_candidates)
+        base_2 = function_name('identity', num_candidates)
     elif fake_model_name == 'anun':
-        base_1 = function_name('antagonism', num_candidates, num_voters)
-        base_2 = function_name('uniformity', num_candidates, num_voters)
+        base_1 = function_name('antagonism', num_candidates)
+        base_2 = function_name('uniformity', num_candidates)
     elif fake_model_name == 'stun':
-        base_1 = function_name('stratification', num_candidates, num_voters)
-        base_2 = function_name('uniformity', num_candidates, num_voters)
+        base_1 = function_name('stratification', num_candidates)
+        base_2 = function_name('uniformity', num_candidates)
     elif fake_model_name == 'stan':
-        base_1 = function_name('stratification', num_candidates, num_voters)
-        base_2 = function_name('antagonism', num_candidates, num_voters)
+        base_1 = function_name('stratification', num_candidates)
+        base_2 = function_name('antagonism', num_candidates)
     else:
         raise NameError('No such fake vectors/matrix!')
 
@@ -504,14 +506,14 @@ def import_fake_soc_election(experiment_id, election_id):
     return fake_model_name, params, num_voters, num_candidates
 
 
-def import_real_soc_election(experiment_id, election_id):
+def import_real_soc_election(experiment_id, election_id, shift=False):
     """ Import real ordinal election form .soc file """
 
     file_name = str(election_id) + ".soc"
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "instances", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
 
-    param = 0
+    params = 0
     first_line = my_file.readline()
     if first_line[0] != '#':
         model_name = 'empty'
@@ -519,8 +521,11 @@ def import_real_soc_election(experiment_id, election_id):
     else:
         first_line = first_line.strip().split()
         model_name = first_line[1]
-        if any(map(str.isdigit, first_line[len(first_line) - 1])):
-            param = first_line[len(first_line) - 1]
+        if len(first_line) <= 2:
+            params = {}
+        else:
+            params = ast.literal_eval(" ".join(first_line[2:]))
+
         num_candidates = int(my_file.readline())
 
     for _ in range(num_candidates):
@@ -541,10 +546,9 @@ def import_real_soc_election(experiment_id, election_id):
                 votes[it][el] = int(line[el + 1])
             it += 1
 
-    # Shift by -1
-    if model_name in LIST_OF_PREFLIB_MODELS:
+    if shift:
         for i in range(num_voters):
             for j in range(num_candidates):
                 votes[i][j] -= 1
 
-    return votes, num_voters, num_candidates, param, model_name
+    return votes, num_voters, num_candidates, params, model_name

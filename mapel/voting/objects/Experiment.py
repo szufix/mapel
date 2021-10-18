@@ -72,6 +72,8 @@ class Experiment:
         if elections is not None:
             if elections == 'import':
                 self.elections = self.add_elections_to_experiment()
+            elif elections == 'import_folders':
+                self.elections = self.add_folders_to_experiment()
             else:
                 self.elections = elections
 
@@ -259,6 +261,10 @@ class Experiment:
 
     @abstractmethod
     def add_elections_to_experiment(self):
+        pass
+
+    @abstractmethod
+    def add_folders_to_experiment(self):
         pass
 
     @abstractmethod
@@ -583,11 +589,7 @@ class Experiment:
 
                 points_by_families[family_id] = [[] for _ in range(3)]
 
-                for i in range(self.families[family_id].size):
-                    if self.families[family_id].size == 1:
-                        election_id = family_id
-                    else:
-                        election_id = family_id + '_' + str(i)
+                for election_id in self.families[family_id].election_ids:
                     points_by_families[family_id][0].append(self.coordinates[election_id][0])
                     points_by_families[family_id][1].append(self.coordinates[election_id][1])
                     try:

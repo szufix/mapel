@@ -6,7 +6,7 @@ def generate_single_crossing_election(num_voters: int = None,
                                       num_candidates: int = None) -> np.ndarray:
     """ helper function: generate simple single-crossing elections"""
 
-    votes = np.zeros([num_candidates, num_voters])
+    votes = np.zeros([num_voters, num_candidates])
 
     # GENERATE DOMAIN
 

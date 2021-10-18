@@ -30,7 +30,7 @@ def generate_sp_party(model=None, num_voters=None, num_candidates=None, params=N
 def generate_conitzer_election(num_voters=None, num_candidates=None) -> np.ndarray:
     """ helper function: generate conitzer single-peaked elections """
 
-    votes = np.zeors([num_candidates, num_voters])
+    votes = np.zeros([num_voters, num_candidates])
 
     for j in range(num_voters):
         votes[j][0] = rand.randint(0, num_candidates - 1)
@@ -59,7 +59,7 @@ def generate_conitzer_election(num_voters=None, num_candidates=None) -> np.ndarr
 def generate_spoc_conitzer_election(num_voters=None, num_candidates=None) -> np.ndarray:
     """ helper function: generate spoc_conitzer single-peaked elections"""
 
-    votes = np.zeors([num_candidates, num_voters])
+    votes = np.zeros([num_voters, num_candidates])
 
     for j in range(num_voters):
         votes[j][0] = rand.randint(0, num_candidates - 1)

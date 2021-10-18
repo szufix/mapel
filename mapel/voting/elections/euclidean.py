@@ -194,11 +194,11 @@ def generate_ordinal_euclidean_election(model: str = None, num_voters: int = Non
 
     for v in range(num_voters):
         voters[v] = get_rand(model)
-    voters = sorted(voters)
+    # voters = sorted(voters)
 
     for v in range(num_candidates):
         candidates[v] = get_rand(model)
-    candidates = sorted(candidates)
+    # candidates = sorted(candidates)
 
     for v in range(num_voters):
         for c in range(num_candidates):

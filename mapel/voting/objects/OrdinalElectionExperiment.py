@@ -22,13 +22,15 @@ except ImportError as error:
 class OrdinalElectionExperiment(ElectionExperiment):
     """Abstract set of elections."""
 
-    def __init__(self, elections=None, distances=None,
+    def __init__(self, elections=None, distances=None, _import=True, shift=False,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
                  election_type='ordinal'):
+        self.shift = shift
         super().__init__(elections=elections, distances=distances,
                          coordinates=coordinates, distance_name=distance_name,
                          experiment_id=experiment_id,
-                         election_type=election_type )
+                         election_type=election_type, _import=_import)
+
 
     def add_elections_to_experiment(self, with_matrices=False):
         """ Import elections from a file """
@@ -41,16 +43,40 @@ class OrdinalElectionExperiment(ElectionExperiment):
             if self.families[family_id].single_election:
                 election_id = family_id
                 election = OrdinalElection(self.experiment_id, election_id,
-                                           with_matrix=with_matrices)
+                                           with_matrix=with_matrices, shift=self.shift)
                 elections[election_id] = election
                 ids.append(str(election_id))
             else:
                 for j in range(self.families[family_id].size):
                     election_id = family_id + '_' + str(j)
                     election = OrdinalElection(self.experiment_id, election_id,
-                                               with_matrix=with_matrices)
+                                               with_matrix=with_matrices, shift=self.shift)
                     elections[election_id] = election
                     ids.append(str(election_id))
+
+            self.families[family_id].election_ids = ids
+
+        return elections
+
+    def add_folders_to_experiment(self) -> dict:
+        """ Return: elections imported from folders """
+
+        elections = {}
+
+        for family_id in self.families:
+
+            ids = []
+
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                "elections", self.families[family_id].model)
+            for election_id in os.listdir(path):
+                election_id = os.path.splitext(election_id)[0]
+                election_id = self.families[family_id].model + '/' + election_id
+                print(election_id)
+                election = OrdinalElection(self.experiment_id, election_id,
+                                            _import=self._import, shift=self.shift)
+                elections[election_id] = election
+                ids.append(str(election_id))
 
             self.families[family_id].election_ids = ids
 
@@ -91,11 +117,11 @@ class OrdinalElectionExperiment(ElectionExperiment):
                 file_csv.write("3;10;100;spoc_conitzer;{};DarkRed;0.7;SPOC;o;t\n")
                 file_csv.write("3;10;100;group-separable;{};blue;1;Group-Separable;o;t\n")
                 file_csv.write("3;10;100;single-crossing;{};purple;0.6;Single-Crossing;o;t\n")
-                file_csv.write("3;10;100;1d_interval;{};DarkGreen;1;1D Interval;o;t\n")
-                file_csv.write("3;10;100;2d_disc;{};Green;1;2D Disc;o;t\n")
-                file_csv.write("3;10;100;3d_cube;{};ForestGreen;0.7;3D Cube;o;t\n")
-                file_csv.write("3;10;100;2d_sphere;{};black;0.2;2D Sphere;o;t\n")
-                file_csv.write("3;10;100;3d_sphere;{};black;0.4;3D Sphere;o;t\n")
+                file_csv.write("3;10;100;1d_interval;{'dim': 1};DarkGreen;1;1D Interval;o;t\n")
+                file_csv.write("3;10;100;2d_disc;{'dim': 2};Green;1;2D Disc;o;t\n")
+                file_csv.write("3;10;100;3d_cube;{'dim': 3};ForestGreen;0.7;3D Cube;o;t\n")
+                file_csv.write("3;10;100;2d_sphere;{'dim': 2};black;0.2;2D Sphere;o;t\n")
+                file_csv.write("3;10;100;3d_sphere;{'dim': 3};black;0.4;3D Sphere;o;t\n")
                 file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn model 0.1;o;t\n")
                 file_csv.write(
                     "3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;Norm-Mallows 0.5;o;t\n")
@@ -112,12 +138,12 @@ class OrdinalElectionExperiment(ElectionExperiment):
                     "1;10;100;single-crossing_matrix;{};purple;0.6;Single-Crossing Matrix;x;t\n")
                 file_csv.write(
                     "1;10;100;gs_caterpillar_matrix;{};green;1;GS Caterpillar Matrix;x;t\n")
-                file_csv.write("3;10;100;unid;{};blue;1;UNID;3;f\n")
-                file_csv.write("3;10;100;anid;{};black;1;ANID;3;f\n")
-                file_csv.write("3;10;100;stid;{};black;1;STID;3;f\n")
-                file_csv.write("3;10;100;anun;{};black;1;ANUN;3;f\n")
-                file_csv.write("3;10;100;stun;{};black;1;STUN;3;f\n")
-                file_csv.write("3;10;100;stan;{};red;1;STAN;3;f\n")
+                # file_csv.write("3;10;100;unid;{};blue;1;UNID;3;f\n")
+                # file_csv.write("3;10;100;anid;{};black;1;ANID;3;f\n")
+                # file_csv.write("3;10;100;stid;{};black;1;STID;3;f\n")
+                # file_csv.write("3;10;100;anun;{};black;1;ANUN;3;f\n")
+                # file_csv.write("3;10;100;stun;{};black;1;STUN;3;f\n")
+                # file_csv.write("3;10;100;stan;{};red;1;STAN;3;f\n")
         except FileExistsError:
             print("Experiment already exists!")
 

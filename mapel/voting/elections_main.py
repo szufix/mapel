@@ -107,28 +107,27 @@ def generate_ordinal_votes(model: str = None, num_candidates: int = None, num_vo
                     'real_stratification':
                         generate_real_stratification_election}
 
-    euclidean_models = {'1d_interval': euclidean.generate_elections_1d_simple,
-                        '1d_gaussian': euclidean.generate_elections_1d_simple,
-                        '1d_one_sided_triangle': euclidean.generate_elections_1d_simple,
-                        '1d_full_triangle': euclidean.generate_elections_1d_simple,
-                        '1d_two_party': euclidean.generate_elections_1d_simple,
-                        '2d_disc': euclidean.generate_elections_2d_simple,
-                        '2d_square': euclidean.generate_elections_2d_simple,
-                        '2d_gaussian': euclidean.generate_elections_2d_simple,
-                        '3d_cube': euclidean.generate_elections_nd_simple,
-                        '4d_cube': euclidean.generate_elections_nd_simple,
-                        '5d_cube': euclidean.generate_elections_nd_simple,
-                        '10d_cube': euclidean.generate_elections_nd_simple,
-                        '15d_cube': euclidean.generate_elections_nd_simple,
-                        '20d_cube': euclidean.generate_elections_nd_simple,
-                        '40d_cube': euclidean.generate_elections_nd_simple,
-                        '2d_sphere': euclidean.generate_elections_2d_simple,
-                        '3d_sphere': euclidean.generate_elections_nd_simple,
-                        '4d_sphere': euclidean.generate_elections_nd_simple,
-                        '5d_sphere': euclidean.generate_elections_nd_simple,
-                        '4d_ball': euclidean.generate_elections_nd_simple,
-                        '5d_ball': euclidean.generate_elections_nd_simple,
-                        '40d_ball': euclidean.generate_elections_nd_simple,
+    euclidean_models = {'1d_interval': euclidean.generate_ordinal_euclidean_election,
+                        '1d_gaussian': euclidean.generate_ordinal_euclidean_election,
+                        '1d_one_sided_triangle': euclidean.generate_ordinal_euclidean_election,
+                        '1d_full_triangle': euclidean.generate_ordinal_euclidean_election,
+                        '1d_two_party': euclidean.generate_ordinal_euclidean_election,
+                        '2d_disc': euclidean.generate_ordinal_euclidean_election,
+                        '2d_square': euclidean.generate_ordinal_euclidean_election,
+                        '2d_gaussian': euclidean.generate_ordinal_euclidean_election,
+                        '3d_cube': euclidean.generate_ordinal_euclidean_election,
+                        '4d_cube': euclidean.generate_ordinal_euclidean_election,
+                        '5d_cube': euclidean.generate_ordinal_euclidean_election,
+                        '10d_cube': euclidean.generate_ordinal_euclidean_election,
+                        '15d_cube': euclidean.generate_ordinal_euclidean_election,
+                        '20d_cube': euclidean.generate_ordinal_euclidean_election,
+                        '40d_cube': euclidean.generate_ordinal_euclidean_election,
+                        '2d_sphere': euclidean.generate_ordinal_euclidean_election,
+                        '3d_sphere': euclidean.generate_ordinal_euclidean_election,
+                        '4d_sphere': euclidean.generate_ordinal_euclidean_election,
+                        '5d_sphere': euclidean.generate_ordinal_euclidean_election,
+                        '4d_ball': euclidean.generate_ordinal_euclidean_election,
+                        '5d_ball': euclidean.generate_ordinal_euclidean_election,
                         '2d_grid': euclidean.generate_elections_2d_grid}
 
     party_models = {'1d_gaussian_party': euclidean.generate_1d_gaussian_party,
@@ -153,7 +152,7 @@ def generate_ordinal_votes(model: str = None, num_candidates: int = None, num_vo
     elif model in euclidean_models:
         votes = euclidean_models.get(model)(num_voters=num_voters,
                                             num_candidates=num_candidates,
-                                            model=model)
+                                            model=model, params=params)
 
     elif model in party_models:
         votes = party_models.get(model)(num_voters=num_voters,
@@ -216,10 +215,11 @@ def generate_election(experiment=None, model=None, name=None,
 
         if experiment.store:
             if ballot == 'ordinal':
-                store_ordinal_election(experiment, model, name, num_candidates, num_voters, params)
+                store_ordinal_election(experiment, model, name, num_candidates, num_voters, params,
+                                       ballot)
             if ballot == 'approval':
                 store_approval_election(experiment, model, name, num_candidates, num_voters,
-                                        params)
+                                        params, ballot)
 
     return election
 
@@ -360,7 +360,7 @@ def prepare_parties(model=None, params=None):
 
 
 # STORE
-def store_ordinal_election(experiment, model, name, num_candidates, num_voters, params):
+def store_ordinal_election(experiment, model, name, num_candidates, num_voters, params, ballot):
     """ Store ordinal election in a .soc file """
 
     if model in LIST_OF_FAKE_MODELS:
@@ -385,10 +385,11 @@ def store_ordinal_election(experiment, model, name, num_candidates, num_voters, 
                             str(experiment.experiment_id), "elections",
                             (str(name) + ".soc"))
 
-        store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path)
+        store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path,
+                              ballot)
 
 
-def store_approval_election(experiment, model, name, num_candidates, num_voters, params):
+def store_approval_election(experiment, model, name, num_candidates, num_voters, params, ballot):
     """ Store approval election in an .app file """
 
     if model in APPROVAL_FAKE_MODELS:
@@ -406,10 +407,12 @@ def store_approval_election(experiment, model, name, num_candidates, num_voters,
                             str(experiment.experiment_id), "elections",
                             (str(name) + ".app"))
 
-        store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path)
+        store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path,
+                              ballot)
 
 
-def store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path):
+def store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path,
+                          ballot):
     """ Store votes in a file """
 
     votes = experiment.elections[name].votes
@@ -434,13 +437,23 @@ def store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, p
         file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
                     str(len(counted_votes)) + "\n")
 
-        for i in range(len(counted_votes)):
-            file_.write(str(counted_votes[i][0]) + ', {')
-            for j in range(len(counted_votes[i][1])):
-                file_.write(str(int(counted_votes[i][1][j])))
-                if j < len(counted_votes[i][1]) - 1:
-                    file_.write(", ")
-            file_.write("}\n")
+        if ballot == 'approval':
+            for i in range(len(counted_votes)):
+                file_.write(str(counted_votes[i][0]) + ', {')
+                for j in range(len(counted_votes[i][1])):
+                    file_.write(str(int(counted_votes[i][1][j])))
+                    if j < len(counted_votes[i][1]) - 1:
+                        file_.write(", ")
+                file_.write("}\n")
+
+        elif ballot == 'ordinal':
+            for i in range(len(counted_votes)):
+                file_.write(str(counted_votes[i][0]) + ', ')
+                for j in range(len(counted_votes[i][1])):
+                    file_.write(str(int(counted_votes[i][1][j])))
+                    if j < len(counted_votes[i][1]) - 1:
+                        file_.write(", ")
+                file_.write("\n")
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 13.10.2021 #
