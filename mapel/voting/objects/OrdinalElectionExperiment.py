@@ -69,7 +69,9 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "elections", self.families[family_id].model)
-            for election_id in os.listdir(path):
+            for i, election_id in enumerate(os.listdir(path)):
+                if i >= self.families[family_id].size:
+                    break
                 election_id = os.path.splitext(election_id)[0]
                 election_id = self.families[family_id].model + '/' + election_id
                 print(election_id)
