@@ -37,10 +37,10 @@ class ApprovalElection(Election):
             else:
                 self.votes, self.num_voters, self.num_candidates, self.params, \
                     self.model = import_real_app_election(experiment_id, name)
-                # try:
-                #     self.alpha = self.params[self.params['variable']]
-                # except KeyError:
-                #     pass
+                try:
+                    self.alpha = self.params[self.params['variable']]
+                except KeyError:
+                    pass
 
     def votes_to_approvalwise_vector(self) -> None:
         """ Convert votes to ... """

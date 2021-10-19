@@ -10,6 +10,7 @@ from time import sleep
 
 import networkx as nx
 import numpy as np
+from mapel.voting._glossary import NICE_NAME, LIST_OF_FAKE_MODELS
 
 import mapel.voting.elections_main as _elections
 import mapel.voting.metrics_main as metr
@@ -151,23 +152,29 @@ class Experiment:
             self.elections = {}
 
         if self.store:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
-            for file_name in os.listdir(path):
-                os.remove(os.path.join(path, file_name))
 
             for family_id in self.families:
                 params = self.families[family_id].params
                 model = self.families[family_id].model
 
-                if model in preflib.LIST_OF_PREFLIB_MODELS:
-                    ids = _elections.prepare_preflib_family(
-                        experiment=self, model=model, params=params)
-                else:
+                # path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
+                # for file_name in os.listdir(path):
+                #     os.remove(os.path.join(path, file_name))
+
+                # if model in preflib.LIST_OF_PREFLIB_MODELS:
+                #     ids = _elections.prepare_preflib_family(
+                #         experiment=self, model=model, params=params)
+
+                if model in NICE_NAME or model in LIST_OF_FAKE_MODELS:
+
                     ids = _elections.prepare_statistical_culture_family(
                         experiment=self, model=model,
                         family_id=family_id, params=params)
 
-                self.families[family_id].election_ids = ids
+                    self.families[family_id].election_ids = ids
+
+        self.elections = self.add_elections_to_experiment()
+
 
     def compute_winners(self, method=None, num_winners=1):
         for election_id in self.elections:
@@ -278,7 +285,7 @@ class Experiment:
     def add_coordinates_to_experiment(self):
         return self.import_cooridnates()
 
-    def embed(self, attraction_factor=None, algorithm='spring',
+    def embed(self, algorithm='spring',
               num_iterations=1000, radius=np.infty, dim=2, num_neighbors=None,
               method='standard') -> None:
 
@@ -378,9 +385,9 @@ class Experiment:
         self.coordinates = points
 
     def get_election_id_from_model_name(self, model: str) -> str:
-        for election_id in self.elections:
-            if self.elections[election_id].model == model:
-                return election_id
+        for family_id in self.families:
+            if self.families[family_id].model == model:
+                return family_id
 
     def print_map(self, dim: int = 2, **kwargs) -> None:
         """ Print the two-dimensional embedding of multi-dimensional

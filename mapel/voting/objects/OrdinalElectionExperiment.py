@@ -3,6 +3,7 @@ import os
 
 from mapel.voting.objects.ElectionExperiment import ElectionExperiment
 from mapel.voting.objects.OrdinalElection import OrdinalElection
+from mapel.voting._glossary import NICE_NAME, LIST_OF_FAKE_MODELS
 
 try:
     from sklearn.manifold import MDS
@@ -31,7 +32,6 @@ class OrdinalElectionExperiment(ElectionExperiment):
                          experiment_id=experiment_id,
                          election_type=election_type, _import=_import)
 
-
     def add_elections_to_experiment(self, with_matrices=False):
         """ Import elections from a file """
 
@@ -40,17 +40,36 @@ class OrdinalElectionExperiment(ElectionExperiment):
         for family_id in self.families:
 
             ids = []
-            if self.families[family_id].single_election:
-                election_id = family_id
-                election = OrdinalElection(self.experiment_id, election_id,
-                                           with_matrix=with_matrices, shift=self.shift)
-                elections[election_id] = election
-                ids.append(str(election_id))
-            else:
-                for j in range(self.families[family_id].size):
-                    election_id = family_id + '_' + str(j)
+
+            if self.families[family_id].model in NICE_NAME or \
+                    self.families[family_id].model in LIST_OF_FAKE_MODELS:
+
+                if self.families[family_id].single_election:
+                    election_id = family_id
                     election = OrdinalElection(self.experiment_id, election_id,
                                                with_matrix=with_matrices, shift=self.shift)
+                    elections[election_id] = election
+                    ids.append(str(election_id))
+                else:
+                    for j in range(self.families[family_id].size):
+                        election_id = family_id + '_' + str(j)
+                        election = OrdinalElection(self.experiment_id, election_id,
+                                                   with_matrix=with_matrices, shift=self.shift)
+                        elections[election_id] = election
+                        ids.append(str(election_id))
+            else:
+
+                path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                    "elections", self.families[family_id].model)
+                for i, election_id in enumerate(os.listdir(path)):
+
+                    if i >= self.families[family_id].size:
+                        break
+                    election_id = os.path.splitext(election_id)[0]
+                    election_id = self.families[family_id].model + '/' + election_id
+                    # print(election_id)
+                    election = OrdinalElection(self.experiment_id, election_id,
+                                               _import=self._import, shift=self.shift)
                     elections[election_id] = election
                     ids.append(str(election_id))
 
@@ -58,31 +77,20 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
         return elections
 
-    def add_folders_to_experiment(self) -> dict:
-        """ Return: elections imported from folders """
-
-        elections = {}
-
-        for family_id in self.families:
-
-            ids = []
-
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "elections", self.families[family_id].model)
-            for i, election_id in enumerate(os.listdir(path)):
-                if i >= self.families[family_id].size:
-                    break
-                election_id = os.path.splitext(election_id)[0]
-                election_id = self.families[family_id].model + '/' + election_id
-                print(election_id)
-                election = OrdinalElection(self.experiment_id, election_id,
-                                            _import=self._import, shift=self.shift)
-                elections[election_id] = election
-                ids.append(str(election_id))
-
-            self.families[family_id].election_ids = ids
-
-        return elections
+    # def add_folders_to_experiment(self) -> dict:
+    #     """ Return: elections imported from folders """
+    #
+    #     elections = {}
+    #
+    #     for family_id in self.families:
+    #
+    #         ids = []
+    #
+    #
+    #
+    #         self.families[family_id].election_ids = ids
+    #
+    #     return elections
 
     def create_structure(self) -> None:
 
@@ -148,4 +156,3 @@ class OrdinalElectionExperiment(ElectionExperiment):
                 # file_csv.write("3;10;100;stan;{};red;1;STAN;3;f\n")
         except FileExistsError:
             print("Experiment already exists!")
-

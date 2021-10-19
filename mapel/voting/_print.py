@@ -1059,6 +1059,7 @@ def get_values_from_file_old(experiment, experiment_id, values,
 
 def adjust_the_map_on_three_points(experiment, left, right, down):
     try:
+        print(right, left, down)
         d_x = experiment.coordinates[right][0] - experiment.coordinates[left][0]
         d_y = experiment.coordinates[right][1] - experiment.coordinates[left][1]
         alpha = math.atan(d_x / d_y)
@@ -1073,11 +1074,11 @@ def adjust_the_map_on_three_points(experiment, left, right, down):
 
 
 def adjust_the_map(experiment) -> None:
-    # if type(experiment) is OrdinalElectionExperiment:
     if experiment.election_type == 'ordinal':
 
         try:
             left = experiment.get_election_id_from_model_name('uniformity')
+
             right = experiment.get_election_id_from_model_name('identity')
             # up = experiment.get_election_id_from_model_name('antagonism')
             down = experiment.get_election_id_from_model_name('stratification')
@@ -1088,13 +1089,21 @@ def adjust_the_map(experiment) -> None:
     # elif type(experiment) is ApprovalElectionExperiment:
     elif experiment.election_type == 'approval':
         try:
-            left = experiment.get_election_id_from_model_name('approval_ic_0.5')
-            right = experiment.get_election_id_from_model_name('approval_id_0.5')
+            left = 'IC 0.5'
+            right = 'ID 0.5'
             # up = experiment.get_election_id_from_model_name('approval_full')
             down = experiment.get_election_id_from_model_name('approval_empty')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
-            pass
+            try:
+                left = 'IC 0.25'
+                right = 'ID 0.25'
+                # up = experiment.get_election_id_from_model_name('approval_full')
+                down = experiment.get_election_id_from_model_name('approval_empty')
+                adjust_the_map_on_three_points(experiment, left, right, down)
+            except Exception:
+                pass
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

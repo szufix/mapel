@@ -214,38 +214,95 @@ def generate_approval_raw_mallows_election(num_voters=None, num_candidates=None,
 
 def generate_approval_disjoint_mallows_election(num_voters=None, num_candidates=None, params=None):
 
+    if 'phi' not in params:
+        phi = rand.random()
+    else:
+        phi = params['phi']
+
+    if 'g' not in params:
+        num_groups = 2
+    else:
+        num_groups = params['g']
+
     k = int(params['p'] * num_candidates)
 
-    size_1 = int((params['size'])*num_voters)
-    # print(k, size_1, params['p'])
+    if num_groups == 2:
+        size_1 = np.random.uniform(low=0.5, high=1.)
+        size_1 = int(size_1*num_voters)
 
-    votes = [0 for _ in range(num_voters)]
+        votes = [0 for _ in range(num_voters)]
+        central_vote_1 = {i for i in range(k)}
 
-    central_vote_1 = {i for i in range(k)}
+        for v in range(size_1):
+            vote = set()
+            for c in range(num_candidates):
+                if rand.random() <= phi:
+                    if rand.random() <= params['p']:
+                        vote.add(c)
+                else:
+                    if c in central_vote_1:
+                        vote.add(c)
+            votes[v] = vote
 
-    for v in range(size_1):
-        vote = set()
-        for c in range(num_candidates):
-            if rand.random() <= params['phi']:
-                if rand.random() <= params['p']:
-                    vote.add(c)
-            else:
-                if c in central_vote_1:
-                    vote.add(c)
-        votes[v] = vote
+        central_vote_2 = {i+k for i in range(k)}
 
-    central_vote_2 = {i+k for i in range(k)}
+        for v in range(size_1, num_voters):
+            vote = set()
+            for c in range(num_candidates):
+                if rand.random() <= phi:
+                    if rand.random() <= params['p']:
+                        vote.add(c)
+                else:
+                    if c in central_vote_2:
+                        vote.add(c)
+            votes[v] = vote
 
-    for v in range(size_1, num_voters):
-        vote = set()
-        for c in range(num_candidates):
-            if rand.random() <= params['phi']:
-                if rand.random() <= params['p']:
-                    vote.add(c)
-            else:
-                if c in central_vote_2:
-                    vote.add(c)
-        votes[v] = vote
+    elif num_groups == 3:
+        size_1 = np.random.uniform(low=0.5, high=1.)
+        size_2 = np.random.uniform(low=size_1, high=1.)
+
+        size_1 = int(size_1*num_voters)
+        size_2 = int(size_2*num_voters)
+
+        votes = [0 for _ in range(num_voters)]
+        central_vote_1 = {i for i in range(k)}
+
+        for v in range(size_1):
+            vote = set()
+            for c in range(num_candidates):
+                if rand.random() <= phi:
+                    if rand.random() <= params['p']:
+                        vote.add(c)
+                else:
+                    if c in central_vote_1:
+                        vote.add(c)
+            votes[v] = vote
+
+        central_vote_2 = {i+k for i in range(k)}
+
+        for v in range(size_1, size_2):
+            vote = set()
+            for c in range(num_candidates):
+                if rand.random() <= phi:
+                    if rand.random() <= params['p']:
+                        vote.add(c)
+                else:
+                    if c in central_vote_2:
+                        vote.add(c)
+            votes[v] = vote
+
+        central_vote_3 = {i+k*2 for i in range(k)}
+
+        for v in range(size_2, num_voters):
+            vote = set()
+            for c in range(num_candidates):
+                if rand.random() <= phi:
+                    if rand.random() <= params['p']:
+                        vote.add(c)
+                else:
+                    if c in central_vote_3:
+                        vote.add(c)
+            votes[v] = vote
 
     return votes
 

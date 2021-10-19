@@ -1,10 +1,79 @@
 #!/usr/bin/env python
 
 from numpy import ceil
-from pulp import *
+
+try:
+    import pulp
+except Exception:
+    pulp = None
+    pass
 
 from mapel.voting.objects.ApprovalElection import ApprovalElection
+from math import ceil
+import itertools
+from collections import defaultdict
 
+
+def count_number_of_cohesive_groups_brute(election: ApprovalElection, l: int = 1,
+                                          committee_size: int = 10):
+    answer = 0
+    min_size = int(ceil(l * election.num_voters / committee_size))
+    voters = [i for i in range(0, election.num_voters)]
+    for s in powerset(voters, min_size=min_size):
+        if len(s) < min_size:
+            continue
+        cands = set(election.votes[s[0]])
+        for v in s:
+            cands &= election.votes[v]
+        if len(cands) >= l:
+            # print(s, "  ", cands)
+            answer += 1
+    return answer
+
+
+####################################################################################################
+####################################################################################################
+####################################################################################################
+
+def powerset(iterable, min_size=0):
+    "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+    s = list(iterable)
+    return itertools.chain.from_iterable(
+        itertools.combinations(s, r) for r in range(min_size, len(s) + 1))
+
+
+def newton(n: int, k: int):
+    if k > n:
+        return 0
+    answer = 1
+    for i in range(n - k + 1, n + 1):
+        answer *= i
+    for i in range(1, k + 1):
+        answer //= i
+    return answer
+
+
+def count_number_of_cohesive_groups(election: ApprovalElection, l: int = 1,
+                                    committee_size: int = 10):
+    if l > 1:
+        raise NotImplementedError()
+    answer = 0
+    d = defaultdict(lambda: 0)
+    for v in range(election.num_voters):
+        for s in powerset(election.votes[v], min_size=1):
+            d[s] += 1
+    min_size = int(ceil(l * election.num_voters / committee_size))
+    for s in d:
+        for siz in range(min_size, d[s] + 1):
+            sign = 2 * (len(s) % 2) - 1  # 1 for even, -1 for odd, comes from (-1) ^ (s-1)
+            answer += newton(d[s], siz) * sign
+            # print(s, d[s], siz, sign, newton(d[s], siz) * sign)
+    return answer
+
+
+####################################################################################################
+####################################################################################################
+####################################################################################################
 
 def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElection,
                                                          committee_size: int = 10):
@@ -23,11 +92,10 @@ def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElect
 
 
 def solve_ilp_instance(election: ApprovalElection, committee_size: int, l: int = 1) -> bool:
-
-    model = LpProblem("cohesiveness_level_l", LpMaximize)
-    X = [LpVariable("x_" + str(i), cat='Binary') for i in
+    model = pulp.LpProblem("cohesiveness_level_l", pulp.LpMaximize)
+    X = [pulp.LpVariable("x_" + str(i), cat='Binary') for i in
          range(election.num_voters)]  # X[i] = 1 if we select i-th voter, otherwise 0
-    Y = [LpVariable("y_" + str(j), cat='Binary') for j in
+    Y = [pulp.LpVariable("y_" + str(j), cat='Binary') for j in
          range(election.num_candidates)]  # Y[j] = 1 if we select j-th candidate, otherwise 0
     s = int(ceil(
         l * election.num_voters / committee_size))  # If there is any valid l-cohesive group, then there is also at least one with minimum possible size
@@ -61,10 +129,10 @@ def solve_ilp_instance(election: ApprovalElection, committee_size: int, l: int =
         y_ineq -= s * y
         model += y_ineq >= 0
 
-    model.solve(PULP_CBC_CMD(msg=False))
+    model.solve(pulp.PULP_CBC_CMD(msg=False))
     # print(model)
     # print(LpStatus[model.status])
     # print(int(value(model.objective)))    # prints the best objective value - in our case useless, but can be useful in the future
     # if LpStatus[model.status] == 'Optimal':
     #     print([var.name + "=" + str(var.varValue) for var in model.variables() if var.varValue is not None and var.varValue > 0], sep=" ")    # prints result variables which have value > 0
-    return LpStatus[model.status] == 'Optimal'
+    return pulp.LpStatus[model.status] == 'Optimal'

@@ -27,6 +27,8 @@ def get_feature(name):
             'graph_diameter_log': graph_diameter_log,
             'max_approval_score': max_approval_score,
             'largest_cohesive_group': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
+            'number_of_cohesive_groups': cohesive.count_number_of_cohesive_groups,
+            'number_of_cohesive_groups_brute': cohesive.count_number_of_cohesive_groups_brute,
             'abstract': abstract,
             'monotonicity_1': monotonicity_1,
             'monotonicity_2': monotonicity_2,

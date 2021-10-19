@@ -11,7 +11,6 @@ from mapel.voting.metrics import main_approval_distances as mad
 from mapel.voting.metrics import main_graph_distances as mgd
 from mapel.voting.metrics import main_ordinal_distances as mod
 
-import mapel.voting.objects as obj
 from mapel.voting.objects.Election import Election
 from mapel.voting.objects.ApprovalElection import ApprovalElection
 from mapel.voting.objects.OrdinalElection import OrdinalElection

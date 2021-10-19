@@ -16,38 +16,19 @@ def generate_approval_vcr_election(num_voters: int = None, num_candidates: int =
 
     dim = params['dim']
 
-    votes = []
+    votes = [set() for _ in range(num_voters)]
 
     voters = np.random.rand(num_voters, dim)
     candidates = np.random.rand(num_candidates, dim)
 
-    # Voter range
-    rankings = np.zeros([num_voters, num_candidates], dtype=int)
-    distances = np.zeros([num_voters, num_candidates], dtype=float)
+    v_range = [np.random.beta(v_a, v_b) for _ in range(num_voters)]
+    c_range = [np.random.beta(c_a, c_b) for _ in range(num_candidates)]
+
     for v in range(num_voters):
         for c in range(num_candidates):
-            rankings[v][c] = c
-            distances[v][c] = np.linalg.norm(voters[v] - candidates[c])
-        rankings[v] = [x for _, x in sorted(zip(distances[v], rankings[v]))]
+            if v_range[v] + c_range[c] >= np.linalg.norm(voters[v] - candidates[c]):
+                votes[v].add(c)
 
-    for v in range(num_voters):
-        k = int(np.random.beta(v_a, v_b) * num_candidates)
-        votes.append(set(rankings[v][0:k]))
-
-    # Candidate range
-    rankings = np.zeros([num_candidates, num_voters], dtype=int)
-    distances = np.zeros([num_candidates, num_voters], dtype=float)
-    for c in range(num_candidates):
-        for v in range(num_voters):
-            rankings[c][v] = v
-            distances[c][v] = np.linalg.norm(voters[v] - candidates[c])
-        rankings[c] = [x for _, x in sorted(zip(distances[c], rankings[c]))]
-
-    for c in range(num_candidates):
-        k = int(np.random.beta(c_a, c_b) * num_voters)
-        for t in rankings[c][0:k]:
-            votes[t].add(c)
-    # print(votes)
     return votes
 
 

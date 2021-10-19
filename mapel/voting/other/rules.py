@@ -5,8 +5,6 @@ import csv
 import ast
 import sys
 
-
-
 try:
     sys.path.append('/Users/szufa/PycharmProjects/abcvoting/')
     from abcvoting.preferences import Profile
@@ -15,28 +13,31 @@ except ImportError:
     Profile = None
     abcrules = None
 
-rule_mapping = {
-    'av': abcrules.compute_av,
-    'pav': abcrules.compute_pav,
-    'sav': abcrules.compute_sav,
-    'slav': abcrules.compute_slav,
-    'cc': abcrules.compute_cc,
-    # 'geom2': abcrules.compute_geom2,
-    'seqpav': abcrules.compute_seqpav,
-    'revseqpav': abcrules.compute_revseqpav,
-    'seqslav': abcrules.compute_seqslav,
-    'seqcc': abcrules.compute_seqcc,
-    'seqphragmen': abcrules.compute_seqphragmen,
-    'minimaxphragmen': abcrules.compute_minimaxphragmen,
-    'monroe': abcrules.compute_monroe,
-    'greedy-monroe': abcrules.compute_greedy_monroe,
-    'minimaxav': abcrules.compute_minimaxav,
-    'lexminimaxav': abcrules.compute_lexminimaxav,
-    'rule-x': abcrules.compute_rule_x,
-    'phragmen-enestroem': abcrules.compute_phragmen_enestroem,
-    'consensus-rule': abcrules.compute_consensus_rule,
-}
 
+try:
+    rule_mapping = {
+        'av': abcrules.compute_av,
+        'pav': abcrules.compute_pav,
+        'sav': abcrules.compute_sav,
+        'slav': abcrules.compute_slav,
+        'cc': abcrules.compute_cc,
+        # 'geom2': abcrules.compute_geom2,
+        'seqpav': abcrules.compute_seqpav,
+        'revseqpav': abcrules.compute_revseqpav,
+        'seqslav': abcrules.compute_seqslav,
+        'seqcc': abcrules.compute_seqcc,
+        'seqphragmen': abcrules.compute_seqphragmen,
+        'minimaxphragmen': abcrules.compute_minimaxphragmen,
+        'monroe': abcrules.compute_monroe,
+        'greedy-monroe': abcrules.compute_greedy_monroe,
+        'minimaxav': abcrules.compute_minimaxav,
+        'lexminimaxav': abcrules.compute_lexminimaxav,
+        'rule-x': abcrules.compute_rule_x,
+        'phragmen-enestroem': abcrules.compute_phragmen_enestroem,
+        'consensus-rule': abcrules.compute_consensus_rule,
+    }
+except Exception:
+    rule_mapping = {}
 
 def compute_rule(experiment=None, rule_name=None, committee_size=1, printing=False):
     rule = rule_mapping[rule_name]
