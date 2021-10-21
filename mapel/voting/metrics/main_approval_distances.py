@@ -44,6 +44,7 @@ def compute_hamming(election_1: ApprovalElection, election_2: ApprovalElection) 
     path = os.path.join(os.getcwd(), "trash", file_name)
     lp.generate_ilp_distance(path, votes_1, votes_2, params, 'hamming')
     objective_value = lp.solve_ilp_distance(path, votes_1, votes_2, params, 'hamming')
+    objective_value /= election_1.num_candidates  # ANALYZE THIS LINE
     lp.remove_lp_file(path)
     return objective_value
 

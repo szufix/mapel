@@ -9,10 +9,10 @@ from numpy import random, linalg
 ####################################################################################################
 def generate_approval_vcr_election(num_voters: int = None, num_candidates: int = None,
                                    params: dict = None) -> list:
-    v_a = 1.2  # params['v_a']
-    v_b = 6  # params['v_b']
-    c_a = 1.2  # params['c_a']
-    c_b = 6  # params['c_b']
+    v_a = 1.05  # params['v_a']
+    v_b = 10  # params['v_b']
+    c_a = 1.05  # params['c_a']
+    c_b = 10  # params['c_b']
 
     dim = params['dim']
 

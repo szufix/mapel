@@ -224,10 +224,6 @@ def generate_election(experiment=None, model=None, name=None,
     return election
 
 
-def prepare_preflib_family(experiment=None, model=None, params=None):
-    pass
-
-
 def prepare_statistical_culture_family(experiment=None, model=None, family_id=None,
                                        params=None) -> list:
     keys = []
@@ -274,11 +270,16 @@ def get_ballot_from_model(model: str) -> str:
 
 
 def update_params(params, variable, model, num_candidates):
+    if 'p' not in params:
+        params['p'] = np.random.rand()
+    elif type(params['p']) is list:
+        params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+
     if model == 'mallows' and params['phi'] is None:
         params['phi'] = rand.random()
     elif model == 'norm-mallows' and params['norm-phi'] is None:
         params['norm-phi'] = rand.random()
-    elif model == 'urn_model' and params['alpha'] is None:
+    elif model in ['urn_model', 'approval_urn'] and 'alpha' not in params:
         params['alpha'] = gamma.rvs(0.8)
 
     if model == 'norm-mallows':
@@ -412,10 +413,10 @@ def store_approval_election(experiment, model, name, num_candidates, num_voters,
 
 
 def store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path,
-                          ballot):
+                          ballot, votes=None):
     """ Store votes in a file """
-
-    votes = experiment.elections[name].votes
+    if votes is None:
+        votes = experiment.elections[name].votes
 
     with open(path, 'w') as file_:
 

@@ -3,7 +3,7 @@ import os
 
 from mapel.voting.objects.ElectionExperiment import ElectionExperiment
 from mapel.voting.objects.OrdinalElection import OrdinalElection
-from mapel.voting._glossary import NICE_NAME, LIST_OF_FAKE_MODELS
+from mapel.voting._glossary import NICE_NAME, LIST_OF_FAKE_MODELS, LIST_OF_PREFLIB_MODELS
 
 try:
     from sklearn.manifold import MDS
@@ -42,7 +42,8 @@ class OrdinalElectionExperiment(ElectionExperiment):
             ids = []
 
             if self.families[family_id].model in NICE_NAME or \
-                    self.families[family_id].model in LIST_OF_FAKE_MODELS:
+                    self.families[family_id].model in LIST_OF_FAKE_MODELS or \
+                        self.families[family_id].model in LIST_OF_PREFLIB_MODELS:
 
                 if self.families[family_id].single_election:
                     election_id = family_id

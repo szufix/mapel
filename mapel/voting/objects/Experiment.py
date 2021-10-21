@@ -10,7 +10,8 @@ from time import sleep
 
 import networkx as nx
 import numpy as np
-from mapel.voting._glossary import NICE_NAME, LIST_OF_FAKE_MODELS
+from mapel.voting._glossary import NICE_NAME, LIST_OF_FAKE_MODELS, APPROVAL_MODELS, \
+    LIST_OF_PREFLIB_MODELS
 
 import mapel.voting.elections_main as _elections
 import mapel.voting.metrics_main as metr
@@ -42,9 +43,10 @@ class Experiment:
 
     def __init__(self, elections=None, distances=None,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', _import=True):
+                 election_type='ordinal', _import=True, clean=False):
 
         self._import = _import
+        self.clean = clean
 
         self.distance_name = distance_name
         self.elections = {}
@@ -157,16 +159,19 @@ class Experiment:
                 params = self.families[family_id].params
                 model = self.families[family_id].model
 
-                # path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
-                # for file_name in os.listdir(path):
-                #     os.remove(os.path.join(path, file_name))
+                if self.clean:
+                    path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
+                    for file_name in os.listdir(path):
+                        os.remove(os.path.join(path, file_name))
 
-                # if model in preflib.LIST_OF_PREFLIB_MODELS:
-                #     ids = _elections.prepare_preflib_family(
-                #         experiment=self, model=model, params=params)
+                if model in LIST_OF_PREFLIB_MODELS:
+                    ids = preflib.prepare_preflib_family(
+                        experiment=self, model=model, family_id=family_id, params=params)
 
-                if model in NICE_NAME or model in LIST_OF_FAKE_MODELS:
+                    self.families[family_id].election_ids = ids
 
+                elif model not in ['core', 'pabulib'] and (model in NICE_NAME or model in LIST_OF_FAKE_MODELS
+                                        or model in APPROVAL_MODELS):
                     ids = _elections.prepare_statistical_culture_family(
                         experiment=self, model=model,
                         family_id=family_id, params=params)
@@ -174,7 +179,6 @@ class Experiment:
                     self.families[family_id].election_ids = ids
 
         self.elections = self.add_elections_to_experiment()
-
 
     def compute_winners(self, method=None, num_winners=1):
         for election_id in self.elections:
@@ -618,11 +622,12 @@ class Experiment:
             if name in ['monotonicity_1', 'monotonicity_2']:
                 value = feature(self, election)
 
-            elif name in ['largest_cohesive_group']:
-                value = feature(election, committee_size)
+            elif name in ['largest_cohesive_group', 'number_of_cohesive_groups',
+                          'number_of_cohesive_groups_brute', 'proportional_degree']:
+                value = feature(election, committee_size=committee_size)
 
             elif name in {'avg_distortion_from_guardians',
-                        'worst_distortion_from_guardians'}:
+                          'worst_distortion_from_guardians'}:
                 value = feature(self, election_id)
             else:
                 value = feature(election)
@@ -738,6 +743,7 @@ class Experiment:
         stds = {}
 
         for election_id in self.elections:
+            # print(election_id)
             distances[election_id] = {}
             times[election_id] = {}
             stds[election_id] = {}
@@ -750,6 +756,7 @@ class Experiment:
                 election_id_2 = row['election_id_2']
 
                 distances[election_id_1][election_id_2] = float(row['distance'])
+                # distances[election_id_1][election_id_2] = float(row['distance'])/1000.
                 distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
                 try:
                     times[election_id_1][election_id_2] = float(row['time'])

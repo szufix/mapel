@@ -2,6 +2,7 @@
 import os
 from mapel.voting.objects.ApprovalElection import ApprovalElection
 from mapel.voting.objects.ElectionExperiment import ElectionExperiment
+from mapel.voting.other import pabulib
 
 try:
     from sklearn.manifold import MDS
@@ -23,36 +24,12 @@ class ApprovalElectionExperiment(ElectionExperiment):
 
     def __init__(self, elections=None, distances=None,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', _import=True):
+                 election_type='ordinal', _import=True, clean=False):
 
         super().__init__(elections=elections, distances=distances,
                          coordinates=coordinates, distance_name=distance_name,
                          experiment_id=experiment_id, _import=_import,
-                         election_type=election_type)
-
-    def add_folders_to_experiment(self) -> dict:
-        """ Return: elections imported from folders """
-
-        elections = {}
-
-        for family_id in self.families:
-
-            ids = []
-
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "elections", self.families[family_id].model)
-            for election_id in os.listdir(path):
-                election_id = os.path.splitext(election_id)[0]
-                election_id = self.families[family_id].model + '/' + election_id
-                print(election_id)
-                election = ApprovalElection(self.experiment_id, election_id,
-                                            _import=self._import)
-                elections[election_id] = election
-                ids.append(str(election_id))
-
-            self.families[family_id].election_ids = ids
-
-        return elections
+                         election_type=election_type, clean=clean)
 
     def add_elections_to_experiment(self) -> dict:
         """ Return: elections imported from files """
@@ -134,3 +111,6 @@ class ApprovalElectionExperiment(ElectionExperiment):
                                "shumal_p09_path;x;t;{'variable': 'phi'}")
         except FileExistsError:
             print("Experiment already exists!")
+
+    def convert_pb_to_app(self, **kwargs):
+        pabulib.convert_pb_to_app(self, **kwargs)

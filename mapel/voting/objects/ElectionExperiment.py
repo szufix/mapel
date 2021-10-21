@@ -29,12 +29,12 @@ class ElectionExperiment(Experiment):
 
     def __init__(self, elections=None, distances=None,
                  coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', _import=True):
+                 election_type='ordinal', _import=True, clean=False):
 
         super().__init__(elections=elections, distances=distances,
                          coordinates=coordinates, distance_name=distance_name,
                          experiment_id=experiment_id, _import=_import,
-                         election_type=election_type)
+                         election_type=election_type, clean=clean)
 
         self.default_num_candidates = 10
         self.default_num_voters = 100

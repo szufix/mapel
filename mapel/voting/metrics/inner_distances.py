@@ -65,7 +65,7 @@ def emd(vector_1, vector_2):
 
 def hamming(set_1: set, set_2: set) -> float:
     """ Return: HAMMING distance """
-    return len(set_1) + len(set_2) - 2 * len(set_1.intersection(set_2))
+    return len(set_1.symmetric_difference(set_2))
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

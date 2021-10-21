@@ -48,6 +48,7 @@ NICE_NAME = {
     'approval_ic_0.5': 'Approval_IC_0.5',
     'approval_mallows': 'Approval_Mallows',
     'approval_raw_mallows': 'Approval_Raw_Mallows',
+    'core': 'Core'
     }
 
 

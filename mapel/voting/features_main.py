@@ -8,6 +8,7 @@ import scipy.special
 
 # import mapel.voting.other.development as dev
 import mapel.voting.features.cohesive as cohesive
+import mapel.voting.features.proportionality_degree as prop_deg
 import mapel.voting.features.scores as scores
 from mapel.voting.metrics.inner_distances import l2
 
@@ -29,6 +30,7 @@ def get_feature(name):
             'largest_cohesive_group': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
             'number_of_cohesive_groups': cohesive.count_number_of_cohesive_groups,
             'number_of_cohesive_groups_brute': cohesive.count_number_of_cohesive_groups_brute,
+            'proportionality_degree': prop_deg.proportionality_degree,
             'abstract': abstract,
             'monotonicity_1': monotonicity_1,
             'monotonicity_2': monotonicity_2,

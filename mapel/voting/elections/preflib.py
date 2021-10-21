@@ -13,15 +13,15 @@ from mapel.voting._glossary import LIST_OF_PREFLIB_MODELS
 
 
 # GENERATE
-def generate_elections_preflib(experiment=None, election_model=None, elections_id=None,
-                               num_voters=None, num_candidates=None, special=None, folder=None,
+def generate_preflib_election(experiment=None, model=None, name=None,
+                               num_voters=None, num_candidates=None, folder=None,
                                selection_method='random'):
     """ main function: generate elections"""
 
-    votes = generate_votes_preflib(election_model, selection_method=selection_method,
+    votes = generate_votes_preflib(model, selection_method=selection_method,
                                    num_voters=num_voters, num_candidates=num_candidates, folder=folder)
 
-    path = os.path.join("experiments", experiment.experiment_id, "elections", elections_id + ".soc")
+    path = os.path.join("experiments", experiment.experiment_id, "elections", name + ".soc")
     file_ = open(path, 'w')
 
     file_.write(str(num_candidates) + "\n")
@@ -48,11 +48,11 @@ def generate_elections_preflib(experiment=None, election_model=None, elections_i
 
 
 # REAL
-def generate_votes_preflib(elections_model, num_voters=None, num_candidates=None, folder=None,
-                           selection_method=None):
+def generate_votes_preflib(model, num_voters=None, num_candidates=None, folder=None,
+                           selection_method='random'):
     """ Generate votes based on elections from Preflib """
 
-    long_name = str(elections_model)
+    long_name = str(model)
     file_name = 'real_data/' + folder + '/' + long_name + '.txt'
     file_votes = open(file_name, 'r')
     original_num_voters = int(file_votes.readline())
@@ -94,7 +94,7 @@ def generate_votes_preflib(elections_model, num_voters=None, num_candidates=None
                               sorted(zip(scores, [i for i in range(original_num_candidates)]), reverse=True)]
             selected_candidates = order_by_score[0:num_candidates]
         elif selection_method == 'freq':
-            freq = import_freq(elections_model)
+            freq = import_freq(model)
             # print(freq)
             selected_candidates = freq[0:num_candidates]
         else:
@@ -136,11 +136,14 @@ def get_borda_scores(votes, num_voters, num_candidates):
     return scores
 
 
-def prepare_preflib_family(experiment=None, model=None, params=None,
-                           id_=None, folder=None):
+
+
+def prepare_preflib_family(experiment=None, model=None, family_id=None,
+                           params=None) -> list:
     # NEEDS UPDATE #
 
     selection_method = 'random'
+    keys = []
 
     # list of IDs larger than 10
     if model == 'irish':
@@ -199,19 +202,25 @@ def prepare_preflib_family(experiment=None, model=None, params=None,
     else:
         ids = []
 
-    rand_ids = rand.choices(ids, k=experiment.families[model].size)
+    ctr = 0
+    # print(experiment.families)
+    # print(ids, experiment.families[family_id].size)
+    rand_ids = rand.choices(ids, k=experiment.families[family_id].size)
     for ri in rand_ids:
-        election_id = "core_" + str(id_)
+        name = family_id + '_' + str(ctr)
         tmp_election_type = model + '_' + str(ri)
 
-        generate_elections_preflib(
+        generate_preflib_election(
             experiment=experiment, model=tmp_election_type,
-            elections_id=election_id,
-            num_voters=experiment.families[model].num_voters,
-            num_candidates=experiment.families[model].num_candidates,
-            special=params,
+            name=name,
+            num_voters=experiment.families[family_id].num_voters,
+            num_candidates=experiment.families[family_id].num_candidates,
             folder=folder, selection_method=selection_method)
-        id_ += 1
+        ctr += 1
+
+        keys.append(name)
+    return keys
+
 
 
 

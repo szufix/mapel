@@ -52,6 +52,7 @@ class OrdinalElection(Election):
 
                 self.potes = self.votes_to_potes()
 
+
         if with_matrix:
             self.matrix = self.import_matrix()
             self.vectors = self.matrix.transpose()
@@ -506,6 +507,16 @@ def import_fake_soc_election(experiment_id, election_id):
     return fake_model_name, params, num_voters, num_candidates
 
 
+def old_name_extractor(first_line):
+    if len(first_line) == 4:
+        model_name = f'{first_line[1]} {first_line[2]} {first_line[3]}'
+    elif len(first_line) == 3:
+        model_name = f'{first_line[1]} {first_line[2]}'
+    elif len(first_line) == 2:
+        model_name = first_line[1]
+    return model_name
+
+
 def import_real_soc_election(experiment_id, election_id, shift=False):
     """ Import real ordinal election form .soc file """
 
@@ -521,10 +532,15 @@ def import_real_soc_election(experiment_id, election_id, shift=False):
     else:
         first_line = first_line.strip().split()
         model_name = first_line[1]
-        if len(first_line) <= 2:
+        if experiment_id == 'original_ordinal_map':
             params = {}
+            model_name = old_name_extractor(first_line)
+            print(model_name)
         else:
-            params = ast.literal_eval(" ".join(first_line[2:]))
+            if len(first_line) <= 2:
+                params = {}
+            else:
+                params = ast.literal_eval(" ".join(first_line[2:]))
 
         num_candidates = int(my_file.readline())
 
@@ -550,5 +566,6 @@ def import_real_soc_election(experiment_id, election_id, shift=False):
         for i in range(num_voters):
             for j in range(num_candidates):
                 votes[i][j] -= 1
+
 
     return votes, num_voters, num_candidates, params, model_name

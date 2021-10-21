@@ -13,19 +13,17 @@ import deprecation as dep
 
 from scipy.stats import norm
 
-# Plot between -10 and 10 with .001 steps.
-
-# Mean = 0, SD = 2.
-
 
 def print_approvals_histogram(election):
-    plt.title(election.model)
-    plt.hist([len(vote) for vote in election.votes])
+    print(election.name)
+    plt.title(election.name, size=20)
+    bins = np.linspace(0, 100, 51)
+    plt.hist([len(vote) for vote in election.votes], bins=bins)
     # x_axis = np.arange(0, 100, 0.01)
     # plt.plot(x_axis, norm.pdf(x_axis, 50, 2)*2000)
-    plt.ylim([0, 5000])
-    plt.xlim([35, 65])
-    plt.savefig(election.model)
+    plt.ylim([0, election.num_voters])
+    plt.xlim([-1, election.num_candidates+1])
+    plt.savefig("images/histograms/"+election.name+".png")
     plt.show()
 
 
@@ -94,7 +92,8 @@ def print_map_2d(experiment, mask=False, mixed=False, fuzzy_paths=True,
             add_roads(experiment=experiment, roads=roads, ax=ax)
         else:
             if shading:
-                basic_coloring_with_shading(experiment=experiment, ax=ax, ms=ms, dim=dim)
+                basic_coloring_with_shading(experiment=experiment, ax=ax, ms=ms, dim=dim,
+                                            skeleton=skeleton)
             else:
                 basic_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim)
 
@@ -358,7 +357,7 @@ def basic_coloring(experiment=None, ax=None, ms=None, dim=2):
                            marker=family.marker)
 
 
-def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
+def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skeleton=[]):
     for family_id in experiment.families:
         if experiment.families[family_id].show:
             if dim == 2:
@@ -382,10 +381,14 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2):
                                        alpha=alpha, s=ms,
                                        marker=experiment.families[family_id].marker)
                 else:
+                    if family_id in skeleton:
+                        label = '_nolegend_'
+                    else:
+                        label = family_id
                     ax.scatter(experiment.points_by_families[family_id][0],
                                experiment.points_by_families[family_id][1],
                                color=experiment.families[family_id].color,
-                               label=experiment.families[family_id].label,
+                               label=label,
                                alpha=experiment.families[family_id].alpha, s=ms,
                                marker=experiment.families[family_id].marker)
             elif dim == 3:
@@ -1057,9 +1060,8 @@ def get_values_from_file_old(experiment, experiment_id, values,
 #         pass
 
 
-def adjust_the_map_on_three_points(experiment, left, right, down):
+def adjust_the_map_on_three_points(experiment, left, right, down) -> None:
     try:
-        print(right, left, down)
         d_x = experiment.coordinates[right][0] - experiment.coordinates[left][0]
         d_y = experiment.coordinates[right][1] - experiment.coordinates[left][1]
         alpha = math.atan(d_x / d_y)
@@ -1078,7 +1080,6 @@ def adjust_the_map(experiment) -> None:
 
         try:
             left = experiment.get_election_id_from_model_name('uniformity')
-
             right = experiment.get_election_id_from_model_name('identity')
             # up = experiment.get_election_id_from_model_name('antagonism')
             down = experiment.get_election_id_from_model_name('stratification')

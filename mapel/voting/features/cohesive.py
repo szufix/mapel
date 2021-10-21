@@ -6,7 +6,7 @@ try:
     import pulp
 except Exception:
     pulp = None
-    pass
+
 
 from mapel.voting.objects.ApprovalElection import ApprovalElection
 from math import ceil
@@ -55,6 +55,7 @@ def newton(n: int, k: int):
 
 def count_number_of_cohesive_groups(election: ApprovalElection, l: int = 1,
                                     committee_size: int = 10):
+
     if l > 1:
         raise NotImplementedError()
     answer = 0

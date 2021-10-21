@@ -310,6 +310,8 @@ def generate_approval_disjoint_mallows_election(num_voters=None, num_candidates=
 def generate_approval_truncated_mallows(num_voters=None, num_candidates=None, params=None):
     # k = int(params['p'] * num_candidates)
 
+    if 'norm-phi' not in params:
+        params['norm-phi'] = np.random.rand()
 
     params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
