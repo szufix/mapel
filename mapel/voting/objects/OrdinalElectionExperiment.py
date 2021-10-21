@@ -46,33 +46,33 @@ class OrdinalElectionExperiment(ElectionExperiment):
                         self.families[family_id].model in LIST_OF_PREFLIB_MODELS:
 
                 if self.families[family_id].single_election:
-                    election_id = family_id
-                    election = OrdinalElection(self.experiment_id, election_id,
+                    name = family_id
+                    election = OrdinalElection(self.experiment_id, name,
                                                with_matrix=with_matrices, shift=self.shift)
-                    elections[election_id] = election
-                    ids.append(str(election_id))
+                    elections[name] = election
+                    ids.append(str(name))
                 else:
                     for j in range(self.families[family_id].size):
-                        election_id = family_id + '_' + str(j)
-                        election = OrdinalElection(self.experiment_id, election_id,
+                        name = family_id + '_' + str(j)
+                        election = OrdinalElection(self.experiment_id, name,
                                                    with_matrix=with_matrices, shift=self.shift)
-                        elections[election_id] = election
-                        ids.append(str(election_id))
+                        elections[name] = election
+                        ids.append(str(name))
             else:
 
                 path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                     "elections", self.families[family_id].model)
-                for i, election_id in enumerate(os.listdir(path)):
+                for i, name in enumerate(os.listdir(path)):
 
                     if i >= self.families[family_id].size:
                         break
-                    election_id = os.path.splitext(election_id)[0]
-                    election_id = self.families[family_id].model + '/' + election_id
-                    # print(election_id)
-                    election = OrdinalElection(self.experiment_id, election_id,
+                    name = os.path.splitext(name)[0]
+                    name = self.families[family_id].model + '/' + name
+                    # print(name)
+                    election = OrdinalElection(self.experiment_id, name,
                                                _import=self._import, shift=self.shift)
-                    elections[election_id] = election
-                    ids.append(str(election_id))
+                    elections[name] = election
+                    ids.append(str(name))
 
             self.families[family_id].election_ids = ids
 
@@ -89,7 +89,7 @@ class OrdinalElectionExperiment(ElectionExperiment):
     #
     #
     #
-    #         self.families[family_id].election_ids = ids
+    #         self.families[family_id].names = ids
     #
     #     return elections
 

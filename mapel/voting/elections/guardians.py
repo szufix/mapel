@@ -1,6 +1,6 @@
 import numpy as np
 
-from mapel.voting.elections.impartial import generate_impartial_culture_election
+from mapel.voting.elections.impartial import generate_ordinal_ic_votes
 
 
 def generate_real_identity_election(num_voters=None, num_candidates=None):
@@ -10,7 +10,7 @@ def generate_real_identity_election(num_voters=None, num_candidates=None):
 
 def generate_real_uniformity_election(num_voters=None, num_candidates=None):
     """ Generate real election that approximates uniformity (UN) """
-    return generate_impartial_culture_election(num_voters=num_voters, num_candidates=num_candidates)
+    return generate_ordinal_ic_votes(num_voters=num_voters, num_candidates=num_candidates)
 
 
 def generate_real_antagonism_election(num_voters=None, num_candidates=None):

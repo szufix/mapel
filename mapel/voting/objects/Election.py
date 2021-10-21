@@ -19,7 +19,7 @@ class Election(Instance):
 
         super().__init__(experiment_id, name, model=model, alpha=alpha)
 
-        self.election_id = name
+        self.name = name
         self.ballot = ballot
 
         self.num_voters = num_voters
@@ -30,11 +30,11 @@ class Election(Instance):
         self.fake = model in LIST_OF_FAKE_MODELS
 
         self.votes = votes
-        self.election_model = model
+        self.model = model
 
     def import_matrix(self) -> np.ndarray:
 
-        file_name = self.election_id + '.csv'
+        file_name = self.name + '.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, 'matrices', file_name)
         matrix = np.zeros([self.num_candidates, self.num_candidates])
 

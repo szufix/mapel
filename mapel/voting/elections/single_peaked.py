@@ -17,9 +17,9 @@ def generate_sp_party(model=None, num_voters=None, num_candidates=None, params=N
     mapping = [x for _, x in sorted(zip(candidates, _ids))]
 
     if model == 'conitzer_party':
-        votes = generate_conitzer_election(num_voters=num_voters, num_candidates=num_candidates)
+        votes = generate_ordinal_sp_conitzer_votes(num_voters=num_voters, num_candidates=num_candidates)
     elif model == 'walsh_party':
-        votes = generate_walsh_election(num_voters=num_voters, num_candidates=num_candidates)
+        votes = generate_ordinal_sp_walsh_votes(num_voters=num_voters, num_candidates=num_candidates)
     for i in range(num_voters):
         for j in range(num_candidates):
             votes[i][j] = mapping[votes[i][j]]
@@ -27,7 +27,7 @@ def generate_sp_party(model=None, num_voters=None, num_candidates=None, params=N
     return votes
 
 
-def generate_conitzer_election(num_voters=None, num_candidates=None) -> np.ndarray:
+def generate_ordinal_sp_conitzer_votes(num_voters=None, num_candidates=None) -> np.ndarray:
     """ helper function: generate conitzer single-peaked elections """
 
     votes = np.zeros([num_voters, num_candidates])
@@ -56,7 +56,7 @@ def generate_conitzer_election(num_voters=None, num_candidates=None) -> np.ndarr
     return votes
 
 
-def generate_spoc_conitzer_election(num_voters=None, num_candidates=None) -> np.ndarray:
+def generate_ordinal_spoc_conitzer_votes(num_voters=None, num_candidates=None) -> np.ndarray:
     """ helper function: generate spoc_conitzer single-peaked elections"""
 
     votes = np.zeros([num_voters, num_candidates])
@@ -81,7 +81,7 @@ def generate_spoc_conitzer_election(num_voters=None, num_candidates=None) -> np.
     return votes
 
 
-def generate_walsh_election(num_voters=None, num_candidates=None) -> np.ndarray:
+def generate_ordinal_sp_walsh_votes(num_voters=None, num_candidates=None) -> np.ndarray:
     """ helper function: generate walsh single-peaked elections"""
 
     votes = np.zeros([num_voters, num_candidates])

@@ -95,7 +95,7 @@ def print_map_2d(experiment, mask=False, mixed=False, fuzzy_paths=True,
                 basic_coloring_with_shading(experiment=experiment, ax=ax, ms=ms, dim=dim,
                                             skeleton=skeleton)
             else:
-                basic_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim)
+                basic_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim, skeleton=skeleton)
 
     # BACKGROUND
     basic_background(ax=ax, values=feature, legend=legend,
@@ -336,15 +336,19 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
 
 
 # COLORING
-def basic_coloring(experiment=None, ax=None, ms=None, dim=2):
+def basic_coloring(experiment=None, ax=None, ms=None, dim=2, skeleton=[]):
     for family in experiment.families.values():
 
         if family.show:
             if dim == 2:
+                if family.label in skeleton:
+                    label = '_nolegend_'
+                else:
+                    label = family.label
                 ax.scatter(experiment.points_by_families[family.family_id][0],
                            experiment.points_by_families[family.family_id][1],
                            color=family.color,
-                           label=family.label,
+                           label=label,
                            alpha=family.alpha, s=ms,
                            marker=family.marker)
             elif dim == 3:

@@ -65,13 +65,11 @@ class ElectionExperiment(Experiment):
         if num_voters is None:
             num_voters = self.default_num_voters
 
-        return \
-            self.add_election_family(model=model, params=params, size=size, label=label,
-                                     color=color,
-                                     alpha=alpha, show=show, marker=marker,
-                                     starting_from=starting_from,
-                                     num_candidates=num_candidates, num_voters=num_voters,
-                                     family_id=name, num_nodes=num_nodes, single_election=True)[0]
+        return self.add_election_family(model=model, params=params, size=size, label=label,
+                                        color=color, alpha=alpha, show=show, marker=marker,
+                                        starting_from=starting_from, family_id=name,
+                                        num_candidates=num_candidates, num_voters=num_voters,
+                                        num_nodes=num_nodes, single_election=True)[0]
 
     def add_election_family(self, model="none", params=None, size=1, label=None, color="black",
                             alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,

@@ -4,8 +4,8 @@ import random as rand
 import numpy as np
 
 
-def generate_approval_ic_election(num_voters: int = None, num_candidates: int = None,
-                                  params: dict = None) -> list:
+def generate_approval_ic_votes(num_voters: int = None, num_candidates: int = None,
+                               params: dict = None) -> list:
     """ Return: approval votes from Impartial Culture """
     if params is None:
         params = {}
@@ -19,8 +19,8 @@ def generate_approval_ic_election(num_voters: int = None, num_candidates: int = 
     return votes
 
 
-def generate_approval_id_election(num_voters: int = None, num_candidates: int = None,
-                                  params: dict = None) -> list:
+def generate_approval_id_votes(num_voters: int = None, num_candidates: int = None,
+                               params: dict = None) -> list:
     """ Return: approval votes from Identity for approval """
     if params is None:
         params = {}
@@ -31,13 +31,13 @@ def generate_approval_id_election(num_voters: int = None, num_candidates: int = 
     return [vote for _ in range(num_voters)]
 
 
-def generate_approval_full(num_voters: int = None, num_candidates: int = None) -> list:
+def generate_approval_full_votes(num_voters: int = None, num_candidates: int = None) -> list:
     """ Return: approval votes from Identity for approval """
     vote = {i for i in range(num_candidates)}
     return [vote for _ in range(num_voters)]
 
 
-def generate_approval_empty(num_voters: int = None) -> list:
+def generate_approval_empty_votes(num_voters: int = None) -> list:
     """ Return: approval votes from Identity for approval """
     return [set() for _ in range(num_voters)]
 
@@ -61,8 +61,8 @@ def generate_impartial_anonymous_culture_election(num_voters: int = None,
     return votes
 
 
-def generate_impartial_culture_election(num_voters: int = None,
-                                        num_candidates: int = None) -> np.ndarray:
+def generate_ordinal_ic_votes(num_voters: int = None,
+                              num_candidates: int = None) -> np.ndarray:
     """ Return: ordinal votes from Impartial Culture """
     votes = np.zeros([num_voters, num_candidates], dtype=int)
     for j in range(num_voters):

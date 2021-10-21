@@ -5,8 +5,8 @@ import random as rand
 import numpy as np
 
 
-def generate_urn_model_election(num_voters: int = None, num_candidates: int = None,
-                                params: dict = None) -> np.ndarray:
+def generate_urn_votes(num_voters: int = None, num_candidates: int = None,
+                       params: dict = None) -> np.ndarray:
     """ Return: ordinal votes from Polya-Eggenberger model """
 
     votes = np.zeros([num_voters, num_candidates])
@@ -22,8 +22,8 @@ def generate_urn_model_election(num_voters: int = None, num_candidates: int = No
     return votes
 
 
-def generate_approval_urn_election(num_voters: int = None, num_candidates: int = None,
-                                   params: dict = None) -> list:
+def generate_approval_urn_votes(num_voters: int = None, num_candidates: int = None,
+                                params: dict = None) -> list:
     """ Return: approval votes from Polya-Eggenberger model """
 
     votes = []

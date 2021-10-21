@@ -31,7 +31,7 @@ class OrdinalElection(Election):
             if str(votes[0]) in LIST_OF_FAKE_MODELS:
                 self.fake = True
                 self.votes = votes[0]
-                self.election_model = votes[0]
+                self.model = votes[0]
                 self.num_candidates = votes[1]
                 self.num_voters = votes[2]
                 self.fake_param = votes[3]
@@ -39,16 +39,16 @@ class OrdinalElection(Election):
                 self.votes = votes
                 self.num_candidates = len(votes[0])
                 self.num_voters = len(votes)
-                self.election_model = model
+                self.model = model
                 self.potes = self.votes_to_potes()
         else:
             self.fake = check_if_fake(experiment_id, name)
             if self.fake:
-                self.election_model, self.fake_param, self.num_voters, \
+                self.model, self.fake_param, self.num_voters, \
                     self.num_candidates = import_fake_soc_election(experiment_id, name)
             else:
                 self.votes, self.num_voters, self.num_candidates, self.param, \
-                    self.election_model = import_real_soc_election(experiment_id, name, shift)
+                    self.model = import_real_soc_election(experiment_id, name, shift)
 
                 self.potes = self.votes_to_potes()
 
@@ -78,27 +78,27 @@ class OrdinalElection(Election):
         # print(experiment.num_candidates)
         vectors = np.zeros([self.num_candidates, self.num_candidates])
 
-        if self.election_model == 'conitzer_matrix':
+        if self.model == 'conitzer_matrix':
             vectors = get_conitzer_vectors(self.num_candidates)
-        elif self.election_model == 'walsh_matrix':
+        elif self.model == 'walsh_matrix':
             vectors = get_walsh_vectors(self.num_candidates)
-        elif self.election_model == 'single-crossing_matrix':
+        elif self.model == 'single-crossing_matrix':
             vectors = get_single_crossing_vectors(self.num_candidates)
-        elif self.election_model == 'gs_caterpillar_matrix':
+        elif self.model == 'gs_caterpillar_matrix':
             vectors = get_gs_caterpillar_vectors(self.num_candidates)
-        elif self.election_model == 'sushi_matrix':
+        elif self.model == 'sushi_matrix':
             vectors = get_sushi_vectors()
-        elif self.election_model in {'norm-mallows_matrix', 'mallows_matrix_path'}:
+        elif self.model in {'norm-mallows_matrix', 'mallows_matrix_path'}:
             vectors = get_mallows_vectors(self.num_candidates, self.fake_param)
-        elif self.election_model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-            vectors = get_fake_vectors_single(self.election_model, self.num_candidates)
-        elif self.election_model in {'walsh_path', 'conitzer_path'}:
+        elif self.model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+            vectors = get_fake_vectors_single(self.model, self.num_candidates)
+        elif self.model in {'walsh_path', 'conitzer_path'}:
             vectors = get_fake_multiplication(self.num_candidates, self.fake_param,
-                                              self.election_model)
-        elif self.election_model in PATHS:
-            vectors = get_fake_convex(self.election_model, self.num_candidates, self.num_voters,
+                                              self.model)
+        elif self.model in PATHS:
+            vectors = get_fake_convex(self.model, self.num_candidates, self.num_voters,
                                       self.fake_param, get_fake_vectors_single)
-        elif self.election_model == 'crate':
+        elif self.model == 'crate':
             vectors = get_fake_vectors_crate(num_candidates=self.num_candidates,
                                              fake_param=self.fake_param)
         else:
@@ -128,11 +128,11 @@ class OrdinalElection(Election):
 
         if self.fake:
 
-            if self.election_model in {'identity', 'uniformity',
+            if self.model in {'identity', 'uniformity',
                                        'antagonism', 'stratification'}:
-                matrix = get_fake_matrix_single(self.election_model, self.num_candidates)
-            elif self.election_model in PATHS:
-                matrix = get_fake_convex(self.election_model, self.num_candidates, self.num_voters,
+                matrix = get_fake_matrix_single(self.model, self.num_candidates)
+            elif self.model in PATHS:
+                matrix = get_fake_convex(self.model, self.num_candidates, self.num_voters,
                                          self.fake_param, get_fake_matrix_single)
 
         else:
@@ -157,12 +157,12 @@ class OrdinalElection(Election):
 
         if self.fake:
 
-            if self.election_model in {'identity', 'uniformity',
+            if self.model in {'identity', 'uniformity',
                                        'antagonism', 'stratification'}:
-                borda_vector = get_fake_borda_vector(self.election_model, self.num_candidates,
+                borda_vector = get_fake_borda_vector(self.model, self.num_candidates,
                                                      self.num_voters)
-            elif self.election_model in PATHS:
-                borda_vector = get_fake_convex(self.election_model, self.num_candidates,
+            elif self.model in PATHS:
+                borda_vector = get_fake_convex(self.model, self.num_candidates,
                                                self.num_voters, self.fake_param,
                                                get_fake_borda_vector)
 
@@ -287,13 +287,13 @@ class OrdinalElection(Election):
             self.winners = generate_winners(election=self, num_winners=num_winners, method=method)
 
 
-def get_fake_multiplication(num_candidates, params, election_model):
+def get_fake_multiplication(num_candidates, params, model):
     params['weight'] = 0.
     params['norm-phi'] = params['alpha']
     main_matrix = []
-    if election_model == 'conitzer_path':
+    if model == 'conitzer_path':
         main_matrix = get_conitzer_vectors(num_candidates).transpose()
-    elif election_model == 'walsh_path':
+    elif model == 'walsh_path':
         main_matrix = get_walsh_vectors(num_candidates).transpose()
     mallows_matrix = get_mallows_vectors(num_candidates, params).transpose()
     output = np.matmul(main_matrix, mallows_matrix).transpose()

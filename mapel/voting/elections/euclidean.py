@@ -7,8 +7,8 @@ from numpy import random, linalg
 ####################################################################################################
 # Approval Euclidean Election Models
 ####################################################################################################
-def generate_approval_vcr_election(num_voters: int = None, num_candidates: int = None,
-                                   params: dict = None) -> list:
+def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = None,
+                                params: dict = None) -> list:
     v_a = 1.05  # params['v_a']
     v_b = 10  # params['v_b']
     c_a = 1.05  # params['c_a']
@@ -32,8 +32,8 @@ def generate_approval_vcr_election(num_voters: int = None, num_candidates: int =
     return votes
 
 
-def generate_approval_euclidean_election(num_voters: int = None, num_candidates: int = None,
-                                         params: dict = None) -> list:
+def generate_approval_euclidean_votes(num_voters: int = None, num_candidates: int = None,
+                                      params: dict = None) -> list:
     # 'p' should be lower than 0.5
 
     alpha = 4
@@ -165,9 +165,9 @@ def generate_2d_gaussian_party(num_voters=None, num_candidates=None, params=None
 ####################################################################################################
 # Ordinal Euclidean Election Models
 ####################################################################################################
-def generate_ordinal_euclidean_election(model: str = None, num_voters: int = None,
-                                        num_candidates: int = None,
-                                        params: dict = None) -> np.ndarray:
+def generate_ordinal_euclidean_votes(model: str = None, num_voters: int = None,
+                                     num_candidates: int = None,
+                                     params: dict = None) -> np.ndarray:
     voters = np.zeros([num_voters, params['dim']])
     candidates = np.zeros([num_voters, params['dim']])
     votes = np.zeros([num_voters, num_candidates], dtype=int)

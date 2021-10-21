@@ -1,3 +1,4 @@
+import copy
 import random as rand
 import numpy as np
 import os
@@ -60,7 +61,7 @@ def mallowsVote(m,insertion_probabilites_list):
     return vote
 
 
-def generate_mallows_election(num_voters, num_candidates, params):
+def generate_mallows_votes(num_voters, num_candidates, params):
     insertion_probabilites_list = []
     for i in range(1, num_candidates):
         insertion_probabilites_list.append(computeInsertionProbas(i, params['phi']))
@@ -73,6 +74,7 @@ def generate_mallows_election(num_voters, num_candidates, params):
                 vote.reverse()
         V += [vote]
     return V
+
 
 def calculateZpoly(m):
     res = [1]
@@ -147,10 +149,10 @@ def generate_mallows_party(num_voters=None, num_candidates=None,
     party_size = num_winners
 
     params['phi'] = phi_from_relphi(num_parties, relphi=params['main-phi'])
-    mapping = generate_mallows_election(num_voters, num_parties, params)[0]
+    mapping = generate_mallows_votes(num_voters, num_parties, params)[0]
 
     params['phi'] = phi_from_relphi(num_parties, relphi=params['norm-phi'])
-    votes = generate_mallows_election(num_voters, num_parties, params)
+    votes = generate_mallows_votes(num_voters, num_parties, params)
 
     for i in range(num_voters):
         for j in range(num_parties):
@@ -167,7 +169,7 @@ def generate_mallows_party(num_voters=None, num_candidates=None,
     return new_votes
 
 
-def generate_approval_mallows_election(num_voters=None, num_candidates=None, params=None):
+def generate_approval_shumallows_votes(num_voters=None, num_candidates=None, params=None):
     # central_vote = set()
     # for c in range(num_candidates):
     #     if rand.random() <= params['p']:
@@ -192,7 +194,33 @@ def generate_approval_mallows_election(num_voters=None, num_candidates=None, par
     return votes
 
 
-def generate_approval_raw_mallows_election(num_voters=None, num_candidates=None, params=None):
+def generate_approval_moving_shumallows_votes(num_voters=None, num_candidates=None, params=None):
+    # central_vote = set()
+    # for c in range(num_candidates):
+    #     if rand.random() <= params['p']:
+    #         central_vote.add(c)
+
+    k = int(params['p']*num_candidates)
+    # print(k)
+    central_vote = {i for i in range(k)}
+
+    votes = [0 for _ in range(num_voters)]
+    for v in range(num_voters):
+        vote = set()
+        for c in range(num_candidates):
+            if rand.random() <= params['phi']:
+                if rand.random() <= params['p']:
+                    vote.add(c)
+            else:
+                if c in central_vote:
+                    vote.add(c)
+        votes[v] = vote
+        central_vote = copy.deepcopy(vote)
+
+    return votes
+
+
+def generate_approval_hamming_noise_model_votes(num_voters=None, num_candidates=None, params=None):
 
     k = int(params['p']*num_candidates)
     central_vote = {i for i in range(k)}
@@ -212,7 +240,7 @@ def generate_approval_raw_mallows_election(num_voters=None, num_candidates=None,
     return votes
 
 
-def generate_approval_disjoint_mallows_election(num_voters=None, num_candidates=None, params=None):
+def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=None, params=None):
 
     if 'phi' not in params:
         phi = rand.random()
@@ -307,7 +335,7 @@ def generate_approval_disjoint_mallows_election(num_voters=None, num_candidates=
     return votes
 
 
-def generate_approval_truncated_mallows(num_voters=None, num_candidates=None, params=None):
+def generate_approval_truncated_mallows_votes(num_voters=None, num_candidates=None, params=None):
     # k = int(params['p'] * num_candidates)
 
     if 'norm-phi' not in params:
@@ -315,7 +343,7 @@ def generate_approval_truncated_mallows(num_voters=None, num_candidates=None, pa
 
     params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
-    ordinal_votes = generate_mallows_election(num_voters, num_candidates, params)
+    ordinal_votes = generate_mallows_votes(num_voters, num_candidates, params)
     votes = []
     for v in range(num_voters):
         k = -1

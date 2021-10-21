@@ -12,27 +12,24 @@ from scipy.stats import gamma
 from typing import Union
 
 import mapel.voting.elections.euclidean as euclidean
+import mapel.voting.elections.mallows as mallows
 
-from mapel.voting.elections.group_separable import generate_group_separable_election
+from mapel.voting.elections.group_separable import generate_ordinal_group_separable_votes
 from mapel.voting.elections.guardians import \
     generate_real_antagonism_election, \
     generate_real_identity_election, generate_real_stratification_election, \
     generate_real_uniformity_election
-from mapel.voting.elections.impartial import generate_impartial_culture_election, \
+from mapel.voting.elections.impartial import generate_ordinal_ic_votes, \
     generate_impartial_anonymous_culture_election, generate_ic_party, \
-    generate_approval_ic_election, generate_approval_id_election, \
-    generate_approval_empty, generate_approval_full
-from mapel.voting.elections.mallows import generate_mallows_election, \
-    phi_from_relphi, generate_mallows_party, generate_approval_mallows_election, \
-    generate_approval_raw_mallows_election, generate_approval_disjoint_mallows_election, \
-    generate_approval_truncated_mallows
+    generate_approval_ic_votes, generate_approval_id_votes, \
+    generate_approval_empty_votes, generate_approval_full_votes
 from mapel.voting.elections.single_crossing import \
-    generate_single_crossing_election
-from mapel.voting.elections.single_peaked import generate_conitzer_election, \
-    generate_walsh_election, generate_spoc_conitzer_election, \
+    generate_ordinal_single_crossing_votes
+from mapel.voting.elections.single_peaked import generate_ordinal_sp_conitzer_votes, \
+    generate_ordinal_sp_walsh_votes, generate_ordinal_spoc_conitzer_votes, \
     generate_sp_party
-from mapel.voting.elections.urn_model import generate_urn_model_election, \
-    generate_approval_urn_election
+from mapel.voting.elections.urn_model import generate_urn_votes, \
+    generate_approval_urn_votes
 from mapel.voting._glossary import NICE_NAME, LIST_OF_FAKE_MODELS, PATHS, PARTY_MODELS, \
     APPROVAL_MODELS, GRAPH_MODELS, APPROVAL_FAKE_MODELS
 from mapel.voting.objects.ApprovalElection import ApprovalElection
@@ -65,26 +62,25 @@ def generate_graph(model=None, num_nodes=None, params=None):
 
 def generate_approval_votes(model: str = None, num_candidates: int = None, num_voters: int = None,
                             params: dict = None) -> Union[list, np.ndarray]:
-    models_with_params = {'approval_ic': generate_approval_ic_election,
-                          'approval_id': generate_approval_id_election,
-                          'approval_mallows': generate_approval_mallows_election,
-                          'approval_raw_mallows': generate_approval_raw_mallows_election,
-                          'approval_urn': generate_approval_urn_election,
-                          'approval_euclidean': euclidean.generate_approval_euclidean_election,
-                          'approval_disjoint_mallows': generate_approval_disjoint_mallows_election,
-                          'approval_id_0.5': generate_approval_id_election,
-                          'approval_ic_0.5': generate_approval_ic_election,
-                          'approval_vcr': euclidean.generate_approval_vcr_election,
-                          'approval_truncated_mallows': generate_approval_truncated_mallows,
+    models_with_params = {'approval_ic': generate_approval_ic_votes,
+                          'approval_id': generate_approval_id_votes,
+                          'approval_mallows': mallows.generate_approval_shumallows_votes,
+                          'approval_raw_mallows': mallows.generate_approval_hamming_noise_model_votes,
+                          'approval_urn': generate_approval_urn_votes,
+                          'approval_euclidean': euclidean.generate_approval_euclidean_votes,
+                          'approval_disjoint_mallows': mallows.generate_approval_disjoint_shumallows_votes,
+                          'approval_vcr': euclidean.generate_approval_vcr_votes,
+                          'approval_truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
+                          'approval_moving_mallows': mallows.generate_approval_moving_shumallows_votes,
                           }
 
     if model in models_with_params:
         return models_with_params.get(model)(num_voters=num_voters, num_candidates=num_candidates,
                                              params=params)
     elif model in ['approval_full']:
-        return generate_approval_full(num_voters=num_voters, num_candidates=num_candidates)
+        return generate_approval_full_votes(num_voters=num_voters, num_candidates=num_candidates)
     elif model in ['approval_empty']:
-        return generate_approval_empty(num_voters=num_voters)
+        return generate_approval_empty_votes(num_voters=num_voters)
 
     elif model in APPROVAL_FAKE_MODELS:
         return []
@@ -95,55 +91,55 @@ def generate_approval_votes(model: str = None, num_candidates: int = None, num_v
 
 def generate_ordinal_votes(model: str = None, num_candidates: int = None, num_voters: int = None,
                            params: dict = None) -> Union[list, np.ndarray]:
-    naked_models = {'impartial_culture': generate_impartial_culture_election,
+    naked_models = {'impartial_culture': generate_ordinal_ic_votes,
                     'iac': generate_impartial_anonymous_culture_election,
-                    'conitzer': generate_conitzer_election,
-                    'spoc_conitzer': generate_spoc_conitzer_election,
-                    'walsh': generate_walsh_election,
-                    'single-crossing': generate_single_crossing_election,
+                    'conitzer': generate_ordinal_sp_conitzer_votes,
+                    'spoc_conitzer': generate_ordinal_spoc_conitzer_votes,
+                    'walsh': generate_ordinal_sp_walsh_votes,
+                    'single-crossing': generate_ordinal_single_crossing_votes,
                     'real_identity': generate_real_identity_election,
                     'real_uniformity': generate_real_uniformity_election,
                     'real_antagonism': generate_real_antagonism_election,
                     'real_stratification':
                         generate_real_stratification_election}
 
-    euclidean_models = {'1d_interval': euclidean.generate_ordinal_euclidean_election,
-                        '1d_gaussian': euclidean.generate_ordinal_euclidean_election,
-                        '1d_one_sided_triangle': euclidean.generate_ordinal_euclidean_election,
-                        '1d_full_triangle': euclidean.generate_ordinal_euclidean_election,
-                        '1d_two_party': euclidean.generate_ordinal_euclidean_election,
-                        '2d_disc': euclidean.generate_ordinal_euclidean_election,
-                        '2d_square': euclidean.generate_ordinal_euclidean_election,
-                        '2d_gaussian': euclidean.generate_ordinal_euclidean_election,
-                        '3d_cube': euclidean.generate_ordinal_euclidean_election,
-                        '4d_cube': euclidean.generate_ordinal_euclidean_election,
-                        '5d_cube': euclidean.generate_ordinal_euclidean_election,
-                        '10d_cube': euclidean.generate_ordinal_euclidean_election,
-                        '15d_cube': euclidean.generate_ordinal_euclidean_election,
-                        '20d_cube': euclidean.generate_ordinal_euclidean_election,
-                        '40d_cube': euclidean.generate_ordinal_euclidean_election,
-                        '2d_sphere': euclidean.generate_ordinal_euclidean_election,
-                        '3d_sphere': euclidean.generate_ordinal_euclidean_election,
-                        '4d_sphere': euclidean.generate_ordinal_euclidean_election,
-                        '5d_sphere': euclidean.generate_ordinal_euclidean_election,
-                        '4d_ball': euclidean.generate_ordinal_euclidean_election,
-                        '5d_ball': euclidean.generate_ordinal_euclidean_election,
+    euclidean_models = {'1d_interval': euclidean.generate_ordinal_euclidean_votes,
+                        '1d_gaussian': euclidean.generate_ordinal_euclidean_votes,
+                        '1d_one_sided_triangle': euclidean.generate_ordinal_euclidean_votes,
+                        '1d_full_triangle': euclidean.generate_ordinal_euclidean_votes,
+                        '1d_two_party': euclidean.generate_ordinal_euclidean_votes,
+                        '2d_disc': euclidean.generate_ordinal_euclidean_votes,
+                        '2d_square': euclidean.generate_ordinal_euclidean_votes,
+                        '2d_gaussian': euclidean.generate_ordinal_euclidean_votes,
+                        '3d_cube': euclidean.generate_ordinal_euclidean_votes,
+                        '4d_cube': euclidean.generate_ordinal_euclidean_votes,
+                        '5d_cube': euclidean.generate_ordinal_euclidean_votes,
+                        '10d_cube': euclidean.generate_ordinal_euclidean_votes,
+                        '15d_cube': euclidean.generate_ordinal_euclidean_votes,
+                        '20d_cube': euclidean.generate_ordinal_euclidean_votes,
+                        '40d_cube': euclidean.generate_ordinal_euclidean_votes,
+                        '2d_sphere': euclidean.generate_ordinal_euclidean_votes,
+                        '3d_sphere': euclidean.generate_ordinal_euclidean_votes,
+                        '4d_sphere': euclidean.generate_ordinal_euclidean_votes,
+                        '5d_sphere': euclidean.generate_ordinal_euclidean_votes,
+                        '4d_ball': euclidean.generate_ordinal_euclidean_votes,
+                        '5d_ball': euclidean.generate_ordinal_euclidean_votes,
                         '2d_grid': euclidean.generate_elections_2d_grid}
 
     party_models = {'1d_gaussian_party': euclidean.generate_1d_gaussian_party,
                     '2d_gaussian_party': euclidean.generate_2d_gaussian_party,
                     'walsh_party': generate_sp_party,
                     'conitzer_party': generate_sp_party,
-                    'mallows_party': generate_mallows_party,
+                    'mallows_party': mallows.generate_mallows_party,
                     'ic_party': generate_ic_party
                     }
 
-    single_param_models = {'urn_model': generate_urn_model_election,
+    single_param_models = {'urn_model': generate_urn_votes,
                            'group-separable':
-                               generate_group_separable_election}
+                               generate_ordinal_group_separable_votes}
 
-    double_param_models = {'mallows': generate_mallows_election,
-                           'norm-mallows': generate_mallows_election, }
+    double_param_models = {'mallows': mallows.generate_mallows_votes,
+                           'norm-mallows': mallows.generate_mallows_votes, }
 
     if model in naked_models:
         votes = naked_models.get(model)(num_voters=num_voters,
@@ -283,11 +279,11 @@ def update_params(params, variable, model, num_candidates):
         params['alpha'] = gamma.rvs(0.8)
 
     if model == 'norm-mallows':
-        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+        params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
     if model == 'mallows_matrix_path':
         params['norm-phi'] = params['alpha']
-        params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+        params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
     if model == 'erdos_renyi_graph' and params['p'] is None:
         params['p'] = rand.random()

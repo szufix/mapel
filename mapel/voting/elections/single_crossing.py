@@ -2,8 +2,8 @@ import random as rand
 import numpy as np
 
 
-def generate_single_crossing_election(num_voters: int = None,
-                                      num_candidates: int = None) -> np.ndarray:
+def generate_ordinal_single_crossing_votes(num_voters: int = None,
+                                           num_candidates: int = None) -> np.ndarray:
     """ helper function: generate simple single-crossing elections"""
 
     votes = np.zeros([num_voters, num_candidates])

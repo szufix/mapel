@@ -22,8 +22,8 @@ def _decompose_tree(num_leaves, num_internal_nodes):
     return tree
 
 
-def generate_group_separable_election(num_voters=None, num_candidates=None,
-                                      params=None):
+def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
+                                           params=None):
     """ Algorithm from: The Complexity of Election Problems
     with Group-Separable Preferences"""
 
