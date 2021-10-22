@@ -148,7 +148,7 @@ class OrdinalElection(Election):
 
         return matrix
 
-    def votes_to_bordawise_vector(self) -> (np.ndarray, int):
+    def votes_to_bordawise_vector(self) -> np.ndarray:
         """ convert VOTES to Borda vector """
 
         borda_vector = np.zeros([self.num_candidates])
@@ -171,7 +171,7 @@ class OrdinalElection(Election):
                             range(self.num_candidates)]
             borda_vector = sorted(borda_vector, reverse=True)
 
-        return borda_vector, len(borda_vector)
+        return np.array(borda_vector)
 
     def votes_to_positionwise_intervals(self, precision: int = None) -> list:
 

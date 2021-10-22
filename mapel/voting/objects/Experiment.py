@@ -48,14 +48,17 @@ class Experiment:
         self.clean = clean
 
         self.distance_id = distance_id
-        self.elections = {}
 
-        self.families = None
-        self.distances = None
-        self.times = None
-        self.stds = None
-        self.coordinates_by_families = None
-        self.matchings = None
+        self.elections = {}
+        self.distances = {}
+        self.coordinates = {}
+
+        self.families = {}
+        self.times = {}
+        self.stds = {}
+        self.matchings = {}
+        self.features = {}
+        self.coordinates_by_families = {}
 
         self.num_families = None
         self.num_elections = None
@@ -71,30 +74,35 @@ class Experiment:
             self.create_structure()
             self.families = self.import_controllers()
 
-        if elections is not None:
-            if elections == 'import':
+        if elections == {}:
+            self.elections = elections
+        elif self.experiment_id != 'virtual':
+            try:
                 self.elections = self.add_elections_to_experiment()
-            elif elections == 'import_folders':
-                self.elections = self.add_folders_to_experiment()
-            else:
-                self.elections = elections
+                print('=== Elections imported successfully! ===')
+            except FileNotFoundError:
+                print('=== Elections not found! ===')
 
-        if distances is not None:
-            if distances == 'import':
-                self.distances, self.times, self.stds = \
-                    self.add_distances_to_experiment(distance_id=distance_id)
-            else:
-                self.distances = distances
+        if distances == {}:
+            self.distances = distances
+        elif self.experiment_id != 'virtual' and self.elections != {}:
+            try:
+                self.distances, self.times, self.stds = self.add_distances_to_experiment()
+                print('=== Distances imported successfully! ===')
+            except FileNotFoundError:
+                print('=== Distances not found! ===')
 
-        if coordinates is not None:
-            if coordinates == 'import':
+        if coordinates == {}:
+            self.coordinates = coordinates
+        elif self.experiment_id != 'virtual' and self.distances != {}:
+            try:
                 self.coordinates = self.add_coordinates_to_experiment()
-            else:
-                self.coordinates = coordinates
+                print('=== Coordinates imported successfully! ===')
+            except FileNotFoundError:
+                print('=== Coordinates not found! ===')
 
-        self.features = {}
 
-    def add_family(self, model: str = None, params: dict = None, size=1, label=None, color="black",
+    def add_family(self, model_id: str = None, params: dict = None, size=1, label=None, color="black",
                    alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,
                    family_id=None, single_election=False, num_nodes=None,
                    path=None, election_id=None):
@@ -109,7 +117,7 @@ class Experiment:
         elif label is None:
             label = family_id
 
-        self.families[family_id] = Family(model_id=model, family_id=family_id,
+        self.families[family_id] = Family(model_id=model_id, family_id=family_id,
                                           params=params, label=label, color=color, alpha=alpha,
                                           show=show, size=size, marker=marker,
                                           starting_from=starting_from, num_nodes=num_nodes,
@@ -122,10 +130,10 @@ class Experiment:
         self.main_order = [i for i in range(self.num_elections)]
 
         params = self.families[family_id].params
-        model = self.families[family_id].model
+        model_id = self.families[family_id].model_id
 
         ids = _elections.prepare_statistical_culture_family(experiment=self,
-                                                            model_id=model,
+                                                            model_id=model_id,
                                                             family_id=family_id,
                                                             params=copy.deepcopy(params))
 
@@ -138,7 +146,7 @@ class Experiment:
                      num_candidates=None, num_voters=None, election_id=None, num_nodes=None):
         """ Add election to the experiment """
 
-        return self.add_family(model=model, params=params, size=size, label=label, color=color,
+        return self.add_family(model_id=model, params=params, size=size, label=label, color=color,
                                alpha=alpha, show=show, marker=marker, starting_from=starting_from,
                                num_candidates=num_candidates,
                                family_id=election_id, num_nodes=num_nodes, single_election=True)[0]
@@ -156,24 +164,24 @@ class Experiment:
 
             for family_id in self.families:
                 params = self.families[family_id].params
-                model = self.families[family_id].model
+                model_id = self.families[family_id].model_id
 
                 if self.clean:
                     path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
                     for file_name in os.listdir(path):
                         os.remove(os.path.join(path, file_name))
 
-                if model in LIST_OF_PREFLIB_MODELS:
+                if model_id in LIST_OF_PREFLIB_MODELS:
                     ids = preflib.prepare_preflib_family(
-                        experiment=self, model=model, family_id=family_id, params=params)
+                        experiment=self, model=model_id, family_id=family_id, params=params)
 
                     self.families[family_id].election_ids = ids
 
-                elif model not in ['core', 'pabulib'] and (model in NICE_NAME or
-                                                           model in LIST_OF_FAKE_MODELS or
-                                                           model in APPROVAL_MODELS):
+                elif model_id not in ['core', 'pabulib'] and (model_id in NICE_NAME or
+                                                           model_id in LIST_OF_FAKE_MODELS or
+                                                           model_id in APPROVAL_MODELS):
                     ids = _elections.prepare_statistical_culture_family(
-                        experiment=self, model_id=model, family_id=family_id, params=params)
+                        experiment=self, model_id=model_id, family_id=family_id, params=params)
 
                     self.families[family_id].election_ids = ids
 
@@ -208,6 +216,7 @@ class Experiment:
                 election.votes_to_voterlikeness_vectors(vector_type=vector_type)
         elif '-candidatelikeness' in distance_id:
             for election in self.elections.values():
+                # print(election)
                 election.votes_to_candidatelikeness_sorted_vectors()
         elif '-pairwise' in distance_id:
             for election in self.elections.values():
@@ -335,7 +344,7 @@ class Experiment:
         elif algorithm in {'se', 'SE'}:
             my_pos = SpectralEmbedding(n_components=dim).fit_transform(x)
         elif algorithm in {'isomap', 'ISOMAP'}:
-            my_pos = Isomap(n_components=dim,n_neighbors=num_neighbors).fit_transform(x)
+            my_pos = Isomap(n_components=dim, n_neighbors=num_neighbors).fit_transform(x)
         elif algorithm in {'lle', 'LLE'}:
             my_pos = LocallyLinearEmbedding(n_components=dim,
                                             n_neighbors=num_neighbors,
@@ -374,9 +383,9 @@ class Experiment:
 
         self.coordinates = coordinates
 
-    def get_election_id_from_model_name(self, model: str) -> str:
+    def get_election_id_from_model_name(self, model_id: str) -> str:
         for family_id in self.families:
-            if self.families[family_id].model == model:
+            if self.families[family_id].model_id == model_id:
                 return family_id
 
     def print_map(self, dim: int = 2, **kwargs) -> None:
@@ -437,7 +446,7 @@ class Experiment:
         starting_from = 0
         for row in reader:
 
-            model = None
+            model_id = None
             color = None
             label = None
             params = None
@@ -448,7 +457,7 @@ class Experiment:
             num_voters = None
 
             if 'model_id' in row.keys():
-                model = str(row['model_id']).strip()
+                model_id = str(row['model_id']).strip()
 
             if 'color' in row.keys():
                 color = str(row['color']).strip()
@@ -481,17 +490,17 @@ class Experiment:
 
             show = row['show'].strip() == 't'
 
-            if model in {'urn_model'} and params['alpha'] is not None:
+            if model_id in {'urn_model'} and params['alpha'] is not None:
                 family_id += '_' + str(float(params['alpha']))
-            elif model in {'mallows'} and params['phi'] is not None:
+            elif model_id in {'mallows'} and params['phi'] is not None:
                 family_id += '_' + str(float(params['phi']))
-            elif model in {'norm-mallows', 'norm-mallows_matrix'} \
+            elif model_id in {'norm-mallows', 'norm-mallows_matrix'} \
                     and params['norm-phi'] is not None:
                 family_id += '_' + str(float(params['norm-phi']))
 
             single_election = size == 1
 
-            families[family_id] = Family(model_id=model,
+            families[family_id] = Family(model_id=model_id,
                                          family_id=family_id,
                                          params=params, label=label,
                                          color=color, alpha=alpha, show=show,
@@ -522,7 +531,7 @@ class Experiment:
         if ignore is None:
             ignore = []
 
-        points = {}
+        coordinates = {}
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                             "coordinates", f'{self.distance_id}_2d.csv')
 
@@ -531,15 +540,21 @@ class Experiment:
             # ORIGINAL
 
             reader = csv.DictReader(csv_file, delimiter=';')
-            ctr = 0
+
+            warn = False
 
             for row in reader:
-                if self.main_order[ctr] < self.num_elections and \
-                        self.main_order[ctr] not in ignore:
-                    points[row['election_id']] = [float(row['x']), float(row['y'])]
-                ctr += 1
+                election_id = row['election_id']
+                coordinates[election_id] = [float(row['x']), float(row['y'])]
 
-        return points
+                if election_id not in self.elections:
+                    warn = True
+
+            if warn:
+                text = f'Possibly outdated coordinates are imported!'
+                warnings.warn(text)
+
+        return coordinates
 
     def compute_coordinates_by_families(self) -> None:
         """ Group all points by their families """
@@ -584,7 +599,8 @@ class Experiment:
                     coordinates_by_families[family_id][0].append(self.coordinates[election_id][0])
                     coordinates_by_families[family_id][1].append(self.coordinates[election_id][1])
                     try:
-                        coordinates_by_families[family_id][2].append(self.coordinates[election_id][2])
+                        coordinates_by_families[family_id][2].append(
+                            self.coordinates[election_id][2])
                     except Exception:
                         pass
 
@@ -603,11 +619,11 @@ class Experiment:
                 value = feature(self, election)
 
             elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
-                          'number_of_cohesive_groups_brute', 'proportional_degree']:
+                                'number_of_cohesive_groups_brute', 'proportional_degree']:
                 value = feature(election, committee_size=committee_size)
 
             elif feature_id in {'avg_distortion_from_guardians',
-                          'worst_distortion_from_guardians'}:
+                                'worst_distortion_from_guardians'}:
                 value = feature(self, election_id)
             else:
                 value = feature(election)
@@ -714,29 +730,42 @@ class Experiment:
     #
     #     return num_distances, hist_data, std
 
-    def add_distances_to_experiment(self, distance_id:
-                                    str = 'emd-positionwise') -> (dict, dict, dict):
+    def add_distances_to_experiment(self) -> (dict, dict, dict):
         """ Import precomputed distances between each pair of elections from a file """
-        file_name = f'{distance_id}.csv'
+        file_name = f'{self.distance_id}.csv'
         path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'distances', file_name)
+
         distances = {}
         times = {}
         stds = {}
 
-        for election_id in self.elections:
-            distances[election_id] = {}
-            times[election_id] = {}
-            stds[election_id] = {}
-
         with open(path, 'r', newline='') as csv_file:
             reader = csv.DictReader(csv_file, delimiter=';')
+            warn = False
 
             for row in reader:
                 election_id_1 = row['election_id_1']
                 election_id_2 = row['election_id_2']
 
-                distances[election_id_1][election_id_2] = float(row['distance'])
-                distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
+                if election_id_1 not in distances:
+                    distances[election_id_1] = {}
+                if election_id_1 not in times:
+                    times[election_id_1] = {}
+                if election_id_1 not in stds:
+                    stds[election_id_1] = {}
+
+                if election_id_2 not in distances:
+                    distances[election_id_2] = {}
+                if election_id_2 not in times:
+                    times[election_id_2] = {}
+                if election_id_2 not in stds:
+                    stds[election_id_2] = {}
+
+                try:
+                    distances[election_id_1][election_id_2] = float(row['distance'])
+                    distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
+                except KeyError:
+                    pass
 
                 try:
                     times[election_id_1][election_id_2] = float(row['time'])
@@ -749,6 +778,13 @@ class Experiment:
                     stds[election_id_2][election_id_1] = stds[election_id_1][election_id_2]
                 except KeyError:
                     pass
+
+                if election_id_1 not in self.elections:
+                    warn = True
+
+            if warn:
+                text = f'Possibly outdated distances are imported!'
+                warnings.warn(text)
 
         return distances, times, stds
 

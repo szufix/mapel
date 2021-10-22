@@ -262,81 +262,24 @@ def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=
 
     k = int(params['p'] * num_candidates)
 
-    if num_groups == 2:
-        size_1 = np.random.uniform(low=0.5, high=1.)
-        size_1 = int(size_1 * num_voters)
+    sizes = runif_in_simplex(num_groups)
+    sizes = np.concatenate(([0],sizes))
+    sizes = np.cumsum(sizes)
 
-        votes = [set() for _ in range(num_voters)]
-        central_vote_1 = {i for i in range(k)}
+    votes = [set() for _ in range(num_voters)]
 
-        for v in range(size_1):
+    for g in range(num_groups):
+
+        central_vote = {g * k + i for i in range(k)}
+
+        for v in range(int(sizes[g]*num_voters), int(sizes[g+1]*num_voters)):
             vote = set()
             for c in range(num_candidates):
                 if rand.random() <= phi:
                     if rand.random() <= params['p']:
                         vote.add(c)
                 else:
-                    if c in central_vote_1:
-                        vote.add(c)
-            votes[v] = vote
-
-        central_vote_2 = {i + k for i in range(k)}
-
-        for v in range(size_1, num_voters):
-            vote = set()
-            for c in range(num_candidates):
-                if rand.random() <= phi:
-                    if rand.random() <= params['p']:
-                        vote.add(c)
-                else:
-                    if c in central_vote_2:
-                        vote.add(c)
-            votes[v] = vote
-
-    elif num_groups == 3:
-        size_1 = np.random.uniform(low=0.5, high=1.)
-        size_2 = np.random.uniform(low=size_1, high=1.)
-
-        size_1 = int(size_1 * num_voters)
-        size_2 = int(size_2 * num_voters)
-
-        votes = [set() for _ in range(num_voters)]
-        central_vote_1 = {i for i in range(k)}
-
-        for v in range(size_1):
-            vote = set()
-            for c in range(num_candidates):
-                if rand.random() <= phi:
-                    if rand.random() <= params['p']:
-                        vote.add(c)
-                else:
-                    if c in central_vote_1:
-                        vote.add(c)
-            votes[v] = vote
-
-        central_vote_2 = {i + k for i in range(k)}
-
-        for v in range(size_1, size_2):
-            vote = set()
-            for c in range(num_candidates):
-                if rand.random() <= phi:
-                    if rand.random() <= params['p']:
-                        vote.add(c)
-                else:
-                    if c in central_vote_2:
-                        vote.add(c)
-            votes[v] = vote
-
-        central_vote_3 = {i + k * 2 for i in range(k)}
-
-        for v in range(size_2, num_voters):
-            vote = set()
-            for c in range(num_candidates):
-                if rand.random() <= phi:
-                    if rand.random() <= params['p']:
-                        vote.add(c)
-                else:
-                    if c in central_vote_3:
+                    if c in central_vote:
                         vote.add(c)
             votes[v] = vote
 
@@ -362,3 +305,10 @@ def generate_approval_truncated_mallows_votes(num_voters=None, num_candidates=No
         votes.append(set(ordinal_votes[v][0:k]))
 
     return votes
+
+
+def runif_in_simplex(n):
+  ''' Return uniformly random vector in the n-simplex '''
+
+  k = np.random.exponential(scale=1.0, size=n)
+  return k / sum(k)

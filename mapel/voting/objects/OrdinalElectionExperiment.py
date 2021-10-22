@@ -63,12 +63,10 @@ class OrdinalElectionExperiment(ElectionExperiment):
                 path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                     "elections", self.families[family_id].model_id)
                 for i, name in enumerate(os.listdir(path)):
-
                     if i >= self.families[family_id].size:
                         break
                     name = os.path.splitext(name)[0]
                     name = f'{self.families[family_id].model_id}/{name}'
-                    # print(election_id)
                     election = OrdinalElection(self.experiment_id, name,
                                                _import=self._import, shift=self.shift)
                     elections[name] = election
@@ -77,21 +75,6 @@ class OrdinalElectionExperiment(ElectionExperiment):
             self.families[family_id].election_ids = ids
 
         return elections
-
-    # def add_folders_to_experiment(self) -> dict:
-    #     """ Return: elections imported from folders """
-    #
-    #     elections = {}
-    #
-    #     for family_id in self.families:
-    #
-    #         ids = []
-    #
-    #
-    #
-    #         self.families[family_id].names = ids
-    #
-    #     return elections
 
     def create_structure(self) -> None:
 

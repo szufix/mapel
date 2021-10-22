@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import copy
 import csv
 import math
 import os
@@ -14,10 +15,10 @@ import numpy as np
 from scipy.stats import stats
 
 from mapel.voting import elections as el
-from mapel.voting.other import winners2 as win
 from mapel.voting import metrics as metr
 from mapel.voting import objects as obj
-import copy
+from mapel.voting.other import winners2 as win
+
 
 # def separation(election) -> float:
 #

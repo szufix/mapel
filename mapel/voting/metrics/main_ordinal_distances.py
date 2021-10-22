@@ -23,9 +23,9 @@ def compute_agg_voterlikeness_distance(election_1: OrdinalElection, election_2: 
 def compute_bordawise_distance(election_1: OrdinalElection, election_2: OrdinalElection,
                                inner_distance: Callable) -> float:
     """ Compute Bordawise distance between ordinal elections """
-    vector_1, num_possible_scores = election_1.votes_to_bordawise_vector()
-    vector_2, _ = election_2.votes_to_bordawise_vector()
-    return inner_distance(vector_1, vector_2, num_possible_scores)
+    vector_1 = election_1.votes_to_bordawise_vector()
+    vector_2 = election_2.votes_to_bordawise_vector()
+    return inner_distance(vector_1, vector_2)
 
 
 def compute_pairwise_distance(election_1: OrdinalElection, election_2: OrdinalElection,
@@ -88,8 +88,7 @@ def get_matching_cost_positionwise(election_1: OrdinalElection, election_2: Ordi
     vectors_1 = election_1.get_vectors()
     vectors_2 = election_2.get_vectors()
     size = election_1.num_candidates
-    return [[inner_distance(list(vectors_1[i]), list(vectors_2[j]))
-             for i in range(size)] for j in range(size)]
+    return [[inner_distance(vectors_1[i], vectors_2[j]) for i in range(size)] for j in range(size)]
 
 
 # # # # # # # # # # # # # # # #

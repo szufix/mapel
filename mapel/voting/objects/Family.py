@@ -12,7 +12,7 @@ class Family:
                  num_nodes: int = None):
 
         self.family_id = family_id
-        self.model = model_id
+        self.model_id = model_id
         self.params = params
         self.size = size
         self.label = label

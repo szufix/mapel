@@ -110,7 +110,7 @@ class ElectionExperiment(Experiment):
         self.main_order = [i for i in range(self.num_elections)]
 
         params = self.families[family_id].params
-        model_id = self.families[family_id].model
+        model_id = self.families[family_id].model_id
 
         ids = _elections.prepare_statistical_culture_family(experiment=self,
                                                             model_id=model_id,
