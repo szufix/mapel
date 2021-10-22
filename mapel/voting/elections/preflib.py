@@ -6,20 +6,17 @@ import random as rand
 from collections import Counter
 
 import numpy as np
-from scipy.stats import gamma
-
-from mapel.voting._glossary import LIST_OF_PREFLIB_MODELS
-
 
 
 # GENERATE
 def generate_preflib_election(experiment=None, model=None, name=None,
-                               num_voters=None, num_candidates=None, folder=None,
-                               selection_method='random'):
+                              num_voters=None, num_candidates=None, folder=None,
+                              selection_method='random'):
     """ main function: generate elections"""
 
     votes = generate_votes_preflib(model, selection_method=selection_method,
-                                   num_voters=num_voters, num_candidates=num_candidates, folder=folder)
+                                   num_voters=num_voters, num_candidates=num_candidates,
+                                   folder=folder)
 
     path = os.path.join("experiments", experiment.experiment_id, "elections", name + ".soc")
     file_ = open(path, 'w')
@@ -87,11 +84,13 @@ def generate_votes_preflib(model, num_voters=None, num_candidates=None, folder=N
 
         # NEW 17.12.2020
         if selection_method == 'random':
-            selected_candidates = rand.sample([j for j in range(original_num_candidates)], num_candidates)
+            selected_candidates = rand.sample([j for j in range(original_num_candidates)],
+                                              num_candidates)
         elif selection_method == 'borda':
             scores = get_borda_scores(original_votes, original_num_voters, original_num_candidates)
             order_by_score = [x for _, x in
-                              sorted(zip(scores, [i for i in range(original_num_candidates)]), reverse=True)]
+                              sorted(zip(scores, [i for i in range(original_num_candidates)]),
+                                     reverse=True)]
             selected_candidates = order_by_score[0:num_candidates]
         elif selection_method == 'freq':
             freq = import_freq(model)
@@ -134,8 +133,6 @@ def get_borda_scores(votes, num_voters, num_candidates):
             scores[votes[i][j]] += num_candidates - j - 1
 
     return scores
-
-
 
 
 def prepare_preflib_family(experiment=None, model=None, family_id=None,
@@ -220,8 +217,6 @@ def prepare_preflib_family(experiment=None, model=None, family_id=None,
 
         keys.append(name)
     return keys
-
-
 
 
 # MATRICES

@@ -63,8 +63,8 @@ def generate_approval_euclidean_votes(num_voters: int = None, num_candidates: in
         candidates_group_b = np.random.normal(loc=loc_b, scale=scale_group_b,
                                               size=(num_candidates_in_group_b, dim))
         candidates = np.concatenate((candidates_group_a, candidates_group_b), axis=0)
-    elif 'model' in params:
-        model = params['model']
+    elif 'model_id' in params:
+        model = params['model_id']
         voters = np.array([get_rand(model) for _ in range(num_voters)])
         candidates = np.array([get_rand(model) for _ in range(num_candidates)])
     else:
@@ -305,6 +305,6 @@ def get_rand(model: str, cat: str = "voters") -> list:
         dim = 5
         point = list(random_ball(dim)[0])
     else:
-        print('unknown model')
+        print('unknown model_id')
         point = [0, 0]
     return point

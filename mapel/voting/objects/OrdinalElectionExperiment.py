@@ -24,11 +24,11 @@ class OrdinalElectionExperiment(ElectionExperiment):
     """Abstract set of elections."""
 
     def __init__(self, elections=None, distances=None, _import=True, shift=False,
-                 coordinates=None, distance_name='emd-positionwise', experiment_id=None,
+                 coordinates=None, distance_id='emd-positionwise', experiment_id=None,
                  election_type='ordinal'):
         self.shift = shift
         super().__init__(elections=elections, distances=distances,
-                         coordinates=coordinates, distance_name=distance_name,
+                         coordinates=coordinates, distance_id=distance_id,
                          experiment_id=experiment_id,
                          election_type=election_type, _import=_import)
 
@@ -41,9 +41,9 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
             ids = []
 
-            if self.families[family_id].model in NICE_NAME or \
-                    self.families[family_id].model in LIST_OF_FAKE_MODELS or \
-                        self.families[family_id].model in LIST_OF_PREFLIB_MODELS:
+            if self.families[family_id].model_id in NICE_NAME or \
+                    self.families[family_id].model_id in LIST_OF_FAKE_MODELS or \
+                    self.families[family_id].model_id in LIST_OF_PREFLIB_MODELS:
 
                 if self.families[family_id].single_election:
                     name = family_id
@@ -61,14 +61,14 @@ class OrdinalElectionExperiment(ElectionExperiment):
             else:
 
                 path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                    "elections", self.families[family_id].model)
+                                    "elections", self.families[family_id].model_id)
                 for i, name in enumerate(os.listdir(path)):
 
                     if i >= self.families[family_id].size:
                         break
                     name = os.path.splitext(name)[0]
-                    name = self.families[family_id].model + '/' + name
-                    # print(name)
+                    name = f'{self.families[family_id].model_id}/{name}'
+                    # print(election_id)
                     election = OrdinalElection(self.experiment_id, name,
                                                _import=self._import, shift=self.shift)
                     elections[name] = election
@@ -120,7 +120,7 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
             with open(path, 'w') as file_csv:
                 file_csv.write(
-                    "size;num_candidates;num_voters;model;params;color;alpha;label;marker;show\n")
+                    "size;num_candidates;num_voters;model_id;params;color;alpha;label;marker;show\n")
                 file_csv.write("3;10;100;impartial_culture;{};black;1;Impartial Culture;o;t\n")
                 file_csv.write("3;10;100;iac;{};black;0.7;IAC;o;t\n")
                 file_csv.write("3;10;100;conitzer;{};limegreen;1;SP by Conitzer;o;t\n")
@@ -133,10 +133,10 @@ class OrdinalElectionExperiment(ElectionExperiment):
                 file_csv.write("3;10;100;3d_cube;{'dim': 3};ForestGreen;0.7;3D Cube;o;t\n")
                 file_csv.write("3;10;100;2d_sphere;{'dim': 2};black;0.2;2D Sphere;o;t\n")
                 file_csv.write("3;10;100;3d_sphere;{'dim': 3};black;0.4;3D Sphere;o;t\n")
-                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn model 0.1;o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn model_id 0.1;o;t\n")
                 file_csv.write(
                     "3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;Norm-Mallows 0.5;o;t\n")
-                file_csv.write("3;10;100;urn_model;{'alpha':0};orange;1;Urn model (gamma);o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0};orange;1;Urn model_id (gamma);o;t\n")
                 file_csv.write(
                     "3;10;100;norm-mallows;{'norm-phi':0};cyan;1;Norm-Mallows (uniform);o;t\n")
                 file_csv.write("1;10;100;identity;{};blue;1;Identity;x;t\n")

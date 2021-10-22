@@ -15,20 +15,20 @@ def hello():
 
 
 def prepare_experiment(experiment_id=None, elections=None, distances=None, election_type='ordinal',
-                       coordinates=None, distance_name='emd-positionwise', _import=True,
+                       coordinates=None, distance_id='emd-positionwise', _import=True,
                        shift=False):
     if election_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
                                          elections=elections,
                                          election_type=election_type,
                                          distances=distances, coordinates=coordinates,
-                                         distance_name=distance_name)
+                                         distance_id=distance_id)
     elif election_type == 'approval':
         return ApprovalElectionExperiment(experiment_id=experiment_id,
                                           elections=elections, _import=_import,
                                           election_type=election_type,
                                           distances=distances, coordinates=coordinates,
-                                          distance_name=distance_name)
+                                          distance_id=distance_id)
 
 def print_approvals_histogram(*args):
     pr.print_approvals_histogram(*args)

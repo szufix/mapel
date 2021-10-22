@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+
 from mapel.voting.objects.ApprovalElection import ApprovalElection
 from mapel.voting.objects.ElectionExperiment import ElectionExperiment
 from mapel.voting.other import pabulib
@@ -20,16 +21,11 @@ except ImportError as error:
 
 
 class ApprovalElectionExperiment(ElectionExperiment):
-    """Abstract set of elections."""
+    """ Abstract set of approval elections."""
 
-    def __init__(self, elections=None, distances=None,
-                 coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', _import=True, clean=False):
+    def __init__(self, **kwargs):
 
-        super().__init__(elections=elections, distances=distances,
-                         coordinates=coordinates, distance_name=distance_name,
-                         experiment_id=experiment_id, _import=_import,
-                         election_type=election_type, clean=clean)
+        super().__init__(**kwargs)
 
     def add_elections_to_experiment(self) -> dict:
         """ Return: elections imported from files """
@@ -83,10 +79,10 @@ class ApprovalElectionExperiment(ElectionExperiment):
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
 
             with open(path, 'w') as file_csv:
-                file_csv.write("size;num_candidates;num_voters;model;params;color;alpha;"
+                file_csv.write("size;num_candidates;num_voters;model_id;params;color;alpha;"
                                "label;marker;show;path")
-                file_csv.write("1;50;200;approval_id_0.5;{};brown;0.75;ID 0.5;*;t;{}")
-                file_csv.write("1;50;200;approval_ic_0.5;{};black;0.75;IC 0.5;*;t;{}")
+                file_csv.write("1;50;200;approval_id;{'p': 0.5};brown;0.75;ID 0.5;*;t;{}")
+                file_csv.write("1;50;200;approval_ic;{'p': 0.5};black;0.75;IC 0.5;*;t;{}")
                 file_csv.write("1;50;200;approval_full;{};red;0.75;full;*;t;{}")
                 file_csv.write("1;50;200;approval_empty;{};green;0.75;empty;*;t;{}")
                 file_csv.write("30;50;200;approval_id;{};brown;0.7;ID_path;o;t;{'variable': 'p'}")
@@ -114,3 +110,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
 
     def convert_pb_to_app(self, **kwargs):
         pabulib.convert_pb_to_app(self, **kwargs)
+
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 22.10.2021 #
+# # # # # # # # # # # # # # # #

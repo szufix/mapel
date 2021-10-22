@@ -17,11 +17,11 @@ import networkx as nx
 import numpy as np
 
 
-# def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_name="emd-positionwise",
+# def convert_xd_to_2d(experiment_id, num_iterations=1000, distance_id="emd-positionwise",
 #                      attraction_factor=1., algorithm='spring'):
 #     """ Convert multi-dimensional experiment to two-dimensional experiment """
 #
-#     experiment = Experiment_xd(experiment_id, distance_name=distance_name)
+#     experiment = Experiment_xd(experiment_id, distance_id=distance_id)
 #     X = np.zeros((experiment.num_elections, experiment.num_elections))
 #
 #     for i, election_1_id in enumerate(experiment.elections):
@@ -51,7 +51,7 @@ import numpy as np
 #         my_pos = TSNE(n_components=2).fit_transform(X)
 #
 #     file_name = os.path.join(os.getcwd(), "experiments", experiment_id,
-#                          "coordinates", distance_name + "_2d_a" + str(float(attraction_factor)) + ".csv")
+#                          "coordinates", distance_id + "_2d_a" + str(float(attraction_factor)) + ".csv")
 #
 #     with open(file_name, 'w', newline='') as csvfile:
 #
@@ -67,11 +67,11 @@ import numpy as np
 #                 writer.writerow([a, x, y])
 #                 ctr += 1
 
-# def convert_xd_to_2d_old(experiment_id, num_iterations=1000, distance_name="emd-positionwise",
+# def convert_xd_to_2d_old(experiment_id, num_iterations=1000, distance_id="emd-positionwise",
 #                      random=True, attraction_factor=1.):
 #     """ Convert multi-dimensional experiment to two-dimensional experiment """
 #
-#     experiment = Experiment_xd(experiment_id, distance_name=distance_name)
+#     experiment = Experiment_xd(experiment_id, distance_id=distance_id)
 #     X = np.zeros((experiment.num_elections, experiment.num_elections))
 #
 #     if random:
@@ -109,7 +109,7 @@ import numpy as np
 #
 #
 #     file_name = os.path.join(os.getcwd(), "experiments", experiment_id,
-#                          "coordinates", distance_name + "_2d_a" + str(attraction_factor) + ".csv")
+#                          "coordinates", distance_id + "_2d_a" + str(attraction_factor) + ".csv")
 #
 #     with open(file_name, 'w', newline='') as csvfile:
 #
@@ -119,18 +119,18 @@ import numpy as np
 #         ctr = 0
 #         for family in experiment.families:
 #             for j in range(family.size):
-#                 a = family.model + '_' + str(j)
+#                 a = family.model_id + '_' + str(j)
 #                 x = round(my_pos[rev_perm[ctr]][0], 5)
 #                 y = round(my_pos[rev_perm[ctr]][1], 5)
 #                 writer.writerow([a, x, y])
 #                 ctr += 1
 
 
-# def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_name="emd-positionwise",
+# def convert_xd_to_3d(experiment_id, num_iterations=1000, distance_id="emd-positionwise",
 #                                                                   attraction_factor=1.):
 #     """ Convert multi-dimensional experiment to three-dimensional experiment """
 #
-#     experiment = Experiment_xd(experiment_id, distance_name=distance_name)
+#     experiment = Experiment_xd(experiment_id, distance_id=distance_id)
 #     X = np.zeros((experiment.num_elections, experiment.num_elections))
 #     perm = np.random.permutation(experiment.num_elections)
 #
@@ -156,7 +156,7 @@ import numpy as np
 #     my_pos = nx.spring_layout(G, iterations=num_iterations, dim=3)
 #
 #     file_name = os.path.join(os.getcwd(), "experiments", experiment_id,
-#                              "points",  distance_name + "_3d_a" + str(attraction_factor) + ".csv")
+#                              "points",  distance_id + "_3d_a" + str(attraction_factor) + ".csv")
 #
 #     with open(file_name, 'w', newline='') as csvfile:
 #

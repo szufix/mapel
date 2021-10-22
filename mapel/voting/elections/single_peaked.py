@@ -119,7 +119,7 @@ def probW(m, i, t):
 # RANDOM CONITZER
 
 def random_conitzer(C):
-    # generate a random vote from the Conitzer model for axis
+    # generate a random vote from the Conitzer model_id for axis
     # C[0], ..., C[m-1]
     m = len(C)
     center = randint(0, m - 1)

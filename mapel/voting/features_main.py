@@ -6,7 +6,6 @@ import networkx as nx
 import numpy as np
 import scipy.special
 
-# import mapel.voting.other.development as dev
 import mapel.voting.features.cohesive as cohesive
 import mapel.voting.features.proportionality_degree as prop_deg
 import mapel.voting.features.scores as scores
@@ -14,10 +13,8 @@ from mapel.voting.metrics.inner_distances import l2
 
 
 # MAPPING #
-def get_feature(name):
+def get_feature(feature_id):
     return {'borda_std': borda_std,
-            'separation': separation,
-            'both': both,
             'highest_borda_score': scores.highest_borda_score,
             'highest_plurality_score': scores.highest_plurality_score,
             'highest_copeland_score': scores.highest_copeland_score,
@@ -34,7 +31,7 @@ def get_feature(name):
             'abstract': abstract,
             'monotonicity_1': monotonicity_1,
             'monotonicity_2': monotonicity_2,
-            }.get(name)
+            }.get(feature_id)
 
 
 def monotonicity_1(experiment, election) -> float:
@@ -103,38 +100,6 @@ def borda_std(election):
     return std
 
 
-def separation(election) -> float:
-
-    if election.fake:
-        return 0
-
-    half = int(election.num_candidates / 2)
-
-    ranking = dev.get_borda_ranking(election.votes, election.num_voters,
-                                    election.num_candidates)
-    first_half = ranking[0:half]
-
-    distance = 0
-
-    for i in range(election.num_voters):
-        for j in range(half):
-            if election.votes[i][j] not in first_half:
-                distance += half - j
-
-    for i in range(election.num_voters):
-        for j in range(half, election.num_candidates):
-            if election.votes[i][j] in first_half:
-                distance += j - half
-
-    return distance
-
-
-def both(election) -> float:
-    v1 = borda_std(election) / 2.9
-    v2 = separation(election) / 1235.
-    return v1 + v2
-
-
 def get_effective_num_candidates(election, mode='Borda') -> float:
     """ Compute effective number of candidates """
 
@@ -167,8 +132,7 @@ def distortion_from_guardians(experiment, election_id) -> np.ndarray:
                              'antagonism_10_100_0', 'stratification_10_100_0'}:
             if election_id_1 != election_id_2:
                 m = experiment.elections[election_id_1].num_candidates
-                true_distance = \
-                    experiment.distances[election_id_1][election_id_2]
+                true_distance = experiment.distances[election_id_1][election_id_2]
                 true_distance /= map_diameter(m)
                 embedded_distance = l2(experiment.coordinates[election_id_1],
                                        experiment.coordinates[election_id_2])

@@ -1,4 +1,5 @@
 import random as rand
+
 import numpy as np
 
 
@@ -72,3 +73,7 @@ def get_single_crossing_vectors(num_candidates: int) -> np.ndarray:
             matrix[i][j] /= denominator
 
     return matrix
+
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 22.10.2021 #
+# # # # # # # # # # # # # # # #

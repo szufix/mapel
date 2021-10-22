@@ -1,28 +1,35 @@
 import copy
-import random as rand
-import numpy as np
 import os
 import pickle
-#Given the number m of candidates and a phi\in [0,1] function computes the expected number of swaps in a vote sampled from Mallows model
-def calculateExpectedNumberSwaps(num_candidates,phi):
-    res= phi*num_candidates/(1-phi)
-    for j in range(1,num_candidates+1):
-        res = res + (j*(phi**j))/((phi**j)-1)
+import random as rand
+
+import numpy as np
+
+
+# Given the number m of candidates and a phi\in [0,1] function computes the expected number of swaps
+# in a vote sampled from Mallows model_id
+def calculateExpectedNumberSwaps(num_candidates, phi):
+    res = phi * num_candidates / (1 - phi)
+    for j in range(1, num_candidates + 1):
+        res = res + (j * (phi ** j)) / ((phi ** j) - 1)
     return res
 
-#Given the number m of candidates and a absolute number of expected swaps exp_abs, this function returns a value of phi such that in a vote sampled from Mallows model with this parameter the expected number of swaps is exp_abs
-def phi_from_relphi(num_candidates,relphi=None):
+
+# Given the number m of candidates and a absolute number of expected swaps exp_abs, this function
+# returns a value of phi such that in a vote sampled from Mallows model_id with this parameter
+# the expected number of swaps is exp_abs
+def phi_from_relphi(num_candidates, relphi=None):
     if relphi is None:
         relphi = rand.random()
-    if relphi==1:
+    if relphi == 1:
         return 1
-    exp_abs=relphi*(num_candidates*(num_candidates-1))/4
-    low=0
-    high=1
+    exp_abs = relphi * (num_candidates * (num_candidates - 1)) / 4
+    low = 0
+    high = 1
     while low <= high:
         mid = (high + low) / 2
-        cur=calculateExpectedNumberSwaps(num_candidates, mid)
-        if abs(cur-exp_abs)<1e-5:
+        cur = calculateExpectedNumberSwaps(num_candidates, mid)
+        if abs(cur - exp_abs) < 1e-5:
             return mid
         # If x is greater, ignore left half
         if cur < exp_abs:
@@ -35,29 +42,32 @@ def phi_from_relphi(num_candidates,relphi=None):
     # If we reach here, then the element was not present
     return -1
 
-def computeInsertionProbas(i,phi):
-    probas = (i+1)*[0]
-    for j in range(i+1):
-        probas[j]=pow(phi,(i+1)-(j+1))
+
+def computeInsertionProbas(i, phi):
+    probas = (i + 1) * [0]
+    for j in range(i + 1):
+        probas[j] = pow(phi, (i + 1) - (j + 1))
     return probas
 
+
 def weighted_choice(choices):
-    total=0
+    total = 0
     for w in choices:
-        total=total + w
+        total = total + w
     r = rand.uniform(0, total)
     upto = 0.0
-    for i,w in enumerate(choices):
+    for i, w in enumerate(choices):
         if upto + w >= r:
             return i
-        upto =upto + w
+        upto = upto + w
     assert False, "Shouldn't get here"
 
-def mallowsVote(m,insertion_probabilites_list):
-    vote=[0]
-    for i in range(1,m):
-        index = weighted_choice(insertion_probabilites_list[i-1])
-        vote.insert(index,i)
+
+def mallowsVote(m, insertion_probabilites_list):
+    vote = [0]
+    for i in range(1, m):
+        index = weighted_choice(insertion_probabilites_list[i - 1])
+        vote.insert(index, i)
     return vote
 
 
@@ -97,41 +107,41 @@ def evaluatePolynomial(coeff, x):
 
 def calculateZ(m, phi):
     coeff = calculateZpoly(m)
-    # print(coeff)
     return evaluatePolynomial(coeff, phi)
 
 
-#mat[i][j] is the probability with which candidate i ends up in position j
-def mallowsMatrix(num_candidates,lphi,pos,normalize=True):
-    mat = np.zeros([num_candidates,num_candidates])
+# mat[i][j] is the probability with which candidate i ends up in position j
+def mallowsMatrix(num_candidates, lphi, pos, normalize=True):
+    mat = np.zeros([num_candidates, num_candidates])
     if normalize:
-        phi = phi_from_relphi(num_candidates,lphi)
+        phi = phi_from_relphi(num_candidates, lphi)
     else:
-        phi=lphi
+        phi = lphi
     Z = calculateZ(num_candidates, phi)
     for i in range(num_candidates):
         for j in range(num_candidates):
-            freqs=[pos[k][i][j] for k in range(1+int(num_candidates*(num_candidates-1)/2))]
-            unnormal_prob=evaluatePolynomial(freqs,phi)
-            mat[i][j]=unnormal_prob/Z
+            freqs = [pos[k][i][j] for k in
+                     range(1 + int(num_candidates * (num_candidates - 1) / 2))]
+            unnormal_prob = evaluatePolynomial(freqs, phi)
+            mat[i][j] = unnormal_prob / Z
     return mat
 
 
-def get_mallows_matrix(num_candidates, params,normalize=True):
-
-    lphi=params['norm-phi']
-    weight=params['weight']
+def get_mallows_matrix(num_candidates, params, normalize=True):
+    lphi = params['norm-phi']
+    weight = params['weight']
     # print(lphi, weight)
     try:
-        path = os.path.join(os.getcwd(), 'elections', 'mallows_positionmatrices', str(num_candidates) + "_matrix.txt")
+        path = os.path.join(os.getcwd(), 'elections', 'mallows_positionmatrices',
+                            str(num_candidates) + "_matrix.txt")
         # print(path)
         with open(path, "rb") as file:
             pos = pickle.load(file)
     except FileNotFoundError:
         print("Mallows matrix only supported for up to 30 candidates")
     # print(pos)
-    mat1 = mallowsMatrix(num_candidates, lphi, pos,normalize)
-    res = np.zeros([num_candidates,num_candidates])
+    mat1 = mallowsMatrix(num_candidates, lphi, pos, normalize)
+    res = np.zeros([num_candidates, num_candidates])
     for i in range(num_candidates):
         for j in range(num_candidates):
             res[i][j] = weight * mat1[i][j] + (1 - weight) * mat1[i][num_candidates - 1 - j]
@@ -175,11 +185,11 @@ def generate_approval_shumallows_votes(num_voters=None, num_candidates=None, par
     #     if rand.random() <= params['p']:
     #         central_vote.add(c)
 
-    k = int(params['p']*num_candidates)
+    k = int(params['p'] * num_candidates)
     # print(k)
     central_vote = {i for i in range(k)}
 
-    votes = [0 for _ in range(num_voters)]
+    votes = [set() for _ in range(num_voters)]
     for v in range(num_voters):
         vote = set()
         for c in range(num_candidates):
@@ -200,11 +210,11 @@ def generate_approval_moving_shumallows_votes(num_voters=None, num_candidates=No
     #     if rand.random() <= params['p']:
     #         central_vote.add(c)
 
-    k = int(params['p']*num_candidates)
+    k = int(params['p'] * num_candidates)
     # print(k)
     central_vote = {i for i in range(k)}
 
-    votes = [0 for _ in range(num_voters)]
+    votes = [set() for _ in range(num_voters)]
     for v in range(num_voters):
         vote = set()
         for c in range(num_candidates):
@@ -221,11 +231,10 @@ def generate_approval_moving_shumallows_votes(num_voters=None, num_candidates=No
 
 
 def generate_approval_hamming_noise_model_votes(num_voters=None, num_candidates=None, params=None):
-
-    k = int(params['p']*num_candidates)
+    k = int(params['p'] * num_candidates)
     central_vote = {i for i in range(k)}
 
-    votes = [0 for _ in range(num_voters)]
+    votes = [set() for _ in range(num_voters)]
     for v in range(num_voters):
         vote = set()
         for c in range(num_candidates):
@@ -241,7 +250,6 @@ def generate_approval_hamming_noise_model_votes(num_voters=None, num_candidates=
 
 
 def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=None, params=None):
-
     if 'phi' not in params:
         phi = rand.random()
     else:
@@ -256,9 +264,9 @@ def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=
 
     if num_groups == 2:
         size_1 = np.random.uniform(low=0.5, high=1.)
-        size_1 = int(size_1*num_voters)
+        size_1 = int(size_1 * num_voters)
 
-        votes = [0 for _ in range(num_voters)]
+        votes = [set() for _ in range(num_voters)]
         central_vote_1 = {i for i in range(k)}
 
         for v in range(size_1):
@@ -272,7 +280,7 @@ def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=
                         vote.add(c)
             votes[v] = vote
 
-        central_vote_2 = {i+k for i in range(k)}
+        central_vote_2 = {i + k for i in range(k)}
 
         for v in range(size_1, num_voters):
             vote = set()
@@ -289,10 +297,10 @@ def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=
         size_1 = np.random.uniform(low=0.5, high=1.)
         size_2 = np.random.uniform(low=size_1, high=1.)
 
-        size_1 = int(size_1*num_voters)
-        size_2 = int(size_2*num_voters)
+        size_1 = int(size_1 * num_voters)
+        size_2 = int(size_2 * num_voters)
 
-        votes = [0 for _ in range(num_voters)]
+        votes = [set() for _ in range(num_voters)]
         central_vote_1 = {i for i in range(k)}
 
         for v in range(size_1):
@@ -306,7 +314,7 @@ def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=
                         vote.add(c)
             votes[v] = vote
 
-        central_vote_2 = {i+k for i in range(k)}
+        central_vote_2 = {i + k for i in range(k)}
 
         for v in range(size_1, size_2):
             vote = set()
@@ -319,7 +327,7 @@ def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=
                         vote.add(c)
             votes[v] = vote
 
-        central_vote_3 = {i+k*2 for i in range(k)}
+        central_vote_3 = {i + k * 2 for i in range(k)}
 
         for v in range(size_2, num_voters):
             vote = set()
@@ -348,7 +356,8 @@ def generate_approval_truncated_mallows_votes(num_voters=None, num_candidates=No
     for v in range(num_voters):
         k = -1
         while k not in range(0, num_candidates + 1):
-            k = int(np.random.normal(params['p'], params['norm-phi']/(num_candidates**0.5)) * num_candidates)
+            k = int(np.random.normal(params['p'],
+                                     params['norm-phi'] / (num_candidates ** 0.5)) * num_candidates)
             # k = int(np.random.normal(params['p'], 0.05) * num_candidates)
         votes.append(set(ordinal_votes[v][0:k]))
 

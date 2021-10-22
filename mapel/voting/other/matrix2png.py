@@ -30,9 +30,9 @@ def matrix2png(argv):
     # introduce yourself
     if len(argv) < 4:
         print("Invocation:")
-        print("  python3 matrix2png num_candidates model reorder [param1]")
+        print("  python3 matrix2png num_candidates model_id reorder [param1]")
         print(
-            "  reorder -- name of the model to try to resemble (e.g., ID, or AN); use org to use original order")
+            "  reorder -- election_id of the model_id to try to resemble (e.g., ID, or AN); use org to use original order")
         print("")
         exit()
 

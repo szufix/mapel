@@ -77,14 +77,14 @@ def solve_ilp_instance(election: ApprovalElection, committee: set, l: int = 1,
         y_ineq -= s * y
         model += y_ineq >= 0
 
-    # model.solve()
+    # model_id.solve()
 
     model.solve(pulp.PULP_CBC_CMD(msg=False))
-    # print(model)
-    # print(LpStatus[model.status])
-    # print(int(value(model.objective)))    # prints the best objective value - in our case useless, but can be useful in the future
-    # if LpStatus[model.status] == 'Optimal':
-    #     print([var.name + "=" + str(var.varValue) for var in model.variables() if var.varValue is not None and var.varValue > 0], sep=" ")    # prints result variables which have value > 0
+    # print(model_id)
+    # print(LpStatus[model_id.status])
+    # print(int(value(model_id.objective)))    # prints the best objective value - in our case useless, but can be useful in the future
+    # if LpStatus[model_id.status] == 'Optimal':
+    #     print([var.election_id + "=" + str(var.varValue) for var in model_id.variables() if var.varValue is not None and var.varValue > 0], sep=" ")    # prints result variables which have value > 0
     if pulp.LpStatus[model.status] == 'Optimal':
         return pulp.value(model.objective) / s
     else:

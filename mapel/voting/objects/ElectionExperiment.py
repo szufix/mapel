@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 import copy
-import os
 from abc import abstractmethod
 
 import mapel.voting.elections_main as _elections
+import mapel.voting.other.rules as rules
 from mapel.voting.objects.Experiment import Experiment
 from mapel.voting.objects.Family import Family
-import mapel.voting.other.rules as rules
 
 try:
     from sklearn.manifold import MDS
@@ -22,19 +21,12 @@ except ImportError as error:
     Isomap = None
     print(error)
 
-COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
-
 
 class ElectionExperiment(Experiment):
 
-    def __init__(self, elections=None, distances=None,
-                 coordinates=None, distance_name='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', _import=True, clean=False):
+    def __init__(self, **kwargs):
 
-        super().__init__(elections=elections, distances=distances,
-                         coordinates=coordinates, distance_name=distance_name,
-                         experiment_id=experiment_id, _import=_import,
-                         election_type=election_type, clean=clean)
+        super().__init__(**kwargs)
 
         self.default_num_candidates = 10
         self.default_num_voters = 100
@@ -54,9 +46,9 @@ class ElectionExperiment(Experiment):
         """ Set default size of the committee """
         self.default_committee_size = committee_size
 
-    def add_election(self, model="none", params=None, label=None,
+    def add_election(self, model_id="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
-                     num_candidates=None, num_voters=None, name=None, num_nodes=None):
+                     num_candidates=None, num_voters=None, election_id=None, num_nodes=None):
         """ Add election to the experiment """
 
         if num_candidates is None:
@@ -65,20 +57,23 @@ class ElectionExperiment(Experiment):
         if num_voters is None:
             num_voters = self.default_num_voters
 
-        return self.add_election_family(model=model, params=params, size=size, label=label,
+        return self.add_election_family(model_id=model_id, params=params, size=size, label=label,
                                         color=color, alpha=alpha, show=show, marker=marker,
-                                        starting_from=starting_from, family_id=name,
+                                        starting_from=starting_from, family_id=election_id,
                                         num_candidates=num_candidates, num_voters=num_voters,
                                         num_nodes=num_nodes, single_election=True)[0]
 
-    def add_election_family(self, model="none", params=None, size=1, label=None, color="black",
-                            alpha=1., show=True, marker='o', starting_from=0, num_candidates=None,
-                            num_voters=None, family_id=None, single_election=False, num_nodes=None,
-                            path=None, name=None) -> list:
+    def add_election_family(self, model_id: str = "none", params: dict = None, size: int = 1,
+                            label: str = None, color: str = "black", alpha: float = 1.,
+                            show: bool = True, marker: str = 'o', starting_from: int = 0,
+                            num_candidates: int = None, num_voters: int = None,
+                            family_id: str = None, single_election: bool = False,
+                            num_nodes: int = None, path: dict = None,
+                            election_id: str = None) -> list:
         """ Add family of elections to the experiment """
 
-        if name is not None:
-            family_id = name
+        if election_id is not None:
+            family_id = election_id
 
         if num_candidates is None:
             num_candidates = self.default_num_candidates
@@ -90,19 +85,19 @@ class ElectionExperiment(Experiment):
             self.families = {}
 
         if family_id is None:
-            family_id = model + '_' + str(num_candidates) + '_' + str(num_voters)
-            if model in {'urn_model'} and params['alpha'] is not None:
+            family_id = model_id + '_' + str(num_candidates) + '_' + str(num_voters)
+            if model_id in {'urn_model'} and params['alpha'] is not None:
                 family_id += '_' + str(float(params['alpha']))
-            elif model in {'mallows'} and params['phi'] is not None:
+            elif model_id in {'mallows'} and params['phi'] is not None:
                 family_id += '_' + str(float(params['phi']))
-            elif model in {'norm-mallows', 'norm-mallows_matrix'} \
+            elif model_id in {'norm-mallows', 'norm-mallows_matrix'} \
                     and params['norm-phi'] is not None:
                 family_id += '_' + str(float(params['norm-phi']))
 
         elif label is None:
             label = family_id
 
-        self.families[family_id] = Family(model=model, family_id=family_id,
+        self.families[family_id] = Family(model_id=model_id, family_id=family_id,
                                           params=params, label=label, color=color, alpha=alpha,
                                           show=show, size=size, marker=marker,
                                           starting_from=starting_from, num_nodes=num_nodes,
@@ -115,10 +110,10 @@ class ElectionExperiment(Experiment):
         self.main_order = [i for i in range(self.num_elections)]
 
         params = self.families[family_id].params
-        model = self.families[family_id].model
+        model_id = self.families[family_id].model
 
         ids = _elections.prepare_statistical_culture_family(experiment=self,
-                                                            model=model,
+                                                            model_id=model_id,
                                                             family_id=family_id,
                                                             params=copy.deepcopy(params))
 
@@ -130,13 +125,17 @@ class ElectionExperiment(Experiment):
     def create_structure(self):
         pass
 
-    def compute_rules(self, list_of_rules, committee_size=1, printing=False):
+    def compute_rules(self, list_of_rules, committee_size: int = 1, printing: bool = False) -> None:
         for rule_name in list_of_rules:
             print('Computing', rule_name)
             rules.compute_rule(experiment=self, rule_name=rule_name, committee_size=committee_size,
                                printing=printing)
 
-    def import_committees(self, list_of_rules):
+    def import_committees(self, list_of_rules) -> None:
         for rule_name in list_of_rules:
             self.all_winning_committees[rule_name] = rules.import_committees_from_file(
                 experiment_id=self.experiment_id, rule_name=rule_name)
+
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 22.10.2021 #
+# # # # # # # # # # # # # # # #

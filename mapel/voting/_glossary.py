@@ -1,4 +1,6 @@
 
+COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
+
 
 NICE_NAME = {
     '1d_interval': '1D_Interval',

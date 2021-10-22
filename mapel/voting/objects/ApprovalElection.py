@@ -5,19 +5,18 @@ import os
 
 import numpy as np
 
+from mapel.voting._glossary import *
 from mapel.voting.metrics.inner_distances import hamming
 from mapel.voting.objects.Election import Election
-
-from mapel.voting._glossary import NICE_NAME
 
 
 class ApprovalElection(Election):
 
-    def __init__(self, experiment_id, name, votes=None, alpha=1, model=None,
+    def __init__(self, experiment_id, election_id, votes=None, alpha=1, model_id=None,
                  ballot='approval', num_voters=None, num_candidates=None, _import=False):
 
-        super().__init__(experiment_id, name, votes=votes, alpha=alpha,
-                         model=model, ballot=ballot, num_voters=num_voters,
+        super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
+                         model_id=model_id, ballot=ballot, num_voters=num_voters,
                          num_candidates=num_candidates)
 
         self.approvalwise_vector = []
@@ -26,17 +25,17 @@ class ApprovalElection(Election):
         self.pairwise_matrix = []
         self.candidatelikeness_original_vectors = []
         self.candidatelikeness_sorted_vectors = []
-        self.model = model
+        self.model = model_id
         self.hamming_candidates = []
 
         if _import:
-            fake = check_if_fake(experiment_id, name)
+            fake = check_if_fake(experiment_id, election_id)
             if fake:
                 self.model, self.params, self.num_voters, self.num_candidates = \
-                    import_fake_app_election(experiment_id, name)
+                    import_fake_app_election(experiment_id, election_id)
             else:
                 self.votes, self.num_voters, self.num_candidates, self.params, \
-                    self.model = import_real_app_election(experiment_id, name)
+                    self.model = import_real_app_election(experiment_id, election_id)
                 try:
                     self.alpha = self.params[self.params['variable']]
                 except KeyError:
@@ -131,22 +130,21 @@ class ApprovalElection(Election):
         self.voterlikeness_vectors = vectors
 
 
-
 def import_real_app_election(experiment_id: str, election_id: str):
     """ Import real approval election from .app file """
 
-    file_name = str(election_id) + ".app"
+    file_name = f'{election_id}.app'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
 
     params = 0
     first_line = my_file.readline()
     if first_line[0] != '#':
-        model_name = 'empty'
+        model_id = 'empty'
         num_candidates = int(first_line)
     else:
         first_line = first_line.strip().split()
-        model_name = first_line[1]
+        model_id = first_line[1]
         if len(first_line) <= 2:
             params = {}
         else:
@@ -174,22 +172,22 @@ def import_real_app_election(experiment_id: str, election_id: str):
                 it += 1
 
     # Shift by -1
-    # if model_name in LIST_OF_PREFLIB_MODELS:
+    # if model_id in LIST_OF_PREFLIB_MODELS:
     #     for i in range(num_voters):
     #         for j in range(num_candidates):
     #             votes[i][j] -= 1
-    if model_name in NICE_NAME.values():
+    if model_id in NICE_NAME.values():
         rev_dict = dict(zip(NICE_NAME.values(), NICE_NAME.keys()))
-        model_name = rev_dict[model_name]
-    # print(model_name)
+        model_id = rev_dict[model_id]
+    # print(model_id)
 
-    return votes, num_voters, num_candidates, params, model_name
+    return votes, num_voters, num_candidates, params, model_id
 
 
-def import_fake_app_election(experiment_id: str, election_id: str):
+def import_fake_app_election(experiment_id: str, name: str):
     """ Import fake approval election from .app file """
 
-    file_name = f'{election_id}.app'
+    file_name = f'{name}.app'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     my_file.readline()  # line with $ fake
@@ -202,8 +200,8 @@ def import_fake_app_election(experiment_id: str, election_id: str):
     return fake_model_name, params, num_voters, num_candidates
 
 
-def check_if_fake(experiment_id: str, election_id: str) -> bool:
-    file_name = str(election_id) + ".app"
+def check_if_fake(experiment_id: str, name: str) -> bool:
+    file_name = f'{name}.app'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     line = my_file.readline().strip()

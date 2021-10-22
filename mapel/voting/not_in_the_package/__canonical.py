@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import csv
+import math
 import os
 import random as rand
 import time
@@ -10,12 +11,44 @@ from shutil import copyfile
 import matplotlib.pyplot as plt
 import numpy as np
 # from skopt import gp_minimize
+from scipy.stats import stats
 
 from mapel.voting import elections as el
 from mapel.voting.other import winners2 as win
 from mapel.voting import metrics as metr
 from mapel.voting import objects as obj
 import copy
+
+# def separation(election) -> float:
+#
+#     if election.fake:
+#         return 0
+#
+#     half = int(election.num_candidates / 2)
+#
+#     ranking = dev.get_borda_ranking(election.votes, election.num_voters,
+#                                     election.num_candidates)
+#     first_half = ranking[0:half]
+#
+#     distance = 0
+#
+#     for i in range(election.num_voters):
+#         for j in range(half):
+#             if election.votes[i][j] not in first_half:
+#                 distance += half - j
+#
+#     for i in range(election.num_voters):
+#         for j in range(half, election.num_candidates):
+#             if election.votes[i][j] in first_half:
+#                 distance += j - half
+#
+#     return distance
+#
+#
+# def both(election) -> float:
+#     v1 = borda_std(election) / 2.9
+#     v2 = separation(election) / 1235.
+#     return v1 + v2
 
 def prepare_approx_cc_order(experiment_id, metric="positionwise"):
     """ Copy all the elections and the change the order according to approx_cc order """
@@ -209,7 +242,7 @@ def compute_approx(experiment_id, method='hb', algorithm='greedy', num_winners=1
                 winners_1 = win.get_winners(params, copy.deepcopy(model.elections[Z].votes), method)
             elif method == "hb":
                 rule = {}
-                rule['name'] = 'hb'
+                rule['election_id'] = 'hb'
                 rule['length'] = num_winners
                 rule['type'] = 'borda_owa'
                 winners_1 = win.get_winners(params, copy.deepcopy(model.elections[Z].votes), rule)
@@ -278,7 +311,7 @@ def prepare_elections_extended(experiment_id):
 
     id_ = 800
     for i in range(30, model.num_families):
-        elections_type = model.families[i].model
+        elections_type = model.families[i].model_id
         special_1 = model.families[i].special_1
         special_2 = model.families[i].special_2
         num_elections = 1
@@ -316,10 +349,10 @@ def prepare_elections_unid(experiment_id):
     model = obj.Experiment(experiment_id)
 
     id_ = 900
-    #for i in range(35, model.num_families):
+    #for i in range(35, model_id.num_families):
     #id_ = 0
     for i in range(model.num_families):
-        elections_type = model.families[i].model
+        elections_type = model.families[i].model_id
         special_1 = model.families[i].special_1
         special_2 = model.families[i].special_2
         num_elections = 1
@@ -404,8 +437,8 @@ def compute_distances_between_elections_by_segments(segment, num_segments, exper
             elections_id_b = "core_" + str(j)
             elections_ids = [elections_id_a, elections_id_b]
 
-            distance_name = "matrix_metric"
-            distance = metr.get_distance(distance_name, elections_ids)
+            distance_id = "matrix_metric"
+            distance = metr.get_distance(distance_id, elections_ids)
 
             results2.append(distance[0])
     """
@@ -508,7 +541,7 @@ def compute_canonical_winners(experiment_id, method="approx_cc", num_winners=800
     generate_votes_from_distances(experiment_id)
 
     rule = {'type': method,
-            'name': 0,
+            'election_id': 0,
             'length': 0,
             'special': 0,
             'pure': False}
@@ -521,7 +554,7 @@ def compute_canonical_winners(experiment_id, method="approx_cc", num_winners=800
 def compute_time(experiment_id):
 
     rule = {'type': 'borda_owa',
-             'name': 0,
+             'election_id': 0,
              'length': 0,
              'special': 0,
              'pure': False}
@@ -606,7 +639,7 @@ def compute_canonical_order(experiment_id, method, num_winners):
 
     """
     rule = {'type': method,
-            'name': 0,
+            'election_id': 0,
             'length': num_winners,
             'special': 0,
             'pure': False}
@@ -817,7 +850,7 @@ def compute_canonical_order_op():
     print("B")
 
     rule = {'type': "borda_owa",
-            'name': 0,
+            'election_id': 0,
             'length': 0,
             'special': 0,
             'pure': False}
@@ -1018,7 +1051,7 @@ def compute_approx_table():
     print("\nDone.")
 
 
-def save_selected_approx():
+def save_selected_approx(experiment_id, core):
     # Import controllers: basic
     print("# Import controllers: basic")
 
@@ -1851,7 +1884,7 @@ def compute_training_distance(experiment_id, x=-1, num_clouds=1, cloud_size=20, 
     second_x = -1
     print(method, x)
 
-    distance_name = "positionwise"
+    distance_id = "positionwise"
     metric_type = "emd"
 
     # compute all 'guess' elections
@@ -1873,7 +1906,7 @@ def compute_training_distance(experiment_id, x=-1, num_clouds=1, cloud_size=20, 
                 elections_id_a = "guess_" + str(c*cloud_size + T1)
                 elections_id_b = "train_" + str(c*cloud_size + T2)
                 elections_ids = [elections_id_a, elections_id_b]
-                cost_table[T1][T2] = metr.get_distance(experiment_id, distance_name, elections_ids, metric_type)[0]
+                cost_table[T1][T2] = metr.get_distance(experiment_id, distance_id, elections_ids, metric_type)[0]
 
         #  find minimal matching
         measure = metr.get_minimal_matching_cost(cost_table, cloud_size)
@@ -1888,70 +1921,70 @@ def compute_training_distance(experiment_id, x=-1, num_clouds=1, cloud_size=20, 
 
 ctr = 0
 
-def approx_training(exp_name, method, target, num_candidates, n_calls=100, num_clouds=5, cloud_size=10):
-
-    def local_optim(x):
-
-        if len(x) == 1:
-            x = x[0]
-
-        num_voters = 100
-        num_elections = 1
-        second_x = -1
-
-        distance_name = "positionwise"
-        metric_type = "emd"
-
-        # compute all 'guess' elections
-        for T1 in range(num_clouds * cloud_size):
-            elections_id_a = "guess_" + str(T1)
-            el.generate_elections(exp_name, method, elections_id_a, num_elections,
-                                  num_voters, num_candidates, x)
-            elections_id_b = "train_" + str(T1)
-            el.generate_elections(exp_name, target, elections_id_b, num_elections,
-                                  num_voters, num_candidates, second_x)
-
-        #  compute all distances
-        distances = np.zeros(num_clouds)
-        for c in range(num_clouds):
-            cost_table = np.zeros([cloud_size, cloud_size])
-            for T1 in range(cloud_size):
-                for T2 in range(cloud_size):
-                    elections_id_a = "guess_" + str(c * cloud_size + T1)
-                    elections_id_b = "train_" + str(c * cloud_size + T2)
-                    elections_ids = [elections_id_a, elections_id_b]
-                    cost_table[T1][T2] = \
-                        metr.get_distance(exp_name, distance_name, elections_ids, metric_type)[0]
-
-            #  find minimal matching
-            measure = metr.get_minimal_matching_cost(cost_table, cloud_size)
-            measure /= float(cloud_size)
-            distances[c] = measure
-
-        global ctr
-        ctr += 1
-        print(ctr, round(np.mean(distances), 2))
-        return np.mean(distances)
-
-    if method in ["urn_model", "mallows"]:
-
-        space = [(0., 1.) for _ in range(1)]
-        res = gp_minimize(local_optim, space, n_calls=n_calls)
-        print(res.x)
-
-    elif method in ["didi", "pl"]:
-
-        space = [(0.00001, 1.) for _ in range(num_candidates)]
-        res = gp_minimize(local_optim, space, n_calls=n_calls)
-
-    print(res.x)
-    print(res.fun)
-    file_name = os.path.join("experiments", str(exp_name), "controllers", "params", method +  ".txt")
-    file_ = open(file_name, 'w')
-    for value in res.x:
-        file_.write(str(value) + "\n")
-    file_.close()
-    print("DONE")
+# def approx_training(exp_name, method, target, num_candidates, n_calls=100, num_clouds=5, cloud_size=10):
+#
+#     def local_optim(x):
+#
+#         if len(x) == 1:
+#             x = x[0]
+#
+#         num_voters = 100
+#         num_elections = 1
+#         second_x = -1
+#
+#         distance_id = "positionwise"
+#         metric_type = "emd"
+#
+#         # compute all 'guess' elections
+#         for T1 in range(num_clouds * cloud_size):
+#             elections_id_a = "guess_" + str(T1)
+#             el.generate_elections(exp_name, method, elections_id_a, num_elections,
+#                                   num_voters, num_candidates, x)
+#             elections_id_b = "train_" + str(T1)
+#             el.generate_elections(exp_name, target, elections_id_b, num_elections,
+#                                   num_voters, num_candidates, second_x)
+#
+#         #  compute all distances
+#         distances = np.zeros(num_clouds)
+#         for c in range(num_clouds):
+#             cost_table = np.zeros([cloud_size, cloud_size])
+#             for T1 in range(cloud_size):
+#                 for T2 in range(cloud_size):
+#                     elections_id_a = "guess_" + str(c * cloud_size + T1)
+#                     elections_id_b = "train_" + str(c * cloud_size + T2)
+#                     elections_ids = [elections_id_a, elections_id_b]
+#                     cost_table[T1][T2] = \
+#                         metr.get_distance(exp_name, distance_id, elections_ids, metric_type)[0]
+#
+#             #  find minimal matching
+#             measure = metr.get_minimal_matching_cost(cost_table, cloud_size)
+#             measure /= float(cloud_size)
+#             distances[c] = measure
+#
+#         global ctr
+#         ctr += 1
+#         print(ctr, round(np.mean(distances), 2))
+#         return np.mean(distances)
+#
+#     if method in ["urn_model", "mallows"]:
+#
+#         space = [(0., 1.) for _ in range(1)]
+#         res = gp_minimize(local_optim, space, n_calls=n_calls)
+#         print(res.x)
+#
+#     elif method in ["didi", "pl"]:
+#
+#         space = [(0.00001, 1.) for _ in range(num_candidates)]
+#         res = gp_minimize(local_optim, space, n_calls=n_calls)
+#
+#     print(res.x)
+#     print(res.fun)
+#     file_name = os.path.join("experiments", str(exp_name), "controllers", "params", method +  ".txt")
+#     file_ = open(file_name, 'w')
+#     for value in res.x:
+#         file_.write(str(value) + "\n")
+#     file_.close()
+#     print("DONE")
 
 
 def diagonal_math(num_candidates):

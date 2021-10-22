@@ -10,4 +10,3 @@ setuptools~=52.0.0
 abcvoting~=2.0.0b0
 pulp~=2.5.1
 tikzplotlib~=0.9.12
-deprecation~=2.1.0

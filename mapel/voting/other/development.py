@@ -56,102 +56,102 @@ def compute_spoilers(model=None, method=None, num_winners=None, num_parties=None
 
         ### MALLOWS ###
         if model == 'mallows_party_075':
-            experiment.add_election_family(model='mallows_party', size=num_districts,
+            experiment.add_election_family(model_id='mallows_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'main-phi': 0.75, 'norm-phi': 0.75})
 
         elif model == 'mallows_party_05':
-            experiment.add_election_family(model='mallows_party', size=num_districts,
+            experiment.add_election_family(model_id='mallows_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'main-phi': 0.5, 'norm-phi': 0.75})
 
         elif model == 'mallows_party_025':
-            experiment.add_election_family(model='mallows_party', size=num_districts,
+            experiment.add_election_family(model_id='mallows_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'main-phi': 0.25, 'norm-phi': 0.75})
 
         ### 2D ###
         elif model == '2d_gaussian_party_005':
-            experiment.add_election_family(model='2d_gaussian_party', size=num_districts,
+            experiment.add_election_family(model_id='2d_gaussian_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.05})
 
         elif model == '2d_gaussian_party_01':
-            experiment.add_election_family(model='2d_gaussian_party', size=num_districts,
+            experiment.add_election_family(model_id='2d_gaussian_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.1})
 
         elif model == '2d_gaussian_party_02':
-            experiment.add_election_family(model='2d_gaussian_party', size=num_districts,
+            experiment.add_election_family(model_id='2d_gaussian_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.2})
 
         ### 1D ###
         elif model == '1d_gaussian_party_005':
-            experiment.add_election_family(model='1d_gaussian_party', size=num_districts,
+            experiment.add_election_family(model_id='1d_gaussian_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.05})
 
         elif model == '1d_gaussian_party_01':
-            experiment.add_election_family(model='1d_gaussian_party', size=num_districts,
+            experiment.add_election_family(model_id='1d_gaussian_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.1})
 
         elif model == '1d_gaussian_party_02':
-            experiment.add_election_family(model='1d_gaussian_party', size=num_districts,
+            experiment.add_election_family(model_id='1d_gaussian_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.2})
 
         ### SP by Walsh
         elif model == 'walsh_party_005':
-            experiment.add_election_family(model='walsh_party', size=num_districts,
+            experiment.add_election_family(model_id='walsh_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.05})
 
         elif model == 'walsh_party_01':
-            experiment.add_election_family(model='walsh_party', size=num_districts,
+            experiment.add_election_family(model_id='walsh_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.1})
 
         elif model == 'walsh_party_02':
-            experiment.add_election_family(model='walsh_party', size=num_districts,
+            experiment.add_election_family(model_id='walsh_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.2})
 
         ### SP by Conitzer
         elif model == 'conitzer_party_005':
-            experiment.add_election_family(model='conitzer_party', size=num_districts,
+            experiment.add_election_family(model_id='conitzer_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.05})
 
         elif model == 'conitzer_party_01':
-            experiment.add_election_family(model='conitzer_party', size=num_districts,
+            experiment.add_election_family(model_id='conitzer_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.1})
 
         elif model == 'conitzer_party_02':
-            experiment.add_election_family(model='conitzer_party', size=num_districts,
+            experiment.add_election_family(model_id='conitzer_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties,
                                                    'var': 0.2})
 
         ### IC
         elif model == 'ic_party':
-            experiment.add_election_family(model='ic_party', size=num_districts,
+            experiment.add_election_family(model_id='ic_party', size=num_districts,
                                            params={'num_winners': num_winners,
                                                    'num_parties': num_parties})
 
@@ -353,7 +353,7 @@ def prepare_experiment(experiment_id=None, elections=None, distances=None, elect
                                          election_type=election_type,
                                          attraction_factor=attraction_factor,
                                          distances=distances, coordinates=coordinates,
-                                         distance_name=distance_name)
+                                         distance_id=distance_name)
     elif election_type == 'approval':
         return ApprovalElectionExperiment("virtual", experiment_id=experiment_id,
                                           elections=elections,
@@ -467,7 +467,7 @@ def compute_effective_num_candidates(experiment_id, clear=True):
         file_scores = open(file_name, 'w')
         file_scores.close()
 
-    experiment = Experiment(experiment_id=experiment_id, distance_name='swap')
+    experiment = Experiment(experiment_id=experiment_id, distance_id='swap')
 
     for election in experiment.elections:
         score = features.get_effective_num_candidates(election)

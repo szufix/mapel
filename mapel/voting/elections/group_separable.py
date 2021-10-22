@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-from itertools import chain
+import queue
 import random as rand
+from itertools import chain
+
 import numpy as np
 from scipy.special import binom
-import queue
 
 
 def _decompose_tree(num_leaves, num_internal_nodes):
@@ -22,8 +23,7 @@ def _decompose_tree(num_leaves, num_internal_nodes):
     return tree
 
 
-def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
-                                           params=None):
+def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None, params=None):
     """ Algorithm from: The Complexity of Election Problems
     with Group-Separable Preferences"""
 
@@ -84,7 +84,7 @@ REVERSE = {}
 
 def get_all_leaves_names(node):
     if node.leaf:
-        return [node.name]
+        return [node.election_id]
     output = []
     for i in range(len(node.children)):
         output.append(get_all_leaves_names(node.children[i]))
@@ -114,7 +114,7 @@ def get_all_nodes(root):
 
 def get_bracket_notation(node):
     if node.leaf:
-        return str(node.name)
+        return str(node.election_id)
     output = ''
     for i in range(len(node.children)):
         output += str(get_bracket_notation(node.children[i]))
@@ -132,7 +132,7 @@ def get_all_inner_nodes(node):
 
 def sample_a_vote(node, reverse=False):
     if node.leaf:
-        return [node.name]
+        return [node.election_id]
     output = []
     if reverse == node.reverse:
         for i in range(len(node.children)):
@@ -284,7 +284,7 @@ def _add_num_leaf_descendants(node):
 
 def _add_scheme(node):
 
-    # print(node.name)
+    # print(node.election_id)
     for starting_pos in node.scheme_1:
 
         pos = starting_pos
@@ -399,7 +399,7 @@ def _balanced(num_leaves):
 
 
 def print_tree(root):
-    print(root.name)
+    print(root.election_id)
     for child in root.children:
         print_tree(child)
 
@@ -445,22 +445,22 @@ def get_frequency_matrix_from_tree(root):
 
     all_nodes = get_all_nodes(root)
     for node in all_nodes:
-        f[str(node.name)] = [0 for _ in range(m)]
+        f[str(node.election_id)] = [0 for _ in range(m)]
     set_left_and_right(root)
 
-    f[root.name][0] = 1
+    f[root.election_id][0] = 1
 
     for node in all_nodes:
-        if node.name != root.name:
-            # print(node.name)
+        if node.election_id != root.election_id:
+            # print(node.election_id)
             for t in range(m):
                 value_1 = 0
                 if t-node.left >= 0:
-                    value_1 = 0.5*f[node.parent.name][t-node.left]
+                    value_1 = 0.5*f[node.parent.election_id][t - node.left]
                 value_2 = 0
                 if t-node.right >= 0:
-                    value_2 = 0.5*f[node.parent.name][t-node.right]
-                f[str(node.name)][t] = value_1 + value_2
+                    value_2 = 0.5*f[node.parent.election_id][t - node.right]
+                f[str(node.election_id)][t] = value_1 + value_2
 
     vectors = []
     for i in range(m):

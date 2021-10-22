@@ -79,7 +79,7 @@ def compute_subelection_by_groups(
         for i in range(experiment.families[family_id].size):
             election_id = family_id + '_' + str(i)
             election_models[election_id] = \
-                experiment.families[family_id].model
+                experiment.families[family_id].model_id
             params[election_id] = experiment.families[family_id].params
 
     ids = []

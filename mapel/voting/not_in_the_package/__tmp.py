@@ -22,8 +22,8 @@ def ijcai_2021_coloring_1(ax=None, experiment=None, ms=None,
             if experiment.families[k].election_experiment in {
                 'identity', 'uniformity', 'antagonism', 'chess',
                 'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-                ax.scatter(experiment.points_by_families[k][0],
-                           experiment.points_by_families[k][1],
+                ax.scatter(experiment.coordinates_by_families[k][0],
+                           experiment.coordinates_by_families[k][1],
                            zorder=zorder[0],
                            color=experiment.families[k].color,
                            label=experiment.families[k].label,
@@ -33,8 +33,8 @@ def ijcai_2021_coloring_1(ax=None, experiment=None, ms=None,
 
             elif experiment.families[
                 k].election_experiment in LIST_OF_PREFLIB_ELECTIONS:
-                ax.scatter(experiment.points_by_families[k][0],
-                           experiment.points_by_families[k][1],
+                ax.scatter(experiment.coordinates_by_families[k][0],
+                           experiment.coordinates_by_families[k][1],
                            zorder=zorder[1],
                            color=experiment.families[k].color,
                            label=experiment.families[k].label,
@@ -42,8 +42,8 @@ def ijcai_2021_coloring_1(ax=None, experiment=None, ms=None,
                            s=ms * tmp2[1],
                            marker=experiment.families[k].marker)
             else:
-                ax.scatter(experiment.points_by_families[k][0],
-                           experiment.points_by_families[k][1],
+                ax.scatter(experiment.coordinates_by_families[k][0],
+                           experiment.coordinates_by_families[k][1],
                            color=experiment.families[k].color,
                            label=experiment.families[k].label,
                            zorder=zorder[2],
@@ -60,7 +60,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
     for k in experiment.families:
         if experiment.families[k].show:
 
-            if experiment.families[k].model in {'identity',
+            if experiment.families[k].model_id in {'identity',
                                                          'uniformity',
                                                          'antagonism',
                                                          'stratification',
@@ -68,26 +68,26 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                                                          'stid', 'anun',
                                                          'stun', 'stan'}:
                 zorder = 0
-                if experiment.families[k].model == 'unid':
+                if experiment.families[k].model_id == 'unid':
                     zorder = 1
 
                 t_ms = ms
                 if fuzzy_paths:
                     t_ms *= 10
-                ax.scatter(experiment.points_by_families[k][0],
-                           experiment.points_by_families[k][1], zorder=zorder,
+                ax.scatter(experiment.coordinates_by_families[k][0],
+                           experiment.coordinates_by_families[k][1], zorder=zorder,
                            color=experiment.families[k].color,
                            label=experiment.families[k].label,
                            alpha=1 * experiment.families[k].alpha, s=t_ms,
                            marker='o', linewidth=0)
                 ctr += experiment.families[k].size
 
-            elif experiment.families[k].model in {'real_identity',
+            elif experiment.families[k].model_id in {'real_identity',
                                                            'real_uniformity',
                                                            'real_antagonism',
                                                            'real_stratification'}:
-                ax.scatter(experiment.points_by_families[k][0],
-                           experiment.points_by_families[k][1], zorder=5,
+                ax.scatter(experiment.coordinates_by_families[k][0],
+                           experiment.coordinates_by_families[k][1], zorder=5,
                            color=experiment.families[k].color,
                            label=experiment.families[k].label,
                            alpha=experiment.families[k].alpha, s=ms * 5,
@@ -95,16 +95,16 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                 ctr += experiment.families[k].size
 
             elif experiment.families[
-                k].model in LIST_OF_PREFLIB_ELECTIONS:
-                ax.scatter(experiment.points_by_families[k][0],
-                           experiment.points_by_families[k][1], zorder=2,
+                k].model_id in LIST_OF_PREFLIB_ELECTIONS:
+                ax.scatter(experiment.coordinates_by_families[k][0],
+                           experiment.coordinates_by_families[k][1], zorder=2,
                            color=experiment.families[k].color,
                            label=experiment.families[k].label,
                            alpha=experiment.families[k].alpha, s=ms,
                            marker=experiment.families[k].marker)
                 ctr += experiment.families[k].size
 
-            elif experiment.families[k].model in {'norm_mallows',
+            elif experiment.families[k].model_id in {'norm_mallows',
                                                            'mallows',
                                                            'urn_experiment'}:
                 for i in range(experiment.families[k].size):
@@ -112,13 +112,13 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                     if param > 1:
                         param = 1
 
-                    if experiment.families[k].model in {
+                    if experiment.families[k].model_id in {
                         'norm_mallows', 'mallows'}:
                         my_cmap = custom_div_cmap(num_colors=11,
                                                   colors=["cyan", "blue"],
                                                   name='my_custom_m')
                         # print(param)
-                    elif experiment.families[k].model in {
+                    elif experiment.families[k].model_id in {
                         'urn_experiment'}:
                         my_cmap = custom_div_cmap(num_colors=11,
                                                   colors=["gold", "orange",
@@ -126,8 +126,8 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                                                   name='my_custom_u')
 
                     if i == 0:
-                        ax.scatter(experiment.points_by_families[k][0][i],
-                                   experiment.points_by_families[k][1][i],
+                        ax.scatter(experiment.coordinates_by_families[k][0][i],
+                                   experiment.coordinates_by_families[k][1][i],
                                    zorder=2,
                                    label=experiment.families[k].label,
                                    cmap=my_cmap, vmin=0, vmax=1, alpha=0.5,
@@ -137,8 +137,8 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                                    marker=experiment.families[k].marker)
                     else:
 
-                        ax.scatter(experiment.points_by_families[k][0][i],
-                                   experiment.points_by_families[k][1][i],
+                        ax.scatter(experiment.coordinates_by_families[k][0][i],
+                                   experiment.coordinates_by_families[k][1][i],
                                    zorder=2,
                                    cmap=my_cmap, vmin=0, vmax=1, alpha=0.5,
                                    c=param * tmp[2] * experiment.families[
@@ -146,8 +146,8 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                                    marker=experiment.families[k].marker)
                     ctr += 1
             else:
-                ax.scatter(experiment.points_by_families[k][0],
-                           experiment.points_by_families[k][1],
+                ax.scatter(experiment.coordinates_by_families[k][0],
+                           experiment.coordinates_by_families[k][1],
                            color=experiment.families[k].color,
                            label=experiment.families[k].label, zorder=2,
                            alpha=tmp[2] * experiment.families[k].alpha,
@@ -305,7 +305,7 @@ def compute_winners(experiment_id, method='hb', algorithm='exact',
             winners = []
             if method in {'pav', 'hb'}:
                 if algorithm == 'exact':
-                    rule = {'name': method, 'length': num_winners,
+                    rule = {'election_id': method, 'length': num_winners,
                             'type': 'borda_owa'}
                     winners = win.get_winners(params, copy.deepcopy(experiment.elections[Z].votes), rule)
 
@@ -389,7 +389,7 @@ def print_map(self, mask=False, mixed=False, fuzzy_paths=True, xlabel=None,
               ignore=None, marker_func=None, tex=False, black=False, legend=True, levels=False, tmp=False):
     """ Print the two-dimensional embedding of multi-dimensional map of the elections """
 
-    self.compute_points_by_families()
+    self.compute_coordinates_by_families()
 
     if angle != 0:
         self.rotate(angle)
@@ -489,7 +489,7 @@ def compute_highest_borda1m_map(experiment_id):
 def compute_levels(experiment_id, election_model='identity'):
     model = obj.Experiment(experiment_id)
 
-    # model = 'identity'
+    # model_id = 'identity'
     num_voters = 100
     num_candidates = 10
     x = 'x'
@@ -1090,7 +1090,7 @@ def import_approval_elections(experiment_id, elections_id, params):
     return elections, params
 
 #
-# if model == 'crate':
+# if model_id == 'crate':
                 #     my_size = 9
                 #     # with_edge
                 #     for p in range(my_size):

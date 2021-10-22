@@ -1,7 +1,6 @@
-
-import random as rand
-import numpy as np
 import networkx as nx
+import numpy as np
+
 from mapel.voting.metrics.inner_distances import map_str_to_func
 
 

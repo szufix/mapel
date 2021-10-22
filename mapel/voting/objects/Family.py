@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 
 class Family:
-    """ Family of elections: a set of elections from the same election model """
+    """ Family of elections: a set of elections from the same election model_id """
 
-    def __init__(self, model="none", family_id='none', params=None, size=1, label="none",
-                 color="black", alpha=1., show=True, marker='o', starting_from=0,
-                 num_candidates=None, num_voters=None, single_election=False,
-                 election_ids=None, ballot='ordinal', path=None, num_nodes=None):
+    def __init__(self, model_id: str = None, family_id='none', params: dict = None,
+                 size: int = 1, label: str = "none",
+                 color: str = "black", alpha: float = 1.,
+                 show=True, marker='o', starting_from: int = 0,
+                 num_candidates=None, num_voters=None, single_election: bool = False,
+                 election_ids=None, ballot: str = 'ordinal', path: dict = None,
+                 num_nodes: int = None):
 
         self.family_id = family_id
-        self.model = model
+        self.model = model_id
         self.params = params
         self.size = size
         self.label = label

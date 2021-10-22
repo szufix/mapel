@@ -42,7 +42,7 @@ def get_approval_winners(params, elections, rule):
 # Need update
 def get_ordinal_winners(params, votes, rule):
     if rule['type'] == 'scoring':
-        scoring = get_rule(rule['name'], rule['length'])
+        scoring = get_rule(rule['election_id'], rule['length'])
         all_winners = []
         for i in range(params['elections']):
             winners = get_winners_scoring(params, votes[i], params['candidates'], scoring)
@@ -50,7 +50,7 @@ def get_ordinal_winners(params, votes, rule):
         return all_winners
 
     elif rule['type'] == 'borda_owa':
-        owa = get_rule(rule['name'], rule['length'])
+        owa = get_rule(rule['election_id'], rule['length'])
         all_winners = []
         for i in range(params['elections']):
             winners = get_winners_borda_owa(params, votes, params['candidates'], owa)
@@ -58,7 +58,7 @@ def get_ordinal_winners(params, votes, rule):
         return all_winners
 
     elif rule['type'] == 'bloc_owa':
-        owa = get_rule(rule['name'], rule['length'])
+        owa = get_rule(rule['election_id'], rule['length'])
         t_bloc = rule['special']
         all_winners = []
         for i in range(params['elections']):

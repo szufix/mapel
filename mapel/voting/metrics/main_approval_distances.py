@@ -1,14 +1,11 @@
+#!/usr/bin/env python
+
 import math
-import os
-import random as rand
+from typing import Callable, List
 
 import networkx as nx
-import numpy as np
-from scipy.optimize import linear_sum_assignment
-from typing import Callable
 
-from mapel.voting.metrics import lp
-
+from mapel.voting.metrics.matchings import *
 from mapel.voting.objects.ApprovalElection import ApprovalElection
 
 
@@ -40,7 +37,7 @@ def compute_hamming(election_1: ApprovalElection, election_2: ApprovalElection) 
     votes_1 = election_1.votes
     votes_2 = election_2.votes
     params = {'voters': election_1.num_voters, 'candidates': election_2.num_candidates}
-    file_name = str(rand.random()) + '.lp'
+    file_name = f'{rand.random()}.lp'
     path = os.path.join(os.getcwd(), "trash", file_name)
     lp.generate_ilp_distance(path, votes_1, votes_2, params, 'hamming')
     objective_value = lp.solve_ilp_distance(path, votes_1, votes_2, params, 'hamming')
@@ -75,6 +72,8 @@ def compute_flow(ele_1, ele_2):
 
 # HELPER FUNCTIONS #
 def flow_helper(v_1, v_2, num_candidates=8, num_voters=50):
+    """ Return: Objective value """
+
     # print(v_1, v_2)
 
     def normalize(x):
@@ -141,70 +140,47 @@ def flow_helper(v_1, v_2, num_candidates=8, num_voters=50):
         if 0 < k:
             graph.add_edge(my_pos, my_pos - 1, capacity=int(max_capacity),
                            weight=normalize(prob_left))
-        # print("p", prob_right_up, prob_right_down, prob_left)
 
-    # print("start")
-    objective_value = nx.min_cost_flow_cost(graph)
-    # print("stop")
-    # print('obj', objective_value)
-
-    return objective_value
+    return nx.min_cost_flow_cost(graph)
 
 
-def get_flow_helper_1(ele_1, ele_2):
-    vectors_1 = ele_1.coapproval_frequency_vectors
-    vectors_2 = ele_2.coapproval_frequency_vectors
-    size = ele_1.num_candidates
-    cost_table = [[flow_helper(vectors_1[i], vectors_2[j])
-                   for i in range(size)] for j in range(size)]
-    return cost_table
+def get_flow_helper_1(election_1: ApprovalElection, election_2: ApprovalElection) -> List[list]:
+    """ Return: Cost table """
+    vectors_1 = election_1.coapproval_frequency_vectors
+    vectors_2 = election_2.coapproval_frequency_vectors
+    size = election_1.num_candidates
+    return [[flow_helper(vectors_1[i], vectors_2[j])
+             for i in range(size)] for j in range(size)]
 
 
-def get_matching_cost_coapproval_frequency_vectors(ele_1, ele_2, inner_distance):
-    vectors_1 = ele_1.coapproval_frequency_vectors
-    vectors_2 = ele_2.coapproval_frequency_vectors
-    size = ele_1.num_candidates
-    cost_table = [[inner_distance(vectors_1[i], vectors_2[j])
-                   for i in range(size)] for j in range(size)]
-    return cost_table
+def get_matching_cost_coapproval_frequency_vectors(election_1: ApprovalElection,
+                                                   election_2: ApprovalElection,
+                                                   inner_distance: Callable) -> List[list]:
+    """ Return: Cost table """
+    vectors_1 = election_1.coapproval_frequency_vectors
+    vectors_2 = election_2.coapproval_frequency_vectors
+    size = election_1.num_candidates
+    return [[inner_distance(vectors_1[i], vectors_2[j]) for i in range(size)] for j in range(size)]
 
 
-def get_matching_cost_candidatelikeness(election_1: ApprovalElection, election_2: ApprovalElection,
-                                        inner_distance: Callable):
+def get_matching_cost_candidatelikeness(election_1: ApprovalElection,
+                                        election_2: ApprovalElection,
+                                        inner_distance: Callable) -> List[list]:
+    """ Return: Cost table """
     vectors_1 = election_1.candidatelikeness_sorted_vectors
     vectors_2 = election_2.candidatelikeness_sorted_vectors
     size = election_1.num_candidates
-    cost_table = [[inner_distance(vectors_1[i], vectors_2[j])
-                   for i in range(size)] for j in range(size)]
-    return cost_table
+    return [[inner_distance(vectors_1[i], vectors_2[j]) for i in range(size)] for j in range(size)]
 
 
 def get_matching_cost_voterlikeness_vectors(election_1: ApprovalElection,
                                             election_2: ApprovalElection,
-                                            inner_distance: Callable):
+                                            inner_distance: Callable) -> List[list]:
+    """ Return: Cost table """
     vectors_1 = election_1.voterlikeness_vectors
     vectors_2 = election_2.voterlikeness_vectors
     size = election_1.num_voters
-    cost_table = [[inner_distance(vectors_1[i], vectors_2[j])
-                   for i in range(size)] for j in range(size)]
-    return cost_table
-
-
-def solve_matching_vectors(cost_table) -> (float, list):
-    """ Return: objective value, optimal matching"""
-    cost_table = np.array(cost_table)
-    row_ind, col_ind = linear_sum_assignment(cost_table)
-    return cost_table[row_ind, col_ind].sum(), list(col_ind)
-
-
-def solve_matching_matrices(matrix_1, matrix_2, length, inner_distance) -> float:
-    file_name = str(rand.random()) + '.lp'
-    path = os.path.join(os.getcwd(), "trash", file_name)
-    lp.generate_lp_file_matching_matrix(path, matrix_1, matrix_2, length,
-                                        inner_distance)
-    matching_cost = lp.solve_lp_matrix(path, matrix_1, matrix_2, length)
-    lp.remove_lp_file(path)
-    return matching_cost
+    return [[inner_distance(vectors_1[i], vectors_2[j]) for i in range(size)] for j in range(size)]
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 13.10.2021 #

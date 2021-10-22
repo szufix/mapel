@@ -2,36 +2,37 @@
 
 import ast
 import os
+
 import numpy as np
 
-from mapel.voting.other.winners2 import generate_winners
+from mapel.voting._glossary import *
 from mapel.voting.elections.group_separable import get_gs_caterpillar_vectors
 from mapel.voting.elections.mallows import get_mallows_vectors
 from mapel.voting.elections.preflib import get_sushi_vectors
 from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 from mapel.voting.elections.single_peaked import get_walsh_vectors, get_conitzer_vectors
-from mapel.voting._glossary import PATHS
 from mapel.voting.objects.Election import Election
 from mapel.voting.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
-from mapel.voting._glossary import LIST_OF_FAKE_MODELS, LIST_OF_PREFLIB_MODELS
+from mapel.voting.other.winners2 import generate_winners
 
 
 class OrdinalElection(Election):
 
-    def __init__(self, experiment_id, name, votes=None, with_matrix=False, alpha=None, model=None,
+    def __init__(self, experiment_id, election_id, votes=None, with_matrix=False, alpha=None,
+                 model_id=None,
                  ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None,
                  _import: bool = False, shift: bool = False):
 
-        super().__init__(experiment_id, name, votes=votes, alpha=alpha,
-                         model=model, ballot=ballot,
+        super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
+                         model_id=model_id, ballot=ballot,
                          num_voters=num_voters, num_candidates=num_candidates)
 
         if votes is not None:
             if str(votes[0]) in LIST_OF_FAKE_MODELS:
                 self.fake = True
                 self.votes = votes[0]
-                self.model = votes[0]
+                self.model_id = votes[0]
                 self.num_candidates = votes[1]
                 self.num_voters = votes[2]
                 self.fake_param = votes[3]
@@ -39,19 +40,18 @@ class OrdinalElection(Election):
                 self.votes = votes
                 self.num_candidates = len(votes[0])
                 self.num_voters = len(votes)
-                self.model = model
+                self.model_id = model_id
                 self.potes = self.votes_to_potes()
         else:
-            self.fake = check_if_fake(experiment_id, name)
+            self.fake = check_if_fake(experiment_id, election_id)
             if self.fake:
-                self.model, self.fake_param, self.num_voters, \
-                    self.num_candidates = import_fake_soc_election(experiment_id, name)
+                self.model_id, self.fake_param, self.num_voters, \
+                self.num_candidates = import_fake_soc_election(experiment_id, election_id)
             else:
                 self.votes, self.num_voters, self.num_candidates, self.param, \
-                    self.model = import_real_soc_election(experiment_id, name, shift)
+                    self.model_id = import_real_soc_election(experiment_id, election_id, shift)
 
                 self.potes = self.votes_to_potes()
-
 
         if with_matrix:
             self.matrix = self.import_matrix()
@@ -75,30 +75,29 @@ class OrdinalElection(Election):
 
     def votes_to_positionwise_vectors(self):
 
-        # print(experiment.num_candidates)
         vectors = np.zeros([self.num_candidates, self.num_candidates])
 
-        if self.model == 'conitzer_matrix':
+        if self.model_id == 'conitzer_matrix':
             vectors = get_conitzer_vectors(self.num_candidates)
-        elif self.model == 'walsh_matrix':
+        elif self.model_id == 'walsh_matrix':
             vectors = get_walsh_vectors(self.num_candidates)
-        elif self.model == 'single-crossing_matrix':
+        elif self.model_id == 'single-crossing_matrix':
             vectors = get_single_crossing_vectors(self.num_candidates)
-        elif self.model == 'gs_caterpillar_matrix':
+        elif self.model_id == 'gs_caterpillar_matrix':
             vectors = get_gs_caterpillar_vectors(self.num_candidates)
-        elif self.model == 'sushi_matrix':
+        elif self.model_id == 'sushi_matrix':
             vectors = get_sushi_vectors()
-        elif self.model in {'norm-mallows_matrix', 'mallows_matrix_path'}:
+        elif self.model_id in {'norm-mallows_matrix', 'mallows_matrix_path'}:
             vectors = get_mallows_vectors(self.num_candidates, self.fake_param)
-        elif self.model in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-            vectors = get_fake_vectors_single(self.model, self.num_candidates)
-        elif self.model in {'walsh_path', 'conitzer_path'}:
+        elif self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+            vectors = get_fake_vectors_single(self.model_id, self.num_candidates)
+        elif self.model_id in {'walsh_path', 'conitzer_path'}:
             vectors = get_fake_multiplication(self.num_candidates, self.fake_param,
-                                              self.model)
-        elif self.model in PATHS:
-            vectors = get_fake_convex(self.model, self.num_candidates, self.num_voters,
+                                              self.model_id)
+        elif self.model_id in PATHS:
+            vectors = get_fake_convex(self.model_id, self.num_candidates, self.num_voters,
                                       self.fake_param, get_fake_vectors_single)
-        elif self.model == 'crate':
+        elif self.model_id == 'crate':
             vectors = get_fake_vectors_crate(num_candidates=self.num_candidates,
                                              fake_param=self.fake_param)
         else:
@@ -128,11 +127,10 @@ class OrdinalElection(Election):
 
         if self.fake:
 
-            if self.model in {'identity', 'uniformity',
-                                       'antagonism', 'stratification'}:
-                matrix = get_fake_matrix_single(self.model, self.num_candidates)
-            elif self.model in PATHS:
-                matrix = get_fake_convex(self.model, self.num_candidates, self.num_voters,
+            if self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+                matrix = get_fake_matrix_single(self.model_id, self.num_candidates)
+            elif self.model_id in PATHS:
+                matrix = get_fake_convex(self.model_id, self.num_candidates, self.num_voters,
                                          self.fake_param, get_fake_matrix_single)
 
         else:
@@ -157,12 +155,11 @@ class OrdinalElection(Election):
 
         if self.fake:
 
-            if self.model in {'identity', 'uniformity',
-                                       'antagonism', 'stratification'}:
-                borda_vector = get_fake_borda_vector(self.model, self.num_candidates,
+            if self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+                borda_vector = get_fake_borda_vector(self.model_id, self.num_candidates,
                                                      self.num_voters)
-            elif self.model in PATHS:
-                borda_vector = get_fake_convex(self.model, self.num_candidates,
+            elif self.model_id in PATHS:
+                borda_vector = get_fake_convex(self.model_id, self.num_candidates,
                                                self.num_voters, self.fake_param,
                                                get_fake_borda_vector)
 
@@ -176,15 +173,11 @@ class OrdinalElection(Election):
 
         return borda_vector, len(borda_vector)
 
-    def votes_to_positionwise_intervals(self, precision=None) -> list:
+    def votes_to_positionwise_intervals(self, precision: int = None) -> list:
 
         vectors = self.votes_to_positionwise_matrix()
-        intervals = []
-
-        for i in range(len(vectors)):
-            intervals.append(self.vector_to_interval(vectors[i], precision=precision))
-
-        return intervals
+        return [self.vector_to_interval(vectors[i], precision=precision)
+                for i in range(len(vectors))]
 
     def votes_to_voterlikeness_matrix(self) -> np.ndarray:
         """ convert VOTES to voter-likeness MATRIX """
@@ -381,8 +374,7 @@ def convex_combination(base_1, base_2, length=0, params=None):
         output = np.zeros([length, length])
         for i in range(length):
             for j in range(length):
-                output[i][j] = alpha * base_1[i][j] + (1 - alpha) * base_2[i][
-                    j]
+                output[i][j] = alpha * base_1[i][j] + (1 - alpha) * base_2[i][j]
     else:
         raise NameError('Unknown base!')
     return output
@@ -455,7 +447,7 @@ def get_fake_borda_vector(fake_model_name, num_candidates, num_voters):
 
 
 def get_borda_points(votes, num_voters, num_candidates):
-    points = [0 for _ in range(num_candidates)]
+    points = np.zeros([num_candidates])
     scoring = [1. for _ in range(num_candidates)]
 
     for i in range(len(scoring)):
@@ -468,20 +460,18 @@ def get_borda_points(votes, num_voters, num_candidates):
     return points
 
 
-def check_if_fake(experiment_id, election_id):
-    file_name = str(election_id) + ".soc"
+def check_if_fake(experiment_id, name):
+    file_name = f'{name}.soc'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     line = my_file.readline().strip()
-    if line[0] == '$':
-        return True
-    return False
+    return line[0] == '$'
 
 
-def import_fake_soc_election(experiment_id, election_id):
+def import_fake_soc_election(experiment_id, name):
     """ Import fake ordinal election form .soc file """
 
-    file_name = str(election_id) + ".soc"
+    file_name = f'{name}.soc'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     my_file.readline()  # line with $ fake
@@ -514,6 +504,8 @@ def old_name_extractor(first_line):
         model_name = f'{first_line[1]} {first_line[2]}'
     elif len(first_line) == 2:
         model_name = first_line[1]
+    else:
+        model_name = 'noname'
     return model_name
 
 

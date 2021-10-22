@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
+import os
+
 try:
     import cplex
-except:
-    pass
+except ImportError:
+    cplex = None
 
 import numpy as np
+
 from mapel.voting.metrics.inner_distances import hamming
 
 
@@ -26,7 +29,8 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name='0'):
             objective.append(1.)
     cp.variables.add(obj=objective,
                      names=names,
-                     types=[cp.variables.type.binary] * election_1.num_voters * election_2.num_voters)
+                     types=[
+                               cp.variables.type.binary] * election_1.num_voters * election_2.num_voters)
 
     # FIRST CONSTRAINT FOR VOTERS
     lin_expr = []
@@ -58,7 +62,8 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name='0'):
         for c2 in range(election_2.num_candidates):
             names.append('M' + str(c1) + '_' + str(c2))
     cp.variables.add(names=list(names),
-                     types=[cp.variables.type.binary] * election_1.num_candidates * election_2.num_candidates)
+                     types=[
+                               cp.variables.type.binary] * election_1.num_candidates * election_2.num_candidates)
 
     # FIRST CONSTRAINT FOR CANDIDATES
     lin_expr = []
@@ -103,7 +108,8 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name='0'):
     cp.linear_constraints.add(lin_expr=lin_expr,
                               senses=['G'] * election_1.num_voters * election_2.num_voters,
                               rhs=[0.0] * election_1.num_voters * election_2.num_voters,
-                              names=['C5_' + str(i) for i in range(election_1.num_voters * election_2.num_voters)])
+                              names=['C5_' + str(i) for i in
+                                     range(election_1.num_voters * election_2.num_voters)])
 
     # cp.write('new.lp')
 
@@ -125,7 +131,8 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2):
     # PRECOMPUTING
     # """
 
-    P = np.zeros([election_1.num_voters, election_2.num_voters, election_1.num_candidates, election_2.num_candidates,
+    P = np.zeros([election_1.num_voters, election_2.num_voters, election_1.num_candidates,
+                  election_2.num_candidates,
                   election_1.num_candidates, election_2.num_candidates])
 
     for v in range(election_1.num_voters):
@@ -134,9 +141,11 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2):
                 for d1 in range(election_2.num_candidates):
                     for c2 in range(election_1.num_candidates):
                         for d2 in range(election_2.num_candidates):
-                            if (election_1.potes[v][c1] > election_1.potes[v][c2] and election_2.potes[u][d1] >
+                            if (election_1.potes[v][c1] > election_1.potes[v][c2] and
+                                election_2.potes[u][d1] >
                                 election_2.potes[u][d2]) or \
-                                    (election_1.potes[v][c1] < election_1.potes[v][c2] and election_2.potes[u][d1] <
+                                    (election_1.potes[v][c1] < election_1.potes[v][c2] and
+                                     election_2.potes[u][d1] <
                                      election_2.potes[u][d2]):
                                 P[v][u][c1][d1][c2][d2] = 1
 
@@ -361,7 +370,8 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2):
 
                             # if P[v][u][c1][d1][c2][d2] == 1:
                             lp_file.write("P_" + str(v) + "_" + str(u) + "_" +
-                                          str(c1) + "_" + str(d1) + "_" + str(c2) + "_" + str(d2) + "\n")
+                                          str(c1) + "_" + str(d1) + "_" + str(c2) + "_" + str(
+                                d2) + "\n")
 
     for v in range(election_1.num_voters):
         for u in range(election_2.num_voters):
@@ -400,8 +410,8 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2):
     result_2 = np.zeros([election_1.num_voters, election_1.num_voters])
     for i in range(election_1.num_voters):
         for j in range(election_1.num_voters):
-            name = 'N_' + str(i) + '_' + str(j)
-            result_2[i][j] = cp_lp.solution.get_values(name)
+            election_id = 'N_' + str(i) + '_' + str(j)
+            result_2[i][j] = cp_lp.solution.get_values(election_id)
 
     print('N', result_2)
     total = 0
@@ -417,11 +427,11 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2):
                                 continue
 
                             #if P[v][u][c1][d1][c2][d2] == 1:
-                            name = "P_" + str(v) + "_" + str(u) + "_" + str(c1) + "_" + str(d1) + "_" + str(c2) + "_" + str(d2)
-                            value = cp_lp.solution.get_values(name)
+                            election_id = "P_" + str(v) + "_" + str(u) + "_" + str(c1) + "_" + str(d1) + "_" + str(c2) + "_" + str(d2)
+                            value = cp_lp.solution.get_values(election_id)
                             #print(value)
                             if value == 1:
-                                print(name)
+                                print(election_id)
                             total += value
     print(total)
     """
@@ -618,7 +628,8 @@ def generate_lp_file_dodgson_score(lp_file_name, N=None, e=None, D=None):
     for i in range(len(N)):
         for j in range(1, len(D)):
             lp_file.write("c" + str(ctr_c) + ":")
-            lp_file.write(" y" + str(i) + "_" + str(j - 1) + " - y" + str(i) + "_" + str(j) + " >= 0" + "\n")
+            lp_file.write(
+                " y" + str(i) + "_" + str(j - 1) + " - y" + str(i) + "_" + str(j) + " >= 0" + "\n")
             ctr_c += 1
     # """
     # """
@@ -917,7 +928,6 @@ def generate_lp_file_matching_matrix_half(lp_file_name, matrix_1, matrix_2, leng
 
 
 def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length, inner_distance):
-
     lp_file = open(lp_file_name, 'w')
     lp_file.write("Minimize\n")
 
@@ -935,7 +945,9 @@ def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length, i
                         lp_file.write(" + ")
                     first = False
                     weight = inner_distance(matrix_1[k][i], matrix_2[l][j])
-                    lp_file.write(str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+                    lp_file.write(
+                        str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(
+                            j))
     lp_file.write("\n")
 
     lp_file.write("Subject To\n")
@@ -1015,7 +1027,8 @@ def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length, i
                 for j in range(length):
                     if j == l:
                         continue
-                    lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j) + "\n")
+                    lp_file.write(
+                        "P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j) + "\n")
 
     for i in range(length):
         for j in range(length):
@@ -1097,13 +1110,16 @@ def generate_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
                     if metric_name == "spearman":
                         weight = abs(pote_1[i] - pote_2[j])
                     elif metric_name == "alt":
-                        weight = float(abs(pote_1[i] - pote_2[j]) ** (2)) / float(1. + min(pote_1[i], pote_2[j]))
+                        weight = float(abs(pote_1[i] - pote_2[j]) ** (2)) / float(
+                            1. + min(pote_1[i], pote_2[j]))
                     elif metric_name == 'hamming':
                         weight = hamming(vote_1, vote_2)
                     else:
                         weight = 0
 
-                    lp_file.write(str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+                    lp_file.write(
+                        str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(
+                            j))
     lp_file.write("\n")
 
     lp_file.write("Subject To\n")
@@ -1184,7 +1200,8 @@ def generate_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
         for l in range(params['voters']):
             for i in range(params['candidates']):
                 for j in range(params['candidates']):
-                    lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j) + "\n")
+                    lp_file.write(
+                        "P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j) + "\n")
 
     for k in range(params['voters']):
         for l in range(params['voters']):
@@ -1249,7 +1266,8 @@ def spearman_cost_per_cand(single_votes_1, single_votes_2, params, perm):
 
     return cand_diff
 
-import os
+
+
 def remove_lp_file(path):
     """ Safely remove lp file """
     try:

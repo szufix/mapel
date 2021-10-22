@@ -6,20 +6,21 @@ import os
 
 import numpy as np
 
-from mapel.voting.other.winners2 import generate_winners
-from mapel.voting._glossary import LIST_OF_FAKE_MODELS
+from mapel.voting._glossary import *
 from mapel.voting.objects.Instance import Instance
-from mapel.voting.other.winners import compute_sntv_winners, compute_borda_winners, compute_stv_winners
+from mapel.voting.other.winners import compute_sntv_winners, compute_borda_winners, \
+    compute_stv_winners
+from mapel.voting.other.winners2 import generate_winners
 
 
 class Election(Instance):
 
-    def __init__(self, experiment_id, name, votes=None, alpha=None, model=None,
+    def __init__(self, experiment_id, election_id, votes=None, alpha=None, model_id=None,
                  ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None):
 
-        super().__init__(experiment_id, name, model=model, alpha=alpha)
+        super().__init__(experiment_id, election_id, model_id=model_id, alpha=alpha)
 
-        self.name = name
+        self.election_id = election_id
         self.ballot = ballot
 
         self.num_voters = num_voters
@@ -27,14 +28,14 @@ class Election(Instance):
         self.winners = None
         self.alternative_winners = {}
 
-        self.fake = model in LIST_OF_FAKE_MODELS
+        self.fake = model_id in LIST_OF_FAKE_MODELS
 
         self.votes = votes
-        self.model = model
+        self.model_id = model_id
 
     def import_matrix(self) -> np.ndarray:
 
-        file_name = self.name + '.csv'
+        file_name = f'{self.election_id}.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, 'matrices', file_name)
         matrix = np.zeros([self.num_candidates, self.num_candidates])
 

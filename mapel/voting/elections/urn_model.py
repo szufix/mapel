@@ -7,7 +7,7 @@ import numpy as np
 
 def generate_urn_votes(num_voters: int = None, num_candidates: int = None,
                        params: dict = None) -> np.ndarray:
-    """ Return: ordinal votes from Polya-Eggenberger model """
+    """ Return: ordinal votes from Polya-Eggenberger model_id """
 
     votes = np.zeros([num_voters, num_candidates])
     urn_size = 1.
@@ -24,7 +24,7 @@ def generate_urn_votes(num_voters: int = None, num_candidates: int = None,
 
 def generate_approval_urn_votes(num_voters: int = None, num_candidates: int = None,
                                 params: dict = None) -> list:
-    """ Return: approval votes from Polya-Eggenberger model """
+    """ Return: approval votes from Polya-Eggenberger model_id """
 
     votes = []
     urn_size = 1.

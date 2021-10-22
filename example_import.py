@@ -5,7 +5,7 @@ import mapel
 if __name__ == "__main__":
 
     experiment_id = 'tmp_ordinal'
-    distance_name = 'emd-positionwise'
+    distance_id = 'emd-positionwise'
 
     experiment = mapel.prepare_experiment(experiment_id=experiment_id, shift=False,
                                           election_type='ordinal',
@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # experiment.prepare_elections()
 
-    # experiment.compute_distances(distance_name=distance_name)
+    # experiment.compute_distances(distance_id=distance_id)
 
     experiment.embed(algorithm='spring')
 

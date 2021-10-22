@@ -6,47 +6,38 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 import tikzplotlib
-import deprecation as dep
-
-# from mapel.voting.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
-# from mapel.voting.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
-
-from scipy.stats import norm
 
 
 def print_approvals_histogram(election):
-    print(election.name)
-    plt.title(election.name, size=20)
+    print(election.election_id)
+    plt.title(election.election_id, size=20)
     bins = np.linspace(0, 100, 51)
     plt.hist([len(vote) for vote in election.votes], bins=bins)
     # x_axis = np.arange(0, 100, 0.01)
     # plt.plot(x_axis, norm.pdf(x_axis, 50, 2)*2000)
     plt.ylim([0, election.num_voters])
     plt.xlim([-1, election.num_candidates+1])
-    plt.savefig("images/histograms/"+election.name+".png")
+    plt.savefig("images/histograms/" + election.election_id + ".png")
     plt.show()
 
 
 # Main functions
-def print_map_2d(experiment, mask=False, mixed=False, fuzzy_paths=True,
+def print_map_2d(experiment,
                  xlabel=None, shading=False, shift_legend=1,
                  angle=0, reverse=False, update=False, feature=None,
-                 attraction_factor=2, axis=False, rounding=1,
-                 distance_name="emd-positionwise", guardians=False,
+                 axis=False, rounding=1,
                  ticks=None, skeleton=None, roads=None,
                  title=None, dim=2, event='none',
                  saveas=None, show=True, ms=20, normalizing_func=None,
-                 xticklabels=None, cmap=None,
-                 ignore=None, marker_func=None, tex=False, black=False,
-                 legend=True, tmp=False, adjust=False) -> None:
+                 xticklabels=None, cmap=None, marker_func=None, tex=False,
+                 legend=True, adjust=False) -> None:
     if skeleton is None:
         skeleton = []
 
     if roads is None:
         roads = []
 
-    experiment.compute_points_by_families()
-    # experiment.attraction_factor = attraction_factor
+    experiment.compute_coordinates_by_families()
 
     if adjust:
         adjust_the_map(experiment)
@@ -118,7 +109,7 @@ def print_map_3d(experiment,
                  saveas="map_2d", show=True, ms=20, normalizing_func=None,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
                  legend=True):
-    experiment.compute_points_by_families()
+    experiment.compute_coordinates_by_families()
 
     if cmap is None:
         cmap = custom_div_cmap()
@@ -268,9 +259,9 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
                 marker = experiment.families[k].marker
                 markers.append(marker)
 
-                xx.append(experiment.points[experiment.main_order[ctr]][0])
-                yy.append(experiment.points[experiment.main_order[ctr]][1])
-                zz.append(experiment.points[experiment.main_order[ctr]][2])
+                xx.append(experiment.coordinates[experiment.main_order[ctr]][0])
+                yy.append(experiment.coordinates[experiment.main_order[ctr]][1])
+                zz.append(experiment.coordinates[experiment.main_order[ctr]][2])
 
                 ctr += 1
         xx = np.asarray(xx)
@@ -336,7 +327,9 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
 
 
 # COLORING
-def basic_coloring(experiment=None, ax=None, ms=None, dim=2, skeleton=[]):
+def basic_coloring(experiment=None, ax=None, ms=None, dim=2, skeleton=None):
+    if skeleton is None:
+        skeleton = []
     for family in experiment.families.values():
 
         if family.show:
@@ -345,23 +338,25 @@ def basic_coloring(experiment=None, ax=None, ms=None, dim=2, skeleton=[]):
                     label = '_nolegend_'
                 else:
                     label = family.label
-                ax.scatter(experiment.points_by_families[family.family_id][0],
-                           experiment.points_by_families[family.family_id][1],
+                ax.scatter(experiment.coordinates_by_families[family.family_id][0],
+                           experiment.coordinates_by_families[family.family_id][1],
                            color=family.color,
                            label=label,
                            alpha=family.alpha, s=ms,
                            marker=family.marker)
             elif dim == 3:
-                ax.scatter(experiment.points_by_families[family.family_id][0],
-                           experiment.points_by_families[family.family_id][1],
-                           experiment.points_by_families[family.family_id][2],
+                ax.scatter(experiment.coordinates_by_families[family.family_id][0],
+                           experiment.coordinates_by_families[family.family_id][1],
+                           experiment.coordinates_by_families[family.family_id][2],
                            color=family.color,
                            label=family.label,
                            alpha=family.alpha, s=ms,
                            marker=family.marker)
 
 
-def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skeleton=[]):
+def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skeleton=None):
+    if skeleton is None:
+        skeleton = []
     for family_id in experiment.families:
         if experiment.families[family_id].show:
             if dim == 2:
@@ -372,15 +367,15 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skelet
                         alpha *= experiment.families[family_id].alpha
                         alpha = (alpha + 0.2) / 1.2
                         if i == experiment.families[family_id].size - 1:
-                            ax.scatter(experiment.points_by_families[family_id][0][i],
-                                       experiment.points_by_families[family_id][1][i],
+                            ax.scatter(experiment.coordinates_by_families[family_id][0][i],
+                                       experiment.coordinates_by_families[family_id][1][i],
                                        color=experiment.families[family_id].color,
                                        label=family_id,
                                        alpha=alpha, s=ms,
                                        marker=experiment.families[family_id].marker)
                         else:
-                            ax.scatter(experiment.points_by_families[family_id][0][i],
-                                       experiment.points_by_families[family_id][1][i],
+                            ax.scatter(experiment.coordinates_by_families[family_id][0][i],
+                                       experiment.coordinates_by_families[family_id][1][i],
                                        color=experiment.families[family_id].color,
                                        alpha=alpha, s=ms,
                                        marker=experiment.families[family_id].marker)
@@ -389,16 +384,16 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skelet
                         label = '_nolegend_'
                     else:
                         label = family_id
-                    ax.scatter(experiment.points_by_families[family_id][0],
-                               experiment.points_by_families[family_id][1],
+                    ax.scatter(experiment.coordinates_by_families[family_id][0],
+                               experiment.coordinates_by_families[family_id][1],
                                color=experiment.families[family_id].color,
                                label=label,
                                alpha=experiment.families[family_id].alpha, s=ms,
                                marker=experiment.families[family_id].marker)
             elif dim == 3:
-                ax.scatter(experiment.points_by_families[family_id][0],
-                           experiment.points_by_families[family_id][1],
-                           experiment.points_by_families[family_id][2],
+                ax.scatter(experiment.coordinates_by_families[family_id][0],
+                           experiment.coordinates_by_families[family_id][1],
+                           experiment.coordinates_by_families[family_id][2],
                            color=experiment.families[family_id].color,
                            label=experiment.families[family_id].label,
                            alpha=experiment.families[family_id].alpha, s=ms,
@@ -676,7 +671,7 @@ def skeleton_coloring(experiment=None, ax=None, ms=None, dim=2):
         if experiment.families[family_id].show:
             if dim == 2:
                 if family_id in {'A', 'B', 'C', 'D', 'E'}:
-                    MAL_COUNT = len(experiment.points_by_families[family_id][0])
+                    MAL_COUNT = len(experiment.coordinates_by_families[family_id][0])
                     print(MAL_COUNT)
                     for i in range(MAL_COUNT):
                         normphi = 1.0 / MAL_COUNT * i
@@ -692,18 +687,18 @@ def skeleton_coloring(experiment=None, ax=None, ms=None, dim=2):
                             color = (1, 0.5, normphi)
                         else:
                             color = 'black'
-                        ax.scatter([experiment.points_by_families[family_id][0][i]
+                        ax.scatter([experiment.coordinates_by_families[family_id][0][i]
                                     for _ in range(2)],
-                                   [experiment.points_by_families[family_id][1][i]
+                                   [experiment.coordinates_by_families[family_id][1][i]
                                     for _ in range(2)],
                                    color=color,
                                    alpha=1., s=ms + 6,
                                    marker=experiment.families[family_id].marker)
                 else:
-                    if len(experiment.points_by_families[family_id][0]) == 1:
-                        ax.scatter([experiment.points_by_families[family_id][0][0]
+                    if len(experiment.coordinates_by_families[family_id][0]) == 1:
+                        ax.scatter([experiment.coordinates_by_families[family_id][0][0]
                                     for _ in range(2)],
-                                   [experiment.points_by_families[family_id][1][0]
+                                   [experiment.coordinates_by_families[family_id][1][0]
                                     for _ in range(2)],
                                    color=experiment.families[family_id].color,
                                    label=experiment.families[family_id].label,
@@ -713,8 +708,8 @@ def skeleton_coloring(experiment=None, ax=None, ms=None, dim=2):
                                        family_id].marker)
 
                     else:
-                        ax.scatter(experiment.points_by_families[family_id][0],
-                                   experiment.points_by_families[family_id][1],
+                        ax.scatter(experiment.coordinates_by_families[family_id][0],
+                                   experiment.coordinates_by_families[family_id][1],
                                    color=experiment.families[family_id].color,
                                    label=experiment.families[family_id].label,
                                    alpha=0.8,
@@ -722,7 +717,6 @@ def skeleton_coloring(experiment=None, ax=None, ms=None, dim=2):
                                    marker=experiment.families[family_id].marker)
 
 
-@dep.deprecated()
 def add_mask_100_100(fig, ax, black=False):
     def my_arrow(x1, y1, x2, y2):
         ax.arrow(x1, y1, x2 - x1, y2 - y1, head_width=0.02, head_length=0.05,
@@ -769,7 +763,8 @@ def add_mask_100_100(fig, ax, black=False):
               [0.71, 0.26], [0.68, 0.12], [0.59, 0.02],
               [0.49, -0.04], [0.45, 0.04], [0.44, 0.3], [0.31, 0.74]]
     my_plot(points)
-    # ax.add_line(plt.Polygon(points, fill=None, edgecolor='black', lw=2, joinstyle="round", capstyle="round"))
+    # ax.add_line(plt.Polygon(points, fill=None, edgecolor='black',
+    # lw=2, joinstyle="round", capstyle="round"))
     my_arrow(0.64, 0.71, 0.61, 0.66)
     my_line(0.75, 0.90, 0.64, 0.71)
     my_line(0.95, 0.65, 0.64, 0.71)
@@ -777,7 +772,8 @@ def add_mask_100_100(fig, ax, black=False):
     my_text(0.95, 0.65, "SP (Con.)", color="limegreen")
 
     # Walsh SP
-    # points = [[0.04, -0.64], [0, -0.89], [-0.07, -1.02], [-0.16, -1], [-0.28, -0.93], [-0.34, -0.79], [-0.22, -0.69], [0.04, -0.64]]
+    # points = [[0.04, -0.64], [0, -0.89], [-0.07, -1.02], [-0.16, -1], [-0.28, -0.93],
+    # [-0.34, -0.79], [-0.22, -0.69], [0.04, -0.64]]
     points = [[0.04, -0.66], [-0.005, -0.89], [-0.07, -1.02], [-0.16, -1],
               [-0.28, -0.93], [-0.34, -0.79],
               [-0.22, -0.69], [0.04, -0.66]]
@@ -918,7 +914,6 @@ def add_mask_100_100(fig, ax, black=False):
     my_number(0.82, -0.03, "0.5", color="orangered")
 
 
-@dep.deprecated()
 def level_background(fig=None, ax=None, saveas=None, tex=None):
     fig.set_size_inches(10, 10)
 
@@ -929,7 +924,7 @@ def level_background(fig=None, ax=None, saveas=None, tex=None):
         ax.arrow(x1, y1, x2 - x1, y2 - y1, head_width=0., head_length=0.,
                  fc='k', ec='k')
 
-    def my_plot(points, color='black', type='--'):
+    def my_plot(points, color='black', _type='--'):
         x = [p[0] for p in points]
         y = [p[1] for p in points]
         from scipy.interpolate import interp1d
@@ -940,7 +935,7 @@ def level_background(fig=None, ax=None, saveas=None, tex=None):
         xi = interp1d(t, x, kind='cubic')(ti)
         yi = interp1d(t, y, kind='cubic')(ti)
 
-        ax.plot(xi, yi, type, color=color)
+        ax.plot(xi, yi, _type, color=color)
 
     """
     points = [[-0.97, 0.95], [-0.37, 0.97], [0.11, 1.33], [0.27, 1.75]]
@@ -998,7 +993,6 @@ def level_background(fig=None, ax=None, saveas=None, tex=None):
         tikzplotlib.save(path)
 
 
-@dep.deprecated()
 def get_values_from_file_old(experiment, experiment_id, values,
                              normalizing_func=None, marker_func=None):
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "features",
