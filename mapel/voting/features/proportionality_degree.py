@@ -16,12 +16,13 @@ except ImportError:
     preferences = None
 
 
-def calculate_pav_committees(election: ApprovalElection, only_one_committee=False,
-                             committee_size: int = 10) -> set:
+def calculate_committees(election: ApprovalElection, resolute=False,
+                             committee_size: int = 10, rule_name=None) -> set:
     profile = preferences.Profile(num_cand=election.num_candidates)
     profile.add_voters(election.votes)
     try:
-        committees = abcrules.compute_pav(profile, committeesize=committee_size, resolute=only_one_committee)
+        committees = abcrules.compute(rule_name, profile, committee_size,
+                                               resolute=resolute)
     except Exception:
         committees = {}
     return committees
@@ -34,6 +35,7 @@ def count_proportionality_degree_of_a_committee(election: ApprovalElection, comm
         val = solve_ilp_instance(election, committee, l, committee_size=committee_size)
         f_map[l] = val
     return f_map
+
 
 
 def solve_ilp_instance(election: ApprovalElection, committee: set, l: int = 1,
@@ -91,17 +93,29 @@ def solve_ilp_instance(election: ApprovalElection, committee: set, l: int = 1,
         # return np.inf
         return 0.
 
-def proportionality_degree(election, committee_size=10):
 
-    committees = calculate_pav_committees(election, committee_size=committee_size)
+def proportionality_degree(election, committee_size=10, rule_name=None,resolute=False):
+
+    committees = calculate_committees(election, committee_size=committee_size, rule_name=rule_name,
+                                      resolute=resolute)
     if len(committees) == 0:
         return 0
 
     all_pd = []
     for committee in committees:
-        pd = count_proportionality_degree_of_a_committee(election, committee)
-        all_pd.append(sum(pd.values()))
+        pd_1 = solve_ilp_instance(election, committee, 1, committee_size=committee_size)
+        # print(pd_1)
+        all_pd.append(pd_1)
         # print(f"Election with n = {election.num_voters}, m = {election.num_candidates}, k = {election.k}.   Votes = {election.votes}")
         # print(f"PAV committee = {committee}.    Proportionality Degree of this committee is {pd}.\n")
-    avg_pd = sum(all_pd) / len(all_pd)
-    return avg_pd
+    return sum(all_pd) / len(all_pd)
+
+
+def proportionality_degree_av(*args, **kwargs):
+    return proportionality_degree(*args, **kwargs, rule_name='av')
+
+def proportionality_degree_pav(*args, **kwargs):
+    return proportionality_degree(*args, **kwargs, rule_name='pav')
+
+def proportionality_degree_cc(*args, **kwargs):
+    return proportionality_degree(*args, **kwargs, rule_name='cc', resolute=True)

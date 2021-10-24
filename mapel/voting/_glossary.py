@@ -1,6 +1,26 @@
 
 COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
 
+RULE_NAME = {
+    "av": "AV",
+    "sav": "SAV",
+    "pav": "PAV",
+    "slav": "SLAV",
+    "cc": "CC",
+    "seqpav": "Seq.PAV",
+    "revseqpav": "Rev.Seq.PAV",
+    "seqslav": "Seq. SLAV",
+    "seqcc": "Seq. CC",
+    "seqphragmen": "Seq. Phrag.",
+    "greedy-monroe": "Gr. Monroe",
+    "rule-x": "Rule X",
+    "phragmen-enestroem": "Phrag. Ene.",
+    "consensus-rule": "Consensus",
+    "geom2": "Geometric 2",
+    "geom3": "Geometric 3",
+    "geom4": "Geometric 3",
+    "geom5": "Geometric 4",
+}
 
 NICE_NAME = {
     '1d_interval': '1D_Interval',

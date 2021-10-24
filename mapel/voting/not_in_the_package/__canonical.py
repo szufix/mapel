@@ -1495,10 +1495,10 @@ def show_new_ilp(name, metric="bordawise"):
     print(len(times), len(distances))
 
     """
-    limit = 300
+    num_candidates = 300
     for i in range(num_elections):
-        if times[i] > limit:
-            times[i] = limit
+        if times[i] > num_candidates:
+            times[i] = num_candidates
     """
 
     distances = [x/30. for x in distances]
@@ -1580,10 +1580,10 @@ def show_new_zip(name):
     print(len(times), len(distances))
 
     """
-    limit = 300
+    num_candidates = 300
     for i in range(num_elections):
-        if times[i] > limit:
-            times[i] = limit
+        if times[i] > num_candidates:
+            times[i] = num_candidates
     """
 
     distances = [x/30. for x in distances]
@@ -1742,10 +1742,10 @@ def show_new_approx_greedy(name):
     print(len(times), len(distances))
 
     """
-    limit = 300
+    num_candidates = 300
     for i in range(num_elections):
-        if times[i] > limit:
-            times[i] = limit
+        if times[i] > num_candidates:
+            times[i] = num_candidates
     """
 
     distances = [x / 30. for x in distances]

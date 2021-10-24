@@ -5,9 +5,7 @@ import numpy as np
 from mapel.voting.elections_main import store_votes_in_a_file
 
 
-
-def convert_pb_to_app(experiment, limit=100):
-
+def convert_pb_to_app(experiment, num_candidates=100, num_voters=100):
 
     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "source")
 
@@ -59,18 +57,29 @@ def convert_pb_to_app(experiment, limit=100):
         for vote in approval_votes:
             vote_cut = set()
             for c in vote:
-                if c < limit:
+                if c < num_candidates:
                     vote_cut.add(c)
             approval_votes_cut.append(vote_cut)
+
+        # cut the voters:
+        perm = np.random.permutation(len(votes))
+        # print(len(perm))
+        final_approval_votes_cut = []
+        for i, vote in enumerate(approval_votes_cut):
+            # print(num_voters)
+            if perm[i] < num_voters:
+                # print(perm[i])
+                final_approval_votes_cut.append(vote)
+        # print(len(final_approval_votes_cut))
 
         # store in .app file
         name = name.replace('.pb', '')
         model = 'pabulib'
         path = f'experiments/{experiment.experiment_id}/elections/{model}_{p}.app'
-        num_candidates = limit
-        num_voters = len(votes)
+        # num_candidates = num_candidates
+        # num_voters = len(votes)
         params = {}
         ballot = 'approval'
         store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path,
-                              ballot, votes=approval_votes_cut)
+                              ballot, votes=final_approval_votes_cut)
 

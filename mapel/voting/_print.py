@@ -7,6 +7,8 @@ import numpy as np
 from PIL import Image
 import tikzplotlib
 
+from mapel.voting._glossary import *
+
 
 def print_approvals_histogram(election):
     print(election.election_id)
@@ -50,9 +52,6 @@ def print_map_2d(experiment,
 
     if experiment.store and (adjust or update):
         experiment.update()
-
-    if cmap is None:
-        cmap = custom_div_cmap()
 
     if feature is not None:
         fig = plt.figure(figsize=(6.4, 6.4 + 0.48))
@@ -158,8 +157,10 @@ def get_values_from_csv_file(experiment, feature) -> dict:
 
         for row in reader:
             election_id = row['election_id']
-            value = row['value']
-            values[election_id] = float(value)
+            value = float(row['value'])
+            if value >= 5:
+                value = 5
+            values[election_id] = value
 
     return values
 
@@ -279,6 +280,13 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
         experiment, feature, normalizing_func, marker_func, dim=dim)
     unique_markers = set(markers)
     images = []
+
+    if cmap is None:
+        if rounding == 0:
+            num_colors = _max - _min + 1
+            cmap = custom_div_cmap(num_colors=num_colors)
+        else:
+            cmap = custom_div_cmap()
 
     for um in unique_markers:
         masks = (markers == um)
@@ -463,7 +471,8 @@ def saveas_tex(saveas=None):
 
 
 # MAIN FUNCTIONS
-def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", show=True,
+def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
+                 saveas="matrix", show=True,
                  self_distances=False, yticks='left', with_std=False, time=False):
     """Print the matrix with average distances between each pair of experiments """
 
@@ -520,13 +529,12 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
         for j, family_id_2 in enumerate(experiment.families):
             if (self_distances and i == j) or i < j:
                 if quantities[family_id_1][family_id_2] != 0.:
-                    matrix[family_id_1][family_id_2] /= float(
-                        quantities[family_id_1][family_id_2])
-                matrix[family_id_1][family_id_2] *= scale
-                matrix[family_id_1][family_id_2] = int(
-                    round(matrix[family_id_1][family_id_2], 0))
-                matrix[family_id_2][family_id_1] = matrix[family_id_1][
-                    family_id_2]
+                    matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
+                matrix[family_id_1][family_id_2] = \
+                    round(matrix[family_id_1][family_id_2] * scale, rounding)
+                if rounding == 0:
+                    matrix[family_id_1][family_id_2] = int(matrix[family_id_1][family_id_2])
+                matrix[family_id_2][family_id_1] = matrix[family_id_1][family_id_2]
 
     # THE REST
     fig, ax = plt.subplots()
@@ -543,9 +551,10 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
     if with_std:
         for i, family_id_1 in enumerate(experiment.families):
             for j, family_id_2 in enumerate(experiment.families):
-                c = int(matrix[family_id_1][family_id_2])
-                std = int(
-                    round(experiment.stds[mapping[i]][mapping[j]] * scale, 0))
+                c = matrix[family_id_1][family_id_2]
+                std = round(experiment.stds[mapping[i]][mapping[j]] * scale, rounding)
+                if rounding == 0:
+                    std = int(std)
                 matrix_new[i][j] = c
                 color = "black"
                 if c >= threshold:
@@ -561,16 +570,23 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
     else:
         for i, family_id_1 in enumerate(experiment.families):
             for j, family_id_2 in enumerate(experiment.families):
-                c = int(matrix[family_id_1][family_id_2])
+                c = matrix[family_id_1][family_id_2]
                 matrix_new[i][j] = c
                 color = "black"
                 if c >= threshold:
                     color = "white"
-                ax.text(j, i, str(c), va='center', ha='center', color=color)
+                c = str(c)
+                if c[0] == '0':
+                    c = c[1:]
+                # print(c)
+                ax.text(j, i, str(c), va='center', ha='center', color=color, size=8)
 
     labels = []
     for family_id in experiment.families:
-        labels.append(experiment.families[family_id].label)
+        if family_id in RULE_NAME:
+            labels.append(RULE_NAME[experiment.families[family_id].label])
+        else:
+            labels.append(experiment.families[family_id].label)
 
     ax.matshow(matrix_new, cmap=plt.cm.Blues)
 
@@ -582,15 +598,15 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
     if yticks != 'none':
         ax.set_yticks(y_axis)
         if yticks == 'left':
-            ax.set_yticklabels(y_values, rotation=25, size=12)
+            ax.set_yticklabels(y_values, rotation=25, size=10)
         if yticks == 'right':
-            ax.set_yticklabels(y_values, rotation=-25, size=12)
+            ax.set_yticklabels(y_values, rotation=-25, size=10)
             ax.yaxis.tick_right()
     else:
         ax.set_yticks([])
 
     ax.set_xticks(x_axis)
-    ax.set_xticklabels(x_values, rotation=75, size=12)
+    ax.set_xticklabels(x_values, rotation=80, size=10)
 
     if experiment.store:
         file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
@@ -603,7 +619,7 @@ def print_matrix(experiment=None, scale=1., distance_name='', saveas="matrix", s
 # HELPER FUNCTIONS
 def custom_div_cmap(num_colors=101, name='custom_div_cmap', colors=None):
     if colors is None:
-        colors = ["lightgreen", "yellow", "orange", "red", "black"]
+        colors = ["lightgreen", "yellow", "orange", "red", "purple", "black"]
     from matplotlib.colors import LinearSegmentedColormap
     return LinearSegmentedColormap.from_list(name=name, colors=colors, N=num_colors)
 
@@ -1059,6 +1075,7 @@ def get_values_from_file_old(experiment, experiment_id, values,
 
 
 def adjust_the_map_on_three_points(experiment, left, right, down) -> None:
+
     try:
         d_x = experiment.coordinates[right][0] - experiment.coordinates[left][0]
         d_y = experiment.coordinates[right][1] - experiment.coordinates[left][1]

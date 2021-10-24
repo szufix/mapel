@@ -385,6 +385,7 @@ class Experiment:
 
     def get_election_id_from_model_name(self, model_id: str) -> str:
         for family_id in self.families:
+            print(self.families[family_id].model_id)
             if self.families[family_id].model_id == model_id:
                 return family_id
 
@@ -619,7 +620,10 @@ class Experiment:
                 value = feature(self, election)
 
             elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
-                                'number_of_cohesive_groups_brute', 'proportional_degree']:
+                                'number_of_cohesive_groups_brute',
+                                'proportional_degree_pav',
+                                'proportional_degree_av',
+                                'proportional_degree_cc',]:
                 value = feature(election, committee_size=committee_size)
 
             elif feature_id in {'avg_distortion_from_guardians',
