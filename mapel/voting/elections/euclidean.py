@@ -7,22 +7,44 @@ from numpy import random, linalg
 ####################################################################################################
 # Approval Euclidean Election Models
 ####################################################################################################
+
+def get_range(params):
+    if params['p_dist'] == 'beta':
+        return np.random.beta(params['a'], params['b'])
+    elif params['p_dist'] == 'uniform':
+        return np.random.uniform(low=params['a'], high=params['b'])
+
+
+
+
 def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = None,
                                 params: dict = None) -> list:
-    v_a = 1.05  # params['v_a']
-    v_b = 10  # params['v_b']
-    c_a = 1.05  # params['c_a']
-    c_b = 10  # params['c_b']
+    # v_a = 1.05  # params['v_a']
+    # v_b = 10  # params['v_b']
+    # c_a = 1.05  # params['c_a']
+    # c_b = 10  # params['c_b']
+
+    # max_range = params['max_range']
 
     dim = params['dim']
 
     votes = [set() for _ in range(num_voters)]
 
-    voters = np.random.rand(num_voters, dim)
-    candidates = np.random.rand(num_candidates, dim)
+    # voters = np.random.rand(num_voters, dim)
+    # candidates = np.random.rand(num_candidates, dim)
 
-    v_range = [np.random.beta(v_a, v_b) for _ in range(num_voters)]
-    c_range = [np.random.beta(c_a, c_b) for _ in range(num_candidates)]
+    name = f'{dim}d_{params["space"]}'
+    print(name)
+
+    voters = np.array([get_rand(name) for _ in range(num_voters)])
+    candidates = np.array([get_rand(name) for _ in range(num_candidates)])
+
+    # v_range = [np.random.beta(v_a, v_b) for _ in range(num_voters)]
+    # c_range = [np.random.beta(c_a, c_b) for _ in range(num_candidates)]
+    # [np.random.uniform(low=0.05, high=max_range) ...
+
+    v_range = np.array([get_range(params) for _ in range(num_voters)])
+    c_range = np.array([get_range(params) for _ in range(num_candidates)])
 
     for v in range(num_voters):
         for c in range(num_candidates):
@@ -232,11 +254,17 @@ def random_ball(dimension, num_points=1, radius=1):
 
 def get_rand(model: str, cat: str = "voters") -> list:
     """ generate random values"""
+    # print(model ==  "1d_uniform")
 
     point = [0]
-    if model in {"1d_interval", "1d_interval_bis"}:
-        point = rand.random()
-    elif model in {"1d_gaussian", "1d_gaussian_bis"}:
+    if model in {"1d_uniform",  "1d_interval"}:
+        return np.random.rand()
+    elif model in {'1d_asymmetric'}:
+        if np.random.rand() < 0.3:
+            return np.random.normal(loc=0.25, scale=0.15, size=1)
+        else:
+            return np.random.normal(loc=0.75, scale=0.15, size=1)
+    elif model in {"1d_gaussian"}:
         point = rand.gauss(0.5, 0.15)
         while point > 1 or point < 0:
             point = rand.gauss(0.5, 0.15)
@@ -257,8 +285,13 @@ def get_rand(model: str, cat: str = "voters") -> list:
             point = [0.25 + radius * math.cos(phi), 0.5 + radius * math.sin(phi)]
         elif cat == "candidates":
             point = [0.75 + radius * math.cos(phi), 0.5 + radius * math.sin(phi)]
-    elif model in {"2d_square"}:
+    elif model in {"2d_square", "2d_uniform"}:
         point = [rand.random(), rand.random()]
+    elif model in {'2d_asymmetric'}:
+        if np.random.rand() < 0.3:
+            return np.random.normal(loc=0.25, scale=0.15, size=2)
+        else:
+            return np.random.normal(loc=0.75, scale=0.15, size=2)
     elif model == "2d_sphere":
         alpha = 2 * math.pi * rand.random()
         x = 1. * math.cos(alpha)
@@ -279,9 +312,14 @@ def get_rand(model: str, cat: str = "voters") -> list:
             point = [rand.gauss(0.75, size), rand.gauss(0.5, size)]
         if r == 4:
             point = [rand.gauss(0.5, size), rand.gauss(0.25, size)]
-    elif model == "3d_interval_bis" or model == "3d_cube":
+    elif model in ["3d_cube", "3d_uniform"]:
         point = [rand.random(), rand.random(), rand.random()]
-    elif model == "3d_gaussian_bis":
+    elif model in {'3d_asymmetric'}:
+        if np.random.rand() < 0.3:
+            return np.random.normal(loc=0.25, scale=0.15, size=3)
+        else:
+            return np.random.normal(loc=0.75, scale=0.15, size=3)
+    elif model in ['3d_gaussian']:
         point = [rand.gauss(0.5, 0.15),
                  rand.gauss(0.5, 0.15),
                  rand.gauss(0.5, 0.15)]
@@ -305,6 +343,6 @@ def get_rand(model: str, cat: str = "voters") -> list:
         dim = 5
         point = list(random_ball(dim)[0])
     else:
-        print('unknown model_id')
+        print('unknown model_id', model)
         point = [0, 0]
     return point

@@ -30,14 +30,16 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
 
     main_models = {'approval_ic': impartial.generate_approval_ic_votes,
                    'approval_id': impartial.generate_approval_id_votes,
-                   'approval_mallows': mallows.generate_approval_shumallows_votes,
-                   'approval_raw_mallows': mallows.generate_approval_hamming_noise_model_votes,
+                   'approval_shumallows': mallows.generate_approval_shumallows_votes,
+                   'approval_noise_model': mallows.generate_approval_hamming_noise_model_votes,
                    'approval_urn': urn_model.generate_approval_urn_votes,
                    'approval_euclidean': euclidean.generate_approval_euclidean_votes,
-                   'approval_disjoint_mallows': mallows.generate_approval_disjoint_shumallows_votes,
+                   'approval_disjoint_shumallows': mallows.generate_approval_disjoint_shumallows_votes,
                    'approval_vcr': euclidean.generate_approval_vcr_votes,
                    'approval_truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
+                   'approval_truncated_urn': urn_model.generate_approval_truncated_urn_votes,
                    'approval_moving_mallows': mallows.generate_approval_moving_shumallows_votes,
+                   'approval_simplex_shumallows': mallows.generate_approval_simplex_shumallows_votes,
                    }
 
     if model_id in main_models:
@@ -165,7 +167,7 @@ def generate_graph(model_id=None, num_nodes=None, params=None):
 
 
 # GENERATE
-def generate_election(experiment=None, model_id=None, election_id=None,
+def generate_election(experiment=None, model_id: str = None, election_id: str = None,
                       num_candidates: int = None, num_voters: int = None, num_nodes: int = None,
                       params: dict = None, ballot: str = 'ordinal',
                       variable=None) -> Election:
@@ -210,8 +212,8 @@ def generate_election(experiment=None, model_id=None, election_id=None,
     return election
 
 
-def prepare_statistical_culture_family(experiment=None, model_id=None, family_id=None,
-                                       params=None) -> list:
+def prepare_statistical_culture_family(experiment=None, model_id: str = None,
+                                       family_id: str = None, params: dict = None) -> list:
     keys = []
     ballot = get_ballot_from_model(model_id)
 
@@ -256,10 +258,19 @@ def get_ballot_from_model(model_id: str) -> str:
 
 
 def update_params(params, variable, model_id, num_candidates):
+    if 'alpha' not in params:
+        params['alpha'] = np.random.rand()
+    elif type(params['alpha']) is list:
+        params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
+
+
     if 'p' not in params:
         params['p'] = np.random.rand()
     elif type(params['p']) is list:
         params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+
+    if 'phi' in params and type(params['phi']) is list:
+        params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
 
     if model_id == 'mallows' and params['phi'] is None:
         params['phi'] = rand.random()

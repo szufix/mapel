@@ -21,10 +21,10 @@ def calculate_committees(election: ApprovalElection, resolute=False,
     profile = preferences.Profile(num_cand=election.num_candidates)
     profile.add_voters(election.votes)
     try:
-        committees = abcrules.compute(rule_name, profile, committee_size,
-                                               resolute=resolute)
+        committees = abcrules.compute(rule_name, profile, committee_size, resolute=resolute)
     except Exception:
         committees = {}
+
     return committees
 
 
@@ -94,10 +94,11 @@ def solve_ilp_instance(election: ApprovalElection, committee: set, l: int = 1,
         return 0.
 
 
-def proportionality_degree(election, committee_size=10, rule_name=None,resolute=False):
+def proportionality_degree(election, committee_size=10, rule_name=None, resolute=False):
 
     committees = calculate_committees(election, committee_size=committee_size, rule_name=rule_name,
                                       resolute=resolute)
+
     if len(committees) == 0:
         return 0
 

@@ -46,6 +46,9 @@ class Experiment:
 
         self._import = _import
         self.clean = clean
+        self.experiment_id = experiment_id
+        if clean:
+            self.clean_elections()
 
         self.distance_id = distance_id
 
@@ -85,7 +88,7 @@ class Experiment:
 
         if distances == {}:
             self.distances = distances
-        elif self.experiment_id != 'virtual' and self.elections != {}:
+        elif self.experiment_id != 'virtual':
             try:
                 self.distances, self.times, self.stds = self.add_distances_to_experiment()
                 print('=== Distances imported successfully! ===')
@@ -94,7 +97,7 @@ class Experiment:
 
         if coordinates == {}:
             self.coordinates = coordinates
-        elif self.experiment_id != 'virtual' and self.distances != {}:
+        elif self.experiment_id != 'virtual':
             try:
                 self.coordinates = self.add_coordinates_to_experiment()
                 print('=== Coordinates imported successfully! ===')
@@ -166,10 +169,10 @@ class Experiment:
                 params = self.families[family_id].params
                 model_id = self.families[family_id].model_id
 
-                if self.clean:
-                    path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
-                    for file_name in os.listdir(path):
-                        os.remove(os.path.join(path, file_name))
+                # if self.clean:
+                #     path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
+                #     for file_name in os.listdir(path):
+                #         os.remove(os.path.join(path, file_name))
 
                 if model_id in LIST_OF_PREFLIB_MODELS:
                     ids = preflib.prepare_preflib_family(
@@ -385,7 +388,6 @@ class Experiment:
 
     def get_election_id_from_model_name(self, model_id: str) -> str:
         for family_id in self.families:
-            print(self.families[family_id].model_id)
             if self.families[family_id].model_id == model_id:
                 return family_id
 
@@ -621,9 +623,9 @@ class Experiment:
 
             elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
                                 'number_of_cohesive_groups_brute',
-                                'proportional_degree_pav',
-                                'proportional_degree_av',
-                                'proportional_degree_cc',]:
+                                'proportionality_degree_pav',
+                                'proportionality_degree_av',
+                                'proportionality_degree_cc',]:
                 value = feature(election, committee_size=committee_size)
 
             elif feature_id in {'avg_distortion_from_guardians',
@@ -693,14 +695,11 @@ class Experiment:
     def rotate_point(cx, cy, angle, px, py) -> (float, float):
         """ Rotate two-dimensional point by an angle """
 
-        s = math.sin(angle)
-        c = math.cos(angle)
+        s, c = math.sin(angle), math.cos(angle)
         px -= cx
         py -= cy
-        x_new = px * c - py * s
-        y_new = px * s + py * c
-        px = x_new + cx
-        py = y_new + cy
+        x_new, y_new = px * c - py * s, px * s + py * c
+        px, py = x_new + cx,  y_new + cy
 
         return px, py
 
@@ -791,6 +790,11 @@ class Experiment:
                 warnings.warn(text)
 
         return distances, times, stds
+
+    def clean_elections(self):
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
+        for file_name in os.listdir(path):
+            os.remove(os.path.join(path, file_name))
 
 
 def check_if_all_equal(values, subject):

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import ast
+import itertools
 import os
 
 import numpy as np
@@ -190,14 +191,16 @@ class OrdinalElection(Election):
                 # - experiment.potes[v2][c]) for c in range(experiment.num_candidates)])
 
                 # Swap distance between votes
+
+                # for i in range(self.num_candidates):
+                #     for j in range(i + 1, self.num_candidates):
                 swap_distance = 0
-                for i in range(self.num_candidates):
-                    for j in range(i + 1, self.num_candidates):
-                        if (self.potes[v1][i] > self.potes[v1][j] and
-                            self.potes[v2][i] < self.potes[v2][j]) or \
-                                (self.potes[v1][i] < self.potes[v1][j] and
-                                 self.potes[v2][i] > self.potes[v2][j]):
-                            swap_distance += 1
+                for i, j in itertools.combinations(self.potes[0], 2):
+                    if (self.potes[v1][i] > self.potes[v1][j] and
+                        self.potes[v2][i] < self.potes[v2][j]) or \
+                            (self.potes[v1][i] < self.potes[v1][j] and
+                             self.potes[v2][i] > self.potes[v2][j]):
+                        swap_distance += 1
                 matrix[v1][v2] = swap_distance
 
         # VOTERLIKENESS IS SYMETRIC

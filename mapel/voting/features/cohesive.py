@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from numpy import ceil
+import time
 
 try:
     import pulp
@@ -60,9 +61,12 @@ def count_number_of_cohesive_groups(election: ApprovalElection, l: int = 1,
         raise NotImplementedError()
     answer = 0
     d = defaultdict(lambda: 0)
+    timeout = time.time() + 20 * 1  # 20s from now
     for v in range(election.num_voters):
         for s in powerset(election.votes[v], min_size=1):
             d[s] += 1
+            if time.time() > timeout:
+                return -1
     min_size = int(ceil(l * election.num_voters / committee_size))
     for s in d:
         for siz in range(min_size, d[s] + 1):
@@ -93,6 +97,7 @@ def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElect
 
 
 def solve_ilp_instance(election: ApprovalElection, committee_size: int, l: int = 1) -> bool:
+    pulp.getSolver('CPLEX_CMD')
     model = pulp.LpProblem("cohesiveness_level_l", pulp.LpMaximize)
     X = [pulp.LpVariable("x_" + str(i), cat='Binary') for i in
          range(election.num_voters)]  # X[i] = 1 if we select i-th voter, otherwise 0

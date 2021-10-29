@@ -5,7 +5,7 @@ import numpy as np
 from mapel.voting.elections_main import store_votes_in_a_file
 
 
-def convert_pb_to_app(experiment, num_candidates=100, num_voters=100):
+def convert_pb_to_app(experiment, num_candidates=100, num_voters=100,         model = 'pabulib'):
 
     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "source")
 
@@ -74,7 +74,6 @@ def convert_pb_to_app(experiment, num_candidates=100, num_voters=100):
 
         # store in .app file
         name = name.replace('.pb', '')
-        model = 'pabulib'
         path = f'experiments/{experiment.experiment_id}/elections/{model}_{p}.app'
         # num_candidates = num_candidates
         # num_voters = len(votes)

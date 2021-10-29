@@ -72,6 +72,8 @@ class ApprovalElection(Election):
                         vectors[c][size - 1] += 1
                     elif vector_type == 'C':
                         vectors[c][2 * size - 1] += 1
+                    elif vector_type in ['D', 'E']:
+                        vectors[c][self.num_candidates + size - 1] += 1
                 else:
                     if vector_type == 'A':
                         vectors[c][self.num_candidates + size] += 1
@@ -79,6 +81,10 @@ class ApprovalElection(Election):
                         vectors[c][2 * self.num_candidates - size - 1] += 1
                     elif vector_type == 'C':
                         vectors[c][2 * size] += 1
+                    elif vector_type == 'D':
+                        vectors[c][size] += 1
+                    elif vector_type == 'E':
+                        vectors[c][self.num_candidates - size - 1] += 1
         vectors = vectors / self.num_voters
         # vectors = vectors / experiment.num_candidates
         self.coapproval_frequency_vectors = vectors

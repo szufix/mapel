@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+from contextlib import suppress
 
 try:
     import cplex
@@ -464,9 +465,7 @@ def solve_lp_matching_vector_with_lp(cost_table, length):
             names.append('x' + str(pos))
             objective.append(cost_table[i][j])
             pos += 1
-    cp.variables.add(obj=objective,
-                     names=names,
-                     types=[cp.variables.type.binary] * length ** 2)
+    cp.variables.add(obj=objective, names=names, types=[cp.variables.type.binary] * length ** 2)
 
     # FIRST GROUP OF CONSTRAINTS
     lin_expr = []
@@ -476,9 +475,7 @@ def solve_lp_matching_vector_with_lp(cost_table, length):
             pos = i * length + j
             ind.append('x' + str(pos))
         lin_expr.append(cplex.SparsePair(ind=ind, val=[1.0] * length))
-    cp.linear_constraints.add(lin_expr=lin_expr,
-                              senses=['E'] * length,
-                              rhs=[1.0] * length)
+    cp.linear_constraints.add(lin_expr=lin_expr, senses=['E'] * length, rhs=[1.0] * length)
 
     # SECOND GROUP OF CONSTRAINTS
     lin_expr = []
@@ -488,9 +485,7 @@ def solve_lp_matching_vector_with_lp(cost_table, length):
             pos = i * length + j
             ind.append('x' + str(pos))
         lin_expr.append(cplex.SparsePair(ind=ind, val=[1.0] * length))
-    cp.linear_constraints.add(lin_expr=lin_expr,
-                              senses=['E'] * length,
-                              rhs=[1.0] * length)
+    cp.linear_constraints.add(lin_expr=lin_expr, senses=['E'] * length, rhs=[1.0] * length)
 
     # c.write('new.lp')
 
@@ -633,7 +628,7 @@ def generate_lp_file_dodgson_score(lp_file_name, N=None, e=None, D=None):
             ctr_c += 1
     # """
     # """
-    # chyba nie potrzeba bo integer zalatwia sprawe...
+    # probably unnecessary
     for i in range(len(N)):
         for j in range(len(D)):
             lp_file.write("c" + str(ctr_c) + ":")
@@ -1267,10 +1262,7 @@ def spearman_cost_per_cand(single_votes_1, single_votes_2, params, perm):
     return cand_diff
 
 
-
 def remove_lp_file(path):
     """ Safely remove lp file """
-    try:
+    with suppress(OSError):
         os.remove(path)
-    except:
-        pass

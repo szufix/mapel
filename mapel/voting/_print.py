@@ -29,11 +29,11 @@ def print_approvals_histogram(election):
 
 # Main functions
 def print_map_2d(experiment,
-                 xlabel=None, shading=False, shift_legend=1,
-                 angle=0, reverse=False, update=False, feature=None,
-                 axis=False, rounding=1,
+                 xlabel=None, shading=False, legend_pos=None,
+                 angle=0, reverse=False, update=False, feature_id=None,
+                 axis=False, rounding=1, limit=np.infty,
                  ticks=None, skeleton=None, roads=None,
-                 title=None, dim=2, event='none',
+                 title=None, dim=2, event='none', bbox_inches=None,
                  saveas=None, show=True, ms=20, normalizing_func=None,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
                  legend=True, adjust=False) -> None:
@@ -57,10 +57,10 @@ def print_map_2d(experiment,
     if experiment.store and (adjust or update):
         experiment.update()
 
-    if feature is not None:
-        fig = plt.figure(figsize=(6.4, 6.4 + 0.48))
-    else:
-        fig = plt.figure()
+    # if feature_id is not None:
+    #     fig = plt.figure(figsize=(6.4, 6.4 + 0.48))
+    # else:
+    fig = plt.figure(figsize=(6.4, 6.4))
 
     ax = fig.add_subplot()
 
@@ -72,11 +72,11 @@ def print_map_2d(experiment,
     add_skeleton(experiment=experiment, skeleton=skeleton, ax=ax)
 
     # COLORING
-    if feature is not None:
+    if feature_id is not None:
         color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
-                             feature=feature, rounding=rounding,
+                             feature_id=feature_id, rounding=rounding,
                              normalizing_func=normalizing_func,
-                             marker_func=marker_func,
+                             marker_func=marker_func, limit=limit,
                              xticklabels=xticklabels, ms=ms, cmap=cmap,
                              ticks=ticks)
     else:
@@ -92,9 +92,9 @@ def print_map_2d(experiment,
                 basic_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim, skeleton=skeleton)
 
     # BACKGROUND
-    basic_background(ax=ax, values=feature, legend=legend,
-                     saveas=saveas, xlabel=xlabel,
-                     title=title, shift_legend=shift_legend)
+    basic_background(ax=ax, values=feature_id, legend=legend,
+                     saveas=saveas, xlabel=xlabel, bbox_inches=bbox_inches,
+                     title=title, legend_pos=legend_pos)
 
     if tex:
         saveas_tex(saveas=saveas)
@@ -104,7 +104,7 @@ def print_map_2d(experiment,
 
 
 def print_map_3d(experiment,
-                 xlabel=None, reverse=False, feature=None,
+                 xlabel=None, feature_id=None,
                  attraction_factor=1, axis=False,
                  distance_name="emd-positionwise",
                  ticks=None, dim=3,
@@ -117,7 +117,7 @@ def print_map_3d(experiment,
     if cmap is None:
         cmap = custom_div_cmap()
 
-    if feature is not None:
+    if feature_id is not None:
         fig = plt.figure(figsize=(6.4, 4.8 + 0.48))
     else:
         fig = plt.figure()
@@ -127,9 +127,9 @@ def print_map_3d(experiment,
         plt.axis('off')
 
     # COLORING
-    if feature is not None:
+    if feature_id is not None:
         color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
-                             feature=feature,
+                             feature_id=feature_id,
                              normalizing_func=normalizing_func,
                              marker_func=marker_func,
                              xticklabels=xticklabels, ms=ms, cmap=cmap,
@@ -138,7 +138,7 @@ def print_map_3d(experiment,
         basic_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim)
 
     # BACKGROUND
-    basic_background(ax=ax, values=feature, legend=legend,
+    basic_background(ax=ax, values=feature_id, legend=legend,
                      saveas=saveas, xlabel=xlabel,
                      title=title)
 
@@ -149,11 +149,11 @@ def print_map_3d(experiment,
         plt.show()
 
 
-def get_values_from_csv_file(experiment, feature) -> dict:
-    """Import values for a feature from a .csv file """
+def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty) -> dict:
+    """Import values for a feature_id from a .csv file """
 
     path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id,
-                        'features', f'{feature}.csv')
+                        'features', f'{feature_id}.csv')
 
     values = {}
     with open(path, 'r', newline='') as csv_file:
@@ -162,27 +162,33 @@ def get_values_from_csv_file(experiment, feature) -> dict:
         for row in reader:
             election_id = row['election_id']
             value = float(row['value'])
-            if value >= 5:
-                value = 5
+            if value >= limit:
+                value = limit
+
+            # TMP #
+            # if value == -1:
+            #     value = -17.5
+            # if value > 1:
+            #     value = math.log(value)
+            #  #  #
+
             values[election_id] = value
 
     return values
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
-def import_values_for_feature(experiment, feature, normalizing_func=None, marker_func=None, dim=2):
-    """ Import values for a feature """
+def import_values_for_feature(experiment, feature_id=None, limit=None, normalizing_func=None, marker_func=None, dim=2):
+    """ Import values for a feature_id """
 
-    if isinstance(feature, str):
-        if feature in experiment.features:
-            values = experiment.features[feature]
+    if isinstance(feature_id, str):
+        if feature_id in experiment.features:
+            values = experiment.features[feature_id]
         else:
-            values = get_values_from_csv_file(experiment, feature)
+            values = get_values_from_csv_file(experiment, feature_id=feature_id, limit=limit)
     else:
-        values = feature
+        values = feature_id
 
-    _min = 0
-    _max = 0
     _min = min(values.values())
     _max = max(values.values())
     shades = []
@@ -219,6 +225,9 @@ def import_values_for_feature(experiment, feature, normalizing_func=None, marker
                 zz.append(experiment.coordinates[election_id][2])
 
             ctr += 1
+    #
+    # _min = min(shades)
+    # _max = max(shades)
 
     xx = np.asarray(xx)
     yy = np.asarray(yy)
@@ -277,11 +286,12 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
         return xx, yy, zz, shades, markers, _min, _max
 
 
-def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
+def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, limit=np.infty,
                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
                          cmap=None, ticks=None, dim=2, rounding=1):
     xx, yy, zz, shades, markers, _min, _max = import_values_for_feature(
-        experiment, feature, normalizing_func, marker_func, dim=dim)
+        experiment, feature_id=feature_id, limit=limit, normalizing_func=normalizing_func,
+        marker_func=marker_func, dim=dim)
     unique_markers = set(markers)
     images = []
 
@@ -303,9 +313,11 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
 
     if dim == 2:
 
-        from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
-        ax_divider = make_axes_locatable(ax)
-        cax = ax_divider.append_axes("bottom", size="5%", pad="5%")
+        # from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+        # ax_divider = make_axes_locatable(ax)
+        # cax = ax_divider.append_axes("bottom", size="5%", pad="5%")
+
+        # ax.legend(bbox_to_anchor=legend_pos, loc="upper center")
 
         if xticklabels is None:
             lin = np.linspace(_min, _max, 6)
@@ -314,10 +326,11 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature=None,
             else:
                 xticklabels = [np.round(lin[i], rounding) for i in range(6)]
 
-        cb = fig.colorbar(images[0], cax=cax, orientation="horizontal",
-                          shrink=1, ticks=ticks)  # shrink not working
+        cb = fig.colorbar(images[0], orientation="horizontal", pad=0.1, shrink=0.6,
+                           ticks=ticks)
         cb.ax.locator_params(nbins=len(xticklabels), tight=True)
         cb.ax.tick_params(labelsize=14)
+
         if xticklabels is not None:
             cb.ax.set_xticklabels(xticklabels)
 
@@ -373,6 +386,11 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skelet
         if experiment.families[family_id].show:
             if dim == 2:
                 if '_path' in family_id:
+                    if 'background' in family_id:
+                        label = '_nolegend_'
+                    else:
+                        label = family_id
+
                     for i in range(experiment.families[family_id].size):
                         election_id = experiment.families[family_id].election_ids[i]
                         alpha = experiment.elections[election_id].alpha
@@ -382,7 +400,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skelet
                             ax.scatter(experiment.coordinates_by_families[family_id][0][i],
                                        experiment.coordinates_by_families[family_id][1][i],
                                        color=experiment.families[family_id].color,
-                                       label=family_id,
+                                       label=label,
                                        alpha=alpha, s=ms,
                                        marker=experiment.families[family_id].marker)
                         else:
@@ -392,7 +410,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skelet
                                        alpha=alpha, s=ms,
                                        marker=experiment.families[family_id].marker)
                 else:
-                    if family_id in skeleton:
+                    if family_id in skeleton or 'background' in family_id:
                         label = '_nolegend_'
                     else:
                         label = family_id
@@ -436,7 +454,7 @@ def mask_background(fig=None, ax=None, black=None, saveas=None, tex=None):
 
 
 def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None, title=None,
-                     shift_legend=1):
+                     legend_pos=None, bbox_inches=None):
     file_name = os.path.join(os.getcwd(), "images", str(saveas))
     # print(file_name)
 
@@ -445,6 +463,12 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
     if title is not None:
         plt.suptitle(title, fontsize=16)
 
+    if legend:
+        if legend_pos is not None:
+            ax.legend(bbox_to_anchor=legend_pos, loc="upper center")
+        else:
+            ax.legend()
+
     if saveas is not None:
 
         try:
@@ -452,15 +476,13 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
         except FileExistsError:
             pass
 
-        if values is None and legend:
-            ax.legend(loc='center left', bbox_to_anchor=(shift_legend, 0.5))
-            # ax.legend()
+        if bbox_inches is None:
             plt.savefig(file_name, bbox_inches='tight')
         else:
-            plt.savefig(file_name, bbox_inches='tight')
+            plt.savefig(file_name, bbox_inches=bbox_inches)
 
-    elif values is None and legend:
-        ax.legend(loc='center left', bbox_to_anchor=(shift_legend, 0.5))
+
+
 
 
 # TEX
@@ -587,8 +609,8 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
 
     labels = []
     for family_id in experiment.families:
-        if family_id in RULE_NAME:
-            labels.append(RULE_NAME[experiment.families[family_id].label])
+        if family_id in RULE_NAME_MATRIX:
+            labels.append(RULE_NAME_MATRIX[experiment.families[family_id].label])
         else:
             labels.append(experiment.families[family_id].label)
 
@@ -623,7 +645,8 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
 # HELPER FUNCTIONS
 def custom_div_cmap(num_colors=101, name='custom_div_cmap', colors=None):
     if colors is None:
-        colors = ["lightgreen", "yellow", "orange", "red", "purple", "black"]
+        # colors = ["lightgreen", "yellow", "orange", "red", "purple", "black"]
+        colors = ["green", "yellowgreen", "orange", "red", "purple", "blue", "black"]
     from matplotlib.colors import LinearSegmentedColormap
     return LinearSegmentedColormap.from_list(name=name, colors=colors, N=num_colors)
 
@@ -656,6 +679,8 @@ def add_skeleton(experiment=None, skeleton=None, ax=None, size=12):
     for name in skeleton:
         x = experiment.coordinates[name][0]
         y = experiment.coordinates[name][1]
+        if name in RULE_NAME_MAP:
+            name = RULE_NAME_MAP[name]
         my_text(x, y, name)
 
 
@@ -1106,7 +1131,6 @@ def adjust_the_map(experiment) -> None:
         except Exception:
             pass
 
-    # elif type(experiment) is ApprovalElectionExperiment:
     elif experiment.election_type == 'approval':
         try:
             left = 'IC 0.5'
@@ -1124,6 +1148,20 @@ def adjust_the_map(experiment) -> None:
             except Exception:
                 pass
 
+    elif experiment.election_type == 'rule':
+        try:
+            left = 'cc'
+            right = 'av'
+            down = 'greedy-monroe'
+            adjust_the_map_on_three_points(experiment, left, right, down)
+        except Exception:
+            try:
+                left = 'seqcc'
+                right = 'av'
+                down = 'greedy-monroe'
+                adjust_the_map_on_three_points(experiment, left, right, down)
+            except Exception:
+                pass
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

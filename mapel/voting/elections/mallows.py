@@ -239,14 +239,68 @@ def generate_approval_hamming_noise_model_votes(num_voters=None, num_candidates=
         vote = set()
         for c in range(num_candidates):
             if c in central_vote:
-                if rand.random() <= params['phi']:
+                if rand.random() <= 1 - params['phi']:
                     vote.add(c)
             else:
-                if rand.random() < 1 - params['phi']:
+                if rand.random() < params['phi']:
                     vote.add(c)
         votes[v] = vote
 
     return votes
+
+
+def generate_approval_simplex_shumallows_votes(num_voters=None, num_candidates=None,
+                                                    params=None):
+        if 'phi' not in params:
+            phi = rand.random()
+        else:
+            phi = params['phi']
+
+        if 'g' not in params:
+            num_groups = 2
+        else:
+            num_groups = params['g']
+
+        if 'max_range' not in params:
+            params['max_range'] = 1.
+
+        # k = int(params['p'] * num_candidates)
+
+        # while True:
+
+        sizes_c = runif_in_simplex(num_groups)
+        sizes_c = np.concatenate(([0], sizes_c))
+        sizes_c = np.cumsum(sizes_c)
+
+        sizes_v = runif_in_simplex(num_groups)
+        sizes_v = np.concatenate(([0], sizes_v))
+        sizes_v = np.cumsum(sizes_v)
+
+        votes = [set() for _ in range(num_voters)]
+
+        for g in range(num_groups):
+
+            central_vote = {i for i in range(int(sizes_c[g] * num_candidates),
+                                             int(sizes_c[g+1] * num_candidates))}
+
+            for v in range(int(sizes_v[g] * num_voters), int(sizes_v[g + 1] * num_voters)):
+                vote = set()
+                for c in range(num_candidates):
+                    if rand.random() <= phi:
+                        if rand.random() <= params['p']:
+                            vote.add(c)
+                    else:
+                        if c in central_vote:
+                            vote.add(c)
+                votes[v] = vote
+
+            # sum_p = sum([sum(vote) for vote in votes])
+            # avg_p = sum_p / (num_voters * num_candidates)
+            # print(avg_p, params['max_range'])
+            # if avg_p < params['max_range']:
+            #     break
+
+        return votes
 
 
 def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=None, params=None):
@@ -263,7 +317,7 @@ def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=
     k = int(params['p'] * num_candidates)
 
     sizes = runif_in_simplex(num_groups)
-    sizes = np.concatenate(([0],sizes))
+    sizes = np.concatenate(([0], sizes))
     sizes = np.cumsum(sizes)
 
     votes = [set() for _ in range(num_voters)]
@@ -295,12 +349,18 @@ def generate_approval_truncated_mallows_votes(num_voters=None, num_candidates=No
     params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
     ordinal_votes = generate_mallows_votes(num_voters, num_candidates, params)
+
+    # print(params)
+    if 'max_range' not in params:
+        params['max_range'] = 1.
+
     votes = []
+    k = np.random.randint(low=1., high=int(params['max_range'] * num_candidates))
     for v in range(num_voters):
-        k = -1
-        while k not in range(0, num_candidates + 1):
-            k = int(np.random.normal(params['p'],
-                                     params['norm-phi'] / (num_candidates ** 0.5)) * num_candidates)
+        # k = -1
+        # while k not in range(0, num_candidates + 1):
+        #     k = int(np.random.normal(params['p'],
+        #                              params['norm-phi'] / (num_candidates ** 0.5)) * num_candidates)
             # k = int(np.random.normal(params['p'], 0.05) * num_candidates)
         votes.append(set(ordinal_votes[v][0:k]))
 

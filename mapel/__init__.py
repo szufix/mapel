@@ -16,19 +16,19 @@ def hello():
 
 def prepare_experiment(experiment_id=None, elections=None, distances=None, election_type='ordinal',
                        coordinates=None, distance_id='emd-positionwise', _import=True,
-                       shift=False):
+                       shift=False, clean=False):
     if election_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
                                          elections=elections,
                                          election_type=election_type,
                                          distances=distances, coordinates=coordinates,
                                          distance_id=distance_id)
-    elif election_type == 'approval':
+    elif election_type in ['approval', 'rule']:
         return ApprovalElectionExperiment(experiment_id=experiment_id,
                                           elections=elections, _import=_import,
                                           election_type=election_type,
                                           distances=distances, coordinates=coordinates,
-                                          distance_id=distance_id)
+                                          distance_id=distance_id, clean=clean)
 
 def print_approvals_histogram(*args):
     pr.print_approvals_histogram(*args)

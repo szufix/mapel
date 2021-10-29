@@ -125,11 +125,12 @@ class ElectionExperiment(Experiment):
     def create_structure(self):
         pass
 
-    def compute_rules(self, list_of_rules, committee_size: int = 1, printing: bool = False) -> None:
+    def compute_rules(self, list_of_rules, committee_size: int = 10, printing: bool = False,
+                      resolute: bool = False) -> None:
         for rule_name in list_of_rules:
             print('Computing', rule_name)
             rules.compute_rule(experiment=self, rule_name=rule_name, committee_size=committee_size,
-                               printing=printing)
+                               printing=printing, resolute=resolute)
 
     def import_committees(self, list_of_rules) -> None:
         for rule_name in list_of_rules:

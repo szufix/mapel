@@ -1,7 +1,7 @@
 
 COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
 
-RULE_NAME = {
+RULE_NAME_MATRIX = {
     "av": "AV",
     "sav": "SAV",
     "pav": "PAV",
@@ -18,8 +18,29 @@ RULE_NAME = {
     "consensus-rule": "Consensus",
     "geom2": "Geometric 2",
     "geom3": "Geometric 3",
-    "geom4": "Geometric 3",
-    "geom5": "Geometric 4",
+    "geom4": "Geometric 4",
+    "geom5": "Geometric 5",
+}
+
+RULE_NAME_MAP = {
+    "av": "AV",
+    "sav": "SAV",
+    "pav": "PAV",
+    "slav": "SLAV",
+    "cc": "CC",
+    "seqpav": "S.PAV",
+    "revseqpav": "R.S.PAV",
+    "seqslav": "S.SLAV",
+    "seqcc": "S.CC",
+    "seqphragmen": "S.Phrag.",
+    "greedy-monroe": "Gr.Monroe",
+    "rule-x": "Rule X",
+    "phragmen-enestroem": "Phrag. Ene.",
+    "consensus-rule": "Cons.",
+    "geom2": "G2",
+    "geom3": "G3",
+    "geom4": "G4",
+    "geom5": "G5",
 }
 
 NICE_NAME = {
@@ -68,9 +89,15 @@ NICE_NAME = {
     'approval_id_0.5': 'Approval_ID_0.5',
     'approval_ic': 'Approval_IC',
     'approval_ic_0.5': 'Approval_IC_0.5',
-    'approval_mallows': 'Approval_Mallows',
-    'approval_raw_mallows': 'Approval_Raw_Mallows',
-    'core': 'Core'
+    'approval_shumallows': 'Approval_ShuMallows',
+    'approval_noise_model': 'Approval_Noise_Model',
+    'approval_disjoint_shumallows': 'Approval_Disjoint_ShuMallows',
+    'approval_urn': 'Approval_Urn',
+    'core': 'Core',
+    'approval_truncated_mallows': 'Approval_Truncated_Mallows',
+    'approval_truncated_urn': 'Approval_Truncated_Urn',
+    'approval_simplex_shumallows': 'approval_simplex_shumallows',
+    'approval_vcr': 'Approval_VCR',
     }
 
 
@@ -95,11 +122,12 @@ PATHS = {'unid', 'stan', 'anid', 'stid', 'anun', 'stun',
 PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
                 'walsh_party', 'conitzer_party', 'mallows_party'}
 
-APPROVAL_MODELS = {'approval_ic', 'approval_mallows', 'approval_id',
-                   'approval_empty', 'approval_full',
-                   'approval_urn', 'approval_euclidean', 'approval_raw_mallows',
+APPROVAL_MODELS = {'approval_ic', 'approval_shumallows', 'approval_id',
+                   'approval_empty', 'approval_full', 'approval_truncated_urn',
+                   'approval_urn', 'approval_euclidean', 'approval_noise_model',
                    'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
-                   'approval_half_1', 'approval_half_2', 'approval_disjoint_mallows',
+                   'approval_half_1', 'approval_half_2', 'approval_disjoint_shumallows',
+                   'approval_simplex_shumallows',
                    'approval_vcr', 'approval_truncated_mallows', 'approval_moving_mallows'}
 
 APPROVAL_FAKE_MODELS = {'approval_half_1', 'approval_half_2'}

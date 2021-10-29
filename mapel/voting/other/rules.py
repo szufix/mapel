@@ -14,8 +14,8 @@ except ImportError:
     abcrules = None
 
 
-
-def compute_rule(experiment=None, rule_name=None, committee_size=1, printing=False):
+def compute_rule(experiment=None, rule_name=None, committee_size=1, printing=False,
+                 resolute=False):
     all_winning_committees = {}
     for election in experiment.elections.values():
         if printing:
@@ -24,9 +24,13 @@ def compute_rule(experiment=None, rule_name=None, committee_size=1, printing=Fal
         profile.add_voters(election.votes)
         try:
             winning_committees = abcrules.compute(rule_name, profile, committee_size,
-                                              algorithm="gurobi")
+                                                  algorithm="gurobi", resolute=resolute)
+            # print(winning_committees)
         except Exception:
-            winning_committees = abcrules.compute(rule_name, profile, committee_size)
+            try:
+                winning_committees = abcrules.compute(rule_name, profile, committee_size)
+            except:
+                winning_committees = {}
         all_winning_committees[election.election_id] = winning_committees
     store_committees_to_file(experiment.experiment_id, rule_name, all_winning_committees)
 
@@ -54,4 +58,3 @@ def import_committees_from_file(experiment_id, rule_name):
                 winning_committees = [set()]
             all_winning_committees[row['election_id']] = winning_committees
     return all_winning_committees
-
