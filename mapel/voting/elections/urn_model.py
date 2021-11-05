@@ -14,7 +14,7 @@ def generate_urn_votes(num_voters: int = None, num_candidates: int = None,
         if rho <= 1.:
             votes[j] = np.random.permutation(num_candidates)
         else:
-            votes[j] = votes[np.random.randint(0, j - 1)]
+            votes[j] = votes[np.random.randint(0, j)]
         urn_size += params['alpha']
 
     return votes
@@ -35,7 +35,7 @@ def generate_approval_urn_votes(num_voters: int = None, num_candidates: int = No
                     vote.add(c)
             votes.append(vote)
         else:
-            votes.append(votes[np.random.randint(0, j - 1)])
+            votes.append(votes[np.random.randint(0, j)])
         urn_size += params['alpha']
 
     return votes
