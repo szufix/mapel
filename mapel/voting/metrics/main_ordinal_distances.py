@@ -1,4 +1,5 @@
 from typing import Callable, List
+from itertools import combinations, permutations
 
 from mapel.voting.metrics.matchings import *
 from mapel.voting.objects.OrdinalElection import OrdinalElection
@@ -46,7 +47,18 @@ def compute_voterlikeness_distance(election_1: OrdinalElection, election_2: Ordi
     return solve_matching_matrices(matrix_1, matrix_2, length, inner_distance)
 
 
-def compute_spearman_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> float:
+def compute_swap_bf_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+
+    obj_values = []
+    for mapping in permutations(range(election_1.num_candidates)):
+
+        cost_table = get_matching_cost_swap_bf(election_1, election_2, mapping)
+        obj_values.append(solve_matching_vectors(cost_table))
+
+    return min(obj_values)
+
+
+def compute_spearman_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Spearman distance between elections """
 
     votes_1 = election_1.votes
@@ -89,6 +101,26 @@ def get_matching_cost_positionwise(election_1: OrdinalElection, election_2: Ordi
     vectors_2 = election_2.get_vectors()
     size = election_1.num_candidates
     return [[inner_distance(vectors_1[i], vectors_2[j]) for i in range(size)] for j in range(size)]
+
+
+def get_matching_cost_swap_bf(election_1: OrdinalElection, election_2: OrdinalElection,
+                              mapping):
+    """ Return: Cost table """
+    cost_table = np.zeros([election_1.num_voters, election_1.num_voters])
+
+    # print(election_1.potes)
+
+    for v1 in range(election_1.num_voters):
+        for v2 in range(election_2.num_voters):
+            swap_distance = 0
+            for i, j in combinations(election_1.potes[0], 2):
+                if (election_1.potes[v1][i] > election_1.potes[v1][j] and
+                    election_2.potes[v2][mapping[i]] < election_2.potes[v2][mapping[j]]) or \
+                        (election_1.potes[v1][i] < election_1.potes[v1][j] and
+                         election_2.potes[v2][mapping[i]] > election_2.potes[v2][mapping[j]]):
+                    swap_distance += 1
+            cost_table[v1][v2] = swap_distance
+    return cost_table
 
 
 # # # # # # # # # # # # # # # #

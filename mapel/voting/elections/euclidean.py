@@ -1,7 +1,6 @@
-import random as rand
 import numpy as np
 import math
-from numpy import random, linalg
+from numpy import linalg
 
 
 ####################################################################################################
@@ -124,14 +123,14 @@ def generate_1d_gaussian_party(num_voters=None, num_candidates=None, params=None
     for j in range(params['num_parties']):
         for w in range(params['num_winners']):
             _id = j * params['num_winners'] + w
-            candidates[_id] = [rand.gauss(params['party'][j][0], params['var'])]
+            candidates[_id] = [np.random.normal(params['party'][j][0], params['var'])]
 
     _min = min(candidates)[0]
     _max = max(candidates)[0]
 
-    shift = [rand.random() / 2. - 1 / 4.]
+    shift = [np.random.random() / 2. - 1 / 4.]
     for j in range(num_voters):
-        voters[j] = [rand.random() * (_max - _min) + _min + shift[0]]
+        voters[j] = [np.random.random() * (_max - _min) + _min + shift[0]]
 
     for j in range(num_voters):
         for k in range(num_candidates):
@@ -158,8 +157,8 @@ def generate_2d_gaussian_party(num_voters=None, num_candidates=None, params=None
     for j in range(params['num_parties']):
         for w in range(params['num_winners']):
             _id = j * params['num_winners'] + w
-            candidates[_id] = [rand.gauss(params['party'][j][0][0], params['var']),
-                               rand.gauss(params['party'][j][0][1], params['var'])]
+            candidates[_id] = [np.random.normal(params['party'][j][0][0], params['var']),
+                               np.random.normal(params['party'][j][0][1], params['var'])]
 
     def column(matrix, i):
         return [row[i] for row in matrix]
@@ -169,10 +168,10 @@ def generate_2d_gaussian_party(num_voters=None, num_candidates=None, params=None
     y_min = min(column(candidates, 1))
     y_max = max(column(candidates, 1))
 
-    shift = [rand.random() / 2. - 1 / 4., rand.random() / 2. - 1 / 4.]
+    shift = [np.random.random() / 2. - 1 / 4., np.random.random() / 2. - 1 / 4.]
     for j in range(num_voters):
-        voters[j] = [rand.random() * (x_max - x_min) + x_min + shift[0],
-                     rand.random() * (y_max - y_min) + y_min + shift[1]]
+        voters[j] = [np.random.random() * (x_max - x_min) + x_min + shift[0],
+                     np.random.random() * (y_max - y_min) + y_min + shift[1]]
 
     for j in range(num_voters):
         for k in range(num_candidates):
@@ -246,9 +245,9 @@ def generate_elections_2d_grid(num_voters=None, num_candidates=None):
 
 # AUXILIARY
 def random_ball(dimension, num_points=1, radius=1):
-    random_directions = random.normal(size=(dimension, num_points))
+    random_directions = np.random.normal(size=(dimension, num_points))
     random_directions /= linalg.norm(random_directions, axis=0)
-    random_radii = random.random(num_points) ** (1 / dimension)
+    random_radii = np.random.random(num_points) ** (1 / dimension)
     return radius * (random_directions * random_radii).T
 
 
@@ -265,74 +264,74 @@ def get_rand(model: str, cat: str = "voters") -> list:
         else:
             return np.random.normal(loc=0.75, scale=0.15, size=1)
     elif model in {"1d_gaussian"}:
-        point = rand.gauss(0.5, 0.15)
+        point = np.random.normal(0.5, 0.15)
         while point > 1 or point < 0:
-            point = rand.gauss(0.5, 0.15)
+            point = np.random.normal(0.5, 0.15)
     elif model == "1d_one_sided_triangle":
-        point = rand.uniform(0, 1) ** 0.5
+        point = np.random.uniform(0, 1) ** 0.5
     elif model == "1d_full_triangle":
-        point = rand.choice([rand.uniform(0, 1) ** 0.5, 2 - rand.uniform(0, 1) ** 0.5])
+        point = np.random.choice([np.random.uniform(0, 1) ** 0.5, 2 - np.random.uniform(0, 1) ** 0.5])
     elif model == "1d_two_party":
-        point = rand.choice([rand.uniform(0, 1), rand.uniform(2, 3)])
+        point = np.random.choice([np.random.uniform(0, 1), np.random.uniform(2, 3)])
     elif model in {"2d_disc", "2d_range_disc"}:
-        phi = 2.0 * 180.0 * rand.random()
-        radius = math.sqrt(rand.random()) * 0.5
+        phi = 2.0 * 180.0 * np.random.random()
+        radius = math.sqrt(np.random.random()) * 0.5
         point = [0.5 + radius * math.cos(phi), 0.5 + radius * math.sin(phi)]
     elif model == "2d_range_overlapping":
-        phi = 2.0 * 180.0 * rand.random()
-        radius = math.sqrt(rand.random()) * 0.5
+        phi = 2.0 * 180.0 * np.random.random()
+        radius = math.sqrt(np.random.random()) * 0.5
         if cat == "voters":
             point = [0.25 + radius * math.cos(phi), 0.5 + radius * math.sin(phi)]
         elif cat == "candidates":
             point = [0.75 + radius * math.cos(phi), 0.5 + radius * math.sin(phi)]
     elif model in {"2d_square", "2d_uniform"}:
-        point = [rand.random(), rand.random()]
+        point = [np.random.random(), np.random.random()]
     elif model in {'2d_asymmetric'}:
         if np.random.rand() < 0.3:
             return np.random.normal(loc=0.25, scale=0.15, size=2)
         else:
             return np.random.normal(loc=0.75, scale=0.15, size=2)
     elif model == "2d_sphere":
-        alpha = 2 * math.pi * rand.random()
+        alpha = 2 * math.pi * np.random.random()
         x = 1. * math.cos(alpha)
         y = 1. * math.sin(alpha)
         point = [x, y]
     elif model in ["2d_gaussian", "2d_range_gaussian"]:
-        point = [rand.gauss(0.5, 0.15), rand.gauss(0.5, 0.15)]
+        point = [np.random.normal(0.5, 0.15), np.random.normal(0.5, 0.15)]
         while np.linalg.norm(point - np.array([0.5, 0.5])) > 0.5:
-            point = [rand.gauss(0.5, 0.15), rand.gauss(0.5, 0.15)]
+            point = [np.random.normal(0.5, 0.15), np.random.normal(0.5, 0.15)]
     elif model in ["2d_range_fourgau"]:
-        r = rand.randint(1, 4)
+        r = np.random.randint(1, 4)
         size = 0.06
         if r == 1:
-            point = [rand.gauss(0.25, size), rand.gauss(0.5, size)]
+            point = [np.random.normal(0.25, size), np.random.normal(0.5, size)]
         if r == 2:
-            point = [rand.gauss(0.5, size), rand.gauss(0.75, size)]
+            point = [np.random.normal(0.5, size), np.random.normal(0.75, size)]
         if r == 3:
-            point = [rand.gauss(0.75, size), rand.gauss(0.5, size)]
+            point = [np.random.normal(0.75, size), np.random.normal(0.5, size)]
         if r == 4:
-            point = [rand.gauss(0.5, size), rand.gauss(0.25, size)]
+            point = [np.random.normal(0.5, size), np.random.normal(0.25, size)]
     elif model in ["3d_cube", "3d_uniform"]:
-        point = [rand.random(), rand.random(), rand.random()]
+        point = [np.random.random(), np.random.random(), np.random.random()]
     elif model in {'3d_asymmetric'}:
         if np.random.rand() < 0.3:
             return np.random.normal(loc=0.25, scale=0.15, size=3)
         else:
             return np.random.normal(loc=0.75, scale=0.15, size=3)
     elif model in ['3d_gaussian']:
-        point = [rand.gauss(0.5, 0.15),
-                 rand.gauss(0.5, 0.15),
-                 rand.gauss(0.5, 0.15)]
+        point = [np.random.normal(0.5, 0.15),
+                 np.random.normal(0.5, 0.15),
+                 np.random.normal(0.5, 0.15)]
         while np.linalg.norm(point - np.array([0.5, 0.5, 0.5])) > 0.5:
-            point = [rand.gauss(0.5, 0.15),
-                     rand.gauss(0.5, 0.15),
-                     rand.gauss(0.5, 0.15)]
+            point = [np.random.normal(0.5, 0.15),
+                     np.random.normal(0.5, 0.15),
+                     np.random.normal(0.5, 0.15)]
     elif model == "4d_cube":
         dim = 4
-        point = [rand.random() for _ in range(dim)]
+        point = [np.random.random() for _ in range(dim)]
     elif model == "5d_cube":
         dim = 5
-        point = [rand.random() for _ in range(dim)]
+        point = [np.random.random() for _ in range(dim)]
     elif model == "3d_sphere":
         dim = 3
         point = list(random_ball(dim)[0])

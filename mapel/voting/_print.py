@@ -31,8 +31,8 @@ def print_approvals_histogram(election):
 def print_map_2d(experiment,
                  xlabel=None, shading=False, legend_pos=None,
                  angle=0, reverse=False, update=False, feature_id=None,
-                 axis=False, rounding=1, limit=np.infty,
-                 ticks=None, skeleton=None, roads=None,
+                 axis=False, rounding=1, limit=np.infty, individual=False,
+                 ticks=None, skeleton=None, roads=None, adjust_single=False,
                  title=None, dim=2, event='none', bbox_inches=None,
                  saveas=None, show=True, ms=20, normalizing_func=None,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
@@ -44,6 +44,9 @@ def print_map_2d(experiment,
         roads = []
 
     experiment.compute_coordinates_by_families()
+
+    if adjust_single:
+        adjust_the_map_on_one_point(experiment)
 
     if adjust:
         adjust_the_map(experiment)
@@ -88,6 +91,9 @@ def print_map_2d(experiment,
             if shading:
                 basic_coloring_with_shading(experiment=experiment, ax=ax, ms=ms, dim=dim,
                                             skeleton=skeleton)
+            elif individual:
+                basic_coloring_with_individual(experiment=experiment, ax=ax, ms=ms, dim=dim,
+                                            skeleton=skeleton, individual=individual)
             else:
                 basic_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim, skeleton=skeleton)
 
@@ -363,6 +369,7 @@ def basic_coloring(experiment=None, ax=None, ms=None, dim=2, skeleton=None):
                     label = '_nolegend_'
                 else:
                     label = family.label
+
                 ax.scatter(experiment.coordinates_by_families[family.family_id][0],
                            experiment.coordinates_by_families[family.family_id][1],
                            color=family.color,
@@ -379,17 +386,32 @@ def basic_coloring(experiment=None, ax=None, ms=None, dim=2, skeleton=None):
                            marker=family.marker)
 
 
+def basic_coloring_with_individual(experiment=None, ax=None, ms=None, dim=2, skeleton=None,
+                                   individual=None):
+
+    for family_id in experiment.families:
+        if experiment.families[family_id].show:
+
+            for i in range(experiment.families[family_id].size):
+                election_id = experiment.families[family_id].election_ids[i]
+
+                ax.scatter(experiment.coordinates_by_families[family_id][0][i],
+                           experiment.coordinates_by_families[family_id][1][i],
+                           color=individual['color'][election_id],
+                           alpha=individual['alpha'][election_id],
+                           s=individual['ms'][election_id],
+                           marker=individual['marker'][election_id])
+
 def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skeleton=None):
     if skeleton is None:
         skeleton = []
     for family_id in experiment.families:
         if experiment.families[family_id].show:
+            label = experiment.families[family_id].label
             if dim == 2:
-                if '_path' in family_id:
-                    if 'background' in family_id:
+                if '_path' in label:
+                    if 'background' in label:
                         label = '_nolegend_'
-                    else:
-                        label = family_id
 
                     for i in range(experiment.families[family_id].size):
                         election_id = experiment.families[family_id].election_ids[i]
@@ -410,10 +432,9 @@ def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skelet
                                        alpha=alpha, s=ms,
                                        marker=experiment.families[family_id].marker)
                 else:
-                    if family_id in skeleton or 'background' in family_id:
+                    if label in skeleton or 'background' in label:
                         label = '_nolegend_'
-                    else:
-                        label = family_id
+
                     ax.scatter(experiment.coordinates_by_families[family_id][0],
                                experiment.coordinates_by_families[family_id][1],
                                color=experiment.families[family_id].color,
@@ -1162,6 +1183,26 @@ def adjust_the_map(experiment) -> None:
                 adjust_the_map_on_three_points(experiment, left, right, down)
             except Exception:
                 pass
+
+def centeroid(arr):
+    length = arr.shape[0]
+    sum_x = np.sum(arr[:, 0])
+    sum_y = np.sum(arr[:, 1])
+    return sum_x/length, sum_y/length
+
+def adjust_the_map_on_one_point(experiment) -> None:
+
+    xc, yc = centeroid(np.array(list(experiment.coordinates.values())))
+    d_x = experiment.coordinates['all_0'][0] - xc
+    d_y = experiment.coordinates['all_0'][1] - yc
+    try:
+        alpha = math.atan(d_x / d_y)
+        experiment.rotate(alpha)
+        if experiment.coordinates['all_0'][1] < experiment.coordinates['all_1'][1]:
+            experiment.rotate(math.pi)
+
+    except:
+        print('Cannot adjust!')
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

@@ -1,5 +1,4 @@
 import math
-import random as rand
 
 import numpy as np
 
@@ -14,7 +13,7 @@ def generate_approval_ic_votes(num_voters: int = None, num_candidates: int = Non
     votes = [set() for _ in range(num_voters)]
     for i in range(num_voters):
         for j in range(num_candidates):
-            if rand.random() <= params['p']:
+            if np.random.random() <= params['p']:
                 votes[i].add(j)
     return votes
 
@@ -51,11 +50,11 @@ def generate_impartial_anonymous_culture_election(num_voters: int = None,
 
     urn_size = 1.
     for j in range(num_voters):
-        rho = rand.random()
+        rho = np.random.random()
         if rho <= urn_size:
             votes[j] = list(np.random.permutation(num_candidates))
         else:
-            votes[j] = votes[rand.randint(0, j - 1)]
+            votes[j] = votes[np.random.randint(0, j - 1)]
         urn_size = 1. / (1. + alpha * (j + 1.))
 
     return votes

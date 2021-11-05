@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import ast
 import itertools
 import os
@@ -515,12 +513,13 @@ def old_name_extractor(first_line):
 def import_real_soc_election(experiment_id, election_id, shift=False):
     """ Import real ordinal election form .soc file """
 
-    file_name = str(election_id) + ".soc"
+    file_name = f'{election_id}.soc'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
 
     params = 0
     first_line = my_file.readline()
+
     if first_line[0] != '#':
         model_name = 'empty'
         num_candidates = int(first_line)
@@ -532,6 +531,7 @@ def import_real_soc_election(experiment_id, election_id, shift=False):
             model_name = old_name_extractor(first_line)
             print(model_name)
         else:
+            # params = {}
             if len(first_line) <= 2:
                 params = {}
             else:
@@ -561,6 +561,5 @@ def import_real_soc_election(experiment_id, election_id, shift=False):
         for i in range(num_voters):
             for j in range(num_candidates):
                 votes[i][j] -= 1
-
 
     return votes, num_voters, num_candidates, params, model_name

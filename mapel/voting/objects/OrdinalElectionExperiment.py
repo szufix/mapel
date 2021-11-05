@@ -25,11 +25,11 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
     def __init__(self, elections=None, distances=None, _import=True, shift=False,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
-                 election_type='ordinal'):
+                 election_type='ordinal', dim=2, store=True):
         self.shift = shift
         super().__init__(elections=elections, distances=distances,
                          coordinates=coordinates, distance_id=distance_id,
-                         experiment_id=experiment_id,
+                         experiment_id=experiment_id, dim=dim, store=store,
                          election_type=election_type, _import=_import)
 
     def add_elections_to_experiment(self, with_matrices=False):

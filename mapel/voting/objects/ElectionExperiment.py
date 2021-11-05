@@ -61,7 +61,7 @@ class ElectionExperiment(Experiment):
                                         color=color, alpha=alpha, show=show, marker=marker,
                                         starting_from=starting_from, family_id=election_id,
                                         num_candidates=num_candidates, num_voters=num_voters,
-                                        num_nodes=num_nodes, single_election=True)[0]
+                                        num_nodes=num_nodes, single_election=True)
 
     def add_election_family(self, model_id: str = "none", params: dict = None, size: int = 1,
                             label: str = None, color: str = "black", alpha: float = 1.,
@@ -112,14 +112,15 @@ class ElectionExperiment(Experiment):
         params = self.families[family_id].params
         model_id = self.families[family_id].model_id
 
-        ids = _elections.prepare_statistical_culture_family(experiment=self,
+        elections = _elections.prepare_statistical_culture_family(experiment=self,
                                                             model_id=model_id,
                                                             family_id=family_id,
                                                             params=copy.deepcopy(params))
 
-        self.families[family_id].election_ids = ids
+        self.families[family_id].election_ids = list(elections.keys())
 
-        return ids
+
+        return list(elections.keys())
 
     @abstractmethod
     def create_structure(self):

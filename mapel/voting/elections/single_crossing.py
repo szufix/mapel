@@ -1,4 +1,4 @@
-import random as rand
+#!/usr/bin/env python
 
 import numpy as np
 
@@ -22,7 +22,7 @@ def generate_ordinal_single_crossing_votes(num_voters: int = None,
             if domain[line - 1][i] < domain[line - 1][i + 1]:
                 poss.append([domain[line - 1][i], domain[line - 1][i + 1]])
 
-        r = rand.randint(0, len(poss) - 1)  # random swap
+        r = np.random.randint(0, len(poss) - 1)  # random swap
 
         for i in range(num_candidates):
 
@@ -37,7 +37,7 @@ def generate_ordinal_single_crossing_votes(num_voters: int = None,
     # GENERATE VOTES
 
     for j in range(num_voters):
-        r = rand.randint(0, domain_size - 1)
+        r = np.random.randint(0, domain_size - 1)
         votes[j] = list(domain[r])
 
     return votes

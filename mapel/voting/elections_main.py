@@ -2,7 +2,6 @@
 
 import copy
 import os
-import random as rand
 from collections import Counter
 from typing import Union
 
@@ -175,7 +174,11 @@ def generate_election(experiment=None, model_id: str = None, election_id: str = 
 
     if params is None:
         params = {}
-    params, alpha = update_params(params, variable, model_id, num_candidates)
+
+    if model_id == 'all_votes':
+        alpha = 1
+    else:
+        params, alpha = update_params(params, variable, model_id, num_candidates)
 
     if ballot == 'ordinal':
         votes = generate_ordinal_votes(model_id=model_id, num_candidates=num_candidates,
@@ -213,13 +216,13 @@ def generate_election(experiment=None, model_id: str = None, election_id: str = 
 
 
 def prepare_statistical_culture_family(experiment=None, model_id: str = None,
-                                       family_id: str = None, params: dict = None) -> list:
-    keys = []
+                                       family_id: str = None, params: dict = None):
     ballot = get_ballot_from_model(model_id)
 
     if model_id in PARTY_MODELS:
         params['party'] = prepare_parties(params=params, model_id=model_id)
 
+    elections = {}
     for j in range(experiment.families[family_id].size):
 
         variable = None
@@ -227,6 +230,9 @@ def prepare_statistical_culture_family(experiment=None, model_id: str = None,
         if path is not None and 'variable' in path:
             new_params, variable = _get_params_for_paths(experiment, family_id, j)
             params = {**params, **new_params}
+
+        if model_id in {'all_votes'}:
+            params['iter_id'] = j
 
         if model_id in {'crate'}:
             new_params = _get_params_for_crate(j)
@@ -237,14 +243,13 @@ def prepare_statistical_culture_family(experiment=None, model_id: str = None,
         else:
             election_id = family_id + '_' + str(j)
 
-        generate_election(experiment=experiment, model_id=model_id, election_id=election_id,
+        election = generate_election(experiment=experiment, model_id=model_id, election_id=election_id,
                           num_voters=experiment.families[family_id].num_voters,
                           num_candidates=experiment.families[family_id].num_candidates,
                           num_nodes=experiment.families[family_id].num_nodes,
                           params=copy.deepcopy(params), ballot=ballot, variable=variable)
-
-        keys.append(election_id)
-    return keys
+        elections[election_id] = election
+    return elections
 
 
 # HELPER FUNCTIONS
@@ -258,11 +263,11 @@ def get_ballot_from_model(model_id: str) -> str:
 
 
 def update_params(params, variable, model_id, num_candidates):
+
     if 'alpha' not in params:
         params['alpha'] = np.random.rand()
     elif type(params['alpha']) is list:
         params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
-
 
     if 'p' not in params:
         params['p'] = np.random.rand()
@@ -273,9 +278,9 @@ def update_params(params, variable, model_id, num_candidates):
         params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
 
     if model_id == 'mallows' and params['phi'] is None:
-        params['phi'] = rand.random()
+        params['phi'] = np.random.random()
     elif model_id == 'norm-mallows' and params['norm-phi'] is None:
-        params['norm-phi'] = rand.random()
+        params['norm-phi'] = np.random.random()
     elif model_id in ['urn_model', 'approval_urn'] and 'alpha' not in params:
         params['alpha'] = gamma.rvs(0.8)
 
@@ -287,7 +292,7 @@ def update_params(params, variable, model_id, num_candidates):
         params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
     if model_id == 'erdos_renyi_graph' and params['p'] is None:
-        params['p'] = rand.random()
+        params['p'] = np.random.random()
 
     alpha = 1
     if variable is not None:
@@ -359,7 +364,7 @@ def prepare_parties(model_id=None, params=None):
 
 # STORE
 def store_ordinal_election(experiment, model_id, election_id, num_candidates, num_voters,
-                           params, ballot):
+                           params, ballot, votes):
     """ Store ordinal election in a .soc file """
 
     if model_id in LIST_OF_FAKE_MODELS:
@@ -384,7 +389,7 @@ def store_ordinal_election(experiment, model_id, election_id, num_candidates, nu
                             (str(election_id) + ".soc"))
 
         store_votes_in_a_file(experiment, model_id, election_id, num_candidates, num_voters,
-                              params, path, ballot)
+                              params, path, ballot, votes=votes)
 
 
 def store_approval_election(experiment, model_id, election_id, num_candidates, num_voters,

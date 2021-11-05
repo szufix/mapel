@@ -5,7 +5,6 @@ import numpy as np
 
 def map_str_to_func(name):
     return {'l1': l1,
-            'single_l1': single_l1,
             'l2': l2,
             'chebyshev': chebyshev,
             'hellinger': hellinger,

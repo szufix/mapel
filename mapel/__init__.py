@@ -5,7 +5,6 @@ import mapel.voting._print as pr
 import mapel.voting.other.development as dev
 import mapel.voting.features_main as features
 
-
 from mapel.voting.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.voting.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 
@@ -16,10 +15,10 @@ def hello():
 
 def prepare_experiment(experiment_id=None, elections=None, distances=None, election_type='ordinal',
                        coordinates=None, distance_id='emd-positionwise', _import=True,
-                       shift=False, clean=False):
+                       shift=False, clean=False, dim=2, store=True):
     if election_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
-                                         elections=elections,
+                                         elections=elections, dim=dim, store=store,
                                          election_type=election_type,
                                          distances=distances, coordinates=coordinates,
                                          distance_id=distance_id)

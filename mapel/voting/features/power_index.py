@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-#
-# import math
+
+
 import itertools
 import struct
 

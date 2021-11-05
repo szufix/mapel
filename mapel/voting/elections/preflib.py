@@ -2,7 +2,6 @@
 # UNDER CONSTRUCTION #
 
 import os
-import random as rand
 from collections import Counter
 
 import numpy as np
@@ -57,7 +56,7 @@ def generate_votes_preflib(model, num_voters=None, num_candidates=None, folder=N
         return [0, 0, 0]
     original_num_candidates = int(file_votes.readline())
     choice = [x for x in range(original_num_voters)]
-    rand.shuffle(choice)
+    np.random.shuffle(choice)
 
     votes = np.zeros([num_voters, original_num_candidates], dtype=int)
     original_votes = np.zeros([original_num_voters, original_num_candidates], dtype=int)
@@ -70,7 +69,7 @@ def generate_votes_preflib(model, num_voters=None, num_candidates=None, folder=N
     file_votes.close()
 
     for j in range(num_voters):
-        r = rand.randint(0, original_num_voters - 1)
+        r = np.random.randint(0, original_num_voters - 1)
         for k in range(original_num_candidates):
             votes[j][k] = original_votes[r][k]
 
@@ -84,7 +83,7 @@ def generate_votes_preflib(model, num_voters=None, num_candidates=None, folder=N
 
         # NEW 17.12.2020
         if selection_method == 'random':
-            selected_candidates = rand.sample([j for j in range(original_num_candidates)],
+            selected_candidates = np.random.sample([j for j in range(original_num_candidates)],
                                               num_candidates)
         elif selection_method == 'borda':
             scores = get_borda_scores(original_votes, original_num_voters, original_num_candidates)
@@ -202,7 +201,7 @@ def prepare_preflib_family(experiment=None, model=None, family_id=None,
     ctr = 0
     # print(experiment.families)
     # print(ids, experiment.families[family_id].size)
-    rand_ids = rand.choices(ids, k=experiment.families[family_id].size)
+    rand_ids = np.random.choices(ids, k=experiment.families[family_id].size)
     for ri in rand_ids:
         name = family_id + '_' + str(ctr)
         tmp_election_type = model + '_' + str(ri)

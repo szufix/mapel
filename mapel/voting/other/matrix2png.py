@@ -1,9 +1,6 @@
-import mapel
-import mapel.voting.elections.mallows as mallows
 from PIL import Image, ImageDraw
 
-from math import sqrt
-from sys import argv
+import mapel
 
 
 def getrgb(value, MAX):

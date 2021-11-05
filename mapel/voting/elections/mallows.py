@@ -1,7 +1,6 @@
 import copy
 import os
 import pickle
-import random as rand
 
 import numpy as np
 
@@ -20,7 +19,7 @@ def calculateExpectedNumberSwaps(num_candidates, phi):
 # the expected number of swaps is exp_abs
 def phi_from_relphi(num_candidates, relphi=None):
     if relphi is None:
-        relphi = rand.random()
+        relphi = np.random.random()
     if relphi == 1:
         return 1
     exp_abs = relphi * (num_candidates * (num_candidates - 1)) / 4
@@ -54,7 +53,7 @@ def weighted_choice(choices):
     total = 0
     for w in choices:
         total = total + w
-    r = rand.uniform(0, total)
+    r = np.random.uniform(0, total)
     upto = 0.0
     for i, w in enumerate(choices):
         if upto + w >= r:
@@ -79,7 +78,7 @@ def generate_mallows_votes(num_voters, num_candidates, params):
     for i in range(num_voters):
         vote = mallowsVote(num_candidates, insertion_probabilites_list)
         if params['weight'] > 0:
-            probability = rand.random()
+            probability = np.random.random()
             if probability >= params['weight']:
                 vote.reverse()
         V += [vote]
@@ -132,9 +131,9 @@ def get_mallows_matrix(num_candidates, params, normalize=True):
     weight = params['weight']
     # print(lphi, weight)
     try:
-        path = os.path.join(os.getcwd(), 'elections', 'mallows_positionmatrices',
+        path = os.path.join(os.getcwd(), 'mapel', 'voting', 'elections', 'mallows_positionmatrices',
                             str(num_candidates) + "_matrix.txt")
-        # print(path)
+        print(path)
         with open(path, "rb") as file:
             pos = pickle.load(file)
     except FileNotFoundError:
@@ -182,7 +181,7 @@ def generate_mallows_party(num_voters=None, num_candidates=None,
 def generate_approval_shumallows_votes(num_voters=None, num_candidates=None, params=None):
     # central_vote = set()
     # for c in range(num_candidates):
-    #     if rand.random() <= params['p']:
+    #     if rand.np() <= params['p']:
     #         central_vote.add(c)
 
     k = int(params['p'] * num_candidates)
@@ -193,8 +192,8 @@ def generate_approval_shumallows_votes(num_voters=None, num_candidates=None, par
     for v in range(num_voters):
         vote = set()
         for c in range(num_candidates):
-            if rand.random() <= params['phi']:
-                if rand.random() <= params['p']:
+            if np.random.random() <= params['phi']:
+                if np.random.random() <= params['p']:
                     vote.add(c)
             else:
                 if c in central_vote:
@@ -218,8 +217,8 @@ def generate_approval_moving_shumallows_votes(num_voters=None, num_candidates=No
     for v in range(num_voters):
         vote = set()
         for c in range(num_candidates):
-            if rand.random() <= params['phi']:
-                if rand.random() <= params['p']:
+            if np.random.random() <= params['phi']:
+                if np.random.random() <= params['p']:
                     vote.add(c)
             else:
                 if c in central_vote:
@@ -239,10 +238,10 @@ def generate_approval_hamming_noise_model_votes(num_voters=None, num_candidates=
         vote = set()
         for c in range(num_candidates):
             if c in central_vote:
-                if rand.random() <= 1 - params['phi']:
+                if np.random.random() <= 1 - params['phi']:
                     vote.add(c)
             else:
-                if rand.random() < params['phi']:
+                if np.random.random() < params['phi']:
                     vote.add(c)
         votes[v] = vote
 
@@ -252,7 +251,7 @@ def generate_approval_hamming_noise_model_votes(num_voters=None, num_candidates=
 def generate_approval_simplex_shumallows_votes(num_voters=None, num_candidates=None,
                                                     params=None):
         if 'phi' not in params:
-            phi = rand.random()
+            phi = np.random.random()
         else:
             phi = params['phi']
 
@@ -286,8 +285,8 @@ def generate_approval_simplex_shumallows_votes(num_voters=None, num_candidates=N
             for v in range(int(sizes_v[g] * num_voters), int(sizes_v[g + 1] * num_voters)):
                 vote = set()
                 for c in range(num_candidates):
-                    if rand.random() <= phi:
-                        if rand.random() <= params['p']:
+                    if np.random.random() <= phi:
+                        if np.random.random() <= params['p']:
                             vote.add(c)
                     else:
                         if c in central_vote:
@@ -305,7 +304,7 @@ def generate_approval_simplex_shumallows_votes(num_voters=None, num_candidates=N
 
 def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=None, params=None):
     if 'phi' not in params:
-        phi = rand.random()
+        phi = np.random.random()
     else:
         phi = params['phi']
 
@@ -329,8 +328,8 @@ def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=
         for v in range(int(sizes[g]*num_voters), int(sizes[g+1]*num_voters)):
             vote = set()
             for c in range(num_candidates):
-                if rand.random() <= phi:
-                    if rand.random() <= params['p']:
+                if np.random.random() <= phi:
+                    if np.random.random() <= params['p']:
                         vote.add(c)
                 else:
                     if c in central_vote:

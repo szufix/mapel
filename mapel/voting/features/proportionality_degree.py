@@ -1,4 +1,3 @@
-import numpy as np
 from numpy import ceil
 from mapel.voting.objects.ApprovalElection import ApprovalElection
 import sys

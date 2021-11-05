@@ -98,6 +98,8 @@ NICE_NAME = {
     'approval_truncated_urn': 'Approval_Truncated_Urn',
     'approval_simplex_shumallows': 'approval_simplex_shumallows',
     'approval_vcr': 'Approval_VCR',
+    'all_votes': 'All_Votes',
+    'all': 'All',
     }
 
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import queue
-import random as rand
 from itertools import chain
 
 import numpy as np
@@ -63,7 +62,7 @@ def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
         votes = []
         for i in range(n):
 
-            signature = [rand.choice([0, 1])
+            signature = [np.random.choice([0, 1])
                          for _ in range(len(all_inner_nodes))]
 
             for i, node in enumerate(all_inner_nodes):
@@ -149,9 +148,9 @@ class Node:
 
     total_num_leaf_descendants = 0
 
-    def __init__(self, name):
+    def __init__(self, election_id):
 
-        self.name = name
+        self.election_id = election_id
         self.parent = None
         self.children = []
         self.leaf = True
@@ -168,7 +167,7 @@ class Node:
         self.vector = []
 
     def __str__(self):
-        return self.name
+        return self.election_id
 
     def add_child(self, child):
         child.parent = self
@@ -180,7 +179,7 @@ def _generate_patterns(num_nodes, num_internal_nodes):
     # Step 1: Mixing the patterns
     patterns = ['M0' for _ in range(num_nodes-num_internal_nodes)] + \
                ['M1' for _ in range(num_internal_nodes)]
-    rand.shuffle(patterns)
+    np.random.shuffle(patterns)
     return patterns
 
 
@@ -445,6 +444,7 @@ def get_frequency_matrix_from_tree(root):
 
     all_nodes = get_all_nodes(root)
     for node in all_nodes:
+        print(node.election_id)
         f[str(node.election_id)] = [0 for _ in range(m)]
     set_left_and_right(root)
 

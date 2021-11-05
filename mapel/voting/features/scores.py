@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import math
-import random as rand
 
 import numpy as np
 from pulp import *
@@ -43,6 +42,7 @@ def highest_copeland_score(potes, num_voters, num_candidates):
                 scores[j] += 1
 
     return max(scores)
+
 
 def _potes_to_unique_potes(potes):
     """ Remove repetitions from potes (positional votes) """
@@ -94,7 +94,7 @@ def lowest_dodgson_score(election):
                     D[k] = threshold - diff
         D[target_id] = 0  # always winning
 
-        file_name = str(rand.random()) + '.lp'
+        file_name = f'{np.random.random()}.lp'
         path = os.path.join(os.getcwd(), "trash", file_name)
         lp.generate_lp_file_dodgson_score(path, N=N, e=e, D=D)
         score = lp.solve_lp_dodgson_score(path)

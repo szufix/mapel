@@ -7,8 +7,7 @@ from mapel.voting.elections.single_crossing import get_single_crossing_vectors
 
 import mapel.voting.elections_main as el
 
-from mapel.voting.objects.Election import Election, get_fake_vectors_single, \
-    get_fake_convex
+from mapel.voting.objects.Election import Election
 from mapel.voting.objects.Experiment import Experiment
 
 import os
@@ -18,7 +17,7 @@ import csv
 def prepare_matrices(experiment_id):
     """ compute positionwise matrices and
     store them in the /matrices folder """
-    experiment = Experiment(experiment_id, elections='import')
+    experiment = Experiment(experiment_id)
 
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "matrices")
     for file_name in os.listdir(path):
@@ -50,13 +49,13 @@ def generate_positionwise_matrix(model=None, num_candidates=None,
         vectors = get_single_crossing_vectors(num_candidates)
     elif model == 'gs_caterpillar_matrix':
         vectors = get_gs_caterpillar_vectors(num_candidates)
-    elif model in {'identity', 'uniformity',
-                            'antagonism', 'stratification'}:
-        vectors = get_fake_vectors_single(model,
-                                          num_candidates, num_voters)
-    elif model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-        vectors = get_fake_convex(model, num_candidates,
-                                  num_voters, params, get_fake_vectors_single)
+    # elif model in {'identity', 'uniformity',
+    #                         'antagonism', 'stratification'}:
+    #     vectors = get_fake_vectors_single(model,
+    #                                       num_candidates, num_voters)
+    # elif model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
+    #     vectors = get_fake_convex(model, num_candidates,
+    #                               num_voters, params, get_fake_vectors_single)
     else:
         votes = el.generate_votes(model=model,
                                   num_candidates=num_candidates,

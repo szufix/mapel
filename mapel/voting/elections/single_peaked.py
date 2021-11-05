@@ -1,4 +1,3 @@
-import random as rand
 import numpy as np
 from random import *
 
@@ -12,7 +11,7 @@ def generate_sp_party(model=None, num_voters=None, num_candidates=None, params=N
     for j in range(params['num_parties']):
         for w in range(params['num_winners']):
             _id = j * params['num_winners'] + w
-            candidates[_id] = [rand.gauss(params['party'][j][0], params['var'])]
+            candidates[_id] = [np.random.normal(params['party'][j][0], params['var'])]
 
     mapping = [x for _, x in sorted(zip(candidates, _ids))]
 
@@ -33,11 +32,11 @@ def generate_ordinal_sp_conitzer_votes(num_voters=None, num_candidates=None) -> 
     votes = np.zeros([num_voters, num_candidates])
 
     for j in range(num_voters):
-        votes[j][0] = rand.randint(0, num_candidates - 1)
+        votes[j][0] = np.random.randint(0, num_candidates - 1)
         left = votes[j][0] - 1
         right = votes[j][0] + 1
         for k in range(1, num_candidates):
-            side = rand.choice([0, 1])
+            side = np.random.choice([0, 1])
             if side == 0:
                 if left >= 0:
                     votes[j][k] = left
@@ -62,13 +61,13 @@ def generate_ordinal_spoc_conitzer_votes(num_voters=None, num_candidates=None) -
     votes = np.zeros([num_voters, num_candidates])
 
     for j in range(num_voters):
-        votes[j][0] = rand.randint(0, num_candidates - 1)
+        votes[j][0] = np.random.randint(0, num_candidates - 1)
         left = votes[j][0] - 1
         left %= num_candidates
         right = votes[j][0] + 1
         right %= num_candidates
         for k in range(1, num_candidates):
-            side = rand.choice([0, 1])
+            side = np.random.choice([0, 1])
             if side == 0:
                 votes[j][k] = left
                 left -= 1
@@ -96,7 +95,7 @@ def generate_ordinal_sp_walsh_votes(num_voters=None, num_candidates=None) -> np.
 def walsh_sp(a, b):
     if a == b:
         return [a]
-    elif rand.choice([0, 1]) == 0:
+    elif np.random.choice([0, 1]) == 0:
         return walsh_sp(a + 1, b) + [a]
     else:
         return walsh_sp(a, b - 1) + [b]

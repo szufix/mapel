@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import math
-import random as rand
+import numpy as np
 
 
 def randomize(vector, num_winners):
@@ -18,7 +18,7 @@ def randomize(vector, num_winners):
         right += 1
     # print(left, right)
     if left < right:
-        ranking[left:right] = rand.sample(ranking[left:right], right - left)
+        ranking[left:right] = np.random.sample(ranking[left:right], right - left)
     # print(ranking)
     return ranking
 

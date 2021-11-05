@@ -2,7 +2,6 @@
 
 import math
 import os
-import random as rand
 
 import numpy as np
 
@@ -159,7 +158,7 @@ def get_winners_scoring(params, votes, candidates, scoring):
             while right < params['orders']-2 and points[breaking_point+right] == points[breaking_point+right+1]:
                 right += 1
             while right >= 0:
-                r = rand.randint(left,right)
+                r = np.random.randint(left,right)
                 tmp_candidate = winners[right]
                 winners[right] = tmp_candidates[breaking_point+r]
                 tmp_candidates[breaking_point + r] = tmp_candidate
@@ -169,7 +168,7 @@ def get_winners_scoring(params, votes, candidates, scoring):
 
 
 def get_winners_borda_owa(params, votes, candidates, owa):
-    rand_name = str(rand.random())
+    rand_name = str(np.random.random())
     lp_file_name = str(rand_name + ".lp")
     lp.generate_lp_file_borda_owa(owa, lp_file_name, params, votes)
     winners = lp.get_winners_from_lp(lp_file_name, params, candidates)
@@ -180,7 +179,7 @@ def get_winners_borda_owa(params, votes, candidates, owa):
 
 def get_winners_bloc_owa(params, votes, candidates, owa, t_bloc):
 
-    rand_name = str(rand.random())
+    rand_name = str(np.random.random())
     lp_file_name = str(rand_name + ".lp")
     lp.generate_lp_file_bloc_owa(owa, lp_file_name, params, votes, t_bloc)
     winners = lp.get_winners_from_lp(lp_file_name, params, candidates)

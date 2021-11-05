@@ -40,7 +40,7 @@ class Experiment:
     __metaclass__ = ABCMeta
     """Abstract set of elections."""
 
-    def __init__(self, elections=None, distances=None,
+    def __init__(self, elections=None, distances=None, dim=2, store=True,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
                  election_type='ordinal', _import=True, clean=False):
 
@@ -52,9 +52,9 @@ class Experiment:
 
         self.distance_id = distance_id
 
-        self.elections = {}
-        self.distances = {}
-        self.coordinates = {}
+        self.elections = None
+        self.distances = None
+        self.coordinates = None
 
         self.families = {}
         self.times = {}
@@ -76,33 +76,44 @@ class Experiment:
             self.experiment_id = experiment_id
             self.create_structure()
             self.families = self.import_controllers()
+            self.store = store
 
-        if elections == {}:
+        if isinstance(elections, dict):
             self.elections = elections
+            print('=== Omitting import! ===')
         elif self.experiment_id != 'virtual':
             try:
                 self.elections = self.add_elections_to_experiment()
                 print('=== Elections imported successfully! ===')
             except FileNotFoundError:
                 print('=== Elections not found! ===')
+                self.elections = {}
+        else:
+            self.elections = {}
 
-        if distances == {}:
+        if isinstance(distances, dict):
             self.distances = distances
+            print('=== Omitting import! ===')
         elif self.experiment_id != 'virtual':
             try:
                 self.distances, self.times, self.stds = self.add_distances_to_experiment()
                 print('=== Distances imported successfully! ===')
             except FileNotFoundError:
                 print('=== Distances not found! ===')
+        else:
+            self.distances = {}
 
-        if coordinates == {}:
+        if isinstance(coordinates, dict):
             self.coordinates = coordinates
+            print('=== Omitting import! ===')
         elif self.experiment_id != 'virtual':
             try:
-                self.coordinates = self.add_coordinates_to_experiment()
+                self.coordinates = self.add_coordinates_to_experiment(dim=dim)
                 print('=== Coordinates imported successfully! ===')
             except FileNotFoundError:
                 print('=== Coordinates not found! ===')
+        else:
+            self.coordinates = {}
 
 
     def add_family(self, model_id: str = None, params: dict = None, size=1, label=None, color="black",
@@ -163,6 +174,7 @@ class Experiment:
         if self.elections is None:
             self.elections = {}
 
+        elections = {}
         if self.store:
 
             for family_id in self.families:
@@ -183,12 +195,18 @@ class Experiment:
                 elif model_id not in ['core', 'pabulib'] and (model_id in NICE_NAME or
                                                            model_id in LIST_OF_FAKE_MODELS or
                                                            model_id in APPROVAL_MODELS):
-                    ids = _elections.prepare_statistical_culture_family(
+                    tmp_elections = _elections.prepare_statistical_culture_family(
                         experiment=self, model_id=model_id, family_id=family_id, params=params)
 
-                    self.families[family_id].election_ids = ids
+                    self.families[family_id].election_ids = tmp_elections.keys()
 
-        self.elections = self.add_elections_to_experiment()
+                    for election_id in tmp_elections:
+                        elections[election_id] = tmp_elections[election_id]
+
+                    # print(tmp_elections)
+
+        # self.elections = self.add_elections_to_experiment()
+        self.elections = elections
 
     def compute_winners(self, method=None, num_winners=1):
         for election_id in self.elections:
@@ -290,7 +308,8 @@ class Experiment:
         pass
 
     def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
-              dim: int = 2, num_neighbors: int = None, method: str = 'standard') -> None:
+              dim: int = 2, num_neighbors: int = None, method: str = 'standard',
+              zero_distance: int = 0.01) -> None:
 
         if algorithm == 'spring':
             attraction_factor = 2
@@ -304,8 +323,8 @@ class Experiment:
         for i, election_id_1 in enumerate(self.distances):
             for j, election_id_2 in enumerate(self.distances):
                 if i < j:
-                    if self.distances[election_id_1][election_id_2] == 0:
-                        self.distances[election_id_1][election_id_2] = 0.01
+                    if self.distances[election_id_1][election_id_2] == 0.:
+                        self.distances[election_id_1][election_id_2] = zero_distance
                     if algorithm in {'spring'}:
                         normal = True
                         if self.distances[election_id_1][election_id_2] > radius:
@@ -468,6 +487,9 @@ class Experiment:
             if 'label' in row.keys():
                 label = str(row['label'])
 
+            if 'family_id' in row.keys():
+                family_id = str(row['family_id'])
+
             if 'params' in row.keys():
                 params = ast.literal_eval(str(row['params']))
 
@@ -489,7 +511,6 @@ class Experiment:
             if 'path' in row.keys():
                 path = ast.literal_eval(str(row['path']))
 
-            family_id = str(row['label'])
 
             show = row['show'].strip() == 't'
 
@@ -527,7 +548,7 @@ class Experiment:
         file_.close()
         return families
 
-    def add_coordinates_to_experiment(self, ignore=None) -> dict:
+    def add_coordinates_to_experiment(self, ignore=None, dim=2) -> dict:
         """ Import from a file precomputed coordinates of all the points --
         each point refer to one election """
 
@@ -536,7 +557,7 @@ class Experiment:
 
         coordinates = {}
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "coordinates", f'{self.distance_id}_2d.csv')
+                            "coordinates", f'{self.distance_id}_{dim}d.csv')
 
         with open(path, 'r', newline='') as csv_file:
 
@@ -548,7 +569,10 @@ class Experiment:
 
             for row in reader:
                 election_id = row['election_id']
-                coordinates[election_id] = [float(row['x']), float(row['y'])]
+                if dim == 2:
+                    coordinates[election_id] = [float(row['x']), float(row['y'])]
+                elif dim == 3:
+                    coordinates[election_id] = [float(row['x']), float(row['y']), float(row['z'])]
 
                 if election_id not in self.elections:
                     warn = True
@@ -629,7 +653,9 @@ class Experiment:
                 value = feature(election, committee_size=committee_size)
 
             elif feature_id in {'avg_distortion_from_guardians',
-                                'worst_distortion_from_guardians'}:
+                                'worst_distortion_from_guardians',
+                                'distortion_from_all',
+                                'distortion_from_top_100'}:
                 value = feature(self, election_id)
             else:
                 value = feature(election)
@@ -743,6 +769,7 @@ class Experiment:
         stds = {}
 
         with open(path, 'r', newline='') as csv_file:
+
             reader = csv.DictReader(csv_file, delimiter=';')
             warn = False
 
@@ -788,6 +815,7 @@ class Experiment:
             if warn:
                 text = f'Possibly outdated distances are imported!'
                 warnings.warn(text)
+
 
         return distances, times, stds
 

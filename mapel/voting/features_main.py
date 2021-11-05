@@ -7,6 +7,7 @@ import numpy as np
 import scipy.special
 
 import mapel.voting.features.cohesive as cohesive
+import mapel.voting.features.partylist as partylist
 import mapel.voting.features.proportionality_degree as prop_deg
 import mapel.voting.features.scores as scores
 from mapel.voting.metrics.inner_distances import l2
@@ -33,6 +34,10 @@ def get_feature(feature_id):
             'abstract': abstract,
             'monotonicity_1': monotonicity_1,
             'monotonicity_2': monotonicity_2,
+            'partylist': partylist.partylistdistance,
+            'num_large_parties': partylist.partylistdistance,
+            'distortion_from_all': distortion_from_all,
+            'distortion_from_top_100': distortion_from_top_100,
             }.get(feature_id)
 
 
@@ -148,6 +153,70 @@ def distortion_from_guardians(experiment, election_id) -> np.ndarray:
     return values
 
 
+def distortion_from_all(experiment, election_id) -> np.ndarray:
+    values = np.array([])
+    election_id_1 = election_id
+
+    for election_id_2 in experiment.elections:
+        # if election_id_2 in {'identity_10_100_0', 'uniformity_10_100_0',
+        #                      'antagonism_10_100_0', 'stratification_10_100_0'}:
+        if election_id_1 != election_id_2:
+            m = experiment.elections[election_id_1].num_candidates
+            true_distance = experiment.distances[election_id_1][election_id_2]
+            true_distance /= map_diameter(m)
+            embedded_distance = l2(np.array(experiment.coordinates[election_id_1]),
+                                   np.array(experiment.coordinates[election_id_2]))
+
+            embedded_distance /= \
+                l2(np.array(experiment.coordinates['core_800']),
+                   np.array(experiment.coordinates['core_849']))
+            try:
+                ratio = float(embedded_distance) / float(true_distance)
+            except:
+                ratio = 1.
+            values = np.append(values, ratio)
+
+    return np.mean(abs(1.-values))
+
+
+def distortion_from_top_100(experiment, election_id) -> np.ndarray:
+    values = np.array([])
+    election_id_1 = election_id
+
+    euc_dist = {}
+    for election_id_2 in experiment.elections:
+        if election_id_1 != election_id_2:
+            euc_dist[election_id_2] = l2(np.array(experiment.coordinates[election_id_1]),
+                                           np.array(experiment.coordinates[election_id_2]))
+
+    all = (sorted(euc_dist.items(), key=lambda item: item[1]))
+    top_100 = [x for x,_ in all[0:100]]
+
+
+    # all = (sorted(experiment.distances[election_id_1].items(), key=lambda item: item[1]))
+    # top_100 = [x for x,_ in all[0:100]]
+
+    for election_id_2 in experiment.elections:
+        if election_id_1 != election_id_2:
+            if election_id_2 in top_100:
+                m = experiment.elections[election_id_1].num_candidates
+                true_distance = experiment.distances[election_id_1][election_id_2]
+                true_distance /= map_diameter(m)
+                embedded_distance = l2(np.array(experiment.coordinates[election_id_1]),
+                                       np.array(experiment.coordinates[election_id_2]))
+
+                embedded_distance /= \
+                    l2(np.array(experiment.coordinates['core_800']),
+                       np.array(experiment.coordinates['core_849']))
+                try:
+                    ratio = float(embedded_distance) / float(true_distance)
+                except:
+                    ratio = 1.
+                values = np.append(values, ratio)
+
+    return np.mean(abs(1.-values))
+
+
 def avg_distortion_from_guardians(experiment, election_id):
     values = distortion_from_guardians(experiment, election_id)
     return np.mean(values)
@@ -179,6 +248,7 @@ def max_approval_score(election):
         for c in vote:
             score[c] += 1
     return max(score)
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

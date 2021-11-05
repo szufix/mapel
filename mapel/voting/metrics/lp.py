@@ -939,7 +939,7 @@ def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length, i
                     if not first:
                         lp_file.write(" + ")
                     first = False
-                    weight = inner_distance(matrix_1[k][i], matrix_2[l][j])
+                    weight = inner_distance(np.array([matrix_1[k][i]]), np.array([matrix_2[l][j]]))
                     lp_file.write(
                         str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(
                             j))
@@ -1032,7 +1032,7 @@ def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length, i
     lp_file.write("End\n")
 
 
-def solve_lp_matrix(lp_file_name, matrix_1, matrix_2, length):
+def solve_lp_matrix(lp_file_name):
     cp_lp = cplex.Cplex(lp_file_name)
     cp_lp.set_results_stream(None)
 
@@ -1046,32 +1046,7 @@ def solve_lp_matrix(lp_file_name, matrix_1, matrix_2, length):
     except:
         print("Exception raised during solve")
         return
-    """
-    for k in range(length):
-        for l in range(length):
-            
 
-            for i in range(k+1, length):
-                if k == i:
-                    continue
-                for j in range(l+1, length):
-                    if l == j:
-                        continue
-
-                    A = "P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j)
-                    if int(cp_lp.solution.get_values(A)) == 1:
-                        print(A)
-    """
-
-    """
-    for i in range(length):
-        for j in range(length):
-            A = "M" + "i" + str(i) + "j" + str(j)
-            if int(cp_lp.solution.get_values(A)) == 1:
-                print(A)
-    """
-
-    # print(cp_lp.solution.get_objective_value())
     return cp_lp.solution.get_objective_value()
 
 
