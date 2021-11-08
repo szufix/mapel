@@ -48,11 +48,7 @@ class Election(Instance):
 
     def votes_to_potes(self) -> np.ndarray:
         """ Convert votes to positional votes """
-        potes = np.zeros([self.num_voters, self.num_candidates], dtype=int)
-        for i in range(self.num_voters):
-            for j in range(self.num_candidates):
-                potes[i][self.votes[i][j]] = j
-        return potes
+        return np.array([[vote.index(i) for i, _ in enumerate(vote)] for vote in self.votes])
 
     def vector_to_interval(self, vector, precision=None) -> list:
         # discreet version for now

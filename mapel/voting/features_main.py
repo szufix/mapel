@@ -5,6 +5,7 @@ import math
 import networkx as nx
 import numpy as np
 import scipy.special
+from itertools import combinations
 
 import mapel.voting.features.cohesive as cohesive
 import mapel.voting.features.partylist as partylist
@@ -35,7 +36,7 @@ def get_feature(feature_id):
             'monotonicity_1': monotonicity_1,
             'monotonicity_2': monotonicity_2,
             'partylist': partylist.partylistdistance,
-            'num_large_parties': partylist.partylistdistance,
+            # 'num_large_parties': partylist.partylistdistance,
             'distortion_from_all': distortion_from_all,
             'distortion_from_top_100': distortion_from_top_100,
             }.get(feature_id)
@@ -45,18 +46,17 @@ def monotonicity_1(experiment, election) -> float:
     e0 = election.election_id
     c0 = np.array(experiment.coordinates[e0])
     distortion = 0
-    for i, e1 in enumerate(experiment.elections):
-        for j, e2 in enumerate(experiment.elections):
-            if i < j and e1 != e0 and e2 != e0:
-                original_d1 = experiment.distances[e0][e1]
-                original_d2 = experiment.distances[e0][e2]
-                original_proportion = original_d1 / original_d2
-                embedded_d1 = np.linalg.norm(c0 - experiment.coordinates[e1])
-                embedded_d2 = np.linalg.norm(c0 - experiment.coordinates[e2])
-                embedded_proportion = embedded_d1 / embedded_d2
-                _max = max(original_proportion, embedded_proportion)
-                _min = min(original_proportion, embedded_proportion)
-                distortion += _max / _min
+    for e1, e2 in combinations(experiment.elections, 2):
+        if e1 != e0 and e2 != e0:
+            original_d1 = experiment.distances[e0][e1]
+            original_d2 = experiment.distances[e0][e2]
+            original_proportion = original_d1 / original_d2
+            embedded_d1 = np.linalg.norm(c0 - experiment.coordinates[e1])
+            embedded_d2 = np.linalg.norm(c0 - experiment.coordinates[e2])
+            embedded_proportion = embedded_d1 / embedded_d2
+            _max = max(original_proportion, embedded_proportion)
+            _min = min(original_proportion, embedded_proportion)
+            distortion += _max / _min
     return distortion
 
 
@@ -66,17 +66,16 @@ def monotonicity_2(experiment, election) -> float:
     c0 = np.array(experiment.coordinates[e0])
     distortion = 0.
     ctr = 0.
-    for i, e1 in enumerate(experiment.elections):
-        for j, e2 in enumerate(experiment.elections):
-            if i < j and e1 != e0 and e2 != e0:
-                original_d1 = experiment.distances[e0][e1]
-                original_d2 = experiment.distances[e0][e2]
-                embedded_d1 = np.linalg.norm(c0 - experiment.coordinates[e1])
-                embedded_d2 = np.linalg.norm(c0 - experiment.coordinates[e2])
-                if (original_d1 < original_d2 and embedded_d1 > embedded_d2 * (1. + epsilon)) or \
-                        (original_d2 < original_d1 and embedded_d2 > embedded_d1 * (1. + epsilon)):
-                    distortion += 1.
-                ctr += 1.
+    for e1, e2 in combinations(experiment.elections, 2):
+        if e1 != e0 and e2 != e0:
+            original_d1 = experiment.distances[e0][e1]
+            original_d2 = experiment.distances[e0][e2]
+            embedded_d1 = np.linalg.norm(c0 - experiment.coordinates[e1])
+            embedded_d2 = np.linalg.norm(c0 - experiment.coordinates[e2])
+            if (original_d1 < original_d2 and embedded_d1 > embedded_d2 * (1. + epsilon)) or \
+                    (original_d2 < original_d1 and embedded_d2 > embedded_d1 * (1. + epsilon)):
+                distortion += 1.
+            ctr += 1.
     distortion /= ctr
     return distortion
 
@@ -96,15 +95,11 @@ def abstract(election) -> float:
 
 def borda_std(election):
     all_scores = np.zeros(election.num_candidates)
-
     vectors = election.votes_to_positionwise_matrix()
-
     for i in range(election.num_candidates):
         for j in range(election.num_candidates):
             all_scores[i] += vectors[i][j] * (election.num_candidates - j - 1)
-
-    std = np.std(all_scores)
-    return std
+    return np.std(all_scores)
 
 
 def get_effective_num_candidates(election, mode='Borda') -> float:
@@ -127,7 +122,7 @@ def get_effective_num_candidates(election, mode='Borda') -> float:
 ########################################################################
 def map_diameter(c: int) -> float:
     """ Compute the diameter """
-    return 1 / 3 * (c + 1) * (c - 1)
+    return 1. / 3. * (c + 1) * (c - 1)
 
 
 def distortion_from_guardians(experiment, election_id) -> np.ndarray:

@@ -36,5 +36,5 @@ if __name__ == "__main__":
     experiment.embed(algorithm='spring')
 
     experiment.print_map(shading=True, adjust=True, legend=True, legend_pos=[1., .75],
-                         skeleton=['Empty', 'Full', 'IC 0.5', 'ID 0.5'])
+                         textual=['Empty', 'Full', 'IC 0.5', 'ID 0.5'])
 

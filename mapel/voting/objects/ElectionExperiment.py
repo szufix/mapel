@@ -6,6 +6,7 @@ import mapel.voting.elections_main as _elections
 import mapel.voting.other.rules as rules
 from mapel.voting.objects.Experiment import Experiment
 from mapel.voting.objects.Family import Family
+from mapel.voting._glossary import *
 
 try:
     from sklearn.manifold import MDS
@@ -119,7 +120,6 @@ class ElectionExperiment(Experiment):
 
         self.families[family_id].election_ids = list(elections.keys())
 
-
         return list(elections.keys())
 
     @abstractmethod
@@ -130,7 +130,12 @@ class ElectionExperiment(Experiment):
                       resolute: bool = False) -> None:
         for rule_name in list_of_rules:
             print('Computing', rule_name)
-            rules.compute_rule(experiment=self, rule_name=rule_name, committee_size=committee_size,
+            if rule_name in NOT_ABCVOTING_RULES:
+                rules.compute_not_abcvoting_rule(experiment=self, rule_name=rule_name,
+                                             committee_size=committee_size,
+                                             printing=printing, resolute=resolute)
+            else:
+                rules.compute_abcvoting_rule(experiment=self, rule_name=rule_name, committee_size=committee_size,
                                printing=printing, resolute=resolute)
 
     def import_committees(self, list_of_rules) -> None:

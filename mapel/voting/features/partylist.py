@@ -21,12 +21,23 @@ def convert_election_to_profile(election):
     return profile
 
 
-def partylistdistance(election, largepartysize=3):
+def partylistdistance(election, feature_params=None):
+
+    if 'largepartysize' in feature_params:
+        largepartysize = feature_params['largepartysize']
+    else:
+        largepartysize = 5
+
+    if 'time_limit' in feature_params:
+        time_limit = feature_params['time_limit']
+    else:
+        time_limit = 5
+
     profile = convert_election_to_profile(election)
 
     model = gb.Model()
     model.setParam("OutputFlag", False)
-    model.setParam('TimeLimit', 3)  # in seconds
+    model.setParam('TimeLimit', time_limit)  # in seconds
 
     same_party = {}
     for c1 in profile.candidates:
@@ -106,7 +117,7 @@ def partylistdistance(election, largepartysize=3):
     # print([(c1, c2, same_party[(c1, c2)].X) for c1 in profile.candidates for c2 in range(c1)])
 
     # return model.objVal, num_large_parties, newprofile
-    print(model.objVal)
-    return model.objVal
+    print(model.objVal, model.objbound, num_large_parties)
+    return model.objVal, model.objbound, num_large_parties
     # print(num_large_parties)
     # return num_large_parties

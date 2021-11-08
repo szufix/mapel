@@ -4,6 +4,7 @@ import os
 import csv
 import ast
 import sys
+import numpy as np
 
 try:
     sys.path.append('/Users/szufa/PycharmProjects/abcvoting/')
@@ -14,8 +15,8 @@ except ImportError:
     abcrules = None
 
 
-def compute_rule(experiment=None, rule_name=None, committee_size=1, printing=False,
-                 resolute=False):
+def compute_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, printing=False,
+                           resolute=False):
     all_winning_committees = {}
     for election in experiment.elections.values():
         if printing:
@@ -58,3 +59,29 @@ def import_committees_from_file(experiment_id, rule_name):
                 winning_committees = [set()]
             all_winning_committees[row['election_id']] = winning_committees
     return all_winning_committees
+
+
+def compute_not_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, printing=False,
+                           resolute=False):
+    all_winning_committees = {}
+    for election in experiment.elections.values():
+        if printing:
+            print(election.election_id)
+
+        winning_committees = compute_borda_c4_rule(election, committee_size)
+
+        all_winning_committees[election.election_id] = winning_committees
+    store_committees_to_file(experiment.experiment_id, rule_name, all_winning_committees)
+
+
+def compute_borda_c4_rule(election, committee_size=1):
+
+    scores = np.zeros(election.num_candidates)
+    for i, vote in enumerate(election.votes):
+        max_score = 10 # election.approval_cuts[i]
+        for pos, c in enumerate(vote):
+            scores[c] += pos
+
+    print(scores)
+
+    return {}

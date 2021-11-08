@@ -2,6 +2,7 @@ import csv
 import os
 import math
 
+from itertools import combinations
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
@@ -32,13 +33,15 @@ def print_map_2d(experiment,
                  xlabel=None, shading=False, legend_pos=None,
                  angle=0, reverse=False, update=False, feature_id=None,
                  axis=False, rounding=1, limit=np.infty, individual=False,
-                 ticks=None, skeleton=None, roads=None, adjust_single=False,
+                 ticks=None, textual=None, roads=None, adjust_single=False,
                  title=None, dim=2, event='none', bbox_inches=None,
                  saveas=None, show=True, ms=20, normalizing_func=None,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
-                 legend=True, adjust=False) -> None:
-    if skeleton is None:
-        skeleton = []
+                 legend=True, adjust=False,
+                 column_id='value') -> None:
+
+    if textual is None:
+        textual = []
 
     if roads is None:
         roads = []
@@ -72,7 +75,7 @@ def print_map_2d(experiment,
     if not axis:
         plt.axis('off')
 
-    add_skeleton(experiment=experiment, skeleton=skeleton, ax=ax)
+    add_textual(experiment=experiment, textual=textual, ax=ax)
 
     # COLORING
     if feature_id is not None:
@@ -81,21 +84,20 @@ def print_map_2d(experiment,
                              normalizing_func=normalizing_func,
                              marker_func=marker_func, limit=limit,
                              xticklabels=xticklabels, ms=ms, cmap=cmap,
-                             ticks=ticks)
+                             ticks=ticks, column_id=column_id)
     else:
 
-        if event in {'skeleton'}:
+        if event in {'textual'}:
             skeleton_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim)
             add_roads(experiment=experiment, roads=roads, ax=ax)
         else:
             if shading:
-                basic_coloring_with_shading(experiment=experiment, ax=ax, ms=ms, dim=dim,
-                                            skeleton=skeleton)
+                basic_coloring_with_shading(experiment=experiment, ax=ax, dim=dim,
+                                            textual=textual)
             elif individual:
-                basic_coloring_with_individual(experiment=experiment, ax=ax, ms=ms, dim=dim,
-                                            skeleton=skeleton, individual=individual)
+                basic_coloring_with_individual(experiment=experiment, ax=ax, individual=individual)
             else:
-                basic_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim, skeleton=skeleton)
+                basic_coloring(experiment=experiment, ax=ax, dim=dim, textual=textual)
 
     # BACKGROUND
     basic_background(ax=ax, values=feature_id, legend=legend,
@@ -141,7 +143,7 @@ def print_map_3d(experiment,
                              xticklabels=xticklabels, ms=ms, cmap=cmap,
                              ticks=ticks, dim=dim)
     else:
-        basic_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim)
+        basic_coloring(experiment=experiment, ax=ax, dim=dim)
 
     # BACKGROUND
     basic_background(ax=ax, values=feature_id, legend=legend,
@@ -155,7 +157,8 @@ def print_map_3d(experiment,
         plt.show()
 
 
-def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty) -> dict:
+def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty,
+                             column_id='value') -> dict:
     """Import values for a feature_id from a .csv file """
 
     path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id,
@@ -167,7 +170,7 @@ def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty) -> dic
 
         for row in reader:
             election_id = row['election_id']
-            value = float(row['value'])
+            value = float(row[column_id])
             if value >= limit:
                 value = limit
 
@@ -184,14 +187,16 @@ def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty) -> dic
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
-def import_values_for_feature(experiment, feature_id=None, limit=None, normalizing_func=None, marker_func=None, dim=2):
+def import_values_for_feature(experiment, feature_id=None, limit=None, normalizing_func=None,
+                              marker_func=None, dim=2, column_id='value'):
     """ Import values for a feature_id """
 
     if isinstance(feature_id, str):
         if feature_id in experiment.features:
             values = experiment.features[feature_id]
         else:
-            values = get_values_from_csv_file(experiment, feature_id=feature_id, limit=limit)
+            values = get_values_from_csv_file(experiment, feature_id=feature_id,
+                                              limit=limit, column_id=column_id)
     else:
         values = feature_id
 
@@ -294,10 +299,10 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
 
 def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, limit=np.infty,
                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
-                         cmap=None, ticks=None, dim=2, rounding=1):
+                         cmap=None, ticks=None, dim=2, rounding=1, column_id='value'):
     xx, yy, zz, shades, markers, _min, _max = import_values_for_feature(
         experiment, feature_id=feature_id, limit=limit, normalizing_func=normalizing_func,
-        marker_func=marker_func, dim=dim)
+        marker_func=marker_func, dim=dim, column_id=column_id)
     unique_markers = set(markers)
     images = []
 
@@ -358,14 +363,14 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
 
 
 # COLORING
-def basic_coloring(experiment=None, ax=None, ms=None, dim=2, skeleton=None):
-    if skeleton is None:
-        skeleton = []
+def basic_coloring(experiment=None, ax=None, dim=2, textual=None):
+    if textual is None:
+        textual = []
     for family in experiment.families.values():
 
         if family.show:
             if dim == 2:
-                if family.label in skeleton:
+                if family.label in textual:
                     label = '_nolegend_'
                 else:
                     label = family.label
@@ -374,7 +379,8 @@ def basic_coloring(experiment=None, ax=None, ms=None, dim=2, skeleton=None):
                            experiment.coordinates_by_families[family.family_id][1],
                            color=family.color,
                            label=label,
-                           alpha=family.alpha, s=ms,
+                           alpha=family.alpha,
+                           s=family.ms,
                            marker=family.marker)
             elif dim == 3:
                 ax.scatter(experiment.coordinates_by_families[family.family_id][0],
@@ -382,12 +388,12 @@ def basic_coloring(experiment=None, ax=None, ms=None, dim=2, skeleton=None):
                            experiment.coordinates_by_families[family.family_id][2],
                            color=family.color,
                            label=family.label,
-                           alpha=family.alpha, s=ms,
+                           alpha=family.alpha,
+                           s=family.ms,
                            marker=family.marker)
 
 
-def basic_coloring_with_individual(experiment=None, ax=None, ms=None, dim=2, skeleton=None,
-                                   individual=None):
+def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
 
     for family_id in experiment.families:
         if experiment.families[family_id].show:
@@ -402,53 +408,55 @@ def basic_coloring_with_individual(experiment=None, ax=None, ms=None, dim=2, ske
                            s=individual['ms'][election_id],
                            marker=individual['marker'][election_id])
 
-def basic_coloring_with_shading(experiment=None, ax=None, ms=None, dim=2, skeleton=None):
-    if skeleton is None:
-        skeleton = []
-    for family_id in experiment.families:
-        if experiment.families[family_id].show:
-            label = experiment.families[family_id].label
+def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
+    for family in experiment.families.values():
+        if family.show:
+            label = family.label
             if dim == 2:
                 if '_path' in label:
                     if 'background' in label:
                         label = '_nolegend_'
 
-                    for i in range(experiment.families[family_id].size):
-                        election_id = experiment.families[family_id].election_ids[i]
+                    for i in range(family.size):
+                        election_id = family.election_ids[i]
                         alpha = experiment.elections[election_id].alpha
-                        alpha *= experiment.families[family_id].alpha
+                        alpha *= family.alpha
                         alpha = (alpha + 0.2) / 1.2
-                        if i == experiment.families[family_id].size - 1:
-                            ax.scatter(experiment.coordinates_by_families[family_id][0][i],
-                                       experiment.coordinates_by_families[family_id][1][i],
-                                       color=experiment.families[family_id].color,
+                        if i == family.size - 1:
+                            ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
+                                       experiment.coordinates_by_families[family.family_id][1][i],
+                                       color=family.color,
                                        label=label,
-                                       alpha=alpha, s=ms,
-                                       marker=experiment.families[family_id].marker)
+                                       alpha=alpha,
+                                       s=family.ms,
+                                       marker=family.marker)
                         else:
-                            ax.scatter(experiment.coordinates_by_families[family_id][0][i],
-                                       experiment.coordinates_by_families[family_id][1][i],
-                                       color=experiment.families[family_id].color,
-                                       alpha=alpha, s=ms,
-                                       marker=experiment.families[family_id].marker)
+                            ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
+                                       experiment.coordinates_by_families[family.family_id][1][i],
+                                       color=family.color,
+                                       alpha=alpha,
+                                       s=family.ms,
+                                       marker=family.marker)
                 else:
-                    if label in skeleton or 'background' in label:
+                    if label in textual or 'background' in label:
                         label = '_nolegend_'
 
-                    ax.scatter(experiment.coordinates_by_families[family_id][0],
-                               experiment.coordinates_by_families[family_id][1],
-                               color=experiment.families[family_id].color,
+                    ax.scatter(experiment.coordinates_by_families[family.family_id][0],
+                               experiment.coordinates_by_families[family.family_id][1],
+                               color=family.color,
                                label=label,
-                               alpha=experiment.families[family_id].alpha, s=ms,
-                               marker=experiment.families[family_id].marker)
+                               alpha=family.alpha,
+                               s=family.ms,
+                               marker=family.marker)
             elif dim == 3:
-                ax.scatter(experiment.coordinates_by_families[family_id][0],
-                           experiment.coordinates_by_families[family_id][1],
-                           experiment.coordinates_by_families[family_id][2],
-                           color=experiment.families[family_id].color,
-                           label=experiment.families[family_id].label,
-                           alpha=experiment.families[family_id].alpha, s=ms,
-                           marker=experiment.families[family_id].marker)
+                ax.scatter(experiment.coordinates_by_families[family.family_id][0],
+                           experiment.coordinates_by_families[family.family_id][1],
+                           experiment.coordinates_by_families[family.family_id][2],
+                           color=family.color,
+                           label=family.label,
+                           alpha=family.alpha,
+                           s=family.ms,
+                           marker=family.marker)
 
 
 # BACKGROUNDS
@@ -536,11 +544,10 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
             ctr += 1
 
     # PREPARE EMPTY DICTS
-    matrix = {}
-    quantities = {}
+    matrix = {family_id_1: {} for family_id_1 in experiment.families}
+    quantities = {family_id_1: {} for family_id_1 in experiment.families}
+
     for family_id_1 in experiment.families:
-        matrix[family_id_1] = {}
-        quantities[family_id_1] = {}
         for family_id_2 in experiment.families:
             matrix[family_id_1][family_id_2] = 0
             quantities[family_id_1][family_id_2] = 0
@@ -572,16 +579,15 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
     #                 quantities[bucket[i]][bucket[j]] += 1
 
     # NORMALIZE
-    for i, family_id_1 in enumerate(experiment.families):
-        for j, family_id_2 in enumerate(experiment.families):
-            if (self_distances and i == j) or i < j:
-                if quantities[family_id_1][family_id_2] != 0.:
-                    matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
-                matrix[family_id_1][family_id_2] = \
-                    round(matrix[family_id_1][family_id_2] * scale, rounding)
-                if rounding == 0:
-                    matrix[family_id_1][family_id_2] = int(matrix[family_id_1][family_id_2])
-                matrix[family_id_2][family_id_1] = matrix[family_id_1][family_id_2]
+    for family_id_1, family_id_2 in combinations(experiment.families, 2):
+        # add normalization for self distances
+        if quantities[family_id_1][family_id_2] != 0.:
+            matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
+        matrix[family_id_1][family_id_2] = \
+            round(matrix[family_id_1][family_id_2] * scale, rounding)
+        if rounding == 0:
+            matrix[family_id_1][family_id_2] = int(matrix[family_id_1][family_id_2])
+        matrix[family_id_2][family_id_1] = matrix[family_id_1][family_id_2]
 
     # THE REST
     fig, ax = plt.subplots()
@@ -688,8 +694,8 @@ def map_diameter(c):
 
 
 # SKELETON RELATED
-def add_skeleton(experiment=None, skeleton=None, ax=None, size=12):
-    """ Add skeleton """
+def add_textual(experiment=None, textual=None, ax=None, size=12):
+    """ Add textual """
 
     def my_text(x1, y1, text, color="black", alpha=1., size=size):
         ax.text(x1, y1, text, size=size, rotation=0., ha="center",
@@ -697,7 +703,7 @@ def add_skeleton(experiment=None, skeleton=None, ax=None, size=12):
                 color=color, alpha=alpha, zorder=100,
                 bbox=dict(boxstyle="round", ec="black", fc="white"))
 
-    for name in skeleton:
+    for name in textual:
         x = experiment.coordinates[name][0]
         y = experiment.coordinates[name][1]
         if name in RULE_NAME_MAP:

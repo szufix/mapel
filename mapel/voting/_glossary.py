@@ -139,6 +139,7 @@ GRAPH_MODELS = {'erdos_renyi_graph', 'watts_strogatz_graph', 'barabasi_albert_gr
                 'cycle_graph', 'wheel_graph', 'star_graph', 'ladder_graph', 'circular_ladder_graph',
                 'erdos_renyi_graph_path'}
 
+NOT_ABCVOTING_RULES = {'borda_c4'}
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

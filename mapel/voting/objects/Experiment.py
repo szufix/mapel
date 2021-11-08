@@ -633,7 +633,10 @@ class Experiment:
 
         self.coordinates_by_families = coordinates_by_families
 
-    def compute_feature(self, feature_id: str = None, committee_size: int = 10) -> dict:
+    def compute_feature(self, feature_id: str = None,
+                        feature_params=None) -> dict:
+        if feature_params is None:
+            feature_params = {}
 
         feature_dict = {}
 
@@ -641,7 +644,6 @@ class Experiment:
             print(election_id)
             feature = features.get_feature(feature_id)
             election = self.elections[election_id]
-            # print(election_id, election)
             if feature_id in ['monotonicity_1', 'monotonicity_2']:
                 value = feature(self, election)
 
@@ -650,16 +652,17 @@ class Experiment:
                                 'proportionality_degree_pav',
                                 'proportionality_degree_av',
                                 'proportionality_degree_cc',]:
-                value = feature(election, committee_size=committee_size)
+                value = feature(election, feature_params)
 
             elif feature_id in {'avg_distortion_from_guardians',
                                 'worst_distortion_from_guardians',
                                 'distortion_from_all',
                                 'distortion_from_top_100'}:
                 value = feature(self, election_id)
+            elif feature_id in {'partylist'}:
+                value = feature(election, feature_params)
             else:
                 value = feature(election)
-            # values.append(value)
             feature_dict[election_id] = value
 
         if self.store:
@@ -667,9 +670,14 @@ class Experiment:
                                 "features", f'{feature_id}.csv')
             with open(path, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(["election_id", "value"])
-                for key in feature_dict:
-                    writer.writerow([key, feature_dict[key]])
+                writer.writerow(["election_id", "value", "bound", "num_large_parties"])
+                if feature_id in {'partylist'}:
+                    for key in feature_dict:
+                        writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
+                                         feature_dict[key][2]])
+                else:
+                    for key in feature_dict:
+                        writer.writerow([key, feature_dict[key]])
 
         self.features[feature_id] = feature_dict
         return feature_dict

@@ -208,5 +208,5 @@ if __name__ == "__main__":
 
         # print_tables( experiment )
 
-        experiment.print_map(title='Skeleton Map', saveas='skeleton', ms=30, legend=True,
+        experiment.print_map(title='Skeleton Map', saveas='textual', ms=30, legend=True,
                              mixed=True)

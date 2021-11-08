@@ -22,16 +22,13 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name='0'):
 
     # OBJECTIVE FUNCTION
     cp.objective.set_sense(cp.objective.sense.maximize)
-    objective = []
     names = []
     for v1 in range(election_1.num_voters):
         for v2 in range(election_2.num_voters):
             names.append('N' + str(v1) + '_' + str(v2))
-            objective.append(1.)
-    cp.variables.add(obj=objective,
+    cp.variables.add(obj=[1.] * election_1.num_voters * election_2.num_voters,
                      names=names,
-                     types=[
-                               cp.variables.type.binary] * election_1.num_voters * election_2.num_voters)
+                     types=[cp.variables.type.binary] * election_1.num_voters * election_2.num_voters)
 
     # FIRST CONSTRAINT FOR VOTERS
     lin_expr = []
@@ -63,8 +60,7 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name='0'):
         for c2 in range(election_2.num_candidates):
             names.append('M' + str(c1) + '_' + str(c2))
     cp.variables.add(names=list(names),
-                     types=[
-                               cp.variables.type.binary] * election_1.num_candidates * election_2.num_candidates)
+                     types=[cp.variables.type.binary] * election_1.num_candidates * election_2.num_candidates)
 
     # FIRST CONSTRAINT FOR CANDIDATES
     lin_expr = []
@@ -496,19 +492,6 @@ def solve_lp_matching_vector_with_lp(cost_table, length):
     except:  # cplex.CplexSolverError:
         print("Exception raised while solving")
         return
-
-    # UNPACK THE RESULTS
-    """   
-    result = [0.] * length ** 2
-    for i in range(len(result)):
-        result[i] = c.solution.get_values('x' + str(i))
-    matching = [0] * length
-    ctr = 0
-    for i in range(len(result)):
-        if result[i] == 1:
-            matching[ctr] = i % length
-            ctr += 1
-     """
 
     objective_value = cp.solution.get_objective_value()
     return objective_value

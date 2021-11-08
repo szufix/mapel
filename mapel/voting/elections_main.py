@@ -364,7 +364,7 @@ def prepare_parties(model_id=None, params=None):
 
 # STORE
 def store_ordinal_election(experiment, model_id, election_id, num_candidates, num_voters,
-                           params, ballot, votes):
+                           params, ballot, votes=None):
     """ Store ordinal election in a .soc file """
 
     if model_id in LIST_OF_FAKE_MODELS:

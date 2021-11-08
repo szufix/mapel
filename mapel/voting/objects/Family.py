@@ -5,7 +5,7 @@ class Family:
 
     def __init__(self, model_id: str = None, family_id='none', params: dict = None,
                  size: int = 1, label: str = "none",
-                 color: str = "black", alpha: float = 1.,
+                 color: str = "black", alpha: float = 1., ms: int = 20,
                  show=True, marker='o', starting_from: int = 0,
                  num_candidates=None, num_voters=None, single_election: bool = False,
                  election_ids=None, ballot: str = 'ordinal', path: dict = None,
@@ -20,6 +20,7 @@ class Family:
         self.alpha = alpha
         self.show = show
         self.marker = marker
+        self.ms = ms
         self.starting_from = starting_from
         self.num_candidates = num_candidates
         self.num_voters = num_voters
