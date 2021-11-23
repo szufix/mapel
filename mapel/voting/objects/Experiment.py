@@ -174,6 +174,7 @@ class Experiment:
         if self.elections is None:
             self.elections = {}
 
+
         elections = {}
         if self.store:
 
@@ -195,6 +196,8 @@ class Experiment:
                 elif model_id not in ['core', 'pabulib'] and (model_id in NICE_NAME or
                                                            model_id in LIST_OF_FAKE_MODELS or
                                                            model_id in APPROVAL_MODELS):
+                    print(model_id)
+
                     tmp_elections = _elections.prepare_statistical_culture_family(
                         experiment=self, model_id=model_id, family_id=family_id, params=params)
 
@@ -229,7 +232,7 @@ class Experiment:
         if '-approvalwise' in distance_id:
             for election in self.elections.values():
                 election.votes_to_approvalwise_vector()
-        elif '-coapproval_frequency' in distance_id or '-flow' in distance_id:
+        elif '-coapproval_frequency' in distance_id or 'flow' in distance_id:
             for election in self.elections.values():
                 election.votes_to_coapproval_frequency_vectors(vector_type=vector_type)
         elif '-voterlikeness' in distance_id:
@@ -513,14 +516,14 @@ class Experiment:
 
 
             show = row['show'].strip() == 't'
-
-            if model_id in {'urn_model'} and params['alpha'] is not None:
-                family_id += '_' + str(float(params['alpha']))
-            elif model_id in {'mallows'} and params['phi'] is not None:
-                family_id += '_' + str(float(params['phi']))
-            elif model_id in {'norm-mallows', 'norm-mallows_matrix'} \
-                    and params['norm-phi'] is not None:
-                family_id += '_' + str(float(params['norm-phi']))
+            #
+            # if model_id in {'urn_model'} and 'alpha' in params:
+            #     family_id += '_' + str(float(params['alpha']))
+            # elif model_id in {'mallows'} and 'phi' in params:
+            #     family_id += '_' + str(float(params['phi']))
+            # elif model_id in {'norm-mallows', 'norm-mallows_matrix'} \
+            #         and norm-phiparams['norm-phi'] is not None:
+            #     family_id += '_' + str(float(params['norm-phi']))
 
             single_election = size == 1
 
@@ -644,14 +647,14 @@ class Experiment:
             print(election_id)
             feature = features.get_feature(feature_id)
             election = self.elections[election_id]
-            if feature_id in ['monotonicity_1', 'monotonicity_2']:
+            if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
                 value = feature(self, election)
 
             elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
                                 'number_of_cohesive_groups_brute',
                                 'proportionality_degree_pav',
                                 'proportionality_degree_av',
-                                'proportionality_degree_cc',]:
+                                'proportionality_degree_cc']:
                 value = feature(election, feature_params)
 
             elif feature_id in {'avg_distortion_from_guardians',
@@ -666,8 +669,13 @@ class Experiment:
             feature_dict[election_id] = value
 
         if self.store:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "features", f'{feature_id}.csv')
+            if feature_id in EMBEDDING_RELATED_FEATURE:
+                path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                    "features", f'{feature_id}__{self.distance_id}.csv')
+            else:
+                path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                    "features", f'{feature_id}.csv')
+
             with open(path, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
                 writer.writerow(["election_id", "value", "bound", "num_large_parties"])
@@ -677,7 +685,7 @@ class Experiment:
                                          feature_dict[key][2]])
                 else:
                     for key in feature_dict:
-                        writer.writerow([key, feature_dict[key]])
+                        writer.writerow([key, str(feature_dict[key])])
 
         self.features[feature_id] = feature_dict
         return feature_dict

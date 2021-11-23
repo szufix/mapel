@@ -217,7 +217,7 @@ def generate_approval_moving_shumallows_votes(num_voters=None, num_candidates=No
     for v in range(num_voters):
         vote = set()
         for c in range(num_candidates):
-            if np.random.random() <= params['phi']:
+            if np.random.random() <= params['phi']/5.:
                 if np.random.random() <= params['p']:
                     vote.add(c)
             else:

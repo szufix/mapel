@@ -80,8 +80,9 @@ def count_number_of_cohesive_groups(election: ApprovalElection, l: int = 1,
 ####################################################################################################
 ####################################################################################################
 
-def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElection,
-                                                         committee_size: int = 10):
+def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElection, feature_params):
+    committee_size = feature_params['committee_size']
+
     if election.model == 'approval_zeros':
         return 0
     elif election.model == 'approval_ones':

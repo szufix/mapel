@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
 import math
+from typing import Union
 
 import numpy as np
 from pulp import *
 
+from mapel.voting._glossary import *
 from mapel.voting.metrics import lp
 
 
-def highest_borda_score(election):
+# MAIN FUNCTIONS
+def highest_borda_score(election) -> int:
     """ Compute highest BORDA score of a given election """
     c = election.num_candidates
     vectors = election.get_vectors()
@@ -17,51 +20,40 @@ def highest_borda_score(election):
     return max(borda) * election.num_voters
 
 
-def highest_plurality_score(election):
+def highest_plurality_score(election) -> int:
     """ compute highest PLURALITY score of a given election"""
     first_pos = election.get_matrix()[0]
     return max(first_pos) * election.num_voters
 
 
-def highest_copeland_score(potes, num_voters, num_candidates):
+def highest_copeland_score(election) -> Union[int, None]:
     """ compute highest COPELAND score of a given election """
+    if election.model_id in LIST_OF_FAKE_MODELS:
+        return None
 
-    scores = np.zeors([num_candidates])
+    election.votes_to_potes()
 
-    for i in range(num_candidates):
-        for j in range(i + 1, num_candidates):
+    scores = np.zeros([election.num_candidates])
+
+    for i in range(election.num_candidates):
+        for j in range(i + 1, election.num_candidates):
             result = 0
-            for k in range(num_voters):
-                if potes[k][i] < potes[k][j]:
+            for k in range(election.num_voters):
+                if election.potes[k][i] < election.potes[k][j]:
                     result += 1
-            if result > num_voters / 2:
+            if result > election.num_voters / 2:
                 scores[i] += 1
                 scores[j] -= 1
-            elif result < num_voters / 2:
+            elif result < election.num_voters / 2:
                 scores[i] -= 1
                 scores[j] += 1
 
     return max(scores)
 
-
-def _potes_to_unique_potes(potes):
-    """ Remove repetitions from potes (positional votes) """
-    unique_potes = []
-    n = []
-    for pote in potes:
-        flag_new = True
-        for i, p in enumerate(unique_potes):
-            if list(pote) == list(p):
-                n[i] += 1
-                flag_new = False
-        if flag_new:
-            unique_potes.append(pote)
-            n.append(1)
-    return unique_potes, n
-
-
-def lowest_dodgson_score(election):
+def lowest_dodgson_score(election) -> Union[int, None]:
     """ compute lowest DODGSON score of a given election """
+    if election.model_id in LIST_OF_FAKE_MODELS:
+        return None
 
     min_score = math.inf
 
@@ -105,3 +97,22 @@ def lowest_dodgson_score(election):
             min_score = score
 
     return min_score
+
+
+# HELPER FUNCTIONS
+def _potes_to_unique_potes(potes):
+    """ Remove repetitions from potes (positional votes) """
+    unique_potes = []
+    n = []
+    for pote in potes:
+        flag_new = True
+        for i, p in enumerate(unique_potes):
+            if list(pote) == list(p):
+                n[i] += 1
+                flag_new = False
+        if flag_new:
+            unique_potes.append(pote)
+            n.append(1)
+    return unique_potes, n
+
+

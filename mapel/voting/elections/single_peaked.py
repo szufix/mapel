@@ -30,9 +30,8 @@ def generate_ordinal_sp_conitzer_votes(num_voters=None, num_candidates=None) -> 
     """ helper function: generate conitzer single-peaked elections """
 
     votes = np.zeros([num_voters, num_candidates])
-
     for j in range(num_voters):
-        votes[j][0] = np.random.randint(0, num_candidates - 1)
+        votes[j][0] = np.random.choice(range(num_candidates))
         left = votes[j][0] - 1
         right = votes[j][0] + 1
         for k in range(1, num_candidates):
@@ -61,7 +60,7 @@ def generate_ordinal_spoc_conitzer_votes(num_voters=None, num_candidates=None) -
     votes = np.zeros([num_voters, num_candidates])
 
     for j in range(num_voters):
-        votes[j][0] = np.random.randint(0, num_candidates - 1)
+        votes[j][0] = np.random.choice(range(num_candidates))
         left = votes[j][0] - 1
         left %= num_candidates
         right = votes[j][0] + 1
@@ -121,7 +120,7 @@ def random_conitzer(C):
     # generate a random vote from the Conitzer model_id for axis
     # C[0], ..., C[m-1]
     m = len(C)
-    center = randint(0, m - 1)
+    center = np.random.randint(0, m)
     left = center
     right = center
     vote = [C[center]]

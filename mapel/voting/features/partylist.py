@@ -1,10 +1,12 @@
 import sys
+import time
 
 try:
     sys.path.append('/Users/szufa/PycharmProjects/abcvoting/')
     from abcvoting import fileio, genprofiles
     import gurobipy as gb
     from abcvoting.preferences import Profile, Voter
+    from abcvoting import abcrules
 except ImportError:
     pass
 
@@ -121,3 +123,16 @@ def partylistdistance(election, feature_params=None):
     return model.objVal, model.objbound, num_large_parties
     # print(num_large_parties)
     # return num_large_parties
+
+
+def pav_time(election):
+
+    profile = Profile(election.num_candidates)
+    profile.add_voters(election.votes)
+    committee_size = 5
+    resolute = True
+    rule_name = 'pav'
+    start = time.time()
+    winning_committees = abcrules.compute(rule_name, profile, committee_size,
+                                          algorithm="gurobi", resolute=resolute)
+    return time.time() - start

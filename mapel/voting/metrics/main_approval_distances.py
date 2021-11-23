@@ -71,14 +71,10 @@ def compute_flow(ele_1, ele_2):
 
 
 # HELPER FUNCTIONS #
-def flow_helper(v_1, v_2, num_candidates=8, num_voters=50):
+def flow_helper_advanced(v_1, v_2, num_candidates=1, num_voters=1):
     """ Return: Objective value """
 
-    # print(v_1, v_2)
-
     def normalize(x):
-        # return 1000
-
         if x == 0:
             return 0
         x = math.log(1 / x)
@@ -101,7 +97,6 @@ def flow_helper(v_1, v_2, num_candidates=8, num_voters=50):
     graph.add_node(sink, demand=total_demand)
 
     for i in range(1, 2 * int(m) + 1):
-        # print(int(v_1[i-1]*total_demand))
         graph.add_edge(source, i, capacity=int(v_1[i - 1] * total_demand + epsilon), weight=0)
         graph.add_edge(i, sink, capacity=int(v_2[i - 1] * total_demand + epsilon), weight=0)
 
@@ -144,12 +139,68 @@ def flow_helper(v_1, v_2, num_candidates=8, num_voters=50):
     return nx.min_cost_flow_cost(graph)
 
 
+def flow_helper_simple(v_1, v_2, num_candidates=1, num_voters=1):
+    """ Return: Objective value """
+
+    x = num_candidates
+
+    max_capacity = num_voters * num_candidates
+    total_demand = num_voters * num_candidates
+
+    m = float(num_candidates)
+    int_m = int(m)
+    source = 'source'
+    sink = 'sink'
+    graph = nx.DiGraph()
+    epsilon = 0.1
+
+    graph.add_node(source, demand=-total_demand)
+    for i in range(1, 2 * int(m) + 1):
+        graph.add_node(i, demand=0)
+    graph.add_node(sink, demand=total_demand)
+
+    for i in range(1, 2 * int(m) + 1):
+        graph.add_edge(source, i, capacity=int(v_1[i - 1] * total_demand + epsilon), weight=0)
+        graph.add_edge(i, sink, capacity=int(v_2[i - 1] * total_demand + epsilon), weight=0)
+
+    # upper row
+    for k in range(1, int_m + 1):
+
+        # go down
+        graph.add_edge(k, k + int_m, capacity=int(max_capacity), weight=x)
+        # go left up
+        if 1 < k:
+            graph.add_edge(k, k - 1, capacity=int(max_capacity), weight=1)
+        # go right up
+        if k < m:
+            graph.add_edge(k, k + 1, capacity=int(max_capacity), weight=1)
+
+    # lower row
+    for k in range(0, int_m):
+
+        # go up
+        my_pos = k + int_m + 1
+        graph.add_edge(my_pos, k + 1, capacity=int(max_capacity), weight=x)
+        # go right down
+        if k < m - 1:
+            graph.add_edge(my_pos, my_pos + 1, capacity=int(max_capacity),
+                           weight=1)
+        # go left down
+        if 0 < k:
+            graph.add_edge(my_pos, my_pos - 1, capacity=int(max_capacity),
+                           weight=1)
+
+    return nx.min_cost_flow_cost(graph)
+
+
 def get_flow_helper_1(election_1: ApprovalElection, election_2: ApprovalElection) -> List[list]:
     """ Return: Cost table """
     vectors_1 = election_1.coapproval_frequency_vectors
     vectors_2 = election_2.coapproval_frequency_vectors
     size = election_1.num_candidates
-    return [[flow_helper(vectors_1[i], vectors_2[j])
+    return [[flow_helper_simple(vectors_1[i], vectors_2[j],
+                         num_candidates=election_1.num_candidates,
+                         num_voters=election_1.num_voters)
              for i in range(size)] for j in range(size)]
 
 

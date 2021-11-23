@@ -22,14 +22,18 @@ def compute_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, pr
         if printing:
             print(election.election_id)
         profile = Profile(election.num_candidates)
-        profile.add_voters(election.votes)
+        if experiment.election_type == 'ordinal':
+            profile.add_voters(election.approval_votes)
+        elif experiment.election_type == 'approval':
+            profile.add_voters(election.votes)
         try:
             winning_committees = abcrules.compute(rule_name, profile, committee_size,
                                                   algorithm="gurobi", resolute=resolute)
             # print(winning_committees)
         except Exception:
             try:
-                winning_committees = abcrules.compute(rule_name, profile, committee_size)
+                winning_committees = abcrules.compute(rule_name, profile, committee_size,
+                                                      resolute=resolute)
             except:
                 winning_committees = {}
         all_winning_committees[election.election_id] = winning_committees
@@ -62,7 +66,7 @@ def import_committees_from_file(experiment_id, rule_name):
 
 
 def compute_not_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, printing=False,
-                           resolute=False):
+                               resolute=False):
     all_winning_committees = {}
     for election in experiment.elections.values():
         if printing:
@@ -78,10 +82,11 @@ def compute_borda_c4_rule(election, committee_size=1):
 
     scores = np.zeros(election.num_candidates)
     for i, vote in enumerate(election.votes):
-        max_score = 10 # election.approval_cuts[i]
-        for pos, c in enumerate(vote):
-            scores[c] += pos
+        max_score = len(election.approval_votes)
+        for pos in range(max_score):
+            scores[vote[pos]] += max_score - pos
 
-    print(scores)
+    ranking = range(election.num_candidates)
+    ranking = [x for _, x in sorted(zip(scores, ranking), reverse=True)]
 
-    return {}
+    return [set(ranking[0:committee_size])]

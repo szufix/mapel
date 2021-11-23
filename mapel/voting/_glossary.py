@@ -79,7 +79,6 @@ NICE_NAME = {
     'antagonism': 'Antagonism',
     'uniformity': 'Uniformity',
     'stratification': 'Stratification',
-    'unid': "UNID",
     'real_identity': 'Real_Identity',
     'real_uniformity': 'Real_Uniformity',
     'real_antagonism': 'Real_Antagonism',
@@ -100,6 +99,13 @@ NICE_NAME = {
     'approval_vcr': 'Approval_VCR',
     'all_votes': 'All_Votes',
     'all': 'All',
+    'approval_moving_shumallows': 'Approval_Moving_ShuMallows',
+    'unid': 'UNID',
+    'anid': 'ANID',
+    'stid': 'STID',
+    'stan': 'STAN',
+    'stun': 'STUN',
+    'anun': 'ANUN',
     }
 
 
@@ -130,7 +136,7 @@ APPROVAL_MODELS = {'approval_ic', 'approval_shumallows', 'approval_id',
                    'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
                    'approval_half_1', 'approval_half_2', 'approval_disjoint_shumallows',
                    'approval_simplex_shumallows',
-                   'approval_vcr', 'approval_truncated_mallows', 'approval_moving_mallows'}
+                   'approval_vcr', 'approval_truncated_mallows', 'approval_moving_shumallows'}
 
 APPROVAL_FAKE_MODELS = {'approval_half_1', 'approval_half_2'}
 
@@ -140,6 +146,8 @@ GRAPH_MODELS = {'erdos_renyi_graph', 'watts_strogatz_graph', 'barabasi_albert_gr
                 'erdos_renyi_graph_path'}
 
 NOT_ABCVOTING_RULES = {'borda_c4'}
+
+EMBEDDING_RELATED_FEATURE = {'monotonicity_triplets'}
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

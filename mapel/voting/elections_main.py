@@ -26,7 +26,6 @@ from mapel.voting.objects.OrdinalElection import OrdinalElection
 
 def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                             num_voters: int = None, params: dict = None) -> Union[list, np.ndarray]:
-
     main_models = {'approval_ic': impartial.generate_approval_ic_votes,
                    'approval_id': impartial.generate_approval_id_votes,
                    'approval_shumallows': mallows.generate_approval_shumallows_votes,
@@ -37,7 +36,7 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                    'approval_vcr': euclidean.generate_approval_vcr_votes,
                    'approval_truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
                    'approval_truncated_urn': urn_model.generate_approval_truncated_urn_votes,
-                   'approval_moving_mallows': mallows.generate_approval_moving_shumallows_votes,
+                   'approval_moving_shumallows': mallows.generate_approval_moving_shumallows_votes,
                    'approval_simplex_shumallows': mallows.generate_approval_simplex_shumallows_votes,
                    }
 
@@ -59,13 +58,11 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
 
 def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num_voters: int = None,
                            params: dict = None) -> Union[list, np.ndarray]:
-
     naked_models = {'impartial_culture': impartial.generate_ordinal_ic_votes,
                     'iac': impartial.generate_impartial_anonymous_culture_election,
                     'conitzer': single_peaked.generate_ordinal_sp_conitzer_votes,
                     'spoc_conitzer': single_peaked.generate_ordinal_spoc_conitzer_votes,
                     'walsh': single_peaked.generate_ordinal_sp_walsh_votes,
-                    'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
                     'real_identity': guardians.generate_real_identity_votes,
                     'real_uniformity': guardians.generate_real_uniformity_votes,
                     'real_antagonism': guardians.generate_real_antagonism_votes,
@@ -104,7 +101,9 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
 
     single_param_models = {'urn_model': urn_model.generate_urn_votes,
                            'group-separable':
-                               group_separable.generate_ordinal_group_separable_votes}
+                               group_separable.generate_ordinal_group_separable_votes,
+
+                           'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,}
 
     double_param_models = {'mallows': mallows.generate_mallows_votes,
                            'norm-mallows': mallows.generate_mallows_votes, }
@@ -243,11 +242,12 @@ def prepare_statistical_culture_family(experiment=None, model_id: str = None,
         else:
             election_id = family_id + '_' + str(j)
 
-        election = generate_election(experiment=experiment, model_id=model_id, election_id=election_id,
-                          num_voters=experiment.families[family_id].num_voters,
-                          num_candidates=experiment.families[family_id].num_candidates,
-                          num_nodes=experiment.families[family_id].num_nodes,
-                          params=copy.deepcopy(params), ballot=ballot, variable=variable)
+        election = generate_election(experiment=experiment, model_id=model_id,
+                                     election_id=election_id,
+                                     num_voters=experiment.families[family_id].num_voters,
+                                     num_candidates=experiment.families[family_id].num_candidates,
+                                     num_nodes=experiment.families[family_id].num_nodes,
+                                     params=copy.deepcopy(params), ballot=ballot, variable=variable)
         elections[election_id] = election
     return elections
 
@@ -264,45 +264,53 @@ def get_ballot_from_model(model_id: str) -> str:
 
 def update_params(params, variable, model_id, num_candidates):
 
-    if 'alpha' not in params:
-        params['alpha'] = np.random.rand()
-    elif type(params['alpha']) is list:
-        params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
-
-    if 'p' not in params:
-        params['p'] = np.random.rand()
-    elif type(params['p']) is list:
-        params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
-
-    if 'phi' in params and type(params['phi']) is list:
-        params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
-
-    if model_id == 'mallows' and params['phi'] is None:
-        params['phi'] = np.random.random()
-    elif model_id == 'norm-mallows' and params['norm-phi'] is None:
-        params['norm-phi'] = np.random.random()
-    elif model_id in ['urn_model', 'approval_urn'] and 'alpha' not in params:
-        params['alpha'] = gamma.rvs(0.8)
-
-    if model_id == 'norm-mallows':
-        params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
-
-    if model_id == 'mallows_matrix_path':
-        params['norm-phi'] = params['alpha']
-        params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
-
-    if model_id == 'erdos_renyi_graph' and params['p'] is None:
-        params['p'] = np.random.random()
-
-    alpha = 1
     if variable is not None:
-        alpha = params[variable]
+        params['alpha'] = params[variable]
         params['variable'] = variable
 
-    if 'weight' not in params:
-        params['weight'] = 0.
+    else:
 
-    return params, alpha
+        if model_id in APPROVAL_MODELS:
+            if 'p' not in params:
+                params['p'] = np.random.rand()
+            elif type(params['p']) is list:
+                params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+
+        # if 'phi' not in params:
+        #     params['phi'] = np.random.rand()
+        if 'phi' in params and type(params['phi']) is list:
+            params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
+
+        if model_id == 'mallows' and params['phi'] is None:
+            params['phi'] = np.random.random()
+        elif model_id == 'norm-mallows' and 'norm-phi' not in params:
+            params['norm-phi'] = np.random.random()
+        elif model_id in ['urn_model', 'approval_urn'] and 'alpha' not in params:
+            params['alpha'] = gamma.rvs(0.8)
+
+        if model_id == 'norm-mallows':
+            params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+            if 'weight' not in params:
+                params['weight'] = 0.
+
+        if model_id == 'mallows_matrix_path':
+            params['norm-phi'] = params['alpha']
+            params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+
+        if model_id == 'erdos_renyi_graph' and params['p'] is None:
+            params['p'] = np.random.random()
+
+        if 'alpha' not in params:
+            if 'norm-phi' in params:
+                params['alpha'] = params['norm-phi']
+            elif 'phi' in params:
+                params['alpha'] = params['phi']
+            else:
+                params['alpha'] = np.random.rand()
+        elif type(params['alpha']) is list:
+            params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
+
+    return params, params['alpha']
 
 
 # HELPER FUNCTIONS #
@@ -456,7 +464,6 @@ def store_votes_in_a_file(experiment, model_id, election_id, num_candidates, num
                     if j < len(counted_votes[i][1]) - 1:
                         file_.write(", ")
                 file_.write("\n")
-
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 22.10.2021 #

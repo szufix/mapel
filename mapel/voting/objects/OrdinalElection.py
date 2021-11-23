@@ -49,8 +49,14 @@ class OrdinalElection(Election):
             else:
                 self.votes, self.num_voters, self.num_candidates, self.param, \
                     self.model_id = import_real_soc_election(experiment_id, election_id, shift)
-
+                try:
+                    self.alpha = self.param['alpha']
+                except KeyError:
+                    pass
                 self.potes = self.votes_to_potes()
+
+        # self.approval_votes = convert_ordinal_to_approval(self.votes)
+        self.candidatelikeness_original_vectors = {}
 
         if with_matrix:
             self.matrix = self.import_matrix()
@@ -89,7 +95,7 @@ class OrdinalElection(Election):
         elif self.model_id in {'norm-mallows_matrix', 'mallows_matrix_path'}:
             vectors = get_mallows_vectors(self.num_candidates, self.fake_param)
         elif self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-            vectors = get_fake_vectors_single(self.model_id, self.num_candidates)
+            vectors = get_fake_vectors_single(self.model_id, self.num_candidates, self.num_voters)
         elif self.model_id in {'walsh_path', 'conitzer_path'}:
             vectors = get_fake_multiplication(self.num_candidates, self.fake_param,
                                               self.model_id)
@@ -171,6 +177,18 @@ class OrdinalElection(Election):
             borda_vector = sorted(borda_vector, reverse=True)
 
         return np.array(borda_vector)
+
+    def votes_to_candidatelikeness_original_vectors(self) -> None:
+        """ Convert votes to ... """
+        matrix = np.zeros([self.num_candidates, self.num_candidates])
+
+        for c_1 in range(self.num_candidates):
+            for c_2 in range(self.num_candidates):
+                for vote in self.approval_votes:
+                    if (c_1 in vote and c_2 not in vote) or (c_1 not in vote and c_2 in vote):
+                        matrix[c_1][c_2] += 1
+        matrix = matrix / self.num_voters
+        self.candidatelikeness_original_vectors = matrix
 
     def votes_to_positionwise_intervals(self, precision: int = None) -> list:
 
@@ -294,7 +312,7 @@ def get_fake_multiplication(num_candidates, params, model):
     return output
 
 
-def get_fake_vectors_single(fake_model_name, num_candidates):
+def get_fake_vectors_single(fake_model_name, num_candidates, num_voters):
     vectors = np.zeros([num_candidates, num_candidates])
 
     if fake_model_name == 'identity':
@@ -342,23 +360,23 @@ def get_fake_vectors_crate(num_candidates=None, fake_param=None):
 
 def get_fake_convex(fake_model_name, num_candidates, num_voters, params, function_name):
     if fake_model_name == 'unid':
-        base_1 = function_name('uniformity', num_candidates)
-        base_2 = function_name('identity', num_candidates)
+        base_1 = function_name('uniformity', num_candidates, num_voters)
+        base_2 = function_name('identity', num_candidates, num_voters)
     elif fake_model_name == 'anid':
-        base_1 = function_name('antagonism', num_candidates)
-        base_2 = function_name('identity', num_candidates)
+        base_1 = function_name('antagonism', num_candidates, num_voters)
+        base_2 = function_name('identity', num_candidates, num_voters)
     elif fake_model_name == 'stid':
-        base_1 = function_name('stratification', num_candidates)
-        base_2 = function_name('identity', num_candidates)
+        base_1 = function_name('stratification', num_candidates, num_voters)
+        base_2 = function_name('identity', num_candidates, num_voters)
     elif fake_model_name == 'anun':
-        base_1 = function_name('antagonism', num_candidates)
-        base_2 = function_name('uniformity', num_candidates)
+        base_1 = function_name('antagonism', num_candidates, num_voters)
+        base_2 = function_name('uniformity', num_candidates, num_voters)
     elif fake_model_name == 'stun':
-        base_1 = function_name('stratification', num_candidates)
-        base_2 = function_name('uniformity', num_candidates)
+        base_1 = function_name('stratification', num_candidates, num_voters)
+        base_2 = function_name('uniformity', num_candidates, num_voters)
     elif fake_model_name == 'stan':
-        base_1 = function_name('stratification', num_candidates)
-        base_2 = function_name('antagonism', num_candidates)
+        base_1 = function_name('stratification', num_candidates, num_voters)
+        base_2 = function_name('antagonism', num_candidates, num_voters)
     else:
         raise NameError('No such fake vectors/matrix!')
 
@@ -563,3 +581,12 @@ def import_real_soc_election(experiment_id, election_id, shift=False):
                 votes[i][j] -= 1
 
     return votes, num_voters, num_candidates, params, model_name
+
+
+def convert_ordinal_to_approval(votes):
+    approval_votes = [{} for _ in range(len(votes))]
+    for i, vote in enumerate(votes):
+        k = int(np.random.beta(2, 6)*len(votes[0]))+1
+        approval_votes[i] = set(vote[0:k])
+
+    return approval_votes

@@ -161,8 +161,12 @@ def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty,
                              column_id='value') -> dict:
     """Import values for a feature_id from a .csv file """
 
-    path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id,
-                        'features', f'{feature_id}.csv')
+    if feature_id in EMBEDDING_RELATED_FEATURE:
+        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
+                            "features", f'{feature_id}__{experiment.distance_id}.csv')
+    else:
+        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
+                            "features", f'{feature_id}.csv')
 
     values = {}
     with open(path, 'r', newline='') as csv_file:
@@ -170,16 +174,13 @@ def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty,
 
         for row in reader:
             election_id = row['election_id']
-            value = float(row[column_id])
-            if value >= limit:
-                value = limit
-
-            # TMP #
-            # if value == -1:
-            #     value = -17.5
-            # if value > 1:
-            #     value = math.log(value)
-            #  #  #
+            value = row[column_id]
+            if value == 'None' or value is None:
+                value = None
+            else:
+                value = float(value)
+                if value >= limit:
+                    value = limit
 
             values[election_id] = value
 
@@ -197,16 +198,21 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
         else:
             values = get_values_from_csv_file(experiment, feature_id=feature_id,
                                               limit=limit, column_id=column_id)
+            if feature_id=='partylist' and column_id=='value':
+                bounds = get_values_from_csv_file(experiment, feature_id=feature_id,
+                                              limit=limit, column_id='bound')
     else:
         values = feature_id
 
-    _min = min(values.values())
-    _max = max(values.values())
+    _min = min(x for x in values.values() if x is not None)
+    _max = max(x for x in values.values() if x is not None)
+
     shades = []
     xx = []
     yy = []
     zz = []
     markers = []
+    blank_xx, blank_yy = [], []
 
     ctr = 0
 
@@ -219,6 +225,11 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
                 election_id = family_id + '_' + str(k)
 
             shade = values[election_id]
+            if shade is None:
+                blank_xx.append(experiment.coordinates[election_id][0])
+                blank_yy.append(experiment.coordinates[election_id][1])
+                continue
+
             if normalizing_func is not None:
                 shade = normalizing_func(shade)
             else:
@@ -236,9 +247,6 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
                 zz.append(experiment.coordinates[election_id][2])
 
             ctr += 1
-    #
-    # _min = min(shades)
-    # _max = max(shades)
 
     xx = np.asarray(xx)
     yy = np.asarray(yy)
@@ -247,7 +255,11 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
 
     shades = np.asarray(shades)
     markers = np.asarray(markers)
-    return xx, yy, zz, shades, markers, _min, _max
+    if feature_id =='partylist' and column_id=='value':
+        mses = np.asarray([1.+20.*(b/(v+1)) for b,v in zip(bounds.values(), values.values())])
+    else:
+        mses = None
+    return xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy
 
 
 def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func):
@@ -300,11 +312,14 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
 def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, limit=np.infty,
                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
                          cmap=None, ticks=None, dim=2, rounding=1, column_id='value'):
-    xx, yy, zz, shades, markers, _min, _max = import_values_for_feature(
+    xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy = import_values_for_feature(
         experiment, feature_id=feature_id, limit=limit, normalizing_func=normalizing_func,
         marker_func=marker_func, dim=dim, column_id=column_id)
     unique_markers = set(markers)
     images = []
+
+    if mses is None:
+        mses = np.asarray([ms for _ in range(len(shades))])
 
     if cmap is None:
         if rounding == 0:
@@ -313,14 +328,23 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
         else:
             cmap = custom_div_cmap()
 
+    # print(shades, mses)
+
     for um in unique_markers:
         masks = (markers == um)
+        # print(um)
+        if feature_id=='partylist' and um == '.':
+            continue
+        # um = 'o'
         if dim == 2:
             images.append(ax.scatter(xx[masks], yy[masks], c=shades[masks], vmin=0, vmax=1,
-                                     cmap=cmap, marker=um, s=ms))
+                                     cmap=cmap, marker=um, s=mses[masks]))
         elif dim == 3:
             images.append(ax.scatter(xx[masks], yy[masks], zz[masks], c=shades[masks], vmin=0,
                                      vmax=1, cmap=cmap, marker=um, s=ms))
+    # print(blank_xx)
+
+    images.append(ax.scatter(blank_xx, blank_yy, marker='.', alpha=0.1))
 
     if dim == 2:
 
@@ -413,15 +437,22 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
         if family.show:
             label = family.label
             if dim == 2:
-                if '_path' in label:
+                if '_path' in label or 'urn' in label or 'Urn' in label\
+                        or 'Mallows' in label or 'mallows' in label:
+
                     if 'background' in label:
                         label = '_nolegend_'
 
                     for i in range(family.size):
-                        election_id = family.election_ids[i]
+                        election_id = list(family.election_ids)[i]
+                        print(election_id)
                         alpha = experiment.elections[election_id].alpha
+                        print(alpha)
+                        if alpha > 1:
+                            alpha = 1.
                         alpha *= family.alpha
                         alpha = (alpha + 0.2) / 1.2
+                        print(alpha)
                         if i == family.size - 1:
                             ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
                                        experiment.coordinates_by_families[family.family_id][1][i],
@@ -438,7 +469,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                                        s=family.ms,
                                        marker=family.marker)
                 else:
-                    if label in textual or 'background' in label:
+                    if 'background' in label or label in textual:
                         label = '_nolegend_'
 
                     ax.scatter(experiment.coordinates_by_families[family.family_id][0],
@@ -527,13 +558,15 @@ def saveas_tex(saveas=None):
 
 # MAIN FUNCTIONS
 def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
-                 saveas="matrix", show=True,
+                 saveas="matrix", show=True, ms=8,
                  self_distances=False, yticks='left', with_std=False, time=False):
     """Print the matrix with average distances between each pair of experiments """
 
     # CREATE MAPPING FOR BUCKETS
-    bucket = np.array([[family_id for _ in range(experiment.families[family_id].size)]
-                       for family_id in experiment.families]).flatten()
+    bucket = []
+    for family_id in experiment.families:
+        for _ in range(experiment.families[family_id].size):
+            bucket.append(family_id)
 
     # CREATE MAPPING FOR ELECTIONS
     mapping = {}
@@ -552,6 +585,8 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
             matrix[family_id_1][family_id_2] = 0
             quantities[family_id_1][family_id_2] = 0
 
+    print(bucket)
+
     # ADD VALUES
     for i in range(experiment.num_elections):
         limit = i + 1
@@ -562,9 +597,10 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
                 matrix[bucket[i]][bucket[j]] += experiment.times[mapping[i]][
                     mapping[j]]
             else:
-                # print('map', mapping[i], mapping[j])
+                print('map', mapping[i], mapping[j])
                 # print(experiment.distances)
-                # print(experiment.distances[mapping[i]][mapping[j]])
+                print(experiment.distances[mapping[i]][mapping[j]])
+                print(matrix[bucket[i]][bucket[j]])
                 matrix[bucket[i]][bucket[j]] += experiment.distances[mapping[i]][mapping[j]]
             quantities[bucket[i]][bucket[j]] += 1
     #
@@ -632,7 +668,7 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
                 if c[0] == '0':
                     c = c[1:]
                 # print(c)
-                ax.text(j, i, str(c), va='center', ha='center', color=color, size=8)
+                ax.text(j, i, str(c), va='center', ha='center', color=color, size=ms)
 
     labels = []
     for family_id in experiment.families:

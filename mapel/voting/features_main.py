@@ -34,11 +34,12 @@ def get_feature(feature_id):
             'proportionality_degree_cc': prop_deg.proportionality_degree_cc,
             'abstract': abstract,
             'monotonicity_1': monotonicity_1,
-            'monotonicity_2': monotonicity_2,
+            'monotonicity_triplets': monotonicity_triplets,
             'partylist': partylist.partylistdistance,
             # 'num_large_parties': partylist.partylistdistance,
             'distortion_from_all': distortion_from_all,
             'distortion_from_top_100': distortion_from_top_100,
+            'pav_time': partylist.pav_time,
             }.get(feature_id)
 
 
@@ -60,7 +61,7 @@ def monotonicity_1(experiment, election) -> float:
     return distortion
 
 
-def monotonicity_2(experiment, election) -> float:
+def monotonicity_triplets(experiment, election) -> float:
     epsilon = 0.1
     e0 = election.election_id
     c0 = np.array(experiment.coordinates[e0])

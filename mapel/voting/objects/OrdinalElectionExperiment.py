@@ -40,6 +40,7 @@ class OrdinalElectionExperiment(ElectionExperiment):
         for family_id in self.families:
 
             ids = []
+            print(self.families[family_id].model_id)
 
             if self.families[family_id].model_id in NICE_NAME or \
                     self.families[family_id].model_id in LIST_OF_FAKE_MODELS or \
@@ -103,7 +104,7 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
             with open(path, 'w') as file_csv:
                 file_csv.write(
-                    "size;num_candidates;num_voters;model_id;params;color;alpha;label;marker;show\n")
+                    "size;num_candidates;num_voters;model_id;params;color;alpha;family_id;marker;show\n")
                 file_csv.write("3;10;100;impartial_culture;{};black;1;Impartial Culture;o;t\n")
                 file_csv.write("3;10;100;iac;{};black;0.7;IAC;o;t\n")
                 file_csv.write("3;10;100;conitzer;{};limegreen;1;SP by Conitzer;o;t\n")

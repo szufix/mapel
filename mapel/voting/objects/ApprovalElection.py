@@ -27,6 +27,7 @@ class ApprovalElection(Election):
         self.candidatelikeness_sorted_vectors = []
         self.model = model_id
         self.hamming_candidates = []
+        self.reverse_approvals = []
 
         if _import:
             fake = check_if_fake(experiment_id, election_id)
@@ -37,7 +38,7 @@ class ApprovalElection(Election):
                 self.votes, self.num_voters, self.num_candidates, self.params, \
                     self.model = import_real_app_election(experiment_id, election_id)
                 try:
-                    self.alpha = self.params[self.params['variable']]
+                    self.alpha = self.params['alpha']
                 except KeyError:
                     pass
 
@@ -113,6 +114,7 @@ class ApprovalElection(Election):
         matrix = matrix / self.num_voters
         self.candidatelikeness_original_vectors = matrix
 
+
     def votes_to_candidatelikeness_sorted_vectors(self) -> None:
         """ Convert votes to ... """
         self.votes_to_candidatelikeness_original_vectors()
@@ -134,6 +136,14 @@ class ApprovalElection(Election):
             vectors[i] = sorted(vectors[i])
 
         self.voterlikeness_vectors = vectors
+
+    def compute_reverse_approvals(self):
+        reverse_approvals = [set() for _ in range(self.num_candidates)]
+        for i, vote in enumerate(self.votes):
+            for c in vote:
+                reverse_approvals[c].add(i)
+
+        self.reverse_approvals = reverse_approvals
 
 
 def import_real_app_election(experiment_id: str, election_id: str):
