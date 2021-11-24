@@ -1,12 +1,13 @@
 
-import mapel.voting.metrics_main as metr
-import mapel.voting.elections_main as ele
-import mapel.voting._print as pr
-import mapel.voting.other.development as dev
-import mapel.voting.features_main as features
+import mapel.elections.metrics_main as metr
+import mapel.elections.models_main as ele
+import mapel.elections._print as pr
+import mapel.elections.other.development as dev
+import mapel.elections.features_main as features
 
-from mapel.voting.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
-from mapel.voting.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
+from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
+from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
+from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
 
 
 def hello():
@@ -28,6 +29,9 @@ def prepare_experiment(experiment_id=None, elections=None, distances=None, elect
                                           election_type=election_type,
                                           distances=distances, coordinates=coordinates,
                                           distance_id=distance_id, clean=clean)
+    elif election_type == 'roommates':
+        return RoommatesExperiment(experiment_id=experiment_id)
+
 
 def print_approvals_histogram(*args):
     pr.print_approvals_histogram(*args)
