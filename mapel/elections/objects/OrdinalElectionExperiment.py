@@ -3,7 +3,7 @@ import os
 
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
 from mapel.elections.objects.OrdinalElection import OrdinalElection
-from mapel.elections._glossary import NICE_NAME, LIST_OF_FAKE_MODELS, LIST_OF_PREFLIB_MODELS
+from mapel.elections._glossary import *
 
 try:
     from sklearn.manifold import MDS
@@ -23,14 +23,14 @@ except ImportError as error:
 class OrdinalElectionExperiment(ElectionExperiment):
     """Abstract set of elections."""
 
-    def __init__(self, elections=None, distances=None, _import=True, shift=False,
+    def __init__(self, instances=None, distances=None, _import=True, shift=False,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
-                 election_type='ordinal', dim=2, store=True):
+                 instance_type='ordinal', dim=2, store=True):
         self.shift = shift
-        super().__init__(elections=elections, distances=distances,
+        super().__init__(instances=instances, distances=distances,
                          coordinates=coordinates, distance_id=distance_id,
                          experiment_id=experiment_id, dim=dim, store=store,
-                         election_type=election_type, _import=_import)
+                         instance_type=instance_type, _import=_import)
 
     def add_elections_to_experiment(self, with_matrices=False):
         """ Import elections from a file """
@@ -73,7 +73,7 @@ class OrdinalElectionExperiment(ElectionExperiment):
                     elections[name] = election
                     ids.append(str(name))
 
-            self.families[family_id].election_ids = ids
+            self.families[family_id].instance_ids = ids
 
         return elections
 

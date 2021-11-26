@@ -4,7 +4,7 @@
 from mapel.main.objects.Family import Family
 
 
-class RoommatesProblemFamily(Family):
+class ElectionFamily(Family):
     """ Family of elections: a set of elections from the same election model_id """
 
     def __init__(self,

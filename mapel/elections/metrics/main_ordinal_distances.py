@@ -59,9 +59,17 @@ def compute_voterlikeness_distance(election_1: OrdinalElection, election_2: Ordi
 
 def compute_swap_bf_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     obj_values = []
+
+    # print(election_1.votes, election_2.votes)
+
     for mapping in permutations(range(election_1.num_candidates)):
+        # print(mapping)
         cost_table = get_matching_cost_swap_bf(election_1, election_2, mapping)
-        obj_values.append(solve_matching_vectors(cost_table))
+        # print(cost_table)
+        obj_values.append(solve_matching_vectors(cost_table)[0])
+
+    # print(obj_values)
+    # print(min(obj_values))
 
     return min(obj_values)
 
@@ -109,7 +117,7 @@ def get_matching_cost_pos_swap(election_1: OrdinalElection, election_2: OrdinalE
     votes_2 = election_2.votes
 
     # print(votes_1, votes_2, matching)
-    size = election_1.num_candidates
+    size = election_1.num_voters
     return [[swap_distance(votes_1[i], votes_2[j], matching=matching) for i in range(size)]
             for j in range(size)]
 
@@ -127,8 +135,6 @@ def get_matching_cost_swap_bf(election_1: OrdinalElection, election_2: OrdinalEl
                               mapping):
     """ Return: Cost table """
     cost_table = np.zeros([election_1.num_voters, election_1.num_voters])
-
-    # print(election_1.potes)
 
     for v1 in range(election_1.num_voters):
         for v2 in range(election_2.num_voters):

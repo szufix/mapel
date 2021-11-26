@@ -3,15 +3,18 @@ import copy
 import csv
 import itertools
 import os
+import warnings
 from abc import abstractmethod
 from threading import Thread
 from time import sleep
 import numpy as np
+import ast
 
-# from mapel.elections.objects.Family import Family
+from mapel.elections.objects.ElectionFamily import ElectionFamily
 import mapel.elections.metrics_main as metr
 import mapel.elections.models_main as _elections
 import mapel.elections.other.rules as rules
+import mapel.elections.features_main as features
 from mapel.elections._glossary import *
 from mapel.main.objects.Experiment import Experiment
 from mapel.main.objects.Family import Family
@@ -107,10 +110,10 @@ class ElectionExperiment(Experiment):
         elif label is None:
             label = family_id
 
-        self.families[family_id] = Family(model_id=model_id, family_id=family_id,
+        self.families[family_id] = ElectionFamily(model_id=model_id, family_id=family_id,
                                           params=params, label=label, color=color, alpha=alpha,
                                           show=show, size=size, marker=marker,
-                                          starting_from=starting_from, num_nodes=num_nodes,
+                                          starting_from=starting_from,
                                           num_candidates=num_candidates,
                                           num_voters=num_voters, path=path,
                                           single_election=single_election)
@@ -127,15 +130,47 @@ class ElectionExperiment(Experiment):
                                                             family_id=family_id,
                                                             params=copy.deepcopy(params))
 
-        self.families[family_id].election_ids = list(elections.keys())
+        self.families[family_id].instance_ids = list(elections.keys())
 
         return list(elections.keys())
+
+
+    # def add_matrices_to_experiment(experiment):
+    #     """ Import elections from a file """
+    #
+    #     matrices = {}
+    #     vectors = {}
+    #
+    #     for family_id in experiment.families:
+    #         for j in range(experiment.families[family_id].size):
+    #             election_id = family_id + '_' + str(j)
+    #             matrix = experiment.import_matrix(election_id)
+    #             matrices[election_id] = matrix
+    #             vectors[election_id] = matrix.transpose()
+    #
+    #     return matrices, vectors
+
+    # def import_matrix(experiment, election_id):
+    #
+    #     file_name = election_id + '.csv'
+    #     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
+    #     'matrices', file_name)
+    #     num_candidates = experiment.elections[election_id].num_candidates
+    #     matrix = np.zeros([num_candidates, num_candidates])
+    #
+    #     with open(path, 'r', newline='') as csv_file:
+    #         reader = csv.DictReader(csv_file, delimiter=',')
+    #         for i, row in enumerate(reader):
+    #             for j, candidate_id in enumerate(row):
+    #                 matrix[i][j] = row[candidate_id]
+    #     return matrix
+
 
     def prepare_elections(self):
         """ Prepare elections for a given experiment """
 
-        if self.elections is None:
-            self.elections = {}
+        if self.instances is None:
+            self.instances = {}
 
 
         elections = {}
@@ -171,17 +206,17 @@ class ElectionExperiment(Experiment):
 
                     # print(tmp_elections)
 
-        # self.elections = self.add_elections_to_experiment()
-        self.elections = elections
+        # self.instances = self.add_elections_to_experiment()
+        self.instances = elections
 
     def compute_winners(self, method=None, num_winners=1):
-        for election_id in self.elections:
-            self.elections[election_id].compute_winners(method=method, num_winners=num_winners)
+        for election_id in self.instances:
+            self.instances[election_id].compute_winners(method=method, num_winners=num_winners)
 
     def compute_alternative_winners(self, method=None, num_winners=None, num_parties=None):
-        for election_id in self.elections:
+        for election_id in self.instances:
             for party_id in range(num_parties):
-                self.elections[election_id].compute_alternative_winners(
+                self.instances[election_id].compute_alternative_winners(
                     method=method, party_id=party_id, num_winners=num_winners)
 
     def compute_distances(self, distance_id: str = 'emd-positionwise', num_threads: int = 1,
@@ -193,32 +228,32 @@ class ElectionExperiment(Experiment):
 
         # precompute vectors, matrices, etc...
         if '-approvalwise' in distance_id:
-            for election in self.elections.values():
+            for election in self.instances.values():
                 election.votes_to_approvalwise_vector()
         elif '-coapproval_frequency' in distance_id or 'flow' in distance_id:
-            for election in self.elections.values():
+            for election in self.instances.values():
                 election.votes_to_coapproval_frequency_vectors(vector_type=vector_type)
         elif '-voterlikeness' in distance_id:
-            for election in self.elections.values():
+            for election in self.instances.values():
                 election.votes_to_voterlikeness_vectors(vector_type=vector_type)
         elif '-candidatelikeness' in distance_id:
-            for election in self.elections.values():
+            for election in self.instances.values():
                 # print(election)
                 election.votes_to_candidatelikeness_sorted_vectors()
         elif '-pairwise' in distance_id:
-            for election in self.elections.values():
+            for election in self.instances.values():
                 election.votes_to_pairwise_matrix()
         # continue with normal code
 
-        matchings = {election_id: {} for election_id in self.elections}
-        distances = {election_id: {} for election_id in self.elections}
-        times = {election_id: {} for election_id in self.elections}
+        matchings = {election_id: {} for election_id in self.instances}
+        distances = {election_id: {} for election_id in self.instances}
+        times = {election_id: {} for election_id in self.instances}
 
         threads = [{} for _ in range(num_threads)]
 
         ids = []
-        for i, election_1 in enumerate(self.elections):
-            for j, election_2 in enumerate(self.elections):
+        for i, election_1 in enumerate(self.instances):
+            for j, election_2 in enumerate(self.instances):
                 if i == j:
                     if self_distances:
                         ids.append((election_1, election_2))
@@ -252,7 +287,7 @@ class ElectionExperiment(Experiment):
                 writer.writerow(
                     ["election_id_1", "election_id_2", "distance", "time"])
 
-                for election_1, election_2 in itertools.combinations(self.elections, 2):
+                for election_1, election_2 in itertools.combinations(self.instances, 2):
                     distance = str(distances[election_1][election_2])
                     time = str(times[election_1][election_2])
                     writer.writerow([election_1, election_2, distance, time])
@@ -343,7 +378,7 @@ class ElectionExperiment(Experiment):
 
             single_election = size == 1
 
-            families[family_id] = Family(model_id=model_id,
+            families[family_id] = ElectionFamily(model_id=model_id,
                                          family_id=family_id,
                                          params=params, label=label,
                                          color=color, alpha=alpha, show=show,
@@ -375,10 +410,10 @@ class ElectionExperiment(Experiment):
 
         feature_dict = {}
 
-        for election_id in self.elections:
+        for election_id in self.instances:
             print(election_id)
             feature = features.get_feature(feature_id)
-            election = self.elections[election_id]
+            election = self.instances[election_id]
             if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
                 value = feature(self, election)
 
@@ -442,6 +477,12 @@ class ElectionExperiment(Experiment):
         for rule_name in list_of_rules:
             self.all_winning_committees[rule_name] = rules.import_committees_from_file(
                 experiment_id=self.experiment_id, rule_name=rule_name)
+
+
+def check_if_all_equal(values, subject):
+    if any(x != values[0] for x in values):
+        text = f'Not all {subject} values are equal!'
+        warnings.warn(text)
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 22.10.2021 #

@@ -366,8 +366,8 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
         cb.ax.locator_params(nbins=len(xticklabels), tight=True)
         cb.ax.tick_params(labelsize=14)
 
-        if xticklabels is not None:
-            cb.ax.set_xticklabels(xticklabels)
+        # if xticklabels is not None:
+        #     cb.ax.set_xticklabels(xticklabels)
 
 
 # HELPER FUNCTIONS FOR PRINT_3D
@@ -444,7 +444,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                         label = '_nolegend_'
 
                     for i in range(family.size):
-                        election_id = list(family.instances_ids)[i]
+                        election_id = list(family.instance_ids)[i]
                         # print(election_id)
                         try:
                             alpha = experiment.elections[election_id].alpha
@@ -1189,7 +1189,7 @@ def adjust_the_map_on_three_points(experiment, left, right, down) -> None:
 
 
 def adjust_the_map(experiment) -> None:
-    if experiment.election_type == 'ordinal':
+    if experiment.instance_type == 'ordinal':
 
         try:
             left = experiment.get_election_id_from_model_name('uniformity')
@@ -1200,7 +1200,7 @@ def adjust_the_map(experiment) -> None:
         except Exception:
             pass
 
-    elif experiment.election_type == 'approval':
+    elif experiment.instance_type == 'approval':
         try:
             left = 'IC 0.5'
             right = 'ID 0.5'
@@ -1217,7 +1217,7 @@ def adjust_the_map(experiment) -> None:
             except Exception:
                 pass
 
-    elif experiment.election_type == 'rule':
+    elif experiment.instance_type == 'rule':
         try:
             left = 'cc'
             right = 'av'

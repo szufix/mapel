@@ -5,7 +5,7 @@ if __name__ == "__main__":
 
     distance_id = 'l1-approvalwise'
 
-    experiment = mapel.prepare_experiment(election_type='approval')
+    experiment = mapel.prepare_experiment(instance_type='approval')
 
     experiment.set_default_num_candidates(50)
     experiment.set_default_num_voters(100)
@@ -17,13 +17,13 @@ if __name__ == "__main__":
     experiment.add_election(model_id='approval_id', election_id='ID 0.5', label='_nolegend_',
                             params={'p': .5})
 
-    experiment.add_election_family(model_id='approval_ic', color='black', election_id='IC_path',
+    experiment.add_election_family(model_id='approval_ic', color='black', family_id='IC_path',
                                    params={}, size=10, path={'variable': 'p'})
 
-    experiment.add_election_family(model_id='approval_ic', color='black', election_id='IC_path',
+    experiment.add_election_family(model_id='approval_ic', color='black', family_id='IC_path',
                                    params={}, size=10, path={'variable': 'p'})
 
-    experiment.add_election_family(model_id='approval_id', color='brown', election_id='ID_path',
+    experiment.add_election_family(model_id='approval_id', color='brown', family_id='ID_path',
                                    params={}, size=10, path={'variable': 'p'})
 
     for p in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:

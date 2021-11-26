@@ -12,13 +12,21 @@ class Roommates(Instance):
 
         self.votes = votes
         self.num_agents = len(votes)
+
         self.retrospetive_vectors = None
+        self.positionwise_vectors = None
 
     def get_retrospective_vectors(self):
         if self.retrospetive_vectors is not None:
             return self.retrospetive_vectors
         else:
             return self.votes_to_retrospective_vectors()
+
+    def get_positionwise_vectors(self):
+        if self.positionwise_vectors is not None:
+            return self.positionwise_vectors
+        else:
+            return self.votes_to_positionwise_vectors()
 
     def votes_to_retrospective_vectors(self):
 
@@ -31,7 +39,22 @@ class Roommates(Instance):
         self.retrospetive_vectors = vectors
         return vectors
 
+    def votes_to_positionwise_vectors(self):
 
+        vectors = np.zeros([self.num_agents, self.num_agents-1])
+
+        for i in range(self.num_agents):
+            pos = 0
+            for j in range(self.num_agents-1):
+                vote = self.votes[i][j]
+                vectors[vote][pos] += 1
+                pos += 1
+        for i in range(self.num_agents):
+            for j in range(self.num_agents-1):
+                vectors[i][j] /= float(self.num_agents)
+
+        self.positionwise_vectors = vectors
+        return vectors
 
 
 

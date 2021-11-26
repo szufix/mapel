@@ -11,6 +11,7 @@ def map_str_to_func(name):
             'hellinger': hellinger,
             'emd': emd,
             'discrete': discrete,
+            'wl1': wl1,
             }.get(name)
 
 
@@ -25,6 +26,11 @@ def discrete(vector_1, vector_2):
 def single_l1(value_1, value_2):
     """ compute L1 metric """
     return abs(value_1 - value_2)
+
+
+def wl1(vector_1: np.ndarray, vector_2: np.ndarray) -> float:
+    """ Return: L1 distance """
+    return sum([len(vector_1)-i*abs(vector_1[i] - vector_2[i]) for i in range(len(vector_1))])
 
 
 def l1(vector_1: np.ndarray, vector_2: np.ndarray) -> float:
@@ -71,20 +77,18 @@ def hamming(set_1: set, set_2: set) -> float:
 # TMP
 def vote_to_pote(vote: list) -> list:
     """ Return: Positional vote """
-    return [vote.index(i) for i, _ in enumerate(vote)]
+    return [vote.index(i) for i in range(len(vote)+1) if i in vote]
 
 
 def swap_distance(vote_1: list, vote_2: list, matching=None) -> int:
     """ Return: Swap distance between two votes """
 
-    new_vote_1 = copy.deepcopy(vote_1)
-
+    new_vote_2 = copy.deepcopy(vote_2)
     if matching is not None:
-        for i in range(len(vote_1)):
-            new_vote_1[i] = matching[vote_1[i]]
-
-    pote_1 = vote_to_pote(new_vote_1)
-    pote_2 = vote_to_pote(vote_2)
+        for i in range(len(vote_2)):
+            new_vote_2[i] = matching[vote_2[i]]
+    pote_1 = vote_to_pote(vote_1)
+    pote_2 = vote_to_pote(new_vote_2)
 
     swap_distance = 0
     for i, j in itertools.combinations(pote_1, 2):

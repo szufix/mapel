@@ -106,6 +106,7 @@ NICE_NAME = {
     'stan': 'STAN',
     'stun': 'STUN',
     'anun': 'ANUN',
+    'approval_jaccard': 'Approval_Jaccard',
     }
 
 
@@ -136,7 +137,8 @@ APPROVAL_MODELS = {'approval_ic', 'approval_shumallows', 'approval_id',
                    'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
                    'approval_half_1', 'approval_half_2', 'approval_disjoint_shumallows',
                    'approval_simplex_shumallows',
-                   'approval_vcr', 'approval_truncated_mallows', 'approval_moving_shumallows'}
+                   'approval_vcr', 'approval_truncated_mallows', 'approval_moving_shumallows',
+                   'approval_jaccard'}
 
 APPROVAL_FAKE_MODELS = {'approval_half_1', 'approval_half_2'}
 

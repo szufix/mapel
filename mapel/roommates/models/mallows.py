@@ -3,6 +3,7 @@ import os
 import pickle
 
 import numpy as np
+from mapel.roommates.models._utils import convert
 
 
 # Given the number m of candidates and a phi\in [0,1] function computes the expected number of swaps
@@ -155,19 +156,16 @@ def runif_in_simplex(n):
   return k / sum(k)
 
 
-def generate_roommates_mallows_votes(num_agents=None, params=None):
+def generate_roommates_norm_mallows_votes(num_agents=None, params=None):
 
     if 'norm-phi' not in params:
         params['norm-phi'] = np.random.rand()
 
     params['phi'] = phi_from_relphi(num_agents, relphi=params['norm-phi'])
-    params['weight'] = 0.
+    if 'weight' not in params:
+        params['weight'] = 0.
 
     votes = generate_mallows_votes(num_agents, num_agents, params)
-    for j in range(num_agents):
-        base = np.array(copy.deepcopy(votes[j]))
-        base = base[base != j]
-        votes[j] = base
 
-    return votes
+    return convert(votes)
 

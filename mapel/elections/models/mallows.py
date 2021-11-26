@@ -3,6 +3,7 @@ import os
 import pickle
 
 import numpy as np
+import scipy.special
 
 
 # Given the number m of candidates and a phi\in [0,1] function computes the expected number of swaps
@@ -244,6 +245,54 @@ def generate_approval_hamming_noise_model_votes(num_voters=None, num_candidates=
                 if np.random.random() < params['phi']:
                     vote.add(c)
         votes[v] = vote
+
+    return votes
+
+
+def generate_jaccard_noise_model_votes(num_voters=None, num_candidates=None,
+                                                    params=None):
+    k = int(params['p'] * num_candidates)
+    # if k == 0:
+    #     k = 1
+    # elif k == num_candidates:
+    #     k = num_candidates-1
+
+    A = {i for i in range(k)}
+    B = set(range(num_candidates)) - A
+
+    phi = params['phi']
+    # phi = 0.1**(10)
+
+    choices = []
+    probabilites = []
+
+    # PREPARE BUCKETS
+    for x in range(len(A) + 1):
+        num_options_in = scipy.special.binom(len(A), x)
+        for y in range(len(B) + 1):
+            num_options_out = scipy.special.binom(len(B), y)
+            # factor = phi ** (len(A) - x + y)  # Hamming
+            # factor = phi ** ((len(A) - x + y) / (len(A) + y))  # Jaccard
+            factor = phi ** max(len(A) - x, y)  # Zelinka
+            # factor = phi ** (max(len(A) - x, y) / max(len(A), x+y))  # Bunke-Shearer
+            num_options = num_options_in * num_options_out * factor
+
+            choices.append((x, y))
+            probabilites.append(num_options)
+
+    # print(probabilites)
+
+    denominator = sum(probabilites)
+    probabilites = [p / denominator for p in probabilites]
+
+    # SAMPLE VOTES
+    votes = []
+    for _ in range(num_voters):
+        _id = np.random.choice(range(len(choices)), 1, p=probabilites)[0]
+        x, y = choices[_id]
+        vote = set(np.random.choice(list(A), x, replace=False))
+        vote = vote.union(set(np.random.choice(list(B), y, replace=False)))
+        votes.append(vote)
 
     return votes
 

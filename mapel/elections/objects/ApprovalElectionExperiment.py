@@ -24,7 +24,6 @@ class ApprovalElectionExperiment(ElectionExperiment):
     """ Abstract set of approval elections."""
 
     def __init__(self, **kwargs):
-
         super().__init__(**kwargs)
 
     def add_elections_to_experiment(self) -> dict:
@@ -49,7 +48,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
                     elections[election_id] = election
                     ids.append(str(election_id))
 
-            self.families[family_id].election_ids = ids
+            self.families[family_id].instance_ids = ids
 
         return elections
 

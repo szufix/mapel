@@ -67,7 +67,7 @@ class RoommatesExperiment(Experiment):
 
         self.families[family_id] = RoommatesFamily(model_id=model_id, family_id=family_id,
                                                    params=params, label=label, color=color,
-                                                   alpha=alpha,
+                                                   alpha=alpha, single_instance=single_instance,
                                                    show=show, size=size, marker=marker,
                                                    starting_from=starting_from,
                                                    num_agents=num_agents, path=path)
@@ -80,7 +80,7 @@ class RoommatesExperiment(Experiment):
                                     family_id=family_id,
                                     params=copy.deepcopy(self.families[family_id].params))
 
-        self.families[family_id].instances_ids = list(instances.keys())
+        self.families[family_id].instance_ids = list(instances.keys())
 
         return list(instances.keys())
 
@@ -132,7 +132,7 @@ class RoommatesExperiment(Experiment):
                 writer.writerow(
                     ["election_id_1", "election_id_2", "distance", "time"])
 
-                for election_1, election_2 in itertools.combinations(self.elections, 2):
+                for election_1, election_2 in itertools.combinations(self.instances, 2):
                     distance = str(distances[election_1][election_2])
                     time = str(times[election_1][election_2])
                     writer.writerow([election_1, election_2, distance, time])
@@ -140,3 +140,32 @@ class RoommatesExperiment(Experiment):
         self.distances = distances
         self.times = times
         self.matchings = matchings
+
+    def create_structure(self) -> None:
+
+        if not os.path.isdir("experiments/"):
+            os.mkdir(os.path.join(os.getcwd(), "experiments"))
+
+        if not os.path.isdir("images/"):
+            os.mkdir(os.path.join(os.getcwd(), "images"))
+
+        if not os.path.isdir("trash/"):
+            os.mkdir(os.path.join(os.getcwd(), "trash"))
+
+        try:
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "features"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances"))
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices"))
+
+            # PREPARE MAP.CSV FILE
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
+
+            with open(path, 'w') as file_csv:
+                file_csv.write(
+                    "size;num_agents;model_id;params;color;alpha;family_id;label;marker;show\n")
+                file_csv.write("10;20;roommates_ic;{};black;1;IC;IC;o;t\n")
+        except FileExistsError:
+            print("Experiment already exists!")

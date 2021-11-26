@@ -20,21 +20,8 @@ import mapel.elections.models.urn_model as urn_model
 from mapel.elections._glossary import *
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.Election import Election
-# from mapel.elections.objects.Graph import Graph
 from mapel.elections.objects.OrdinalElection import OrdinalElection
-# from mapel.elections.objects.RoommatesProblem import RoommatesProblem
 
-
-def generate_roommates_votes(model_id: str = None, num_agents: int = None,
-                            params: dict = None) -> Union[list, np.ndarray]:
-    main_models = {'roommates_ic': impartial.generate_roommates_ic_votes,
-                   }
-
-    if model_id in main_models:
-        return main_models.get(model_id)(num_agents=num_agents, params=params)
-    else:
-        print("No such election model_id!", model_id)
-        return []
 
 
 def generate_approval_votes(model_id: str = None, num_candidates: int = None,
@@ -51,6 +38,7 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                    'approval_truncated_urn': urn_model.generate_approval_truncated_urn_votes,
                    'approval_moving_shumallows': mallows.generate_approval_moving_shumallows_votes,
                    'approval_simplex_shumallows': mallows.generate_approval_simplex_shumallows_votes,
+                   'approval_jaccard': mallows.generate_jaccard_noise_model_votes,
                    }
 
     if model_id in main_models:
@@ -179,8 +167,7 @@ def generate_graph(model_id=None, num_nodes=None, params=None):
 
 # GENERATE
 def generate_election(experiment=None, model_id: str = None, election_id: str = None,
-                      num_candidates: int = None, num_voters: int = None, num_nodes: int = None,
-                      num_agents: int = None,
+                      num_candidates: int = None, num_voters: int = None,
                       params: dict = None, ballot: str = 'ordinal',
                       variable=None) -> Election:
     """ main function: generate elections """
@@ -219,7 +206,7 @@ def generate_election(experiment=None, model_id: str = None, election_id: str = 
         election = None
 
     if experiment is not None:
-        experiment.elections[election_id] = election
+        experiment.instances[election_id] = election
 
         if experiment.store:
             if ballot == 'ordinal':
@@ -264,8 +251,6 @@ def prepare_statistical_culture_family(experiment=None, model_id: str = None,
                                      election_id=election_id,
                                      num_voters=experiment.families[family_id].num_voters,
                                      num_candidates=experiment.families[family_id].num_candidates,
-                                     num_agents=experiment.families[family_id].num_agents,
-                                     num_nodes=experiment.families[family_id].num_nodes,
                                      params=copy.deepcopy(params), ballot=ballot, variable=variable)
         elections[election_id] = election
     return elections
@@ -447,7 +432,7 @@ def store_votes_in_a_file(experiment, model_id, election_id, num_candidates, num
                           params, path, ballot, votes=None):
     """ Store votes in a file """
     if votes is None:
-        votes = experiment.elections[election_id].votes
+        votes = experiment.instances[election_id].votes
 
     with open(path, 'w') as file_:
 
