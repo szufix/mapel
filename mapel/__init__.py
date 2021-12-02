@@ -30,7 +30,8 @@ def prepare_experiment(experiment_id=None, instances=None, distances=None, insta
                                           distances=distances, coordinates=coordinates,
                                           distance_id=distance_id, clean=clean)
     elif instance_type == 'roommates':
-        return RoommatesExperiment(experiment_id=experiment_id)
+        return RoommatesExperiment(experiment_id=experiment_id, _import=_import,
+                                   distance_id=distance_id)
 
 
 def print_approvals_histogram(*args):

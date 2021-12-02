@@ -366,8 +366,8 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
         cb.ax.locator_params(nbins=len(xticklabels), tight=True)
         cb.ax.tick_params(labelsize=14)
 
-        # if xticklabels is not None:
-        #     cb.ax.set_xticklabels(xticklabels)
+        if xticklabels is not None:
+            cb.ax.set_xticklabels(xticklabels)
 
 
 # HELPER FUNCTIONS FOR PRINT_3D
@@ -447,7 +447,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                         election_id = list(family.instance_ids)[i]
                         # print(election_id)
                         try:
-                            alpha = experiment.elections[election_id].alpha
+                            alpha = experiment.instances[election_id].alpha
                         except:
                             try:
                                 alpha = experiment.instances[election_id].alpha
@@ -564,7 +564,7 @@ def saveas_tex(saveas=None):
 
 # MAIN FUNCTIONS
 def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
-                 saveas="matrix", show=True, ms=8,
+                 saveas="matrix", show=True, ms=8, title=None,
                  self_distances=False, yticks='left', with_std=False, time=False):
     """Print the matrix with average distances between each pair of experiments """
 
@@ -578,7 +578,7 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
     mapping = {}
     ctr = 0
     for family_id in experiment.families:
-        for election_id in experiment.families[family_id].election_ids:
+        for election_id in experiment.families[family_id].instance_ids:
             mapping[ctr] = election_id
             ctr += 1
 
@@ -591,7 +591,7 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
             matrix[family_id_1][family_id_2] = 0
             quantities[family_id_1][family_id_2] = 0
 
-    print(bucket)
+    # print(bucket)
 
     # ADD VALUES
     for i in range(experiment.num_elections):
@@ -703,6 +703,9 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
     ax.set_xticks(x_axis)
     ax.set_xticklabels(x_values, rotation=80, size=10)
 
+    if title:
+        plt.title(title)
+
     if experiment.store:
         file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
         plt.savefig(file_name, bbox_inches='tight')
@@ -750,7 +753,11 @@ def add_textual(experiment=None, textual=None, ax=None, size=12):
         y = experiment.coordinates[name][1]
         if name in RULE_NAME_MAP:
             name = RULE_NAME_MAP[name]
-        my_text(x, y, name)
+
+        if name in ['trivial', 'rsd', 'random']:
+            my_text(x, y, name, color='red')
+        else:
+            my_text(x, y, name)
 
 
 def add_roads(experiment=None, roads=None, ax=None):

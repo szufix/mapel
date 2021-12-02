@@ -28,7 +28,7 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                             num_voters: int = None, params: dict = None) -> Union[list, np.ndarray]:
     main_models = {'approval_ic': impartial.generate_approval_ic_votes,
                    'approval_id': impartial.generate_approval_id_votes,
-                   'approval_shumallows': mallows.generate_approval_shumallows_votes,
+                   'approval_resampling': mallows.generate_approval_resampling_votes,
                    'approval_noise_model': mallows.generate_approval_hamming_noise_model_votes,
                    'approval_urn': urn_model.generate_approval_urn_votes,
                    'approval_euclidean': euclidean.generate_approval_euclidean_votes,
@@ -51,7 +51,7 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
         return impartial.generate_approval_empty_votes(num_voters=num_voters)
 
     elif model_id in APPROVAL_FAKE_MODELS:
-        return []
+        return [model_id, num_candidates, num_voters, params]
     else:
         print("No such election model_id!", model_id)
         return []
@@ -414,10 +414,9 @@ def store_approval_election(experiment, model_id, election_id, num_candidates, n
         path = os.path.join("experiments", str(experiment.experiment_id),
                             "elections", (str(election_id) + ".app"))
         file_ = open(path, 'w')
-        file_.write('$ fake' + '\n')
-        file_.write(str(num_voters) + '\n')
+        file_.write(f'$ {model_id} {params} \n')
         file_.write(str(num_candidates) + '\n')
-        file_.write(str(model_id) + '\n')
+        file_.write(str(num_voters) + '\n')
         file_.close()
 
     else:

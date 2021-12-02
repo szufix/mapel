@@ -4,7 +4,12 @@ from mapel.roommates.matching.games import StableRoommates
 from random import shuffle
 import statistics
 import warnings
-warnings.filterwarnings("error")
+import sys
+import time
+import networkx as nx
+
+sys.setrecursionlimit(10000)
+# warnings.filterwarnings("error")
 
 def generate_instance(num_agents):
     instance=[]
@@ -44,6 +49,57 @@ def compute_stable_SR(instance):
         usable_matching[m.name] = matching[m].name
     return usable_matching
 
+def spear_distance(instance1,instance2):
+    num_agents=len(instance1)
+    m = gp.Model("qp")
+    #m.setParam('Threads', 6)
+    #m.setParam('OutputFlag', False)
+    x = m.addVars(num_agents, num_agents, lb=0, ub=1, vtype=GRB.BINARY)
+    opt = m.addVar(vtype=GRB.INTEGER, lb=0, ub=num_agents * num_agents*num_agents)
+    for i in range(num_agents):
+        m.addConstr(gp.quicksum(x[i, j] for j in range(num_agents)) == 1)
+        m.addConstr(gp.quicksum(x[j, i] for j in range(num_agents)) == 1)
+    m.addConstr(gp.quicksum(abs(instance1[i].index(k)-instance2[j].index(t)) * x[i, j]*x[k,t] for i in range(num_agents)
+                            for j in range(num_agents) for k in [x for x in range(num_agents) if x != i]
+                            for t in [x for x in range(num_agents) if x != j]) == opt)
+    m.setObjective(opt, GRB.MINIMIZE)
+    m.optimize()
+    for i in range(num_agents):
+        for j in range(num_agents):
+            if x[i, j].X == 1:
+                print(i,j)
+    return int(m.objVal)
+
+
+def spear_distance_linear(instance1,instance2):
+    num_agents=len(instance1)
+    m = gp.Model("mip1")
+    #m.setParam('Threads', 6)
+    #m.setParam('OutputFlag', False)
+    x = m.addVars(num_agents, num_agents, lb=0, ub=1, vtype=GRB.BINARY)
+    y = m.addVars(num_agents, num_agents,num_agents,num_agents, lb=0, ub=1, vtype=GRB.CONTINUOUS)
+    opt = m.addVar(vtype=GRB.INTEGER, lb=0, ub=num_agents * num_agents*num_agents)
+    for i in range(num_agents):
+        m.addConstr(gp.quicksum(x[i, j] for j in range(num_agents)) == 1)
+        m.addConstr(gp.quicksum(x[j, i] for j in range(num_agents)) == 1)
+    for i in range(num_agents):
+        for j in range(num_agents):
+            for k in range(num_agents):
+                for l in range(num_agents):
+                    m.addConstr(y[i,j,k,l]<=x[i, j])
+                    m.addConstr(y[i, j, k, l] <= x[k, l])
+                    m.addConstr(y[i, j, k, l] >= x[i, j]+x[k, l]-1)
+
+    m.addConstr(gp.quicksum(abs(instance1[i].index(k)-instance2[j].index(t)) * y[i, j,k,t] for i in range(num_agents)
+                            for j in range(num_agents) for k in [x for x in range(num_agents) if x != i]
+                            for t in [x for x in range(num_agents) if x != j]) == opt)
+    m.setObjective(opt, GRB.MINIMIZE)
+    m.optimize()
+    for i in range(num_agents):
+        for j in range(num_agents):
+            if x[i, j].X == 1:
+                print(i,j)
+    return int(m.objVal)
 
 #Only call for instances that admit a stable matchig
 #summed: Set to true we try to optimize the summed rank of agents for their partner in the matching, set to false we optimize the minimum rank
@@ -89,6 +145,41 @@ def rank_matching(instance,best,summed):
                 matching[j]=i
     return int(m.objVal), matching
 
+def min_num_bps_matching(instance):
+    num_agents=len(instance)
+    m = gp.Model("mip1")
+    m.setParam('OutputFlag', False)
+    x = m.addVars(num_agents, num_agents, lb=0, ub=1, vtype=GRB.BINARY)
+    y = m.addVars(num_agents, num_agents, lb=0, ub=1, vtype=GRB.BINARY)
+    opt = m.addVar(vtype=GRB.INTEGER, lb=0, ub=num_agents*num_agents)
+    m.addConstr(gp.quicksum(y[i, j] for i in range(num_agents) for j in range(num_agents)) <= opt)
+    for i in range(num_agents):
+        m.addConstr(x[i, i]  == 0)
+    for i in range(num_agents):
+        for j in range(num_agents):
+            m.addConstr(x[i, j]  == x[j, i])
+    for i in range(num_agents):
+        m.addConstr(gp.quicksum(x[i, j] for j in range(num_agents)) <= 1)
+    for i in range(num_agents):
+        for j in range(i+1,num_agents):
+            better_pairs=[]
+            for t in range(0,instance[i].index(j)+1):
+                better_pairs.append([i,instance[i][t]])
+            for t in range(0,instance[j].index(i)+1):
+                better_pairs.append([j,instance[j][t]])
+            m.addConstr(gp.quicksum(x[a[0], a[1]] for a in better_pairs) >= 1-y[i,j])
+
+    m.setObjective(opt, GRB.MINIMIZE)
+    m.optimize()
+    matching={}
+    for i in range(num_agents):
+        for j in range(num_agents):
+            if x[i, j].X == 1:
+                matching[i]=j
+                matching[j]=i
+    #return int(m.objVal), matching
+    return int(m.objVal)
+
 def summed_rank_maximal_matching(instance):
     val,matching= rank_matching(instance,True,True)
     if number_blockingPairs(instance,matching)>0:
@@ -124,3 +215,33 @@ def average_number_of_bps_for_random_matching(instance,iterations=100):
             matching_dict[m[1]] = m[0]
         bps.append(number_blockingPairs(instance,matching_dict))
     return statistics.mean(bps), statistics.stdev(bps)
+
+def number_of_bps_maximumWeight(instance) -> int:
+    num_agents=len(instance)
+    G = nx.Graph()
+    for i in range(num_agents):
+        for j in range(i+1,num_agents):
+            G.add_edge(i,j,weight=2*(num_agents-1)-instance[i].index(j)-instance[j].index(i))
+            #G.add_edge(i, j, weight=instance[i].index(j) + instance[j].index(i))
+    matching=nx.max_weight_matching(G, maxcardinality=True)
+    matching_dict={}
+    for p in matching:
+        matching_dict[p[0]]=p[1]
+        matching_dict[p[1]] = p[0]
+    return number_blockingPairs(instance,matching_dict)
+
+#
+# j=0
+# for i in range(100):
+#     instance=generate_instance(50)
+#     print(number_of_bps_maximumWeight(instance))
+#     print(min_num_bps_matching(instance))
+#
+#
+# exit()
+# instance1=generate_instance(10)
+# instance2=generate_instance(10)
+# start = time.process_time()
+# print(spear_distance_linear(instance1,instance2))
+# print(time.process_time() - start)
+# exit()

@@ -33,6 +33,7 @@ class Election(Instance):
         self.votes = votes
         self.model_id = model_id
 
+
     def import_matrix(self) -> np.ndarray:
 
         file_name = f'{self.election_id}.csv'

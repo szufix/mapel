@@ -76,7 +76,7 @@ class Experiment:
             print('=== Omitting import! ===')
         elif self.experiment_id != 'virtual':
             try:
-                self.instances = self.add_elections_to_experiment()
+                self.instances = self.add_instances_to_experiment()
                 print('=== Elections imported successfully! ===')
             except FileNotFoundError:
                 print('=== Elections not found! ===')
@@ -108,6 +108,10 @@ class Experiment:
         else:
             self.coordinates = {}
 
+
+    @abstractmethod
+    def prepare_instances(self):
+        pass
 
     @abstractmethod
     def add_instance(self):
@@ -236,7 +240,7 @@ class Experiment:
             pr.print_map_3d(self, **kwargs)
 
     @abstractmethod
-    def add_elections_to_experiment(self):
+    def add_instances_to_experiment(self):
         pass
 
     @abstractmethod
@@ -420,7 +424,6 @@ class Experiment:
                         instance_id_2 = row['instance_id_2']
                     except:
                         pass
-
 
                 if instance_id_1 not in distances:
                     distances[instance_id_1] = {}

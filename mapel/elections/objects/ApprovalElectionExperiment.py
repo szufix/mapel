@@ -32,7 +32,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
         elections = {}
 
         for family_id in self.families:
-
+            print(family_id)
             ids = []
             if self.families[family_id].single_election:
                 election_id = family_id
@@ -49,6 +49,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
                     ids.append(str(election_id))
 
             self.families[family_id].instance_ids = ids
+
 
         return elections
 

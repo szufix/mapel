@@ -179,7 +179,7 @@ def generate_mallows_party(num_voters=None, num_candidates=None,
     return new_votes
 
 
-def generate_approval_shumallows_votes(num_voters=None, num_candidates=None, params=None):
+def generate_approval_resampling_votes(num_voters=None, num_candidates=None, params=None):
     # central_vote = set()
     # for c in range(num_candidates):
     #     if rand.np() <= params['p']:
@@ -266,15 +266,20 @@ def generate_jaccard_noise_model_votes(num_voters=None, num_candidates=None,
     choices = []
     probabilites = []
 
+    print(phi)
+
     # PREPARE BUCKETS
     for x in range(len(A) + 1):
         num_options_in = scipy.special.binom(len(A), x)
         for y in range(len(B) + 1):
             num_options_out = scipy.special.binom(len(B), y)
-            # factor = phi ** (len(A) - x + y)  # Hamming
+            factor = phi ** (len(A) - x + y)  # Hamming
             # factor = phi ** ((len(A) - x + y) / (len(A) + y))  # Jaccard
-            factor = phi ** max(len(A) - x, y)  # Zelinka
+            # factor = phi ** max(len(A) - x, y)  # Zelinka
             # factor = phi ** (max(len(A) - x, y) / max(len(A), x+y))  # Bunke-Shearer
+
+            # factor = phi ** (abs(len(A) - x - y)) * phi ** (len(A) - x + y)  # ShuMallows
+
             num_options = num_options_in * num_options_out * factor
 
             choices.append((x, y))

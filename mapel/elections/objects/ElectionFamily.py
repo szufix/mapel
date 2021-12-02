@@ -48,6 +48,12 @@ class ElectionFamily(Family):
         self.election_ids = election_ids
         self.ballot = ballot
 
+    def __getattr__(self, attr):
+        if attr == 'election_ids':
+            return self.instance_ids
+        else:
+            return getattr(self, attr)
+
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #
 # # # # # # # # # # # # # # # #

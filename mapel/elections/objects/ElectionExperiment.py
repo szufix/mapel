@@ -47,6 +47,24 @@ class ElectionExperiment(Experiment):
 
         self.all_winning_committees = {}
 
+        # self.elections = None
+        # self.num_elections = None
+
+    def __getattr__(self, attr):
+        if attr == 'elections':
+            return self.instances
+        elif attr == 'num_elections':
+            return self.num_elections
+        else:
+            return getattr(self, attr)
+
+    def add_instances_to_experiment(self):
+        return self.add_elections_to_experiment()
+
+    @abstractmethod
+    def add_elections_to_experiment(self):
+        pass
+
     def set_default_num_candidates(self, num_candidates: int) -> None:
         """ Set default number of candidates """
         self.default_num_candidates = num_candidates
@@ -111,12 +129,13 @@ class ElectionExperiment(Experiment):
             label = family_id
 
         self.families[family_id] = ElectionFamily(model_id=model_id, family_id=family_id,
-                                          params=params, label=label, color=color, alpha=alpha,
-                                          show=show, size=size, marker=marker,
-                                          starting_from=starting_from,
-                                          num_candidates=num_candidates,
-                                          num_voters=num_voters, path=path,
-                                          single_election=single_election)
+                                                  params=params, label=label, color=color,
+                                                  alpha=alpha,
+                                                  show=show, size=size, marker=marker,
+                                                  starting_from=starting_from,
+                                                  num_candidates=num_candidates,
+                                                  num_voters=num_voters, path=path,
+                                                  single_election=single_election)
 
         self.num_families = len(self.families)
         self.num_elections = sum([self.families[family_id].size for family_id in self.families])
@@ -126,14 +145,13 @@ class ElectionExperiment(Experiment):
         model_id = self.families[family_id].model_id
 
         elections = _elections.prepare_statistical_culture_family(experiment=self,
-                                                            model_id=model_id,
-                                                            family_id=family_id,
-                                                            params=copy.deepcopy(params))
+                                                                  model_id=model_id,
+                                                                  family_id=family_id,
+                                                                  params=copy.deepcopy(params))
 
-        self.families[family_id].instance_ids = list(elections.keys())
+        self.families[family_id].election_ids = list(elections.keys())
 
         return list(elections.keys())
-
 
     # def add_matrices_to_experiment(experiment):
     #     """ Import elections from a file """
@@ -165,13 +183,11 @@ class ElectionExperiment(Experiment):
     #                 matrix[i][j] = row[candidate_id]
     #     return matrix
 
-
     def prepare_elections(self):
         """ Prepare elections for a given experiment """
 
-        if self.instances is None:
-            self.instances = {}
-
+        if self.elections is None:
+            self.elections = {}
 
         elections = {}
         if self.store:
@@ -192,9 +208,9 @@ class ElectionExperiment(Experiment):
                     self.families[family_id].election_ids = ids
 
                 elif model_id not in ['core', 'pabulib'] and (model_id in NICE_NAME or
-                                                           model_id in LIST_OF_FAKE_MODELS or
-                                                           model_id in APPROVAL_MODELS):
-                    print(model_id)
+                                                              model_id in LIST_OF_FAKE_MODELS or
+                                                              model_id in APPROVAL_MODELS or
+                                                              model_id in APPROVAL_FAKE_MODELS):
 
                     tmp_elections = _elections.prepare_statistical_culture_family(
                         experiment=self, model_id=model_id, family_id=family_id, params=params)
@@ -204,19 +220,16 @@ class ElectionExperiment(Experiment):
                     for election_id in tmp_elections:
                         elections[election_id] = tmp_elections[election_id]
 
-                    # print(tmp_elections)
-
-        # self.instances = self.add_elections_to_experiment()
-        self.instances = elections
+        self.elections = elections
 
     def compute_winners(self, method=None, num_winners=1):
-        for election_id in self.instances:
-            self.instances[election_id].compute_winners(method=method, num_winners=num_winners)
+        for election_id in self.elections:
+            self.elections[election_id].compute_winners(method=method, num_winners=num_winners)
 
     def compute_alternative_winners(self, method=None, num_winners=None, num_parties=None):
-        for election_id in self.instances:
+        for election_id in self.elections:
             for party_id in range(num_parties):
-                self.instances[election_id].compute_alternative_winners(
+                self.elections[election_id].compute_alternative_winners(
                     method=method, party_id=party_id, num_winners=num_winners)
 
     def compute_distances(self, distance_id: str = 'emd-positionwise', num_threads: int = 1,
@@ -228,32 +241,32 @@ class ElectionExperiment(Experiment):
 
         # precompute vectors, matrices, etc...
         if '-approvalwise' in distance_id:
-            for election in self.instances.values():
+            for election in self.elections.values():
                 election.votes_to_approvalwise_vector()
         elif '-coapproval_frequency' in distance_id or 'flow' in distance_id:
-            for election in self.instances.values():
+            for election in self.elections.values():
                 election.votes_to_coapproval_frequency_vectors(vector_type=vector_type)
         elif '-voterlikeness' in distance_id:
-            for election in self.instances.values():
+            for election in self.elections.values():
                 election.votes_to_voterlikeness_vectors(vector_type=vector_type)
         elif '-candidatelikeness' in distance_id:
-            for election in self.instances.values():
+            for election in self.elections.values():
                 # print(election)
                 election.votes_to_candidatelikeness_sorted_vectors()
         elif '-pairwise' in distance_id:
-            for election in self.instances.values():
+            for election in self.elections.values():
                 election.votes_to_pairwise_matrix()
         # continue with normal code
 
-        matchings = {election_id: {} for election_id in self.instances}
-        distances = {election_id: {} for election_id in self.instances}
-        times = {election_id: {} for election_id in self.instances}
+        matchings = {election_id: {} for election_id in self.elections}
+        distances = {election_id: {} for election_id in self.elections}
+        times = {election_id: {} for election_id in self.elections}
 
         threads = [{} for _ in range(num_threads)]
 
         ids = []
-        for i, election_1 in enumerate(self.instances):
-            for j, election_2 in enumerate(self.instances):
+        for i, election_1 in enumerate(self.elections):
+            for j, election_2 in enumerate(self.elections):
                 if i == j:
                     if self_distances:
                         ids.append((election_1, election_2))
@@ -271,7 +284,7 @@ class ElectionExperiment(Experiment):
 
             threads[t] = Thread(target=metr.run_single_thread, args=(self, thread_ids,
                                                                      distances, times, matchings,
-                                                                     printing))
+                                                                     printing, t))
             threads[t].start()
 
         for t in range(num_threads):
@@ -287,7 +300,7 @@ class ElectionExperiment(Experiment):
                 writer.writerow(
                     ["election_id_1", "election_id_2", "distance", "time"])
 
-                for election_1, election_2 in itertools.combinations(self.instances, 2):
+                for election_1, election_2 in itertools.combinations(self.elections, 2):
                     distance = str(distances[election_1][election_2])
                     time = str(times[election_1][election_2])
                     writer.writerow([election_1, election_2, distance, time])
@@ -303,7 +316,6 @@ class ElectionExperiment(Experiment):
 
     def print_matrix(self, **kwargs):
         pr.print_matrix(experiment=self, **kwargs)
-
 
     def import_controllers(self):
         """ Import controllers from a file """
@@ -331,6 +343,7 @@ class ElectionExperiment(Experiment):
             marker = None
             num_candidates = None
             num_voters = None
+            family_id = None
 
             if 'model_id' in row.keys():
                 model_id = str(row['model_id']).strip()
@@ -365,7 +378,6 @@ class ElectionExperiment(Experiment):
             if 'path' in row.keys():
                 path = ast.literal_eval(str(row['path']))
 
-
             show = row['show'].strip() == 't'
             #
             # if model_id in {'urn_model'} and 'alpha' in params:
@@ -379,14 +391,14 @@ class ElectionExperiment(Experiment):
             single_election = size == 1
 
             families[family_id] = ElectionFamily(model_id=model_id,
-                                         family_id=family_id,
-                                         params=params, label=label,
-                                         color=color, alpha=alpha, show=show,
-                                         size=size, marker=marker,
-                                         starting_from=starting_from,
-                                         num_candidates=num_candidates,
-                                         num_voters=num_voters, path=path,
-                                         single_election=single_election)
+                                                 family_id=family_id,
+                                                 params=params, label=label,
+                                                 color=color, alpha=alpha, show=show,
+                                                 size=size, marker=marker,
+                                                 starting_from=starting_from,
+                                                 num_candidates=num_candidates,
+                                                 num_voters=num_voters, path=path,
+                                                 single_election=single_election)
             starting_from += size
 
             all_num_candidates.append(num_candidates)
@@ -402,18 +414,17 @@ class ElectionExperiment(Experiment):
         file_.close()
         return families
 
+    def compute_feature(self, feature_id: str = None, feature_params=None) -> dict:
 
-    def compute_feature(self, feature_id: str = None,
-                        feature_params=None) -> dict:
         if feature_params is None:
             feature_params = {}
 
         feature_dict = {}
 
-        for election_id in self.instances:
+        for election_id in self.elections:
             print(election_id)
             feature = features.get_feature(feature_id)
-            election = self.instances[election_id]
+            election = self.elections[election_id]
             if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
                 value = feature(self, election)
 
@@ -467,11 +478,12 @@ class ElectionExperiment(Experiment):
             print('Computing', rule_name)
             if rule_name in NOT_ABCVOTING_RULES:
                 rules.compute_not_abcvoting_rule(experiment=self, rule_name=rule_name,
+                                                 committee_size=committee_size,
+                                                 printing=printing, resolute=resolute)
+            else:
+                rules.compute_abcvoting_rule(experiment=self, rule_name=rule_name,
                                              committee_size=committee_size,
                                              printing=printing, resolute=resolute)
-            else:
-                rules.compute_abcvoting_rule(experiment=self, rule_name=rule_name, committee_size=committee_size,
-                               printing=printing, resolute=resolute)
 
     def import_committees(self, list_of_rules) -> None:
         for rule_name in list_of_rules:

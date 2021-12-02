@@ -42,6 +42,7 @@ class ApprovalElection(Election):
                 except KeyError:
                     pass
 
+
     def votes_to_approvalwise_vector(self) -> None:
         """ Convert votes to ... """
 
@@ -53,6 +54,8 @@ class ApprovalElection(Election):
         elif self.model == 'approval_half_2':
             self.approvalwise_vector = np.sort(np.array([i / (self.num_candidates - 1) for i in
                                                          range(self.num_candidates)]))
+        elif self.model == 'approval_skeleton':
+            self.approvalwise_vector = np.sort(get_skeleton_approvalwise_vector(self))
         else:
             approvalwise_vector = np.zeros([self.num_candidates])
             for vote in self.votes:
@@ -61,6 +64,7 @@ class ApprovalElection(Election):
             approvalwise_vector = approvalwise_vector / self.num_voters
             self.approvalwise_vector = np.sort(approvalwise_vector)
             # print(self.approvalwise_vector)
+
 
     def votes_to_coapproval_frequency_vectors(self, vector_type='A') -> None:
         """ Convert votes to ... """
@@ -206,12 +210,16 @@ def import_fake_app_election(experiment_id: str, name: str):
     file_name = f'{name}.app'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
-    my_file.readline()  # line with $ fake
+    first_line = my_file.readline()
+    first_line = first_line.strip().split()
+    fake_model_name = first_line[1]
+    if len(first_line) <= 2:
+        params = {}
+    else:
+        params = ast.literal_eval(" ".join(first_line[2:]))
 
-    num_voters = int(my_file.readline().strip())
     num_candidates = int(my_file.readline().strip())
-    fake_model_name = str(my_file.readline().strip())
-    params = {}
+    num_voters = int(my_file.readline().strip())
 
     return fake_model_name, params, num_voters, num_candidates
 
@@ -222,3 +230,16 @@ def check_if_fake(experiment_id: str, name: str) -> bool:
     my_file = open(path, 'r')
     line = my_file.readline().strip()
     return line[0] == '$'
+
+
+def get_skeleton_approvalwise_vector(election):
+
+    phi = election.params['phi']
+    p = election.params['p']
+    k = int(p * election.num_candidates)
+
+    vector = [phi*p for _ in range(election.num_candidates)]
+    for i in range(k):
+        vector[i] += 1-phi
+
+    return np.array(vector)

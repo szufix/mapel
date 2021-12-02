@@ -88,7 +88,7 @@ NICE_NAME = {
     'approval_id_0.5': 'Approval_ID_0.5',
     'approval_ic': 'Approval_IC',
     'approval_ic_0.5': 'Approval_IC_0.5',
-    'approval_shumallows': 'Approval_ShuMallows',
+    'approval_resampling': 'Approval_Resampling',
     'approval_noise_model': 'Approval_Noise_Model',
     'approval_disjoint_shumallows': 'Approval_Disjoint_ShuMallows',
     'approval_urn': 'Approval_Urn',
@@ -107,6 +107,7 @@ NICE_NAME = {
     'stun': 'STUN',
     'anun': 'ANUN',
     'approval_jaccard': 'Approval_Jaccard',
+    'approval_skeleton': 'approval_skeleton',
     }
 
 
@@ -131,23 +132,23 @@ PATHS = {'unid', 'stan', 'anid', 'stid', 'anun', 'stun',
 PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
                 'walsh_party', 'conitzer_party', 'mallows_party'}
 
-APPROVAL_MODELS = {'approval_ic', 'approval_shumallows', 'approval_id',
+APPROVAL_MODELS = {'approval_ic', 'approval_resampling', 'approval_id',
                    'approval_empty', 'approval_full', 'approval_truncated_urn',
                    'approval_urn', 'approval_euclidean', 'approval_noise_model',
                    'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
                    'approval_half_1', 'approval_half_2', 'approval_disjoint_shumallows',
                    'approval_simplex_shumallows',
                    'approval_vcr', 'approval_truncated_mallows', 'approval_moving_shumallows',
-                   'approval_jaccard'}
+                   'approval_jaccard', 'approval_skeleton'}
 
-APPROVAL_FAKE_MODELS = {'approval_half_1', 'approval_half_2'}
+APPROVAL_FAKE_MODELS = {'approval_half_1', 'approval_half_2', 'approval_skeleton'}
 
 GRAPH_MODELS = {'erdos_renyi_graph', 'watts_strogatz_graph', 'barabasi_albert_graph',
                 'random_geometric_graph', 'random_tree',
                 'cycle_graph', 'wheel_graph', 'star_graph', 'ladder_graph', 'circular_ladder_graph',
                 'erdos_renyi_graph_path'}
 
-NOT_ABCVOTING_RULES = {'borda_c4'}
+NOT_ABCVOTING_RULES = {'borda_c4', 'random'}
 
 EMBEDDING_RELATED_FEATURE = {'monotonicity_triplets'}
 

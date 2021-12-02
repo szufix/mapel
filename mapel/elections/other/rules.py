@@ -18,13 +18,13 @@ except ImportError:
 def compute_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, printing=False,
                            resolute=False):
     all_winning_committees = {}
-    for election in experiment.elections.values():
+    for election in experiment.instances.values():
         if printing:
             print(election.election_id)
         profile = Profile(election.num_candidates)
-        if experiment.election_type == 'ordinal':
+        if experiment.instance_type == 'ordinal':
             profile.add_voters(election.approval_votes)
-        elif experiment.election_type == 'approval':
+        elif experiment.instance_type == 'approval':
             profile.add_voters(election.votes)
         try:
             winning_committees = abcrules.compute(rule_name, profile, committee_size,
@@ -68,11 +68,14 @@ def import_committees_from_file(experiment_id, rule_name):
 def compute_not_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, printing=False,
                                resolute=False):
     all_winning_committees = {}
-    for election in experiment.elections.values():
+    for election in experiment.instances.values():
         if printing:
             print(election.election_id)
 
-        winning_committees = compute_borda_c4_rule(election, committee_size)
+        if rule_name == 'borda_c4':
+            winning_committees = compute_borda_c4_rule(election, committee_size)
+        elif rule_name == 'random':
+            winning_committees = compute_random_rule(election, committee_size)
 
         all_winning_committees[election.election_id] = winning_committees
     store_committees_to_file(experiment.experiment_id, rule_name, all_winning_committees)
@@ -90,3 +93,9 @@ def compute_borda_c4_rule(election, committee_size=1):
     ranking = [x for _, x in sorted(zip(scores, ranking), reverse=True)]
 
     return [set(ranking[0:committee_size])]
+
+
+def compute_random_rule(election, committee_size=1):
+
+    candidates = np.random.permutation(election.num_candidates)
+    return [set(candidates[0:committee_size])]

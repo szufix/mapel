@@ -2,6 +2,7 @@
 import os
 import csv
 import copy
+import ast
 import copy
 import csv
 import itertools
@@ -13,6 +14,7 @@ import numpy as np
 
 from mapel.main.objects.Experiment import Experiment
 from mapel.roommates.objects.RoommatesFamily import RoommatesFamily
+from mapel.roommates.objects.Roommates import Roommates
 import mapel.roommates.models_main as models_main
 import mapel.roommates.metrics_main as metr
 
@@ -34,9 +36,33 @@ except ImportError as error:
 class RoommatesExperiment(Experiment):
     """Abstract set of elections."""
 
-    def __init__(self, experiment_id=None):
-        super().__init__(experiment_id=experiment_id)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.default_num_agents = 10
+
+    def add_instances_to_experiment(self):
+
+        instances = {}
+
+        for family_id in self.families:
+
+            ids = []
+            if self.families[family_id].single_instance:
+                election_id = family_id
+                election = Roommates(self.experiment_id, election_id)
+                instances[election_id] = election
+                ids.append(str(election_id))
+            else:
+                for j in range(self.families[family_id].size):
+                    election_id = family_id + '_' + str(j)
+                    election = Roommates(self.experiment_id, election_id)
+                    instances[election_id] = election
+                    ids.append(str(election_id))
+
+            self.families[family_id].instance_ids = ids
+
+        return instances
+
 
     def add_instance(self, model_id="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
@@ -54,7 +80,7 @@ class RoommatesExperiment(Experiment):
                    label: str = None, color: str = "black", alpha: float = 1.,
                    show: bool = True, marker: str = 'o', starting_from: int = 0,
                    family_id: str = None, single_instance: bool = False,
-                   num_agents: int = None, path: dict = None) -> list:
+                   num_agents: int = None, path: dict = None):
 
         if num_agents is None:
             num_agents = self.default_num_agents
@@ -75,14 +101,11 @@ class RoommatesExperiment(Experiment):
         self.num_families = len(self.families)
         self.num_instances = sum([self.families[family_id].size for family_id in self.families])
 
-        instances = models_main.prepare_roommates_instances(experiment=self,
+        models_main.prepare_roommates_instances(experiment=self,
                                     model_id=self.families[family_id].model_id,
                                     family_id=family_id,
                                     params=copy.deepcopy(self.families[family_id].params))
 
-        self.families[family_id].instance_ids = list(instances.keys())
-
-        return list(instances.keys())
 
     def compute_distances(self, distance_id: str = 'emd-positionwise', num_threads: int = 1,
                           self_distances: bool = False, vector_type: str = 'A',
@@ -130,7 +153,7 @@ class RoommatesExperiment(Experiment):
             with open(path, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
                 writer.writerow(
-                    ["election_id_1", "election_id_2", "distance", "time"])
+                    ["instance_id_1", "instance_id_2", "distance", "time"])
 
                 for election_1, election_2 in itertools.combinations(self.instances, 2):
                     distance = str(distances[election_1][election_2])
@@ -140,6 +163,99 @@ class RoommatesExperiment(Experiment):
         self.distances = distances
         self.times = times
         self.matchings = matchings
+
+    def import_controllers(self):
+        """ Import controllers from a file """
+
+        families = {}
+
+        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'map.csv')
+        file_ = open(path, 'r')
+
+        header = [h.strip() for h in file_.readline().split(';')]
+        reader = csv.DictReader(file_, fieldnames=header, delimiter=';')
+
+        starting_from = 0
+        for row in reader:
+
+            model_id = None
+            color = None
+            label = None
+            params = None
+            alpha = None
+            size = None
+            marker = None
+            num_agents = None
+            family_id = None
+            show = True
+
+
+            if 'model_id' in row.keys():
+                model_id = str(row['model_id']).strip()
+
+            if 'color' in row.keys():
+                color = str(row['color']).strip()
+
+            if 'label' in row.keys():
+                label = str(row['label'])
+
+            if 'family_id' in row.keys():
+                family_id = str(row['family_id'])
+
+            if 'params' in row.keys():
+                params = ast.literal_eval(str(row['params']))
+
+            if 'alpha' in row.keys():
+                alpha = float(row['alpha'])
+
+            if 'size' in row.keys():
+                size = int(row['size'])
+
+            if 'marker' in row.keys():
+                marker = str(row['marker']).strip()
+
+            if 'num_agents' in row.keys():
+                num_agents = int(row['num_agents'])
+
+            if 'path' in row.keys():
+                path = ast.literal_eval(str(row['path']))
+
+            if 'show' in row.keys():
+                show = row['show'].strip() == 't'
+
+            single_instance = size == 1
+
+            families[family_id] = RoommatesFamily(model_id=model_id,
+                                                 family_id=family_id,
+                                                 params=params, label=label,
+                                                 color=color, alpha=alpha, show=show,
+                                                 size=size, marker=marker,
+                                                 starting_from=starting_from,
+                                                 num_agents=num_agents, path=path,
+                                                  single_instance=single_instance)
+            starting_from += size
+
+        self.num_families = len(families)
+        self.num_instances = sum([families[family_id].size for family_id in families])
+        self.main_order = [i for i in range(self.num_instances)]
+
+        file_.close()
+        return families
+
+    def prepare_instances(self):
+
+        if self.instances is None:
+            self.instances = {}
+
+        for family_id in self.families:
+
+            models_main.prepare_roommates_instances(
+                experiment=self,
+                model_id=self.families[family_id].model_id,
+                family_id=family_id,
+                params=self.families[family_id].params)
+
+
 
     def create_structure(self) -> None:
 

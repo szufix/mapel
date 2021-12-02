@@ -96,10 +96,10 @@ def extract_distance_id(distance_id: str) -> (Callable, str):
 
 def run_single_thread(experiment: Experiment, thread_ids: list,
                       distances: dict, times: dict, matchings: dict,
-                      printing: bool) -> None:
+                      printing: bool, t) -> None:
     """ Single thread for computing distances """
     for instance_id_1, instance_id_2 in thread_ids:
-        if printing:
+        if t == 0 and printing:
             print(instance_id_1, instance_id_2)
         start_time = time()
         distance = get_distance(experiment.instances[instance_id_1],
