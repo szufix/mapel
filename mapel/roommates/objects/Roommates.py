@@ -100,15 +100,11 @@ def import_real_roommates_instance(experiment_id, election_id, shift=False):
     else:
         first_line = first_line.strip().split()
         model_id = first_line[1]
-        if experiment_id == 'original_ordinal_map':
+
+        if len(first_line) <= 2:
             params = {}
-            model_name = old_name_extractor(first_line)
-            print(model_name)
         else:
-            if len(first_line) <= 2:
-                params = {}
-            else:
-                params = ast.literal_eval(" ".join(first_line[2:]))
+            params = ast.literal_eval(" ".join(first_line[2:]))
 
         num_agents = int(my_file.readline())
 

@@ -425,3 +425,40 @@ def runif_in_simplex(n):
 
   k = np.random.exponential(scale=1.0, size=n)
   return k / sum(k)
+
+
+def approval_anti_pjr_votes(num_voters=None, num_candidates=None, params=None):
+    if 'phi' not in params:
+        phi = np.random.random()
+    else:
+        phi = params['phi']
+
+    if 'g' not in params:
+        num_groups = 2
+    else:
+        num_groups = params['g']
+
+    k = int(params['p'] * num_candidates)
+
+    sizes = runif_in_simplex(num_groups)
+    sizes = np.concatenate(([0], sizes))
+    sizes = np.cumsum(sizes)
+
+    votes = [set() for _ in range(num_voters)]
+
+    for g in range(num_groups):
+
+        central_vote = {g * k + i for i in range(k)}
+
+        for v in range(int(sizes[g] * num_voters), int(sizes[g + 1] * num_voters)):
+            vote = set()
+            for c in range(num_candidates):
+                if np.random.random() <= phi:
+                    if np.random.random() <= params['p']:
+                        vote.add(c)
+                else:
+                    if c in central_vote:
+                        vote.add(c)
+            votes[v] = vote
+
+    return votes

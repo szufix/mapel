@@ -40,12 +40,14 @@ def generate_roommates_instance(experiment=None, model_id: str = None, instance_
 
     if model_id == 'roommates_norm-mallows' and 'norm-phi' not in params:
         params['norm-phi'] = np.random.rand()
-        alpha = params['norm-phi']
+        params['alpha'] = params['norm-phi']
+
     elif model_id == 'roommates_urn' and 'alpha' not in params:
         params['alpha'] = np.random.rand()
-        alpha = params['alpha']
+
     else:
-        alpha = 1
+        params['alpha'] = 1
+    alpha = params['alpha']
 
     votes = generate_roommates_votes(model_id=model_id, num_agents=num_agents, params=params)
 
@@ -93,7 +95,7 @@ def store_votes_in_a_file(model_id, params, path, num_agents, votes):
         if model_id in NICE_NAME:
             file_.write("# " + NICE_NAME[model_id] + " " + str(params) + "\n")
         else:
-            file_.write("# " + model_id + "\n")
+            file_.write("# " + model_id + " " + str(params) + "\n")
 
         file_.write(str(num_agents) + "\n")
 
