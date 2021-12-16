@@ -14,8 +14,6 @@ def get_range(params):
         return np.random.uniform(low=params['a'], high=params['b'])
 
 
-
-
 def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = None,
                                 params: dict = None) -> list:
     # v_a = 1.05  # params['v_a']

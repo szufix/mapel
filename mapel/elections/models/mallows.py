@@ -1,6 +1,7 @@
 import copy
 import os
 import pickle
+import random
 
 import numpy as np
 import scipy.special
@@ -204,7 +205,7 @@ def generate_approval_resampling_votes(num_voters=None, num_candidates=None, par
     return votes
 
 
-def generate_approval_moving_shumallows_votes(num_voters=None, num_candidates=None, params=None):
+def generate_approval_moving_resampling_votes(num_voters=None, num_candidates=None, params=None):
     # central_vote = set()
     # for c in range(num_candidates):
     #     if rand.random() <= params['p']:
@@ -218,7 +219,8 @@ def generate_approval_moving_shumallows_votes(num_voters=None, num_candidates=No
     for v in range(num_voters):
         vote = set()
         for c in range(num_candidates):
-            if np.random.random() <= params['phi']/5.:
+            # if np.random.random() <= params['phi']**3:
+            if np.random.random() <= params['phi']/float(params['div']):
                 if np.random.random() <= params['p']:
                     vote.add(c)
             else:
@@ -230,27 +232,32 @@ def generate_approval_moving_shumallows_votes(num_voters=None, num_candidates=No
     return votes
 
 
-def generate_approval_hamming_noise_model_votes(num_voters=None, num_candidates=None, params=None):
-    k = int(params['p'] * num_candidates)
-    central_vote = {i for i in range(k)}
+# def generate_approval_hamming_noise_model_votes(num_voters=None, num_candidates=None, params=None):
+#     k = int(params['p'] * num_candidates)
+#     central_vote = {i for i in range(k)}
+#
+#     votes = [set() for _ in range(num_voters)]
+#     for v in range(num_voters):
+#         vote = set()
+#         for c in range(num_candidates):
+#             if c in central_vote:
+#                 if np.random.random() <= 1 - params['phi']:
+#                     vote.add(c)
+#             else:
+#                 if np.random.random() < params['phi']:
+#                     vote.add(c)
+#         votes[v] = vote
+#
+#     return votes
 
-    votes = [set() for _ in range(num_voters)]
-    for v in range(num_voters):
-        vote = set()
-        for c in range(num_candidates):
-            if c in central_vote:
-                if np.random.random() <= 1 - params['phi']:
-                    vote.add(c)
-            else:
-                if np.random.random() < params['phi']:
-                    vote.add(c)
-        votes[v] = vote
 
-    return votes
-
-
-def generate_jaccard_noise_model_votes(num_voters=None, num_candidates=None,
+def generate_approval_noise_model_votes(num_voters=None, num_candidates=None,
                                                     params=None):
+    if 'type' in params:
+        model_type = params['type']
+    else:
+        model_type = 'hamming'
+
     k = int(params['p'] * num_candidates)
     # if k == 0:
     #     k = 1
@@ -273,12 +280,17 @@ def generate_jaccard_noise_model_votes(num_voters=None, num_candidates=None,
         num_options_in = scipy.special.binom(len(A), x)
         for y in range(len(B) + 1):
             num_options_out = scipy.special.binom(len(B), y)
-            factor = phi ** (len(A) - x + y)  # Hamming
-            # factor = phi ** ((len(A) - x + y) / (len(A) + y))  # Jaccard
-            # factor = phi ** max(len(A) - x, y)  # Zelinka
-            # factor = phi ** (max(len(A) - x, y) / max(len(A), x+y))  # Bunke-Shearer
 
-            # factor = phi ** (abs(len(A) - x - y)) * phi ** (len(A) - x + y)  # ShuMallows
+            if model_type == 'hamming':
+                factor = phi ** (len(A) - x + y)  # Hamming
+            elif model_type == 'jaccard':
+                factor = phi ** ((len(A) - x + y) / (len(A) + y))  # Jaccard
+            elif model_type == 'zelinka':
+                factor = phi ** max(len(A) - x, y)  # Zelinka
+            elif model_type == 'bunke-shearer':
+                factor = phi ** (max(len(A) - x, y) / max(len(A), x+y))  # Bunke-Shearer
+            else:
+                "No such model type!!!"
 
             num_options = num_options_in * num_options_out * factor
 
@@ -428,6 +440,12 @@ def runif_in_simplex(n):
 
 
 def approval_anti_pjr_votes(num_voters=None, num_candidates=None, params=None):
+
+    if 'p' not in params:
+        p = np.random.random()
+    else:
+        p = params['p']
+
     if 'phi' not in params:
         phi = np.random.random()
     else:
@@ -438,27 +456,90 @@ def approval_anti_pjr_votes(num_voters=None, num_candidates=None, params=None):
     else:
         num_groups = params['g']
 
-    k = int(params['p'] * num_candidates)
+    c_group_size = int(num_candidates/num_groups)
+    v_group_size = int(num_voters/num_groups)
+    size = int(p * num_candidates)
 
-    sizes = runif_in_simplex(num_groups)
-    sizes = np.concatenate(([0], sizes))
-    sizes = np.cumsum(sizes)
-
-    votes = [set() for _ in range(num_voters)]
-
+    votes = []
     for g in range(num_groups):
 
-        central_vote = {g * k + i for i in range(k)}
+        core = {g * c_group_size + i for i in range(c_group_size)}
+        rest = set(list(range(num_candidates))) - core
 
-        for v in range(int(sizes[g] * num_voters), int(sizes[g + 1] * num_voters)):
+        if size <= c_group_size:
+            central_vote = set(np.random.choice(list(core), size=size))
+        else:
+            central_vote = set(np.random.choice(list(rest), size=size-c_group_size))
+            central_vote = central_vote.union(core)
+
+        for v in range(v_group_size):
             vote = set()
             for c in range(num_candidates):
                 if np.random.random() <= phi:
-                    if np.random.random() <= params['p']:
+                    if np.random.random() <= p:
                         vote.add(c)
                 else:
                     if c in central_vote:
                         vote.add(c)
-            votes[v] = vote
+            votes.append(vote)
+
+    return votes
+
+
+def approval_partylist_votes(num_voters=None, num_candidates=None, params=None):
+
+    if 'g' not in params:
+        num_groups = 2
+    else:
+        num_groups = params['g']
+
+    if 'shift' not in params:
+        shift = False
+    else:
+        shift = True
+
+    if 'm' not in params:
+        m = 0
+    else:
+        m = params['m']
+
+    c_group_size = int(num_candidates/num_groups)
+    v_group_size = int(num_voters/num_groups)
+
+    votes = []
+    if not shift:
+        for g in range(num_groups):
+            for v in range(v_group_size):
+                vote = set()
+                for c in range(c_group_size):
+                    c += g*c_group_size
+                    vote.add(c)
+                for _ in range(m):
+                    el = random.sample(vote, 1)[0]
+                    vote.remove(el)
+                votes.append(vote)
+    else:
+        shift = int(c_group_size/2)
+        for g in range(num_groups):
+            for v in range(int(v_group_size/2)):
+                vote = set()
+                for c in range(c_group_size):
+                    c += g*c_group_size
+                    vote.add(c)
+                for _ in range(m):
+                    el = random.sample(vote, 1)[0]
+                    vote.remove(el)
+                votes.append(vote)
+
+            for v in range(int(v_group_size/2), v_group_size):
+                vote = set()
+                for c in range(c_group_size):
+                    c += g*c_group_size + shift
+                    c %= num_candidates
+                    vote.add(c)
+                for _ in range(m):
+                    el = random.sample(vote, 1)[0]
+                    vote.remove(el)
+                votes.append(vote)
 
     return votes

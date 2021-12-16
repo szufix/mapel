@@ -14,7 +14,20 @@ from PIL import Image
 
 from scipy.stats import stats
 
-num_elections = 10
+base = {
+    '3x3': 10,
+    '3x4': 24,
+    '3x5': 42,
+    '3x6': 83,
+    '3x7': 132,
+    '4x3': 111,
+    '4x4': 762,
+    '4x5': 4095,
+    # '7x2': 2636
+    # '5x3': 2467,
+}
+
+# num_elections = 10
 
 def get_id(name):
     return name.split('_')[-1]
@@ -23,9 +36,10 @@ def get_id(name):
 def text_path(name):
     return TextPath((0, 0), get_id(name))
 
-def func_3():
+def count_number_of_eq_classes():
 
     for exp_id in base:
+        print("\n\n\n")
         num_elections = base[exp_id]
         # swap_exp = mapel.prepare_experiment(f'abstract_classes/{exp_id}', election_type='ordinal',
         #                                     distance_id='swap_bf')
@@ -44,23 +58,24 @@ def func_3():
         #
 
         distance_ids = [
-            'l1-bordawise',
+            # 'l1-bordawise',
             # 'emd-bordawise',
             # 'l1-pairwise',
             # 'l1-positionwise',
             # 'emd-positionwise',
             # 'swap_bf'
+            'discrete'
         ]
 
         for distance_id in distance_ids:
-            target_exp = mapel.prepare_experiment(f'abstract_classes/{exp_id}', election_type='ordinal',
+            target_exp = mapel.prepare_experiment(f'abstract_classes/{exp_id}', instance_type='ordinal',
                                                   distance_id=distance_id)
 
             groups_pos = {}
             for name_1, name_2 in itertools.combinations(target_exp.elections, 2):
                 # print(name_1, name_2)
 
-                if target_exp.distances[name_1][name_2] == 0:
+                if target_exp.distances[name_1][name_2] < 0.0001:
                     # print('tmp')
                     name_1 = get_id(name_1)
                     name_2 = get_id(name_2)
@@ -82,18 +97,18 @@ def func_3():
             #     print(group)
 
             print(distance_id, len(groups_pos))
-
-            individual = {}
-            individual['color'] = {election_id: 'green' for election_id in target_exp.elections}
-            individual['alpha'] = {election_id: 0.9 for election_id in target_exp.elections}
-            individual['marker'] = {election_id: 'o' for election_id in target_exp.elections}
-            individual['ms'] = {election_id: 30 for election_id in target_exp.elections}
-
-
-            individual['color']['all_0'] = 'red'
-            # individual['alpha']['all_0'] = 0.9
-            # individual['marker']['all_0'] = 'o'
-            individual['ms']['all_0'] = 60
+            #
+            # individual = {}
+            # individual['color'] = {election_id: 'green' for election_id in target_exp.elections}
+            # individual['alpha'] = {election_id: 0.9 for election_id in target_exp.elections}
+            # individual['marker'] = {election_id: 'o' for election_id in target_exp.elections}
+            # individual['ms'] = {election_id: 30 for election_id in target_exp.elections}
+            #
+            #
+            # individual['color']['all_0'] = 'red'
+            # # individual['alpha']['all_0'] = 0.9
+            # # individual['marker']['all_0'] = 'o'
+            # individual['ms']['all_0'] = 60
 
 
             # print(groups_pos)
@@ -121,11 +136,11 @@ def func_3():
             #                 individual['marker'][election_id] = 'o'
 
 
-
-            target_exp.embed(algorithm='mds')
-            target_exp.print_map(title=f'{exp_id} {distance_id}', ms=50,
-                                 saveas=f'equivalence/{exp_id} {distance_id}',
-                                 individual=individual)
+            #
+            # target_exp.embed(algorithm='mds')
+            # target_exp.print_map(title=f'{exp_id} {distance_id}', ms=50,
+            #                      saveas=f'equivalence/{exp_id} {distance_id}',
+            #                      individual=individual)
 
 
 def func_5():
@@ -184,7 +199,7 @@ def func_7():
         list_of_names = []
         for distance_id in distance_ids:
             experiment = mapel.prepare_experiment(experiment_id=f'abstract_classes/{exp_id}',
-                                                  election_type='ordinal',
+                                                  instance_type='ordinal',
                                                   distance_id=distance_id)
 
             feature_id = 'swap_distance_from_id'
@@ -217,7 +232,7 @@ def func_swap():
 
     for exp_id in base:
         num_elections = base[exp_id]
-        swap_exp = mapel.prepare_experiment(f'abstract_classes/{exp_id}', election_type='ordinal',
+        swap_exp = mapel.prepare_experiment(f'abstract_classes/{exp_id}', instance_type='ordinal',
                                             distance_id='swap_bf')
 
         feature_dict = swap_exp.distances['all_0']
@@ -246,7 +261,7 @@ def func_correlation():
 
             for name in names:
                 experiment = mapel.prepare_experiment(experiment_id=experiment_id,
-                                                      election_type='ordinal', distance_id=name)
+                                                      instance_type='ordinal', distance_id=name)
                 all_distances[name] = experiment.distances
 
             for name_1, name_2 in itertools.combinations(names, 2):
@@ -267,7 +282,7 @@ def func_correlation():
 def func_2():
 
     for distance_id in distance_ids:
-        target_exp = mapel.prepare_experiment(f'abstract_classes/{exp_id}', election_type='ordinal',
+        target_exp = mapel.prepare_experiment(f'abstract_classes/{exp_id}', instance_type='ordinal',
                                               distance_id=distance_id)
         groups_pos = {}
         for name_1, name_2 in itertools.combinations(target_exp.elections, 2):
@@ -297,20 +312,11 @@ def func_2():
 
 def eq_cl():
 
-    base = {
-            '3x3': 10,
-            '3x4': 24,
-            '3x5': 42,
-            '3x6': 83,
-            '3x7': 132,
-            '4x3': 111,
-            '4x4': 762,
-            '5x3': 2467,
-    }
+
 
     # distance_id = 'l1-positionwise'
     exp_id = '5x3'
-    exp = mapel.prepare_experiment(f'abstract_classes/{exp_id}', election_type='ordinal')
+    exp = mapel.prepare_experiment(f'abstract_classes/{exp_id}', instance_type='ordinal')
     # exp.prepare_elections()
 
     distance_ids = [

@@ -2,7 +2,7 @@ import csv
 import os
 import math
 
-from itertools import combinations
+from itertools import combinations, product
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
@@ -207,6 +207,10 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
     _min = min(x for x in values.values() if x is not None)
     _max = max(x for x in values.values() if x is not None)
 
+    # if normalizing_func is not None:
+    #     _min = normalizing_func(_min)
+    #     _max = normalizing_func(_max)
+
     shades = []
     xx = []
     yy = []
@@ -317,6 +321,9 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
         marker_func=marker_func, dim=dim, column_id=column_id)
     unique_markers = set(markers)
     images = []
+
+    print('min', _min)
+    print('max', _max)
 
     if mses is None:
         mses = np.asarray([ms for _ in range(len(shades))])
@@ -431,6 +438,7 @@ def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
                            alpha=individual['alpha'][election_id],
                            s=individual['ms'][election_id],
                            marker=individual['marker'][election_id])
+
 
 def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
     for family in experiment.families.values():
@@ -582,6 +590,8 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
             mapping[ctr] = election_id
             ctr += 1
 
+    # print(mapping)
+
     # PREPARE EMPTY DICTS
     matrix = {family_id_1: {} for family_id_1 in experiment.families}
     quantities = {family_id_1: {} for family_id_1 in experiment.families}
@@ -603,10 +613,10 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
                 matrix[bucket[i]][bucket[j]] += experiment.times[mapping[i]][
                     mapping[j]]
             else:
-                print('map', mapping[i], mapping[j])
+                # print('map', mapping[i], mapping[j])
                 # print(experiment.distances)
-                print(experiment.distances[mapping[i]][mapping[j]])
-                print(matrix[bucket[i]][bucket[j]])
+                # print(experiment.distances[mapping[i]][mapping[j]])
+                # print(matrix[bucket[i]][bucket[j]])
                 matrix[bucket[i]][bucket[j]] += experiment.distances[mapping[i]][mapping[j]]
             quantities[bucket[i]][bucket[j]] += 1
     #
@@ -621,15 +631,18 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
     #                 quantities[bucket[i]][bucket[j]] += 1
 
     # NORMALIZE
-    for family_id_1, family_id_2 in combinations(experiment.families, 2):
-        # add normalization for self distances
-        if quantities[family_id_1][family_id_2] != 0.:
-            matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
-        matrix[family_id_1][family_id_2] = \
-            round(matrix[family_id_1][family_id_2] * scale, rounding)
-        if rounding == 0:
-            matrix[family_id_1][family_id_2] = int(matrix[family_id_1][family_id_2])
-        matrix[family_id_2][family_id_1] = matrix[family_id_1][family_id_2]
+    # for family_id_1, family_id_2 in combinations(experiment.families, 2):
+    # for family_id_1, family_id_2 in product(experiment.families, 2):
+    for family_id_1 in experiment.families:
+        for family_id_2 in experiment.families:
+            # add normalization for self distances
+            if quantities[family_id_1][family_id_2] != 0.:
+                matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
+            matrix[family_id_1][family_id_2] = \
+                round(matrix[family_id_1][family_id_2] * scale, rounding)
+            if rounding == 0:
+                matrix[family_id_1][family_id_2] = int(matrix[family_id_1][family_id_2])
+            matrix[family_id_2][family_id_1] = matrix[family_id_1][family_id_2]
 
     # THE REST
     fig, ax = plt.subplots()
@@ -749,6 +762,7 @@ def add_textual(experiment=None, textual=None, ax=None, size=12):
                 bbox=dict(boxstyle="round", ec="black", fc="white"))
 
     for name in textual:
+
         x = experiment.coordinates[name][0]
         y = experiment.coordinates[name][1]
         if name in RULE_NAME_MAP:

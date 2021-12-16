@@ -23,22 +23,23 @@ from mapel.elections.objects.Election import Election
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 
 
-
 def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                             num_voters: int = None, params: dict = None) -> Union[list, np.ndarray]:
     main_models = {'approval_ic': impartial.generate_approval_ic_votes,
                    'approval_id': impartial.generate_approval_id_votes,
                    'approval_resampling': mallows.generate_approval_resampling_votes,
-                   'approval_noise_model': mallows.generate_approval_hamming_noise_model_votes,
+                   'approval_noise_model': mallows.generate_approval_noise_model_votes,
                    'approval_urn': urn_model.generate_approval_urn_votes,
                    'approval_euclidean': euclidean.generate_approval_euclidean_votes,
-                   'approval_disjoint_shumallows': mallows.generate_approval_disjoint_shumallows_votes,
+                   'approval_disjoint_resampling': mallows.generate_approval_disjoint_shumallows_votes,
                    'approval_vcr': euclidean.generate_approval_vcr_votes,
                    'approval_truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
                    'approval_truncated_urn': urn_model.generate_approval_truncated_urn_votes,
-                   'approval_moving_shumallows': mallows.generate_approval_moving_shumallows_votes,
+                   'approval_moving_resampling': mallows.generate_approval_moving_resampling_votes,
                    'approval_simplex_shumallows': mallows.generate_approval_simplex_shumallows_votes,
-                   'approval_jaccard': mallows.generate_jaccard_noise_model_votes,
+                   # 'approval_jaccard': mallows.generate_jaccard_noise_model_votes,
+                   'approval_anti_pjr': mallows.approval_anti_pjr_votes,
+                   'approval_partylist': mallows.approval_partylist_votes,
                    }
 
     if model_id in main_models:
@@ -274,7 +275,15 @@ def update_params(params, variable, model_id, num_candidates):
         params['alpha'] = params[variable]
         params['variable'] = variable
 
+        if model_id in APPROVAL_MODELS:
+            if 'p' not in params:
+                params['p'] = np.random.rand()
+            elif type(params['p']) is list:
+                params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+
     else:
+        if model_id in ['approval_partylist']:
+            return params, 1
 
         if model_id in APPROVAL_MODELS:
             if 'p' not in params:

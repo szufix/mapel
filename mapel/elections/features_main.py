@@ -40,7 +40,44 @@ def get_feature(feature_id):
             'distortion_from_all': distortion_from_all,
             'distortion_from_top_100': distortion_from_top_100,
             'pav_time': partylist.pav_time,
+            'justified_ratio': justified_ratio,
             }.get(feature_id)
+
+
+def justified_ratio(election, features_params) -> float:
+    # 1-large, 1-cohesive
+    # election.compute_reverse_approvals()
+    # threshold = election.num_voters / features_params['committee_size']
+    # covered = set()
+    # for _set in election.reverse_approvals:
+    #     if len(_set) >= threshold:
+    #         covered = covered.union(_set)
+    # print(len(covered) / float(election.num_voters))
+    # return len(covered) / float(election.num_voters)
+
+    # 2-large, 2-cohesive
+    election.compute_reverse_approvals()
+    threshold = 2 * election.num_voters / features_params['committee_size']
+    covered = set()
+    for set_1, set_2 in combinations(election.reverse_approvals, 2):
+        _intersection = set_1.intersection(set_2)
+        if len(_intersection) >= threshold:
+            covered = covered.union(_intersection)
+    print(len(covered) / float(election.num_voters))
+    return len(covered) / float(election.num_voters)
+
+    # 3-large, 3-cohesive
+    # election.compute_reverse_approvals()
+    # threshold = 3 * election.num_voters / features_params['committee_size']
+    # covered = set()
+    # for set_1, set_2, set_3 in combinations(election.reverse_approvals, 3):
+    #     _intersection = set_1.intersection(set_2).intersection(set_3)
+    #     if len(_intersection) >= threshold:
+    #         covered = covered.union(_intersection)
+    # print(len(covered) / float(election.num_voters))
+    # return len(covered) / float(election.num_voters)
+
+
 
 
 def monotonicity_1(experiment, election) -> float:

@@ -105,6 +105,7 @@ def run_single_thread(experiment: Experiment, thread_ids: list,
         distance = get_distance(experiment.instances[instance_id_1],
                                 experiment.instances[instance_id_2],
                                 distance_id=experiment.distance_id)
+        # print(distance)
         if type(distance) is tuple:
             distance, matching = distance
             matching = np.array(matching)

@@ -123,7 +123,7 @@ class Experiment:
 
     def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
               dim: int = 2, num_neighbors: int = None, method: str = 'standard',
-              zero_distance: float = 0.01) -> None:
+              zero_distance: float = 0.1) -> None:
 
         if algorithm == 'spring':
             attraction_factor = 2
@@ -331,7 +331,6 @@ class Experiment:
 
                 coordinates_by_families[family_id] = [[] for _ in range(3)]
 
-                # print(self.families[family_id].instance_ids)
 
                 for instance_id in self.families[family_id].instance_ids:
                     coordinates_by_families[family_id][0].append(self.coordinates[instance_id][0])
@@ -424,6 +423,9 @@ class Experiment:
                         instance_id_2 = row['instance_id_2']
                     except:
                         pass
+
+                if instance_id_1 not in self.instances or instance_id_2 not in self.instances:
+                    continue
 
                 if instance_id_1 not in distances:
                     distances[instance_id_1] = {}

@@ -191,15 +191,9 @@ def import_real_app_election(experiment_id: str, election_id: str):
                     votes[it].add(int(line[el + 1]))
                 it += 1
 
-    # Shift by -1
-    # if model_id in LIST_OF_PREFLIB_MODELS:
-    #     for i in range(num_voters):
-    #         for j in range(num_candidates):
-    #             votes[i][j] -= 1
     if model_id in NICE_NAME.values():
         rev_dict = dict(zip(NICE_NAME.values(), NICE_NAME.keys()))
         model_id = rev_dict[model_id]
-    # print(model_id)
 
     return votes, num_voters, num_candidates, params, model_id
 

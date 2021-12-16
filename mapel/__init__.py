@@ -61,9 +61,3 @@ def generate_election(**kwargs):
 
 def compute_distance(*args, **kwargs):
     return metr.get_distance(*args, **kwargs)
-
-# def shapley(*args, **kwargs):
-#     return features.shapley(*args, **kwargs)
-#
-# def banzhaf(*args, **kwargs):
-#     return features.banzhaf(*args, **kwargs)

@@ -40,7 +40,7 @@ class OrdinalElectionExperiment(ElectionExperiment):
         for family_id in self.families:
 
             ids = []
-            print(self.families[family_id].model_id)
+            # print(self.families[family_id].model_id)
 
             if self.families[family_id].model_id in NICE_NAME or \
                     self.families[family_id].model_id in LIST_OF_FAKE_MODELS or \

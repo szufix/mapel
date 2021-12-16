@@ -547,7 +547,7 @@ def import_real_soc_election(experiment_id, election_id, shift=False):
         if experiment_id == 'original_ordinal_map':
             params = {}
             model_name = old_name_extractor(first_line)
-            print(model_name)
+            # print(model_name)
         else:
             # params = {}
             if len(first_line) <= 2:

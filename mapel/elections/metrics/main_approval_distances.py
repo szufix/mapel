@@ -37,7 +37,7 @@ def compute_hamming(election_1: ApprovalElection, election_2: ApprovalElection) 
     votes_1 = election_1.votes
     votes_2 = election_2.votes
     params = {'voters': election_1.num_voters, 'candidates': election_2.num_candidates}
-    file_name = f'{rand.random()}.lp'
+    file_name = f'{np.random.random()}.lp'
     path = os.path.join(os.getcwd(), "trash", file_name)
     lp.generate_ilp_distance(path, votes_1, votes_2, params, 'hamming')
     objective_value = lp.solve_ilp_distance(path, votes_1, votes_2, params, 'hamming')

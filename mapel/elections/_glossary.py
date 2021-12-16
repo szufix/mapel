@@ -90,7 +90,7 @@ NICE_NAME = {
     'approval_ic_0.5': 'Approval_IC_0.5',
     'approval_resampling': 'Approval_Resampling',
     'approval_noise_model': 'Approval_Noise_Model',
-    'approval_disjoint_shumallows': 'Approval_Disjoint_ShuMallows',
+    'approval_disjoint_resampling': 'approval_disjoint_resampling',
     'approval_urn': 'Approval_Urn',
     'core': 'Core',
     'approval_truncated_mallows': 'Approval_Truncated_Mallows',
@@ -99,7 +99,7 @@ NICE_NAME = {
     'approval_vcr': 'Approval_VCR',
     'all_votes': 'All_Votes',
     'all': 'All',
-    'approval_moving_shumallows': 'Approval_Moving_ShuMallows',
+    'approval_moving_resampling': 'Approval_Moving_Resampling',
     'unid': 'UNID',
     'anid': 'ANID',
     'stid': 'STID',
@@ -108,6 +108,10 @@ NICE_NAME = {
     'anun': 'ANUN',
     'approval_jaccard': 'Approval_Jaccard',
     'approval_skeleton': 'approval_skeleton',
+    'approval_anti_pjr': 'approval_anti_pjr',
+    'hamming': 'hamming',
+    'noise_model': 'noise_model',
+    'approval_partylist': 'Approval_Partylist',
     }
 
 
@@ -136,10 +140,11 @@ APPROVAL_MODELS = {'approval_ic', 'approval_resampling', 'approval_id',
                    'approval_empty', 'approval_full', 'approval_truncated_urn',
                    'approval_urn', 'approval_euclidean', 'approval_noise_model',
                    'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
-                   'approval_half_1', 'approval_half_2', 'approval_disjoint_shumallows',
+                   'approval_half_1', 'approval_half_2', 'approval_disjoint_resampling',
                    'approval_simplex_shumallows',
-                   'approval_vcr', 'approval_truncated_mallows', 'approval_moving_shumallows',
-                   'approval_jaccard', 'approval_skeleton'}
+                   'approval_vcr', 'approval_truncated_mallows', 'approval_moving_resampling',
+                   'approval_jaccard', 'approval_skeleton', 'approval_anti_pjr',
+                   'approval_partylist'}
 
 APPROVAL_FAKE_MODELS = {'approval_half_1', 'approval_half_2', 'approval_skeleton'}
 

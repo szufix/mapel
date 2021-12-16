@@ -79,7 +79,7 @@ class ElectionExperiment(Experiment):
 
     def add_election(self, model_id="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
-                     num_candidates=None, num_voters=None, election_id=None, num_nodes=None):
+                     num_candidates=None, num_voters=None, election_id=None):
         """ Add election to the experiment """
 
         if num_candidates is None:
@@ -92,14 +92,14 @@ class ElectionExperiment(Experiment):
                                         color=color, alpha=alpha, show=show, marker=marker,
                                         starting_from=starting_from, family_id=election_id,
                                         num_candidates=num_candidates, num_voters=num_voters,
-                                        num_nodes=num_nodes, single_election=True)
+                                         single_election=True)
 
     def add_election_family(self, model_id: str = "none", params: dict = None, size: int = 1,
                             label: str = None, color: str = "black", alpha: float = 1.,
                             show: bool = True, marker: str = 'o', starting_from: int = 0,
                             num_candidates: int = None, num_voters: int = None,
                             family_id: str = None, single_election: bool = False,
-                            num_nodes: int = None, path: dict = None,
+                             path: dict = None,
                             election_id: str = None) -> list:
         """ Add family of elections to the experiment """
 
@@ -149,7 +149,7 @@ class ElectionExperiment(Experiment):
                                                                   family_id=family_id,
                                                                   params=copy.deepcopy(params))
 
-        self.families[family_id].election_ids = list(elections.keys())
+        self.families[family_id].instance_ids = list(elections.keys())
 
         return list(elections.keys())
 
@@ -344,6 +344,7 @@ class ElectionExperiment(Experiment):
             num_candidates = None
             num_voters = None
             family_id = None
+            show = True
 
             if 'model_id' in row.keys():
                 model_id = str(row['model_id']).strip()
@@ -378,7 +379,8 @@ class ElectionExperiment(Experiment):
             if 'path' in row.keys():
                 path = ast.literal_eval(str(row['path']))
 
-            show = row['show'].strip() == 't'
+            if 'show' in row.keys():
+                show = row['show'].strip() == 't'
             #
             # if model_id in {'urn_model'} and 'alpha' in params:
             #     family_id += '_' + str(float(params['alpha']))
@@ -432,7 +434,8 @@ class ElectionExperiment(Experiment):
                                 'number_of_cohesive_groups_brute',
                                 'proportionality_degree_pav',
                                 'proportionality_degree_av',
-                                'proportionality_degree_cc']:
+                                'proportionality_degree_cc',
+                                'justified_ratio']:
                 value = feature(election, feature_params)
 
             elif feature_id in {'avg_distortion_from_guardians',
@@ -456,7 +459,8 @@ class ElectionExperiment(Experiment):
 
             with open(path, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(["election_id", "value", "bound", "num_large_parties"])
+                writer.writerow(["election_id", "value"])
+                # writer.writerow(["election_id", "value", "bound", "num_large_parties"])
                 if feature_id in {'partylist'}:
                     for key in feature_dict:
                         writer.writerow([key, feature_dict[key][0], feature_dict[key][1],

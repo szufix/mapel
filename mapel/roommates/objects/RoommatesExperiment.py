@@ -144,6 +144,7 @@ class RoommatesExperiment(Experiment):
 
         for t in range(num_threads):
             threads[t].join()
+
         if self.store:
 
             file_name = f'{distance_id}.csv'
