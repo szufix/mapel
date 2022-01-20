@@ -4,7 +4,11 @@ import math
 from typing import Union
 
 import numpy as np
-from pulp import *
+try:
+    import pulp
+except Exception:
+    pulp = None
+
 
 from mapel.elections._glossary import *
 from mapel.elections.metrics import lp
