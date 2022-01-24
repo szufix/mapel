@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import ast
+import copy
 import os
 
 import numpy as np
@@ -13,7 +14,8 @@ from mapel.elections.objects.Election import Election
 class ApprovalElection(Election):
 
     def __init__(self, experiment_id, election_id, votes=None, alpha=1, model_id=None,
-                 ballot='approval', num_voters=None, num_candidates=None, _import=False):
+                 ballot='approval', num_voters=None, num_candidates=None, _import=False,
+                 shift: bool = False):
 
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
                          model_id=model_id, ballot=ballot, num_voters=num_voters,
@@ -36,10 +38,11 @@ class ApprovalElection(Election):
                     import_fake_app_election(experiment_id, election_id)
             else:
                 self.votes, self.num_voters, self.num_candidates, self.params, \
-                    self.model = import_real_app_election(experiment_id, election_id)
+                    self.model = import_real_app_election(experiment_id, election_id, shift)
                 try:
                     self.alpha = self.params['alpha']
-                except KeyError:
+                except:
+                    self.alpha = 1
                     pass
 
 
@@ -150,7 +153,7 @@ class ApprovalElection(Election):
         self.reverse_approvals = reverse_approvals
 
 
-def import_real_app_election(experiment_id: str, election_id: str):
+def import_real_app_election(experiment_id: str, election_id: str, shift=False):
     """ Import real approval election from .app file """
 
     file_name = f'{election_id}.app'
@@ -194,6 +197,13 @@ def import_real_app_election(experiment_id: str, election_id: str):
     if model_id in NICE_NAME.values():
         rev_dict = dict(zip(NICE_NAME.values(), NICE_NAME.keys()))
         model_id = rev_dict[model_id]
+
+    if shift:
+        for i, vote in enumerate(votes):
+            new_vote = set()
+            for c in vote:
+                new_vote.add(c-1)
+            votes[i] = new_vote
 
     return votes, num_voters, num_candidates, params, model_id
 

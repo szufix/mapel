@@ -63,7 +63,7 @@ def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElectio
         'discrete': mod.compute_discrete_distance,
         'voter_subelection': mod.compute_voter_subelection,
         'candidate_subelection': mod.compute_candidate_subelection,
-        'spearman': mod.compute_spearman_distance,
+        # 'spearman': mod.compute_spearman_distance,
         'swap_bf': mod.compute_swap_bf_distance,
     }
 

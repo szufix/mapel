@@ -19,44 +19,44 @@ from mapel.elections.other.winners2 import generate_winners
 class OrdinalElection(Election):
 
     def __init__(self, experiment_id, election_id, votes=None, with_matrix=False, alpha=None,
-                 model_id=None,
+                 model_id=None, params=None,
                  ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None,
                  _import: bool = False, shift: bool = False):
 
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
                          model_id=model_id, ballot=ballot,
                          num_voters=num_voters, num_candidates=num_candidates)
+        self.params = params
 
         if votes is not None:
+            self.model_id = model_id
             if str(votes[0]) in LIST_OF_FAKE_MODELS:
                 self.fake = True
                 self.votes = votes[0]
-                self.model_id = votes[0]
                 self.num_candidates = votes[1]
                 self.num_voters = votes[2]
-                self.fake_param = votes[3]
             else:
                 self.votes = votes
                 self.num_candidates = len(votes[0])
                 self.num_voters = len(votes)
-                self.model_id = model_id
                 self.potes = self.votes_to_potes()
         else:
             self.fake = check_if_fake(experiment_id, election_id)
             if self.fake:
-                self.model_id, self.fake_param, self.num_voters, \
+                self.model_id, self.params, self.num_voters, \
                 self.num_candidates = import_fake_soc_election(experiment_id, election_id)
             else:
-                self.votes, self.num_voters, self.num_candidates, self.param, \
+                self.votes, self.num_voters, self.num_candidates, self.params, \
                     self.model_id = import_real_soc_election(experiment_id, election_id, shift)
                 try:
-                    self.alpha = self.param['alpha']
+                    self.alpha = self.params['alpha']
                 except KeyError:
                     pass
                 self.potes = self.votes_to_potes()
 
         # self.approval_votes = convert_ordinal_to_approval(self.votes)
         self.candidatelikeness_original_vectors = {}
+
 
         if with_matrix:
             self.matrix = self.import_matrix()
@@ -93,18 +93,18 @@ class OrdinalElection(Election):
         elif self.model_id == 'sushi_matrix':
             vectors = get_sushi_vectors()
         elif self.model_id in {'norm-mallows_matrix', 'mallows_matrix_path'}:
-            vectors = get_mallows_vectors(self.num_candidates, self.fake_param)
+            vectors = get_mallows_vectors(self.num_candidates, self.params)
         elif self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
             vectors = get_fake_vectors_single(self.model_id, self.num_candidates, self.num_voters)
         elif self.model_id in {'walsh_path', 'conitzer_path'}:
-            vectors = get_fake_multiplication(self.num_candidates, self.fake_param,
+            vectors = get_fake_multiplication(self.num_candidates, self.params,
                                               self.model_id)
         elif self.model_id in PATHS:
             vectors = get_fake_convex(self.model_id, self.num_candidates, self.num_voters,
-                                      self.fake_param, get_fake_vectors_single)
+                                      self.params, get_fake_vectors_single)
         elif self.model_id == 'crate':
             vectors = get_fake_vectors_crate(num_candidates=self.num_candidates,
-                                             fake_param=self.fake_param)
+                                             fake_param=self.params)
         else:
             for i in range(self.num_voters):
                 pos = 0
@@ -165,7 +165,7 @@ class OrdinalElection(Election):
                                                      self.num_voters)
             elif self.model_id in PATHS:
                 borda_vector = get_fake_convex(self.model_id, self.num_candidates,
-                                               self.num_voters, self.fake_param,
+                                               self.num_voters, self.params,
                                                get_fake_borda_vector)
 
         else:
@@ -493,27 +493,19 @@ def import_fake_soc_election(experiment_id, name):
     file_name = f'{name}.soc'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
-    my_file.readline()  # line with $ fake
 
-    num_voters = int(my_file.readline().strip())
-    num_candidates = int(my_file.readline().strip())
-    fake_model_name = str(my_file.readline().strip())
-    params = {}
-    if fake_model_name == 'crate':
-        params = [float(my_file.readline().strip()), float(my_file.readline().strip()),
-                  float(my_file.readline().strip()), float(my_file.readline().strip())]
-    elif fake_model_name == 'norm-mallows_matrix':
-        params['norm-phi'] = float(my_file.readline().strip())
-        params['weight'] = float(my_file.readline().strip())
-    elif fake_model_name in PATHS:
-        params['alpha'] = float(my_file.readline().strip())
-        if fake_model_name == 'mallows_matrix_path':
-            params['norm-phi'] = params['alpha']
-            params['weight'] = float(my_file.readline().strip())
-    else:
+    first_line = my_file.readline()
+    first_line = first_line.strip().split()
+    model_name = first_line[1]
+    if len(first_line) <= 2:
         params = {}
+    else:
+        params = ast.literal_eval(" ".join(first_line[2:]))
 
-    return fake_model_name, params, num_voters, num_candidates
+    num_candidates = int(my_file.readline())
+    num_voters = int(my_file.readline())
+
+    return model_name, params, num_voters, num_candidates
 
 
 def old_name_extractor(first_line):
@@ -528,7 +520,7 @@ def old_name_extractor(first_line):
     return model_name
 
 
-def import_real_soc_election(experiment_id, election_id, shift=False):
+def import_real_soc_election(experiment_id: str, election_id: str, shift=False):
     """ Import real ordinal election form .soc file """
 
     file_name = f'{election_id}.soc'

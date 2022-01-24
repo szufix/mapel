@@ -129,7 +129,7 @@ def pav_time(election):
 
     profile = Profile(election.num_candidates)
     profile.add_voters(election.votes)
-    committee_size = 5
+    committee_size = 10
     resolute = True
     rule_name = 'pav'
     start = time.time()

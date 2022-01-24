@@ -3,6 +3,7 @@
 
 import os
 from collections import Counter
+import random as rand
 
 import numpy as np
 
@@ -201,7 +202,7 @@ def prepare_preflib_family(experiment=None, model=None, family_id=None,
     ctr = 0
     # print(experiment.families)
     # print(ids, experiment.families[family_id].size)
-    rand_ids = np.random.choices(ids, k=experiment.families[family_id].size)
+    rand_ids = rand.choices(ids, k=experiment.families[family_id].size)
     for ri in rand_ids:
         name = family_id + '_' + str(ctr)
         tmp_election_type = model + '_' + str(ri)

@@ -1038,131 +1038,131 @@ def solve_lp_matrix(lp_file_name):
 def generate_ilp_distance(lp_file_name, votes_1, votes_2, params, metric_name):
     lp_file = open(lp_file_name, 'w')
     lp_file.write("Minimize\n")  # obj: ")
-
-    first = True
-    for k in range(params['voters']):
-        for l in range(params['voters']):
-
-            vote_1 = votes_1[k]
-            vote_2 = votes_2[l]
-
-            if metric_name == 'spearman':
-                pote_1 = [0] * params['candidates']
-                pote_2 = [0] * params['candidates']
-
-                for i in range(params['candidates']):
-                    pote_1[vote_1[i]] = i
-                    pote_2[vote_2[i]] = i
-
-            for i in range(params['candidates']):
-                for j in range(params['candidates']):
-                    if not first:
-                        lp_file.write(" + ")
-                    first = False
-
-                    if metric_name == "spearman":
-                        weight = abs(pote_1[i] - pote_2[j])
-                    elif metric_name == "alt":
-                        weight = float(abs(pote_1[i] - pote_2[j]) ** (2)) / float(
-                            1. + min(pote_1[i], pote_2[j]))
-                    elif metric_name == 'hamming':
-                        weight = hamming(vote_1, vote_2)
-                    else:
-                        weight = 0
-
-                    lp_file.write(
-                        str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(
-                            j))
-    lp_file.write("\n")
-
-    lp_file.write("Subject To\n")
-
-    for k in range(params['voters']):
-        for l in range(params['voters']):
-            for i in range(params['candidates']):
-                for j in range(params['candidates']):
-                    lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
-                    lp_file.write(" - " + "M" + "i" + str(i) + "j" + str(j) + " <= 0" + "\n")
-
-                    lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
-                    lp_file.write(" - " + "N" + "k" + str(k) + "l" + str(l) + " <= 0" + "\n")
-
-    for k in range(params['voters']):
-        first = True
-        for l in range(params['voters']):
-            if not first:
-                lp_file.write(" + ")
-            first = False
-            lp_file.write("N" + "k" + str(k) + "l" + str(l))
-        lp_file.write(" = 1" + "\n")
-
-    for l in range(params['voters']):
-        first = True
-        for k in range(params['voters']):
-            if not first:
-                lp_file.write(" + ")
-            first = False
-            lp_file.write("N" + "k" + str(k) + "l" + str(l))
-        lp_file.write(" = 1" + "\n")
-
-    for i in range(params['candidates']):
-        first = True
-        for j in range(params['candidates']):
-            if not first:
-                lp_file.write(" + ")
-            first = False
-            lp_file.write("M" + "i" + str(i) + "j" + str(j))
-        lp_file.write(" = 1" + "\n")
-
-    for j in range(params['candidates']):
-        first = True
-        for i in range(params['candidates']):
-            if not first:
-                lp_file.write(" + ")
-            first = False
-            lp_file.write("M" + "i" + str(i) + "j" + str(j))
-        lp_file.write(" = 1" + "\n")
-
-    # IMPORTANT #
-    for k in range(params['voters']):
-        for i in range(params['candidates']):
-            first = True
-            for l in range(params['voters']):
-                for j in range(params['candidates']):
-                    if not first:
-                        lp_file.write(" + ")
-                    first = False
-                    lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
-            lp_file.write(" = 1" + "\n")
-
-    # IMPORTANT #
-    for l in range(params['voters']):
-        for j in range(params['candidates']):
-            first = True
-            for k in range(params['voters']):
-                for i in range(params['candidates']):
-                    if not first:
-                        lp_file.write(" + ")
-                    first = False
-                    lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
-            lp_file.write(" = 1" + "\n")
-
-    lp_file.write("Binary\n")
-
-    for k in range(params['voters']):
-        for l in range(params['voters']):
-            for i in range(params['candidates']):
-                for j in range(params['candidates']):
-                    lp_file.write(
-                        "P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j) + "\n")
-
-    for k in range(params['voters']):
-        for l in range(params['voters']):
-            lp_file.write("N" + "k" + str(k) + "l" + str(l) + "\n")
-
-    for i in range(params['candidates']):
-        for j in range(params['candidates']):
-            lp_file.write("M" + "i" + str(i) + "j" + str(j) + "\n")
+    #
+    # first = True
+    # for k in range(params['voters']):
+    #     for l in range(params['voters']):
+    #
+    #         vote_1 = votes_1[k]
+    #         vote_2 = votes_2[l]
+    #
+    #         if metric_name == 'spearman':
+    #             pote_1 = [0] * params['candidates']
+    #             pote_2 = [0] * params['candidates']
+    #
+    #             for i in range(params['candidates']):
+    #                 pote_1[vote_1[i]] = i
+    #                 pote_2[vote_2[i]] = i
+    #
+    #         for i in range(params['candidates']):
+    #             for j in range(params['candidates']):
+    #                 if not first:
+    #                     lp_file.write(" + ")
+    #                 first = False
+    #
+    #                 if metric_name == "spearman":
+    #                     weight = abs(pote_1[i] - pote_2[j])
+    #                 elif metric_name == "alt":
+    #                     weight = float(abs(pote_1[i] - pote_2[j]) ** (2)) / float(
+    #                         1. + min(pote_1[i], pote_2[j]))
+    #                 elif metric_name == 'hamming':
+    #                     weight = hamming(vote_1, vote_2)
+    #                 else:
+    #                     weight = 0
+    #
+    #                 lp_file.write(
+    #                     str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(
+    #                         j))
+    # lp_file.write("\n")
+    #
+    # lp_file.write("Subject To\n")
+    #
+    # for k in range(params['voters']):
+    #     for l in range(params['voters']):
+    #         for i in range(params['candidates']):
+    #             for j in range(params['candidates']):
+    #                 lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+    #                 lp_file.write(" - " + "M" + "i" + str(i) + "j" + str(j) + " <= 0" + "\n")
+    #
+    #                 lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+    #                 lp_file.write(" - " + "N" + "k" + str(k) + "l" + str(l) + " <= 0" + "\n")
+    #
+    # for k in range(params['voters']):
+    #     first = True
+    #     for l in range(params['voters']):
+    #         if not first:
+    #             lp_file.write(" + ")
+    #         first = False
+    #         lp_file.write("N" + "k" + str(k) + "l" + str(l))
+    #     lp_file.write(" = 1" + "\n")
+    #
+    # for l in range(params['voters']):
+    #     first = True
+    #     for k in range(params['voters']):
+    #         if not first:
+    #             lp_file.write(" + ")
+    #         first = False
+    #         lp_file.write("N" + "k" + str(k) + "l" + str(l))
+    #     lp_file.write(" = 1" + "\n")
+    #
+    # for i in range(params['candidates']):
+    #     first = True
+    #     for j in range(params['candidates']):
+    #         if not first:
+    #             lp_file.write(" + ")
+    #         first = False
+    #         lp_file.write("M" + "i" + str(i) + "j" + str(j))
+    #     lp_file.write(" = 1" + "\n")
+    #
+    # for j in range(params['candidates']):
+    #     first = True
+    #     for i in range(params['candidates']):
+    #         if not first:
+    #             lp_file.write(" + ")
+    #         first = False
+    #         lp_file.write("M" + "i" + str(i) + "j" + str(j))
+    #     lp_file.write(" = 1" + "\n")
+    #
+    # # IMPORTANT #
+    # for k in range(params['voters']):
+    #     for i in range(params['candidates']):
+    #         first = True
+    #         for l in range(params['voters']):
+    #             for j in range(params['candidates']):
+    #                 if not first:
+    #                     lp_file.write(" + ")
+    #                 first = False
+    #                 lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+    #         lp_file.write(" = 1" + "\n")
+    #
+    # # IMPORTANT #
+    # for l in range(params['voters']):
+    #     for j in range(params['candidates']):
+    #         first = True
+    #         for k in range(params['voters']):
+    #             for i in range(params['candidates']):
+    #                 if not first:
+    #                     lp_file.write(" + ")
+    #                 first = False
+    #                 lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+    #         lp_file.write(" = 1" + "\n")
+    #
+    # lp_file.write("Binary\n")
+    #
+    # for k in range(params['voters']):
+    #     for l in range(params['voters']):
+    #         for i in range(params['candidates']):
+    #             for j in range(params['candidates']):
+    #                 lp_file.write(
+    #                     "P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j) + "\n")
+    #
+    # for k in range(params['voters']):
+    #     for l in range(params['voters']):
+    #         lp_file.write("N" + "k" + str(k) + "l" + str(l) + "\n")
+    #
+    # for i in range(params['candidates']):
+    #     for j in range(params['candidates']):
+    #         lp_file.write("M" + "i" + str(i) + "j" + str(j) + "\n")
 
     lp_file.write("End\n")
 

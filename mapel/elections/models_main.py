@@ -17,6 +17,7 @@ import mapel.elections.models.mallows as mallows
 import mapel.elections.models.single_crossing as single_crossing
 import mapel.elections.models.single_peaked as single_peaked
 import mapel.elections.models.urn_model as urn_model
+import mapel.elections.models.preflib as preflib
 from mapel.elections._glossary import *
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.Election import Election
@@ -171,7 +172,7 @@ def generate_election(experiment=None, model_id: str = None, election_id: str = 
                       num_candidates: int = None, num_voters: int = None,
                       params: dict = None, ballot: str = 'ordinal',
                       variable=None) -> Election:
-    """ main function: generate elections """
+    """ main function: generate election """
 
     if params is None:
         params = {}
@@ -185,7 +186,7 @@ def generate_election(experiment=None, model_id: str = None, election_id: str = 
         votes = generate_ordinal_votes(model_id=model_id, num_candidates=num_candidates,
                                        num_voters=num_voters, params=params)
         election = OrdinalElection("virtual", "virtual", votes=votes, model_id=model_id,
-                                   num_candidates=num_candidates,
+                                   num_candidates=num_candidates, params=params,
                                    num_voters=num_voters, ballot=ballot, alpha=alpha)
     elif ballot == 'approval':
         votes = generate_approval_votes(model_id=model_id, num_candidates=num_candidates,
@@ -363,8 +364,14 @@ def _get_params_for_paths(experiment, family_id, j, extremes=False):
 
     if 'scale' in path:
         params[variable] *= path['scale']
+
     if 'start' in path:
         params[variable] += path['start']
+    else:
+        path['start'] = 0.
+
+    if 'step' in path:
+        params[variable] = path['start'] + j * path['step']
 
     return params, variable
 
@@ -394,16 +401,9 @@ def store_ordinal_election(experiment, model_id, election_id, num_candidates, nu
         path = os.path.join("experiments", str(experiment.experiment_id),
                             "elections", (str(election_id) + ".soc"))
         file_ = open(path, 'w')
-        file_.write('$ fake' + '\n')
-        file_.write(str(num_voters) + '\n')
+        file_.write(f'$ {model_id} {params} \n')
         file_.write(str(num_candidates) + '\n')
-        file_.write(str(model_id) + '\n')
-        if model_id == 'norm-mallows_matrix':
-            file_.write(str(round(params['norm-phi'], 5)) + '\n')
-        elif model_id in PATHS:
-            file_.write(str(round(params['alpha'], 5)) + '\n')
-            if model_id == 'mallows_matrix_path':
-                file_.write(str(round(params['weight'], 5)) + '\n')
+        file_.write(str(num_voters) + '\n')
         file_.close()
 
     else:

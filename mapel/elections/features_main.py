@@ -26,7 +26,7 @@ def get_feature(feature_id):
             'graph_diameter': graph_diameter,
             'graph_diameter_log': graph_diameter_log,
             'max_approval_score': max_approval_score,
-            'largest_cohesive_group': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
+            'cohesiveness': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
             'number_of_cohesive_groups': cohesive.count_number_of_cohesive_groups,
             'number_of_cohesive_groups_brute': cohesive.count_number_of_cohesive_groups_brute,
             'proportionality_degree_av': prop_deg.proportionality_degree_av,
@@ -44,27 +44,28 @@ def get_feature(feature_id):
             }.get(feature_id)
 
 
-def justified_ratio(election, features_params) -> float:
+def justified_ratio(election, feature_params) -> float:
     # 1-large, 1-cohesive
-    # election.compute_reverse_approvals()
-    # threshold = election.num_voters / features_params['committee_size']
-    # covered = set()
-    # for _set in election.reverse_approvals:
-    #     if len(_set) >= threshold:
-    #         covered = covered.union(_set)
-    # print(len(covered) / float(election.num_voters))
-    # return len(covered) / float(election.num_voters)
-
-    # 2-large, 2-cohesive
     election.compute_reverse_approvals()
-    threshold = 2 * election.num_voters / features_params['committee_size']
+    threshold = election.num_voters / feature_params['committee_size']
     covered = set()
-    for set_1, set_2 in combinations(election.reverse_approvals, 2):
-        _intersection = set_1.intersection(set_2)
-        if len(_intersection) >= threshold:
-            covered = covered.union(_intersection)
+    for _set in election.reverse_approvals:
+        if len(_set) >= threshold:
+            covered = covered.union(_set)
     print(len(covered) / float(election.num_voters))
     return len(covered) / float(election.num_voters)
+
+    # 2-large, 2-cohesive
+    #
+    # election.compute_reverse_approvals()
+    # threshold = 2 * election.num_voters / feature_params['committee_size']
+    # covered = set()
+    # for set_1, set_2 in combinations(election.reverse_approvals, 2):
+    #     _intersection = set_1.intersection(set_2)
+    #     if len(_intersection) >= threshold:
+    #         covered = covered.union(_intersection)
+    # print(len(covered) / float(election.num_voters))
+    # return len(covered) / float(election.num_voters)
 
     # 3-large, 3-cohesive
     # election.compute_reverse_approvals()

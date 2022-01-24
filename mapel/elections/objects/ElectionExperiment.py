@@ -15,6 +15,7 @@ import mapel.elections.metrics_main as metr
 import mapel.elections.models_main as _elections
 import mapel.elections.other.rules as rules
 import mapel.elections.features_main as features
+import mapel.elections.models.preflib as preflib
 from mapel.elections._glossary import *
 from mapel.main.objects.Experiment import Experiment
 from mapel.main.objects.Family import Family
@@ -217,10 +218,21 @@ class ElectionExperiment(Experiment):
 
                     self.families[family_id].election_ids = tmp_elections.keys()
 
-                    for election_id in tmp_elections:
-                        elections[election_id] = tmp_elections[election_id]
+                    # for election_id in tmp_elections:
+                    #     elections[election_id] = tmp_elections[election_id]
 
-        self.elections = elections
+                else:
+                    election_ids = {}
+                    for j in range(self.families[family_id].size):
+                        if self.families[family_id].single_election:
+                            election_id = family_id
+                        else:
+                            election_id = family_id + '_' + str(j)
+                        election_ids[election_id] = None
+                    self.families[family_id].election_ids = election_ids.keys()
+
+
+        # self.elections = elections
 
     def compute_winners(self, method=None, num_winners=1):
         for election_id in self.elections:
@@ -236,6 +248,7 @@ class ElectionExperiment(Experiment):
                           self_distances: bool = False, vector_type: str = 'A',
                           printing: bool = False) -> None:
         """ Compute distances between elections (using threads) """
+
 
         self.distance_id = distance_id
 
@@ -435,7 +448,8 @@ class ElectionExperiment(Experiment):
                                 'proportionality_degree_pav',
                                 'proportionality_degree_av',
                                 'proportionality_degree_cc',
-                                'justified_ratio']:
+                                'justified_ratio',
+                                'cohesiveness']:
                 value = feature(election, feature_params)
 
             elif feature_id in {'avg_distortion_from_guardians',

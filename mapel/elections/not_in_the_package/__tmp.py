@@ -108,7 +108,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                                                            'mallows',
                                                            'urn_experiment'}:
                 for i in range(experiment.families[k].size):
-                    param = float(experiment.elections[ctr].param)
+                    param = float(experiment.elections[ctr].params)
                     if param > 1:
                         param = 1
 
@@ -117,7 +117,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                         my_cmap = custom_div_cmap(num_colors=11,
                                                   colors=["cyan", "blue"],
                                                   name='my_custom_m')
-                        # print(param)
+                        # print(params)
                     elif experiment.families[k].model_id in {
                         'urn_experiment'}:
                         my_cmap = custom_div_cmap(num_colors=11,

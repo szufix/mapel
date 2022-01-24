@@ -30,15 +30,15 @@ def print_approvals_histogram(election):
 
 # Main functions
 def print_map_2d(experiment,
-                 xlabel=None, shading=False, legend_pos=None,
+                 xlabel=None, shading=False, legend_pos=None, title_pos=None,
                  angle=0, reverse=False, update=False, feature_id=None,
                  axis=False, rounding=1, limit=np.infty, individual=False,
                  ticks=None, textual=None, roads=None, adjust_single=False,
                  title=None, dim=2, event='none', bbox_inches=None,
                  saveas=None, show=True, ms=20, normalizing_func=None,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
-                 legend=True, adjust=False,
-                 column_id='value') -> None:
+                 legend=True, adjust=False, feature_labelsize=14,
+                 column_id='value', title_size=16, ticks_pos=None) -> None:
 
     if textual is None:
         textual = []
@@ -81,10 +81,10 @@ def print_map_2d(experiment,
     if feature_id is not None:
         color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
                              feature_id=feature_id, rounding=rounding,
-                             normalizing_func=normalizing_func,
+                             normalizing_func=normalizing_func, ticks_pos=ticks_pos,
                              marker_func=marker_func, limit=limit,
                              xticklabels=xticklabels, ms=ms, cmap=cmap,
-                             ticks=ticks, column_id=column_id)
+                             ticks=ticks, column_id=column_id, feature_labelsize=feature_labelsize)
     else:
 
         if event in {'textual'}:
@@ -102,7 +102,8 @@ def print_map_2d(experiment,
     # BACKGROUND
     basic_background(ax=ax, values=feature_id, legend=legend,
                      saveas=saveas, xlabel=xlabel, bbox_inches=bbox_inches,
-                     title=title, legend_pos=legend_pos)
+                     title=title, legend_pos=legend_pos, title_size=title_size,
+                     title_pos=title_pos)
 
     if tex:
         saveas_tex(saveas=saveas)
@@ -148,7 +149,7 @@ def print_map_3d(experiment,
     # BACKGROUND
     basic_background(ax=ax, values=feature_id, legend=legend,
                      saveas=saveas, xlabel=xlabel,
-                     title=title)
+                     title=title, title_pos=title_pos)
 
     if tex:
         saveas_tex(saveas=saveas)
@@ -315,15 +316,14 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
 
 def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, limit=np.infty,
                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
-                         cmap=None, ticks=None, dim=2, rounding=1, column_id='value'):
+                         cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
+                         feature_labelsize=14, ticks_pos=None):
     xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy = import_values_for_feature(
         experiment, feature_id=feature_id, limit=limit, normalizing_func=normalizing_func,
         marker_func=marker_func, dim=dim, column_id=column_id)
     unique_markers = set(markers)
     images = []
 
-    print('min', _min)
-    print('max', _max)
 
     if mses is None:
         mses = np.asarray([ms for _ in range(len(shades))])
@@ -340,10 +340,12 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
     for um in unique_markers:
         masks = (markers == um)
         # print(um)
-        if feature_id=='partylist' and um == '.':
-            continue
-        # um = 'o'
-        if dim == 2:
+        if um == '.':
+            images.append(ax.scatter(xx[masks], yy[masks],vmin=0, vmax=1,
+                                     color='grey', alpha=0.6,
+                                     marker=um, s=mses[masks]))
+
+        elif dim == 2:
             images.append(ax.scatter(xx[masks], yy[masks], c=shades[masks], vmin=0, vmax=1,
                                      cmap=cmap, marker=um, s=mses[masks]))
         elif dim == 3:
@@ -368,13 +370,15 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
             else:
                 xticklabels = [np.round(lin[i], rounding) for i in range(6)]
 
-        cb = fig.colorbar(images[0], orientation="horizontal", pad=0.1, shrink=0.6,
+        cb = fig.colorbar(images[0], orientation="horizontal", pad=0.1, shrink=0.55,
                            ticks=ticks)
-        cb.ax.locator_params(nbins=len(xticklabels), tight=True)
-        cb.ax.tick_params(labelsize=14)
 
         if xticklabels is not None:
             cb.ax.set_xticklabels(xticklabels)
+        if ticks_pos is not None:
+            cb.ax.xaxis.set_ticks(ticks_pos)
+        cb.ax.locator_params(nbins=len(xticklabels), tight=True)
+        cb.ax.tick_params(labelsize=feature_labelsize)
 
 
 # HELPER FUNCTIONS FOR PRINT_3D
@@ -462,6 +466,12 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                             except:
                                 pass
                         # print(alpha)
+
+                        if '1D _path' in label:
+                            alpha *= 4
+                        elif '2D _path' in label:
+                            alpha *= 2
+
                         if alpha > 1:
                             alpha = 1.
                         alpha *= family.alpha
@@ -528,14 +538,18 @@ def mask_background(fig=None, ax=None, black=None, saveas=None, tex=None):
 
 
 def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None, title=None,
-                     legend_pos=None, bbox_inches=None):
+                     legend_pos=None, bbox_inches=None, title_size=16, title_pos=None):
     file_name = os.path.join(os.getcwd(), "images", str(saveas))
     # print(file_name)
 
     if xlabel is not None:
         plt.xlabel(xlabel, size=14)
     if title is not None:
-        plt.suptitle(title, fontsize=16)
+        if title_pos is not None:
+            plt.suptitle(title, fontsize=title_size, y=title_pos)
+        else:
+            plt.suptitle(title, fontsize=title_size)
+
 
     if legend:
         if legend_pos is not None:
@@ -551,9 +565,9 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
             pass
 
         if bbox_inches is None:
-            plt.savefig(file_name, bbox_inches='tight')
+            plt.savefig(file_name, bbox_inches='tight', dpi=1000)
         else:
-            plt.savefig(file_name, bbox_inches=bbox_inches)
+            plt.savefig(file_name, bbox_inches=bbox_inches, dpi=250)
 
 
 

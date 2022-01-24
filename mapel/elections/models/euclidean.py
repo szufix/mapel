@@ -12,6 +12,8 @@ def get_range(params):
         return np.random.beta(params['a'], params['b'])
     elif params['p_dist'] == 'uniform':
         return np.random.uniform(low=params['a'], high=params['b'])
+    else:
+        return params['p_dist']
 
 
 def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = None,

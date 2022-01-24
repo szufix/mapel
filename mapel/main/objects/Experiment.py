@@ -331,7 +331,6 @@ class Experiment:
 
                 coordinates_by_families[family_id] = [[] for _ in range(3)]
 
-
                 for instance_id in self.families[family_id].instance_ids:
                     coordinates_by_families[family_id][0].append(self.coordinates[instance_id][0])
                     coordinates_by_families[family_id][1].append(self.coordinates[instance_id][1])

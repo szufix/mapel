@@ -130,12 +130,15 @@ def mallowsMatrix(num_candidates, lphi, pos, normalize=True):
 
 def get_mallows_matrix(num_candidates, params, normalize=True):
     lphi = params['norm-phi']
-    weight = params['weight']
+    if 'weight' not in params:
+        weight = 0
+    else:
+        weight = params['weight']
     # print(lphi, weight)
     try:
-        path = os.path.join(os.getcwd(), 'mapel', 'voting', 'elections', 'mallows_positionmatrices',
+        path = os.path.join(os.getcwd(), 'mapel', 'elections', 'models', 'mallows_positionmatrices',
                             str(num_candidates) + "_matrix.txt")
-        print(path)
+        # print(path)
         with open(path, "rb") as file:
             pos = pickle.load(file)
     except FileNotFoundError:
