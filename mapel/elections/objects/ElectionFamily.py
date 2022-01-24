@@ -40,7 +40,8 @@ class ElectionFamily(Family):
                          marker=marker,
                          starting_from=starting_from,
                          path=path,
-                         single_instance=single_instance)
+                         single_instance=single_instance,
+                         instance_ids=election_ids)
 
         self.num_candidates = num_candidates
         self.num_voters = num_voters
