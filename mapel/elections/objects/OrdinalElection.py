@@ -49,7 +49,9 @@ class OrdinalElection(Election):
                 self.votes, self.num_voters, self.num_candidates, self.params, \
                     self.model_id = import_real_soc_election(experiment_id, election_id, shift)
                 try:
-                    self.alpha = self.params['alpha']
+                    self.alpha = 1
+                    if self.params and 'alpha' in self.params:
+                        self.alpha = self.params['alpha']
                 except KeyError:
                     pass
                 self.potes = self.votes_to_potes()
@@ -57,6 +59,7 @@ class OrdinalElection(Election):
         # self.approval_votes = convert_ordinal_to_approval(self.votes)
         self.candidatelikeness_original_vectors = {}
 
+        # print(election_id)
 
         if with_matrix:
             self.matrix = self.import_matrix()
@@ -490,22 +493,45 @@ def check_if_fake(experiment_id, name):
 def import_fake_soc_election(experiment_id, name):
     """ Import fake ordinal election form .soc file """
 
+    ### TMP ###
+
     file_name = f'{name}.soc'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
 
-    first_line = my_file.readline()
-    first_line = first_line.strip().split()
-    model_name = first_line[1]
-    if len(first_line) <= 2:
-        params = {}
-    else:
-        params = ast.literal_eval(" ".join(first_line[2:]))
-
-    num_candidates = int(my_file.readline())
+    fake = my_file.readline()  # skip
     num_voters = int(my_file.readline())
+    num_candidates = int(my_file.readline())
+    model_name = str(my_file.readline()).strip()
+
+    params = {}
+    if any(item in model_name for item in ['anid', 'stid', 'anun', 'stun',
+                      'mallows_matrix_path', 'walsh_path', 'conitzer_path']):
+        params['alpha'] = float(my_file.readline())
+        params['norm-phi'] = params['alpha']
+    if 'mallows_matrix_path' in model_name:
+        params['weight'] = float(my_file.readline())
 
     return model_name, params, num_voters, num_candidates
+
+    ############################################################
+    #
+    # file_name = f'{name}.soc'
+    # path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
+    # my_file = open(path, 'r')
+    #
+    # first_line = my_file.readline()
+    # first_line = first_line.strip().split()
+    # model_name = first_line[1]
+    # if len(first_line) <= 2:
+    #     params = {}
+    # else:
+    #     params = ast.literal_eval(" ".join(first_line[2:]))
+    #
+    # num_candidates = int(my_file.readline())
+    # num_voters = int(my_file.readline())
+    #
+    # return model_name, params, num_voters, num_candidates
 
 
 def old_name_extractor(first_line):

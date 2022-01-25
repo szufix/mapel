@@ -73,7 +73,7 @@ class OrdinalElectionExperiment(ElectionExperiment):
                     elections[name] = election
                     ids.append(str(name))
 
-            self.families[family_id].instance_ids = ids
+            self.families[family_id].election_ids = ids
 
         return elections
 

@@ -134,7 +134,12 @@ def get_mallows_matrix(num_candidates, params, normalize=True):
         weight = 0
     else:
         weight = params['weight']
-    # print(lphi, weight)
+
+    if 'sec_norm-phi' not in params:
+        lphi_2 = lphi
+    else:
+        lphi_2 = params['sec_norm-phi']
+
     try:
         path = os.path.join(os.getcwd(), 'mapel', 'elections', 'models', 'mallows_positionmatrices',
                             str(num_candidates) + "_matrix.txt")
@@ -145,10 +150,11 @@ def get_mallows_matrix(num_candidates, params, normalize=True):
         print("Mallows matrix only supported for up to 30 candidates")
     # print(pos)
     mat1 = mallowsMatrix(num_candidates, lphi, pos, normalize)
+    mat2 = mallowsMatrix(num_candidates, lphi_2, pos, normalize)
     res = np.zeros([num_candidates, num_candidates])
     for i in range(num_candidates):
         for j in range(num_candidates):
-            res[i][j] = weight * mat1[i][j] + (1 - weight) * mat1[i][num_candidates - 1 - j]
+            res[i][j] = (1.-weight) * mat1[i][j] + (weight) * mat2[i][num_candidates - 1 - j]
     return res
 
 
