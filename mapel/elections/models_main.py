@@ -237,7 +237,7 @@ def prepare_statistical_culture_family(experiment=None, model_id: str = None,
             new_params, variable = _get_params_for_paths(experiment, family_id, j)
             params = {**params, **new_params}
 
-        if 'norm-phi' in params:
+        if params is not None and 'norm-phi' in params:
 
             params['phi'] = mallows.phi_from_relphi(experiment.families[family_id].num_candidates,
                                                     relphi=params['norm-phi'])
