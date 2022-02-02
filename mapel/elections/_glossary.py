@@ -112,13 +112,15 @@ NICE_NAME = {
     'hamming': 'hamming',
     'noise_model': 'noise_model',
     'approval_partylist': 'Approval_Partylist',
+    'norm-mallows_mixture': 'norm-mallows_mixture',
     }
 
 
 LIST_OF_PREFLIB_MODELS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
                           'tshirt', 'cities_survey', 'aspen', 'ers',
                           'marble', 'cycling_tdf', 'cycling_gdi',
-                          'ice_races', 'grenoble'}
+                          'ice_races', 'grenoble', 'speed_skating',
+                          'irish_bis', 'speed_skating_bis', 'skate_bis'}
 
 
 LIST_OF_FAKE_MODELS = {'identity', 'uniformity', 'antagonism',

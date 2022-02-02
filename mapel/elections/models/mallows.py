@@ -44,6 +44,11 @@ def phi_from_relphi(num_candidates, relphi=None):
     return -1
 
 
+def phi_from_norm_phi(num_candidates=10, norm_phi=None):
+    return phi_from_relphi(num_candidates, relphi=norm_phi)
+
+
+
 def computeInsertionProbas(i, phi):
     probas = (i + 1) * [0]
     for j in range(i + 1):
@@ -81,10 +86,30 @@ def generate_mallows_votes(num_voters, num_candidates, params):
         vote = mallowsVote(num_candidates, insertion_probabilites_list)
         if params['weight'] > 0:
             probability = np.random.random()
-            if probability >= params['weight']:
+            if probability <= params['weight']:
                 vote.reverse()
         V += [vote]
     return V
+
+
+def generate_norm_mallows_mixture_votes(num_voters, num_candidates, params):
+    phi_1 = phi_from_norm_phi(num_candidates, float(params['norm-phi_1']))
+    params_1 = {'weight': 0, 'phi': phi_1}
+    votes_1 = generate_mallows_votes(num_voters, num_candidates, params_1)
+
+
+    phi_2 = phi_from_norm_phi(num_candidates, float(params['norm-phi_2']))
+    params_2 = {'weight': 1, 'phi': phi_2}
+    votes_2 = generate_mallows_votes(num_voters, num_candidates, params_2)
+
+    votes = []
+    size_1 = int((1-float(params['weight']))*num_voters)
+    for i in range(size_1):
+        votes.append(votes_1[i])
+    for i in range(size_1, num_voters):
+        votes.append(votes_2[i])
+
+    return votes
 
 
 def calculateZpoly(m):

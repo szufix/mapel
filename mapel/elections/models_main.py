@@ -38,7 +38,6 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                    'approval_truncated_urn': urn_model.generate_approval_truncated_urn_votes,
                    'approval_moving_resampling': mallows.generate_approval_moving_resampling_votes,
                    'approval_simplex_shumallows': mallows.generate_approval_simplex_shumallows_votes,
-                   # 'approval_jaccard': mallows.generate_jaccard_noise_model_votes,
                    'approval_anti_pjr': mallows.approval_anti_pjr_votes,
                    'approval_partylist': mallows.approval_partylist_votes,
                    }
@@ -109,7 +108,8 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
                            'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,}
 
     double_param_models = {'mallows': mallows.generate_mallows_votes,
-                           'norm-mallows': mallows.generate_mallows_votes, }
+                           'norm-mallows': mallows.generate_mallows_votes,
+                           'norm-mallows_mixture': mallows.generate_norm_mallows_mixture_votes}
 
     if model_id in naked_models:
         votes = naked_models.get(model_id)(num_voters=num_voters,
@@ -236,6 +236,11 @@ def prepare_statistical_culture_family(experiment=None, model_id: str = None,
         if path is not None and 'variable' in path:
             new_params, variable = _get_params_for_paths(experiment, family_id, j)
             params = {**params, **new_params}
+
+        if 'norm-phi' in params:
+
+            params['phi'] = mallows.phi_from_relphi(experiment.families[family_id].num_candidates,
+                                                    relphi=params['norm-phi'])
 
         if model_id in {'all_votes'}:
             params['iter_id'] = j
