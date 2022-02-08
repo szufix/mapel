@@ -377,7 +377,8 @@ def _balanced(num_leaves):
     q = queue.Queue()
     q.put(root)
 
-    while ctr < num_leaves-2:
+    # while ctr < num_leaves-2:
+    while q.qsize() * 2 < num_leaves:
         tmp_root = q.get()
         for _ in range(2):
             inner_node = Node('v' + str(ctr))

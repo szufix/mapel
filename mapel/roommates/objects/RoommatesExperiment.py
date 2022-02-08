@@ -256,7 +256,11 @@ class RoommatesExperiment(Experiment):
                 family_id=family_id,
                 params=self.families[family_id].params)
 
+    def compute_stable_SR(self):
+        pass
 
+    def compute_feature(self):
+        pass
 
     def create_structure(self) -> None:
 

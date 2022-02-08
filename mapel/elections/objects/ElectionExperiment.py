@@ -249,7 +249,6 @@ class ElectionExperiment(Experiment):
                           printing: bool = False) -> None:
         """ Compute distances between elections (using threads) """
 
-
         self.distance_id = distance_id
 
         # precompute vectors, matrices, etc...
@@ -449,7 +448,10 @@ class ElectionExperiment(Experiment):
                                 'proportionality_degree_av',
                                 'proportionality_degree_cc',
                                 'justified_ratio',
-                                'cohesiveness']:
+                                'cohesiveness',
+                                'partylist',
+                                'highest_cc_score',
+                                'highest_hb_score']:
                 value = feature(election, feature_params)
 
             elif feature_id in {'avg_distortion_from_guardians',
@@ -457,8 +459,6 @@ class ElectionExperiment(Experiment):
                                 'distortion_from_all',
                                 'distortion_from_top_100'}:
                 value = feature(self, election_id)
-            elif feature_id in {'partylist'}:
-                value = feature(election, feature_params)
             else:
                 value = feature(election)
             feature_dict[election_id] = value
@@ -473,13 +473,17 @@ class ElectionExperiment(Experiment):
 
             with open(path, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(["election_id", "value"])
-                # writer.writerow(["election_id", "value", "bound", "num_large_parties"])
                 if feature_id in {'partylist'}:
+                    writer.writerow(["election_id", "value", "bound", "num_large_parties"])
                     for key in feature_dict:
                         writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
                                          feature_dict[key][2]])
+                if feature_id in {'highest_cc_score', 'highest_hb_score'}:
+                    writer.writerow(["election_id", "value", 'time'])
+                    for key in feature_dict:
+                        writer.writerow([key, feature_dict[key][0], round(feature_dict[key][1],3)])
                 else:
+                    writer.writerow(["election_id", "value"])
                     for key in feature_dict:
                         writer.writerow([key, str(feature_dict[key])])
 

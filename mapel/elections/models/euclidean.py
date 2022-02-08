@@ -332,6 +332,12 @@ def get_rand(model: str, cat: str = "voters") -> list:
     elif model == "5d_cube":
         dim = 5
         point = [np.random.random() for _ in range(dim)]
+    elif model == "10d_cube":
+        dim = 10
+        point = [np.random.random() for _ in range(dim)]
+    elif model == "20d_cube":
+        dim = 20
+        point = [np.random.random() for _ in range(dim)]
     elif model == "3d_sphere":
         dim = 3
         point = list(random_ball(dim)[0])

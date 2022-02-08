@@ -24,6 +24,7 @@ class Roommates(Instance):
         if experiment_id != 'virtual':
             self.votes, self.num_agents, self.params, self.model_id = \
                 import_real_roommates_instance(experiment_id, instance_id)
+            self.alpha = self.params['alpha']
 
     def get_retrospective_vectors(self):
         if self.retrospetive_vectors is not None:
@@ -81,7 +82,6 @@ def old_name_extractor(first_line):
     else:
         model_name = 'noname'
     return model_name
-
 
 
 def import_real_roommates_instance(experiment_id, election_id, shift=False):

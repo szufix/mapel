@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import math
+import os
+import sys
 from typing import Union
 
 import numpy as np
@@ -10,8 +12,16 @@ except Exception:
     pulp = None
 
 
+try:
+    sys.path.append('/Users/szufa/PycharmProjects/abcvoting/')
+    from abcvoting import abcrules, preferences
+except ImportError:
+    abcrules = None
+    preferences = None
+
 from mapel.elections._glossary import *
 from mapel.elections.metrics import lp
+from mapel.elections.other import winners2 as win
 
 
 # MAIN FUNCTIONS
@@ -101,6 +111,26 @@ def lowest_dodgson_score(election) -> Union[int, None]:
             min_score = score
 
     return min_score
+
+
+def highest_cc_score(election, feature_params):
+    if election.model_id in LIST_OF_FAKE_MODELS:
+        return 'None', 0.
+    winners, obj_value, total_time = win.generate_winners(election=election,
+                                             num_winners=feature_params['committee_size'],
+                                             ballot="ordinal",
+                                             type='borda_owa', name='cc')
+    return obj_value, total_time
+
+
+def highest_hb_score(election, feature_params):
+    if election.model_id in LIST_OF_FAKE_MODELS:
+        return 'None', 0.
+    winners, obj_value, total_time = win.generate_winners(election=election,
+                                             num_winners=feature_params['committee_size'],
+                                             ballot="ordinal",
+                                             type='borda_owa', name='hb')
+    return obj_value, total_time
 
 
 # HELPER FUNCTIONS

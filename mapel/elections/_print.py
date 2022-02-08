@@ -465,7 +465,6 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                                 alpha = experiment.instances[election_id].alpha
                             except:
                                 pass
-                        # print(alpha)
 
                         if '1D _path' in label:
                             alpha *= 4
@@ -565,7 +564,7 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
             pass
 
         if bbox_inches is None:
-            plt.savefig(file_name, bbox_inches='tight', dpi=1000)
+            plt.savefig(file_name, bbox_inches='tight', dpi=250)
         else:
             plt.savefig(file_name, bbox_inches=bbox_inches, dpi=250)
 

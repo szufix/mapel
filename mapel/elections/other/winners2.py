@@ -8,7 +8,8 @@ import numpy as np
 from mapel.elections.metrics import lp as lp
 
 
-def generate_winners(election=None, num_winners=1, ballot="ordinal", method=None):
+def generate_winners(election=None, num_winners=1, ballot="ordinal",
+                     type=None, name=None):
     votes, num_voters, num_candidates = election.votes, election.num_voters, election.num_candidates
     params = {}
     params["orders"] = num_winners
@@ -17,9 +18,11 @@ def generate_winners(election=None, num_winners=1, ballot="ordinal", method=None
     params['candidates'] = num_candidates
     params['voters'] = num_voters
     rule = {}
-    rule['type'] = method
-    winners = get_winners(params, votes, rule, ballot)
-    return winners
+    rule['type'] = type
+    rule['name'] = name
+    rule['length'] = num_candidates
+    winners, obj_vaue, total_time = get_winners(params, votes, rule, ballot)
+    return winners, obj_vaue, total_time
 
 
 def get_winners(params, votes, rule, ballot='ordinal'):
@@ -41,7 +44,7 @@ def get_approval_winners(params, elections, rule):
 # Need update
 def get_ordinal_winners(params, votes, rule):
     if rule['type'] == 'scoring':
-        scoring = get_rule(rule['election_id'], rule['length'])
+        scoring = get_rule(rule['name'], rule['length'])
         all_winners = []
         for i in range(params['elections']):
             winners = get_winners_scoring(params, votes[i], params['candidates'], scoring)
@@ -49,15 +52,15 @@ def get_ordinal_winners(params, votes, rule):
         return all_winners
 
     elif rule['type'] == 'borda_owa':
-        owa = get_rule(rule['election_id'], rule['length'])
+        owa = get_rule(rule['name'], rule['length'])
         all_winners = []
         for i in range(params['elections']):
-            winners = get_winners_borda_owa(params, votes, params['candidates'], owa)
+            winners, obj_vaue, total_time = get_winners_borda_owa(params, votes, params['candidates'], owa)
             all_winners += winners
-        return all_winners
+        return all_winners, obj_vaue, total_time
 
     elif rule['type'] == 'bloc_owa':
-        owa = get_rule(rule['election_id'], rule['length'])
+        owa = get_rule(rule['name'], rule['length'])
         t_bloc = rule['special']
         all_winners = []
         for i in range(params['elections']):
@@ -108,9 +111,9 @@ def get_rule(name, length):
         for i in range(length):
             rule[i] = (length - float(i) - 1.) / (length - 1.)
     elif name == 'sntv':
-        rule[1] = 1.
+        rule[0] = 1.
     elif name == 'cc':
-        rule[1] = 1.
+        rule[0] = 1.
     elif name == 'hb':
         for i in range(length):
             rule[i] = 1. / (i + 1.)
@@ -171,10 +174,10 @@ def get_winners_borda_owa(params, votes, candidates, owa):
     rand_name = str(np.random.random())
     lp_file_name = str(rand_name + ".lp")
     lp.generate_lp_file_borda_owa(owa, lp_file_name, params, votes)
-    winners = lp.get_winners_from_lp(lp_file_name, params, candidates)
+    winners, obj_value, total_time = lp.get_winners_from_lp(lp_file_name, params, candidates)
     os.remove(lp_file_name)
     winners = sorted(winners)
-    return winners
+    return winners, obj_value, total_time
 
 
 def get_winners_bloc_owa(params, votes, candidates, owa, t_bloc):

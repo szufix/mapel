@@ -123,7 +123,7 @@ class Experiment:
 
     def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
               dim: int = 2, num_neighbors: int = None, method: str = 'standard',
-              zero_distance: float = 0.1) -> None:
+              zero_distance: float = 0.1, factor: float = 1.) -> None:
 
         if algorithm == 'spring':
             attraction_factor = 2
@@ -137,6 +137,7 @@ class Experiment:
         for i, instance_id_1 in enumerate(self.distances):
             for j, instance_id_2 in enumerate(self.distances):
                 if i < j:
+                    self.distances[instance_id_1][instance_id_2] *= factor
                     if self.distances[instance_id_1][instance_id_2] == 0.:
                         self.distances[instance_id_1][instance_id_2] = zero_distance
                         self.distances[instance_id_2][instance_id_1] = zero_distance

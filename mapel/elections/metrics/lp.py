@@ -118,8 +118,7 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name='0'):
         print("Exception raised while solving")
         return
 
-    objective_value = cp.solution.get_objective_value()
-    return objective_value
+    return cp.solution.get_objective_value()
 
 
 def solve_lp_candidate_subelections(lp_file_name, election_1, election_2):
@@ -767,11 +766,13 @@ def get_winners_from_lp(tmp_file, params, candidates):
     cp_lp.parameters.threads.set(1)
     cp_lp.set_results_stream(None)
 
+    start = cp_lp.get_time()
     try:
         cp_lp.solve()
     except cplex.CplexSolverError:
         print("Exception raised during solve")
         return
+    stop = cp_lp.get_time()
 
     result = [0.] * params['candidates']
     for i in range(params['candidates']):
@@ -790,7 +791,8 @@ def get_winners_from_lp(tmp_file, params, candidates):
                 winners[winner_id] = candidates[i]
             winner_id += 1
     winners = sorted(winners)
-    return winners
+
+    return winners, cp_lp.solution.get_objective_value(), stop-start
 
 
 """

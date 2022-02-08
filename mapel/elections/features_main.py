@@ -41,6 +41,8 @@ def get_feature(feature_id):
             'distortion_from_top_100': distortion_from_top_100,
             'pav_time': partylist.pav_time,
             'justified_ratio': justified_ratio,
+            'highest_cc_score': scores.highest_cc_score,
+            'highest_hb_score': scores.highest_hb_score,
             }.get(feature_id)
 
 
