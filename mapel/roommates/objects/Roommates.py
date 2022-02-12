@@ -20,7 +20,6 @@ class Roommates(Instance):
         self.retrospetive_vectors = None
         self.positionwise_vectors = None
 
-
         if experiment_id != 'virtual':
             self.votes, self.num_agents, self.params, self.model_id = \
                 import_real_roommates_instance(experiment_id, instance_id)
@@ -132,5 +131,7 @@ def import_real_roommates_instance(experiment_id, election_id, shift=False):
         for i in range(num_voters):
             for j in range(num_candidates):
                 votes[i][j] -= 1
+
+    my_file.close()
 
     return votes, num_agents, params, model_id

@@ -428,12 +428,15 @@ class ElectionExperiment(Experiment):
         file_.close()
         return families
 
+
     def compute_feature(self, feature_id: str = None, feature_params=None) -> dict:
 
         if feature_params is None:
             feature_params = {}
 
-        feature_dict = {}
+        feature_dict = {'value': {}, 'time': {}}
+
+        features_with_time = {'lowest_dodgson_score', 'highest_cc_score', 'highest_hb_sco'}
 
         for election_id in self.elections:
             print(election_id)
@@ -461,7 +464,14 @@ class ElectionExperiment(Experiment):
                 value = feature(self, election_id)
             else:
                 value = feature(election)
-            feature_dict[election_id] = value
+
+            if feature_id in time_feat:
+                feature_dict['value'][election_id] = value[0]
+                feature_dict['time'][election_id] = value[1]
+            else:
+                feature_dict['value'][election_id] = value
+
+        # print(feature_dict)
 
         if self.store:
             if feature_id in EMBEDDING_RELATED_FEATURE:
@@ -478,17 +488,18 @@ class ElectionExperiment(Experiment):
                     for key in feature_dict:
                         writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
                                          feature_dict[key][2]])
-                if feature_id in {'highest_cc_score', 'highest_hb_score'}:
+                if feature_id in time_feat:
                     writer.writerow(["election_id", "value", 'time'])
-                    for key in feature_dict:
-                        writer.writerow([key, feature_dict[key][0], round(feature_dict[key][1],3)])
+                    for key in feature_dict['value']:
+                        writer.writerow([key, feature_dict['value'][key], round(feature_dict['time'][key],3)])
                 else:
                     writer.writerow(["election_id", "value"])
-                    for key in feature_dict:
-                        writer.writerow([key, str(feature_dict[key])])
+                    for key in feature_dict['value']:
+                        writer.writerow([key, feature_dict['value'][key]])
 
         self.features[feature_id] = feature_dict
         return feature_dict
+
 
     @abstractmethod
     def create_structure(self):

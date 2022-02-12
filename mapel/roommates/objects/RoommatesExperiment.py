@@ -1,22 +1,19 @@
 #!/usr/bin/env python
-import os
-import csv
-import copy
 import ast
 import copy
 import csv
 import itertools
 import os
-from abc import abstractmethod
 from threading import Thread
 from time import sleep
-import numpy as np
 
 from mapel.main.objects.Experiment import Experiment
 from mapel.roommates.objects.RoommatesFamily import RoommatesFamily
 from mapel.roommates.objects.Roommates import Roommates
 import mapel.roommates.models_main as models_main
 import mapel.roommates.metrics_main as metr
+import mapel.roommates.features.basic_features as basic
+import mapel.roommates.features_main as features
 
 try:
     from sklearn.manifold import MDS
@@ -39,6 +36,8 @@ class RoommatesExperiment(Experiment):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.default_num_agents = 10
+
+        self.stable_sr = {}
 
     def add_instances_to_experiment(self):
 
@@ -256,11 +255,101 @@ class RoommatesExperiment(Experiment):
                 family_id=family_id,
                 params=self.families[family_id].params)
 
-    def compute_stable_SR(self):
-        pass
+    def compute_stable_sr(self):
+        for instance_id in self.instances:
+            # print(instance_id)
+            usable_matching = basic.compute_stable_SR(self.instances[instance_id].votes)
+            # print(usable_matching)
+            self.stable_sr[instance_id] = usable_matching
 
-    def compute_feature(self):
-        pass
+        if self.store:
+
+            file_name = f'stable_sr.csv'
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "features",
+                                file_name)
+
+            with open(path, 'w', newline='') as csv_file:
+                writer = csv.writer(csv_file, delimiter=';')
+                writer.writerow(
+                    ["instance_id", "matching"])
+
+                for instance_id in self.instances:
+                    usable_matching = self.stable_sr[instance_id]
+                    writer.writerow([instance_id, usable_matching])
+
+    def compute_feature(self, feature_id: str = None, feature_params=None) -> dict:
+
+        if feature_params is None:
+            feature_params = {}
+
+        feature_dict = {'value': {}, 'time': {}, 'std': {}}
+
+        features_with_time = {}
+        features_with_std = {'avg_num_of_bps_for_rand_matching'}
+
+        for instance_id in self.instances:
+            print(instance_id)
+            feature = features.get_feature(feature_id)
+            instance = self.instances[instance_id]
+            # if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
+            value = feature(instance)
+            #
+            # elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
+            #                     'number_of_cohesive_groups_brute',
+            #                     'proportionality_degree_pav',
+            #                     'proportionality_degree_av',
+            #                     'proportionality_degree_cc',
+            #                     'justified_ratio',
+            #                     'cohesiveness',
+            #                     'partylist',
+            #                     'highest_cc_score',
+            #                     'highest_hb_score']:
+            #     value = feature(election, feature_params)
+            #
+            # elif feature_id in {'avg_distortion_from_guardians',
+            #                     'worst_distortion_from_guardians',
+            #                     'distortion_from_all',
+            #                     'distortion_from_top_100'}:
+            #     value = feature(self, election_id)
+            # else:
+            #     value = feature(election)
+
+            if feature_id in features_with_time:
+                feature_dict['value'][instance_id] = value[0]
+                feature_dict['time'][instance_id] = value[1]
+            elif feature_id in features_with_std:
+                feature_dict['value'][instance_id] = value[0]
+                feature_dict['std'][instance_id] = value[1]
+            else:
+                feature_dict['value'][instance_id] = value
+
+        if self.store:
+
+            # if feature_id in EMBEDDING_RELATED_FEATURE:
+            #     path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+            #                         "features", f'{feature_id}__{self.distance_id}.csv')
+            # else:
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                "features", f'{feature_id}.csv')
+
+            with open(path, 'w', newline='') as csv_file:
+                writer = csv.writer(csv_file, delimiter=';')
+
+                if feature_id in features_with_time:
+                    writer.writerow(["election_id", "value", 'time'])
+                    for key in feature_dict['value']:
+                        writer.writerow([key, feature_dict['value'][key], round(feature_dict['time'][key],3)])
+                elif feature_id in features_with_std:
+                    writer.writerow(["election_id", "value", 'std'])
+                    for key in feature_dict['value']:
+                        writer.writerow([key, feature_dict['value'][key], round(feature_dict['std'][key],3)])
+                else:
+                    writer.writerow(["election_id", "value"])
+                    for key in feature_dict['value']:
+                        writer.writerow([key, feature_dict['value'][key]])
+
+        self.features[feature_id] = feature_dict
+        return feature_dict
 
     def create_structure(self) -> None:
 

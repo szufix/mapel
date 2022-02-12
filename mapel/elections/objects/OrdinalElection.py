@@ -487,6 +487,7 @@ def check_if_fake(experiment_id, name):
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     line = my_file.readline().strip()
+    my_file.close()
     return line[0] == '$'
 
 
@@ -530,6 +531,8 @@ def import_fake_soc_election(experiment_id, name):
 
     num_candidates = int(my_file.readline())
     num_voters = int(my_file.readline())
+
+    my_file.close()
 
     return model_name, params, num_voters, num_candidates
 
@@ -597,6 +600,7 @@ def import_real_soc_election(experiment_id: str, election_id: str, shift=False):
         for i in range(num_voters):
             for j in range(num_candidates):
                 votes[i][j] -= 1
+    my_file.close()
 
     return votes, num_voters, num_candidates, params, model_name
 

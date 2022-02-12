@@ -189,13 +189,22 @@ def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty,
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
+def convert_none(value):
+    if value == 'None':
+        return None
+    return value
+
+
 def import_values_for_feature(experiment, feature_id=None, limit=None, normalizing_func=None,
                               marker_func=None, dim=2, column_id='value'):
     """ Import values for a feature_id """
 
+    # print(experiment.features)
+
     if isinstance(feature_id, str):
         if feature_id in experiment.features:
-            values = experiment.features[feature_id]
+            values = experiment.features[feature_id][column_id]
+            values = {k: convert_none(v) for k, v in values.items()}
         else:
             values = get_values_from_csv_file(experiment, feature_id=feature_id,
                                               limit=limit, column_id=column_id)

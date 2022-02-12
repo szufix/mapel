@@ -634,11 +634,13 @@ def solve_lp_dodgson_score(lp_file_name):
     cp_lp.parameters.threads.set(1)
     cp_lp.set_results_stream(None)
 
+    start = cp_lp.get_time()
     try:
         cp_lp.solve()
     except:  # cplex.CplexSolverError:
         print("Exception raised during solve")
         return
+    stop = cp_lp.get_time()
 
     """
     import numpy as np
@@ -648,7 +650,7 @@ def solve_lp_dodgson_score(lp_file_name):
             result[i] = cp_lp.solution.get_values('y' + str(i) + '_' + str(j))
     """
 
-    return cp_lp.solution.get_objective_value()
+    return cp_lp.solution.get_objective_value(), start-stop
 
 
 # FOR WINNERS - needs update

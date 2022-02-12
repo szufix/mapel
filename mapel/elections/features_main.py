@@ -81,8 +81,6 @@ def justified_ratio(election, feature_params) -> float:
     # return len(covered) / float(election.num_voters)
 
 
-
-
 def monotonicity_1(experiment, election) -> float:
     e0 = election.election_id
     c0 = np.array(experiment.coordinates[e0])

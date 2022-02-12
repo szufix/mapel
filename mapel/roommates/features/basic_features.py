@@ -34,20 +34,23 @@ def number_blockingPairs(instance,matching):
                         bps+=1
     return bps
 
-def compute_stable_SR(instance):
+
+def compute_stable_SR(votes):
     dict_instance={}
-    num_agents=len(instance)
+    num_agents=len(votes)
     for i in range(num_agents):
-        dict_instance[i]=instance[i]
+        dict_instance[i]=votes[i]
     game = StableRoommates.create_from_dictionary(dict_instance)
     try:
         matching = game.solve()
+        usable_matching = {}
+        for m in matching:
+            usable_matching[m.name] = matching[m].name
+        return usable_matching
     except:
         return None
-    usable_matching = {}
-    for m in matching:
-        usable_matching[m.name] = matching[m].name
-    return usable_matching
+
+
 
 def spear_distance(instance1,instance2):
     num_agents=len(instance1)
@@ -146,7 +149,7 @@ def rank_matching(instance,best,summed):
     return int(m.objVal), matching
 
 def min_num_bps_matching(instance):
-    num_agents=len(instance)
+    num_agents=len(instance.votes)
     m = gp.Model("mip1")
     m.setParam('OutputFlag', False)
     x = m.addVars(num_agents, num_agents, lb=0, ub=1, vtype=GRB.BINARY)
@@ -163,10 +166,10 @@ def min_num_bps_matching(instance):
     for i in range(num_agents):
         for j in range(i+1,num_agents):
             better_pairs=[]
-            for t in range(0,instance[i].index(j)+1):
-                better_pairs.append([i,instance[i][t]])
-            for t in range(0,instance[j].index(i)+1):
-                better_pairs.append([j,instance[j][t]])
+            for t in range(0,instance.votes[i].index(j)+1):
+                better_pairs.append([i,instance.votes[i][t]])
+            for t in range(0,instance.votes[j].index(i)+1):
+                better_pairs.append([j,instance.votes[j][t]])
             m.addConstr(gp.quicksum(x[a[0], a[1]] for a in better_pairs) >= 1-y[i,j])
 
     m.setObjective(opt, GRB.MINIMIZE)
@@ -181,29 +184,29 @@ def min_num_bps_matching(instance):
     return int(m.objVal)
 
 def summed_rank_maximal_matching(instance):
-    val,matching= rank_matching(instance,True,True)
-    if number_blockingPairs(instance,matching)>0:
+    val,matching= rank_matching(instance.votes,True,True)
+    if number_blockingPairs(instance.votes,matching)>0:
         print('ERROR IN summed_rank_maximal_matching')
         exit(0)
     return val
 
 def summed_rank_minimal_matching(instance):
-    val,matching= rank_matching(instance,False,True)
-    if number_blockingPairs(instance,matching)>0:
+    val,matching= rank_matching(instance.votes,False,True)
+    if number_blockingPairs(instance.votes,matching)>0:
         print('ERROR IN summed_rank_minimal_matching')
         exit(0)
     return val
 
 def minimal_rank_maximizing_matching(instance):
-    val,matching=rank_matching(instance,True,False)
-    if number_blockingPairs(instance,matching)>0:
+    val,matching=rank_matching(instance.votes,True,False)
+    if number_blockingPairs(instance.votes,matching)>0:
         print('ERROR IN minimal_rank_maximizing_matching')
         exit(0)
     return val
 
-def average_number_of_bps_for_random_matching(instance,iterations=100):
+def avg_num_of_bps_for_random_matching(instance,iterations=100):
     bps=[]
-    num_agents=len(instance)
+    num_agents=len(instance.votes)
     for _ in range(iterations):
         #create random matching
         agents=list(range(num_agents))
@@ -213,22 +216,22 @@ def average_number_of_bps_for_random_matching(instance,iterations=100):
         for m in matching:
             matching_dict[m[0]]=m[1]
             matching_dict[m[1]] = m[0]
-        bps.append(number_blockingPairs(instance,matching_dict))
+        bps.append(number_blockingPairs(instance.votes,matching_dict))
     return statistics.mean(bps), statistics.stdev(bps)
 
-def number_of_bps_maximumWeight(instance) -> int:
-    num_agents=len(instance)
+def num_of_bps_maximumWeight(instance) -> int:
+    num_agents=len(instance.votes)
     G = nx.Graph()
     for i in range(num_agents):
         for j in range(i+1,num_agents):
-            G.add_edge(i,j,weight=2*(num_agents-1)-instance[i].index(j)-instance[j].index(i))
+            G.add_edge(i,j,weight=2*(num_agents-1)-instance.votes[i].index(j)-instance.votes[j].index(i))
             #G.add_edge(i, j, weight=instance[i].index(j) + instance[j].index(i))
     matching=nx.max_weight_matching(G, maxcardinality=True)
     matching_dict={}
     for p in matching:
         matching_dict[p[0]]=p[1]
         matching_dict[p[1]] = p[0]
-    return number_blockingPairs(instance,matching_dict)
+    return number_blockingPairs(instance.votes,matching_dict)
 
 #
 # j=0

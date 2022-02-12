@@ -64,10 +64,10 @@ def highest_copeland_score(election) -> Union[int, None]:
 
     return max(scores)
 
-def lowest_dodgson_score(election) -> Union[int, None]:
+def lowest_dodgson_score(election):
     """ compute lowest DODGSON score of a given election """
     if election.model_id in LIST_OF_FAKE_MODELS:
-        return None
+        return 'None', 0.
 
     min_score = math.inf
 
@@ -103,14 +103,14 @@ def lowest_dodgson_score(election) -> Union[int, None]:
         file_name = f'{np.random.random()}.lp'
         path = os.path.join(os.getcwd(), "trash", file_name)
         lp.generate_lp_file_dodgson_score(path, N=N, e=e, D=D)
-        score = lp.solve_lp_dodgson_score(path)
+        score, total_time = lp.solve_lp_dodgson_score(path)
 
         lp.remove_lp_file(path)
 
         if score < min_score:
             min_score = score
 
-    return min_score
+    return min_score, total_time
 
 
 def highest_cc_score(election, feature_params):
