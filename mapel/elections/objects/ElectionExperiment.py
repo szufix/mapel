@@ -55,9 +55,17 @@ class ElectionExperiment(Experiment):
         if attr == 'elections':
             return self.instances
         elif attr == 'num_elections':
-            return self.num_elections
+            return self.num_instances
         else:
-            return getattr(self, attr)
+            return self.__dict__[attr]
+
+    def __setattr__(self, name, value):
+        if name == "elections":
+            return setattr(self, 'instances', value)
+        elif name == "num_elections":
+            return setattr(self, 'num_instances', value)
+        else:
+            self.__dict__[name] = value
 
     def add_instances_to_experiment(self):
         return self.add_elections_to_experiment()
@@ -335,97 +343,96 @@ class ElectionExperiment(Experiment):
         families = {}
 
         path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'map.csv')
-        file_ = open(path, 'r')
+        with open(path, 'r') as file_:
 
-        header = [h.strip() for h in file_.readline().split(';')]
-        reader = csv.DictReader(file_, fieldnames=header, delimiter=';')
+            header = [h.strip() for h in file_.readline().split(';')]
+            reader = csv.DictReader(file_, fieldnames=header, delimiter=';')
 
-        all_num_candidates = []
-        all_num_voters = []
+            all_num_candidates = []
+            all_num_voters = []
 
-        starting_from = 0
-        for row in reader:
+            starting_from = 0
+            for row in reader:
 
-            model_id = None
-            color = None
-            label = None
-            params = None
-            alpha = None
-            size = None
-            marker = None
-            num_candidates = None
-            num_voters = None
-            family_id = None
-            show = True
+                model_id = None
+                color = None
+                label = None
+                params = None
+                alpha = None
+                size = None
+                marker = None
+                num_candidates = None
+                num_voters = None
+                family_id = None
+                show = True
 
-            if 'model_id' in row.keys():
-                model_id = str(row['model_id']).strip()
+                if 'model_id' in row.keys():
+                    model_id = str(row['model_id']).strip()
 
-            if 'color' in row.keys():
-                color = str(row['color']).strip()
+                if 'color' in row.keys():
+                    color = str(row['color']).strip()
 
-            if 'label' in row.keys():
-                label = str(row['label'])
+                if 'label' in row.keys():
+                    label = str(row['label'])
 
-            if 'family_id' in row.keys():
-                family_id = str(row['family_id'])
+                if 'family_id' in row.keys():
+                    family_id = str(row['family_id'])
 
-            if 'params' in row.keys():
-                params = ast.literal_eval(str(row['params']))
+                if 'params' in row.keys():
+                    params = ast.literal_eval(str(row['params']))
 
-            if 'alpha' in row.keys():
-                alpha = float(row['alpha'])
+                if 'alpha' in row.keys():
+                    alpha = float(row['alpha'])
 
-            if 'size' in row.keys():
-                size = int(row['size'])
+                if 'size' in row.keys():
+                    size = int(row['size'])
 
-            if 'marker' in row.keys():
-                marker = str(row['marker']).strip()
+                if 'marker' in row.keys():
+                    marker = str(row['marker']).strip()
 
-            if 'num_candidates' in row.keys():
-                num_candidates = int(row['num_candidates'])
+                if 'num_candidates' in row.keys():
+                    num_candidates = int(row['num_candidates'])
 
-            if 'num_voters' in row.keys():
-                num_voters = int(row['num_voters'])
+                if 'num_voters' in row.keys():
+                    num_voters = int(row['num_voters'])
 
-            if 'path' in row.keys():
-                path = ast.literal_eval(str(row['path']))
+                if 'path' in row.keys():
+                    path = ast.literal_eval(str(row['path']))
 
-            if 'show' in row.keys():
-                show = row['show'].strip() == 't'
-            #
-            # if model_id in {'urn_model'} and 'alpha' in params:
-            #     family_id += '_' + str(float(params['alpha']))
-            # elif model_id in {'mallows'} and 'phi' in params:
-            #     family_id += '_' + str(float(params['phi']))
-            # elif model_id in {'norm-mallows', 'norm-mallows_matrix'} \
-            #         and norm-phiparams['norm-phi'] is not None:
-            #     family_id += '_' + str(float(params['norm-phi']))
+                if 'show' in row.keys():
+                    show = row['show'].strip() == 't'
+                #
+                # if model_id in {'urn_model'} and 'alpha' in params:
+                #     family_id += '_' + str(float(params['alpha']))
+                # elif model_id in {'mallows'} and 'phi' in params:
+                #     family_id += '_' + str(float(params['phi']))
+                # elif model_id in {'norm-mallows', 'norm-mallows_matrix'} \
+                #         and norm-phiparams['norm-phi'] is not None:
+                #     family_id += '_' + str(float(params['norm-phi']))
 
-            single_election = size == 1
+                single_election = size == 1
 
-            families[family_id] = ElectionFamily(model_id=model_id,
-                                                 family_id=family_id,
-                                                 params=params, label=label,
-                                                 color=color, alpha=alpha, show=show,
-                                                 size=size, marker=marker,
-                                                 starting_from=starting_from,
-                                                 num_candidates=num_candidates,
-                                                 num_voters=num_voters, path=path,
-                                                 single_election=single_election)
-            starting_from += size
+                families[family_id] = ElectionFamily(model_id=model_id,
+                                                     family_id=family_id,
+                                                     params=params, label=label,
+                                                     color=color, alpha=alpha, show=show,
+                                                     size=size, marker=marker,
+                                                     starting_from=starting_from,
+                                                     num_candidates=num_candidates,
+                                                     num_voters=num_voters, path=path,
+                                                     single_election=single_election)
+                starting_from += size
 
-            all_num_candidates.append(num_candidates)
-            all_num_voters.append(num_voters)
+                all_num_candidates.append(num_candidates)
+                all_num_voters.append(num_voters)
 
-        check_if_all_equal(all_num_candidates, 'num_candidates')
-        check_if_all_equal(all_num_voters, 'num_voters')
+            check_if_all_equal(all_num_candidates, 'num_candidates')
+            check_if_all_equal(all_num_voters, 'num_voters')
 
-        self.num_families = len(families)
-        self.num_elections = sum([families[family_id].size for family_id in families])
-        self.main_order = [i for i in range(self.num_elections)]
+            self.num_families = len(families)
+            self.num_elections = sum([families[family_id].size for family_id in families])
+            self.main_order = [i for i in range(self.num_elections)]
 
-        file_.close()
         return families
 
 
@@ -436,40 +443,46 @@ class ElectionExperiment(Experiment):
 
         feature_dict = {'value': {}, 'time': {}}
 
-        features_with_time = {'lowest_dodgson_score', 'highest_cc_score', 'highest_hb_sco'}
+        features_with_time = {'lowest_dodgson_score', 'highest_cc_score', 'highest_hb_score'}
 
-        for election_id in self.elections:
-            print(election_id)
-            feature = features.get_feature(feature_id)
-            election = self.elections[election_id]
-            if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
-                value = feature(self, election)
+        global_featuers = {'clustering'}
 
-            elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
-                                'number_of_cohesive_groups_brute',
-                                'proportionality_degree_pav',
-                                'proportionality_degree_av',
-                                'proportionality_degree_cc',
-                                'justified_ratio',
-                                'cohesiveness',
-                                'partylist',
-                                'highest_cc_score',
-                                'highest_hb_score']:
-                value = feature(election, feature_params)
+        feature = features.get_feature(feature_id)
 
-            elif feature_id in {'avg_distortion_from_guardians',
-                                'worst_distortion_from_guardians',
-                                'distortion_from_all',
-                                'distortion_from_top_100'}:
-                value = feature(self, election_id)
-            else:
-                value = feature(election)
+        if feature_id in global_featuers:
+            feature_dict = feature(self)
+        else:
+            for election_id in self.elections:
+                print(election_id)
+                election = self.elections[election_id]
+                if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
+                    value = feature(self, election)
 
-            if feature_id in time_feat:
-                feature_dict['value'][election_id] = value[0]
-                feature_dict['time'][election_id] = value[1]
-            else:
-                feature_dict['value'][election_id] = value
+                elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
+                                    'number_of_cohesive_groups_brute',
+                                    'proportionality_degree_pav',
+                                    'proportionality_degree_av',
+                                    'proportionality_degree_cc',
+                                    'justified_ratio',
+                                    'cohesiveness',
+                                    'partylist',
+                                    'highest_cc_score',
+                                    'highest_hb_score']:
+                    value = feature(election, feature_params)
+
+                elif feature_id in {'avg_distortion_from_guardians',
+                                    'worst_distortion_from_guardians',
+                                    'distortion_from_all',
+                                    'distortion_from_top_100'}:
+                    value = feature(self, election_id)
+                else:
+                    value = feature(election)
+
+                if feature_id in features_with_time:
+                    feature_dict['value'][election_id] = value[0]
+                    feature_dict['time'][election_id] = value[1]
+                else:
+                    feature_dict['value'][election_id] = value
 
         # print(feature_dict)
 
@@ -488,10 +501,10 @@ class ElectionExperiment(Experiment):
                     for key in feature_dict:
                         writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
                                          feature_dict[key][2]])
-                if feature_id in time_feat:
+                if feature_id in features_with_time:
                     writer.writerow(["election_id", "value", 'time'])
                     for key in feature_dict['value']:
-                        writer.writerow([key, feature_dict['value'][key], round(feature_dict['time'][key],3)])
+                        writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
                 else:
                     writer.writerow(["election_id", "value"])
                     for key in feature_dict['value']:

@@ -40,10 +40,10 @@ def highest_plurality_score(election) -> int:
     return max(first_pos) * election.num_voters
 
 
-def highest_copeland_score(election) -> Union[int, None]:
+def highest_copeland_score(election) -> Union[int, str]:
     """ compute highest COPELAND score of a given election """
     if election.model_id in LIST_OF_FAKE_MODELS:
-        return None
+        return 'None'
 
     election.votes_to_potes()
 
@@ -64,10 +64,11 @@ def highest_copeland_score(election) -> Union[int, None]:
 
     return max(scores)
 
+
 def lowest_dodgson_score(election):
     """ compute lowest DODGSON score of a given election """
     if election.model_id in LIST_OF_FAKE_MODELS:
-        return 'None', 0.
+        return 'None', 'None'
 
     min_score = math.inf
 
@@ -115,7 +116,7 @@ def lowest_dodgson_score(election):
 
 def highest_cc_score(election, feature_params):
     if election.model_id in LIST_OF_FAKE_MODELS:
-        return 'None', 0.
+        return 'None', 'None'
     winners, obj_value, total_time = win.generate_winners(election=election,
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",
@@ -125,7 +126,7 @@ def highest_cc_score(election, feature_params):
 
 def highest_hb_score(election, feature_params):
     if election.model_id in LIST_OF_FAKE_MODELS:
-        return 'None', 0.
+        return 'None', 'None'
     winners, obj_value, total_time = win.generate_winners(election=election,
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",

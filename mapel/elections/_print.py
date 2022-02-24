@@ -13,6 +13,7 @@ except ImportError:
     tikzplotlib = None
 
 from mapel.elections._glossary import *
+import copy
 
 
 def print_approvals_histogram(election):
@@ -120,7 +121,7 @@ def print_map_3d(experiment,
                  title=None, shading=False,
                  saveas="map_2d", show=True, ms=20, normalizing_func=None,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
-                 legend=True):
+                 legend=True, title_pos=None):
     experiment.compute_coordinates_by_families()
 
     if cmap is None:
@@ -213,6 +214,7 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
                                               limit=limit, column_id='bound')
     else:
         values = feature_id
+
 
     _min = min(x for x in values.values() if x is not None)
     _max = max(x for x in values.values() if x is not None)
@@ -594,43 +596,54 @@ def saveas_tex(saveas=None):
 
 # MAIN FUNCTIONS
 def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
-                 saveas="matrix", show=True, ms=8, title=None,
+                 saveas="matrix", show=True, ms=8, title=None, omit=None,
                  self_distances=False, yticks='left', with_std=False, time=False):
     """Print the matrix with average distances between each pair of experiments """
 
+    if omit is None:
+        omit = []
+
+    selected_families = list(experiment.families.keys())
+    for family_id in omit:
+        selected_families.remove(family_id)
+    num_selected_families = len(selected_families)
+    num_selected_instances = 0
+    for family_id in selected_families:
+        num_selected_instances += len(experiment.families[family_id].instance_ids)
+
     # CREATE MAPPING FOR BUCKETS
     bucket = []
-    for family_id in experiment.families:
+    for family_id in selected_families:
         for _ in range(experiment.families[family_id].size):
             bucket.append(family_id)
 
     # CREATE MAPPING FOR ELECTIONS
     mapping = {}
     ctr = 0
-    for family_id in experiment.families:
-        for election_id in experiment.families[family_id].instance_ids:
-            mapping[ctr] = election_id
+    for family_id in selected_families:
+        for instance_id in experiment.families[family_id].instance_ids:
+            mapping[ctr] = instance_id
             ctr += 1
 
     # print(mapping)
 
     # PREPARE EMPTY DICTS
-    matrix = {family_id_1: {} for family_id_1 in experiment.families}
-    quantities = {family_id_1: {} for family_id_1 in experiment.families}
+    matrix = {family_id_1: {} for family_id_1 in selected_families}
+    quantities = {family_id_1: {} for family_id_1 in selected_families}
 
-    for family_id_1 in experiment.families:
-        for family_id_2 in experiment.families:
+    for family_id_1 in selected_families:
+        for family_id_2 in selected_families:
             matrix[family_id_1][family_id_2] = 0
             quantities[family_id_1][family_id_2] = 0
 
     # print(bucket)
 
     # ADD VALUES
-    for i in range(experiment.num_elections):
+    for i in range(num_selected_instances):
         limit = i + 1
         if self_distances:
             limit = i
-        for j in range(limit, experiment.num_elections):
+        for j in range(limit, num_selected_instances):
             if time:
                 matrix[bucket[i]][bucket[j]] += experiment.times[mapping[i]][
                     mapping[j]]
@@ -655,32 +668,33 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
     # NORMALIZE
     # for family_id_1, family_id_2 in combinations(experiment.families, 2):
     # for family_id_1, family_id_2 in product(experiment.families, 2):
-    for family_id_1 in experiment.families:
-        for family_id_2 in experiment.families:
-            # add normalization for self distances
-            if quantities[family_id_1][family_id_2] != 0.:
-                matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
-            matrix[family_id_1][family_id_2] = \
-                round(matrix[family_id_1][family_id_2] * scale, rounding)
-            if rounding == 0:
-                matrix[family_id_1][family_id_2] = int(matrix[family_id_1][family_id_2])
-            matrix[family_id_2][family_id_1] = matrix[family_id_1][family_id_2]
+    for i, family_id_1 in enumerate(selected_families):
+        for j, family_id_2 in enumerate(selected_families):
+            if i <= j:
+                # add normalization for self distances
+                if quantities[family_id_1][family_id_2] != 0.:
+                    matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
+                matrix[family_id_1][family_id_2] = \
+                    round(matrix[family_id_1][family_id_2] * scale, rounding)
+                if rounding == 0:
+                    matrix[family_id_1][family_id_2] = int(matrix[family_id_1][family_id_2])
+                matrix[family_id_2][family_id_1] = matrix[family_id_1][family_id_2]
 
     # THE REST
     fig, ax = plt.subplots()
-    num_families_new = experiment.num_families
+    num_families_new = num_selected_families
 
     matrix_new = np.zeros([num_families_new, num_families_new])
 
     # FIND MIN & MAX
-    _min = min([min(matrix[family_id].values()) for family_id in experiment.families])
-    _max = max([max(matrix[family_id].values()) for family_id in experiment.families])
+    _min = min([min(matrix[family_id].values()) for family_id in selected_families])
+    _max = max([max(matrix[family_id].values()) for family_id in selected_families])
     threshold = _min + 0.75 * (_max - _min)
 
     # PRINT
     if with_std:
-        for i, family_id_1 in enumerate(experiment.families):
-            for j, family_id_2 in enumerate(experiment.families):
+        for i, family_id_1 in enumerate(selected_families):
+            for j, family_id_2 in enumerate(selected_families):
                 c = matrix[family_id_1][family_id_2]
                 std = round(experiment.stds[mapping[i]][mapping[j]] * scale, rounding)
                 if rounding == 0:
@@ -698,8 +712,8 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
                     ax.text(j - 0.1, i + 0.1, '$\pm$' + str(std), va='top',
                             ha='left', color=color, size=9)
     else:
-        for i, family_id_1 in enumerate(experiment.families):
-            for j, family_id_2 in enumerate(experiment.families):
+        for i, family_id_1 in enumerate(selected_families):
+            for j, family_id_2 in enumerate(selected_families):
                 c = matrix[family_id_1][family_id_2]
                 matrix_new[i][j] = c
                 color = "black"
@@ -712,7 +726,7 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
                 ax.text(j, i, str(c), va='center', ha='center', color=color, size=ms)
 
     labels = []
-    for family_id in experiment.families:
+    for family_id in selected_families:
         if family_id in RULE_NAME_MATRIX:
             labels.append(RULE_NAME_MATRIX[experiment.families[family_id].label])
         else:
@@ -1274,6 +1288,17 @@ def adjust_the_map(experiment) -> None:
                 adjust_the_map_on_three_points(experiment, left, right, down)
             except Exception:
                 pass
+
+    elif experiment.instance_type == 'roommates':
+
+        try:
+            left = experiment.get_election_id_from_model_name('roommates_asymmetric')
+            right = experiment.get_election_id_from_model_name('roommates_symmetric')
+            # up = experiment.get_election_id_from_model_name('antagonism')
+            down = experiment.get_election_id_from_model_name('roommates_id')
+            adjust_the_map_on_three_points(experiment, left, right, down)
+        except Exception:
+            pass
 
 def centeroid(arr):
     length = arr.shape[0]

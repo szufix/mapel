@@ -36,6 +36,7 @@ def get_roommates_distance(election_1: Roommates, election_2: Roommates,
         'positionwise': mrd.compute_positionwise_distance,
         'pos_swap': mrd.compute_pos_swap_distance,
         'swap_bf': mrd.compute_swap_bf_distance,
+        'pairwise': mrd.compute_pairwise_distance,
     }
 
     if main_distance in metrics_without_params:

@@ -55,8 +55,9 @@ def get_ordinal_winners(params, votes, rule):
         owa = get_rule(rule['name'], rule['length'])
         all_winners = []
         for i in range(params['elections']):
-            winners, obj_vaue, total_time = get_winners_borda_owa(params, votes, params['candidates'], owa)
+            winners, obj_vaue, total_time = get_winners_borda_owa(params, votes, owa)
             all_winners += winners
+        print(obj_vaue)
         return all_winners, obj_vaue, total_time
 
     elif rule['type'] == 'bloc_owa':
@@ -170,14 +171,19 @@ def get_winners_scoring(params, votes, candidates, scoring):
     return winners
 
 
-def get_winners_borda_owa(params, votes, candidates, owa):
-    rand_name = str(np.random.random())
-    lp_file_name = str(rand_name + ".lp")
-    lp.generate_lp_file_borda_owa(owa, lp_file_name, params, votes)
-    winners, obj_value, total_time = lp.get_winners_from_lp(lp_file_name, params, candidates)
-    os.remove(lp_file_name)
+def get_winners_borda_owa(params, votes, owa):
+    winners, obj_value, total_time = lp.solve_lp_borda_owa(params, votes, owa)
     winners = sorted(winners)
     return winners, obj_value, total_time
+
+# def get_winners_borda_owa(params, votes, candidates, owa):
+#     rand_name = str(np.random.random())
+#     lp_file_name = str(rand_name + ".lp")
+#     lp.generate_lp_file_borda_owa(owa, lp_file_name, params, votes)
+#     winners, obj_value, total_time = lp.get_winners_from_lp(lp_file_name, params, candidates)
+#     os.remove(lp_file_name)
+#     winners = sorted(winners)
+#     return winners, obj_value, total_time
 
 
 def get_winners_bloc_owa(params, votes, candidates, owa, t_bloc):
@@ -529,11 +535,7 @@ def check_pav_dissat(votes, params, winners):
     return dissat
 
 
-def get_winners_approx_cc_greedy(votes, params):
-
-    num_voters = params['voters']
-    num_candidates = params['candidates']
-    num_winners = params['orders']
+def get_winners_approx_cc_greedy(votes, num_voters, num_candidates, num_winners):
 
     winners = []
     voter_sat = [0 for _ in range(num_voters)]

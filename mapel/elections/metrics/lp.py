@@ -441,8 +441,6 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2):
 
 
 # FOR METRICS
-
-
 def solve_lp_matching_vector_with_lp(cost_table, length):
     """ LP solver for vectors' matching """
 
@@ -566,65 +564,67 @@ def solve_lp_matching_interval(cost_table, length_1, length_2):
 
 # DODGSON SCORE
 def generate_lp_file_dodgson_score(lp_file_name, N=None, e=None, D=None):
-    lp_file = open(lp_file_name, 'w')
-    lp_file.write("Minimize\nobj: ")
 
-    first = True
-    for i in range(len(N)):
-        for j in range(1, len(D)):
-            if not first:
-                lp_file.write(" + ")
-            first = False
-            lp_file.write(str(j) + " y" + str(i) + "_" + str(j))
-    lp_file.write("\n")
+    with open(lp_file_name, 'w') as lp_file:
 
-    lp_file.write("Subject To\n")
-    ctr_c = 0
+        lp_file.write("Minimize\nobj: ")
 
-    for i in range(len(N)):
-        lp_file.write("c" + str(ctr_c) + ":")
-        lp_file.write(" y" + str(i) + "_" + str(0) + " = " + str(N[i]) + "\n")
-        ctr_c += 1
-
-    # """
-    for k in range(len(D)):
-        lp_file.write("c" + str(ctr_c) + ":")
         first = True
         for i in range(len(N)):
             for j in range(1, len(D)):
-                # print(i,j,k)
-                # print(e[i][j][k], e[i][j-1][k])
                 if not first:
-                    lp_file.write(" +")
+                    lp_file.write(" + ")
                 first = False
-                lp_file.write(" " + str(e[i][j][k] - e[i][j - 1][k]) + " y" + str(i) + "_" + str(j))
-        lp_file.write(" >= " + str(D[k]) + "\n")
-        ctr_c += 1
-    # """
-    # """
-    for i in range(len(N)):
-        for j in range(1, len(D)):
+                lp_file.write(str(j) + " y" + str(i) + "_" + str(j))
+        lp_file.write("\n")
+
+        lp_file.write("Subject To\n")
+        ctr_c = 0
+
+        for i in range(len(N)):
             lp_file.write("c" + str(ctr_c) + ":")
-            lp_file.write(
-                " y" + str(i) + "_" + str(j - 1) + " - y" + str(i) + "_" + str(j) + " >= 0" + "\n")
+            lp_file.write(" y" + str(i) + "_" + str(0) + " = " + str(N[i]) + "\n")
             ctr_c += 1
-    # """
-    # """
-    # probably unnecessary
-    for i in range(len(N)):
-        for j in range(len(D)):
+
+        # """
+        for k in range(len(D)):
             lp_file.write("c" + str(ctr_c) + ":")
-            lp_file.write(" y" + str(i) + "_" + str(j) + " >= 0" + "\n")
+            first = True
+            for i in range(len(N)):
+                for j in range(1, len(D)):
+                    # print(i,j,k)
+                    # print(e[i][j][k], e[i][j-1][k])
+                    if not first:
+                        lp_file.write(" +")
+                    first = False
+                    lp_file.write(" " + str(e[i][j][k] - e[i][j - 1][k]) + " y" + str(i) + "_" + str(j))
+            lp_file.write(" >= " + str(D[k]) + "\n")
             ctr_c += 1
-    # """
-    # """
-    lp_file.write("General\n")
-    for i in range(len(N)):
-        for j in range(len(D)):
-            lp_file.write("y" + str(i) + "_" + str(j) + "\n")
-        ctr_c += 1
-    # """
-    lp_file.write("End\n")
+        # """
+        # """
+        for i in range(len(N)):
+            for j in range(1, len(D)):
+                lp_file.write("c" + str(ctr_c) + ":")
+                lp_file.write(
+                    " y" + str(i) + "_" + str(j - 1) + " - y" + str(i) + "_" + str(j) + " >= 0" + "\n")
+                ctr_c += 1
+        # """
+        # """
+        # probably unnecessary
+        for i in range(len(N)):
+            for j in range(len(D)):
+                lp_file.write("c" + str(ctr_c) + ":")
+                lp_file.write(" y" + str(i) + "_" + str(j) + " >= 0" + "\n")
+                ctr_c += 1
+        # """
+        # """
+        lp_file.write("General\n")
+        for i in range(len(N)):
+            for j in range(len(D)):
+                lp_file.write("y" + str(i) + "_" + str(j) + "\n")
+            ctr_c += 1
+        # """
+        lp_file.write("End\n")
 
 
 def solve_lp_dodgson_score(lp_file_name):
@@ -650,61 +650,91 @@ def solve_lp_dodgson_score(lp_file_name):
             result[i] = cp_lp.solution.get_values('y' + str(i) + '_' + str(j))
     """
 
-    return cp_lp.solution.get_objective_value(), start-stop
+    return cp_lp.solution.get_objective_value(), stop-start
+
+
+# FOR WINNERS - "NEW"
+def solve_lp_borda_owa(params, votes, owa):
+
+    num_voters = params['voters']
+    num_candidates = params['candidates']
+    num_orders = params['orders']
+
+    cp = cplex.Cplex()
+    cp.parameters.threads.set(1)
+
+    # OBJECTIVE FUNCTION
+    cp.objective.set_sense(cp.objective.sense.maximize)
+    objective = []
+    names = []
+    pos = 0
+    for i in range(num_voters):
+        for j in range(num_orders):
+            for k in range(num_candidates):
+                names.append(f'x{pos}')
+                objective.append(owa[j])
+                pos += 1
+    cp.variables.add(obj=objective, names=names,
+                     types=[cp.variables.type.binary] * num_voters * num_orders * num_candidates)
+
+    # ADD VARIABLES FOR CANDIDATES
+    names = [f'y{i}' for i in range(num_candidates)]
+    cp.variables.add(names=list(names),
+                     types=[cp.variables.type.binary] * num_candidates)
+
+    # FIRST GROUP OF CONSTRAINTS
+    lin_expr = []
+    ind = [f'y{i}' for i in range(num_candidates)]
+    val = [1.] * num_candidates
+    lin_expr.append(cplex.SparsePair(ind=ind, val=val))
+    cp.linear_constraints.add(lin_expr=lin_expr,
+                              senses=['E'],
+                              rhs=[num_orders])
+
+    # SECOND GROUP OF CONSTRAINTS
+    lin_expr = []
+    for i in range(num_voters):
+        for j in range(num_candidates):
+            ind = []
+            val = []
+            pos = i * num_orders * num_candidates + j
+            for k in range(num_orders):
+                ind.append(f'x{pos + num_candidates * k}')
+                val.append(1.)
+            for k in range(0, j + 1):
+                ind.append(f'y{int(votes[i][k])}')
+                val.append(-1.)
+            lin_expr.append(cplex.SparsePair(ind=ind, val=val))
+    cp.linear_constraints.add(lin_expr=lin_expr,
+                              senses=['L'] * num_voters * num_candidates,
+                              rhs=[0.0] * num_voters * num_candidates)
+
+    # SOLVE THE ILP
+    cp.set_results_stream(None)
+    start = cp.get_time()
+    try:
+        cp.solve()
+    except cplex.CplexSolverError:
+        print("Exception raised during solve")
+        return
+    stop = cp.get_time()
+
+    # EXTRACT WINNERS
+    result = [0.] * num_candidates
+    for i in range(num_candidates):
+        result[i] = cp.solution.get_values(f'y{i}')
+    winner_id = 0
+    winners = [0.] * num_orders
+    for i in range(num_candidates):
+        if result[i] == 1.:
+            winners[winner_id] = i
+            winner_id += 1
+    winners = sorted(winners)
+
+    return winners, cp.solution.get_objective_value(), stop-start
 
 
 # FOR WINNERS - needs update
-def generate_lp_file_borda_owa(owa, lp_file_name, params, votes):
-    """ this function generates lp file"""
-
-    lp_file = open(lp_file_name, 'w')
-    lp_file.write("Maximize\nobj: ")
-    pos = 0
-    first = True
-    for i in range(params['voters']):
-        for j in range(params['orders']):
-            for k in range(params['candidates']):
-                if not first and owa[j] >= 0.:
-                    lp_file.write(" + ")
-                first = False
-                lp_file.write(str(owa[j]) + " x" + str(pos))
-                pos += 1
-    lp_file.write("\n")
-
-    lp_file.write("Subject To\n")
-    lp_file.write("c0:")
-    first = True
-    for i in range(params['candidates']):
-        if not first:
-            lp_file.write(" +")
-        first = False
-        lp_file.write(" y" + str(i))
-    lp_file.write(' = ' + str(params['orders']) + '\n')
-
-    for i in range(params['voters']):
-        for j in range(params['candidates']):
-            lp_file.write("c" + str(i * params['candidates'] + j + 1) + ": ")
-            pos = i * params['orders'] * params['candidates'] + j
-            first = True
-            for k in range(params['orders']):
-                if not first:
-                    lp_file.write(" +")
-                first = False
-                lp_file.write(" x" + str(pos + params['candidates'] * k))
-
-            for k in range(0, j + 1):
-                lp_file.write(" - y" + str(int(votes[i][k])))
-
-            lp_file.write(" <= 0 \n")
-
-    lp_file.write("Binary\n")
-    for i in range(params['voters'] * params['orders'] * params['candidates']):
-        lp_file.write("x" + str(i) + "\n")
-    for i in range(params['candidates']):
-        lp_file.write("y" + str(i) + "\n")
-
-    lp_file.write("End\n")
-
 
 def generate_lp_file_bloc_owa(owa, lp_file_name, params, votes, t_bloc):
     """ this function generates lp file"""
@@ -910,120 +940,121 @@ def generate_lp_file_matching_matrix_half(lp_file_name, matrix_1, matrix_2, leng
 
 
 def generate_lp_file_matching_matrix(lp_file_name, matrix_1, matrix_2, length, inner_distance):
-    lp_file = open(lp_file_name, 'w')
-    lp_file.write("Minimize\n")
 
-    first = True
-    for k in range(length):
-        for l in range(length):
-            for i in range(length):
-                if i == k:
-                    continue
-                for j in range(length):
-                    if j == l:
-                        continue
+    with open(lp_file_name, 'w') as lp_file:
+        lp_file.write("Minimize\n")
 
-                    if not first:
-                        lp_file.write(" + ")
-                    first = False
-                    weight = inner_distance(np.array([matrix_1[k][i]]), np.array([matrix_2[l][j]]))
-                    lp_file.write(
-                        str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(
-                            j))
-    lp_file.write("\n")
-
-    lp_file.write("Subject To\n")
-
-    for k in range(length):
-        for l in range(length):
-            for i in range(length):
-                if i == k:
-                    continue
-                for j in range(length):
-                    if j == l:
-                        continue
-
-                    lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
-                    lp_file.write(" - " + "M" + "i" + str(i) + "j" + str(j) + " <= 0" + "\n")
-
-                    lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
-                    lp_file.write(" - " + "M" + "i" + str(k) + "j" + str(l) + " <= 0" + "\n")
-
-    for i in range(length):
         first = True
-        for j in range(length):
-            if not first:
-                lp_file.write(" + ")
-            first = False
-            lp_file.write("M" + "i" + str(i) + "j" + str(j))
-        lp_file.write(" = 1" + "\n")
-
-    for j in range(length):
-        first = True
-        for i in range(length):
-            if not first:
-                lp_file.write(" + ")
-            first = False
-            lp_file.write("M" + "i" + str(i) + "j" + str(j))
-        lp_file.write(" = 1" + "\n")
-
-    # Not sure about this part #
-    for k in range(length):
-        for i in range(length):
-            if k == i:
-                continue
-            first = True
+        for k in range(length):
             for l in range(length):
-                for j in range(length):
-                    if l == j:
-                        continue
-                    if not first:
-                        lp_file.write(" + ")
-                    first = False
-                    lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
-            lp_file.write(" = 1" + "\n")
-
-    # Not sure about this part #
-    for l in range(length):
-        for j in range(length):
-            if l == j:
-                continue
-            first = True
-            for k in range(length):
                 for i in range(length):
-                    if k == i:
+                    if i == k:
                         continue
-                    if not first:
-                        lp_file.write(" + ")
-                    first = False
-                    lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+                    for j in range(length):
+                        if j == l:
+                            continue
+
+                        if not first:
+                            lp_file.write(" + ")
+                        first = False
+                        weight = inner_distance(np.array([matrix_1[k][i]]), np.array([matrix_2[l][j]]))
+                        lp_file.write(
+                            str(weight) + " P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(
+                                j))
+        lp_file.write("\n")
+
+        lp_file.write("Subject To\n")
+
+        for k in range(length):
+            for l in range(length):
+                for i in range(length):
+                    if i == k:
+                        continue
+                    for j in range(length):
+                        if j == l:
+                            continue
+
+                        lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+                        lp_file.write(" - " + "M" + "i" + str(i) + "j" + str(j) + " <= 0" + "\n")
+
+                        lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+                        lp_file.write(" - " + "M" + "i" + str(k) + "j" + str(l) + " <= 0" + "\n")
+
+        for i in range(length):
+            first = True
+            for j in range(length):
+                if not first:
+                    lp_file.write(" + ")
+                first = False
+                lp_file.write("M" + "i" + str(i) + "j" + str(j))
             lp_file.write(" = 1" + "\n")
 
-    lp_file.write("Binary\n")
-
-    for k in range(length):
-        for l in range(length):
-            for i in range(length):
-                if i == k:
-                    continue
-                for j in range(length):
-                    if j == l:
-                        continue
-                    lp_file.write(
-                        "P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j) + "\n")
-
-    for i in range(length):
         for j in range(length):
-            lp_file.write("M" + "i" + str(i) + "j" + str(j) + "\n")
+            first = True
+            for i in range(length):
+                if not first:
+                    lp_file.write(" + ")
+                first = False
+                lp_file.write("M" + "i" + str(i) + "j" + str(j))
+            lp_file.write(" = 1" + "\n")
 
-    lp_file.write("End\n")
+        # Not sure about this part #
+        for k in range(length):
+            for i in range(length):
+                if k == i:
+                    continue
+                first = True
+                for l in range(length):
+                    for j in range(length):
+                        if l == j:
+                            continue
+                        if not first:
+                            lp_file.write(" + ")
+                        first = False
+                        lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+                lp_file.write(" = 1" + "\n")
+
+        # Not sure about this part #
+        for l in range(length):
+            for j in range(length):
+                if l == j:
+                    continue
+                first = True
+                for k in range(length):
+                    for i in range(length):
+                        if k == i:
+                            continue
+                        if not first:
+                            lp_file.write(" + ")
+                        first = False
+                        lp_file.write("P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j))
+                lp_file.write(" = 1" + "\n")
+
+        lp_file.write("Binary\n")
+
+        for k in range(length):
+            for l in range(length):
+                for i in range(length):
+                    if i == k:
+                        continue
+                    for j in range(length):
+                        if j == l:
+                            continue
+                        lp_file.write(
+                            "P" + "k" + str(k) + "l" + str(l) + "i" + str(i) + "j" + str(j) + "\n")
+
+        for i in range(length):
+            for j in range(length):
+                lp_file.write("M" + "i" + str(i) + "j" + str(j) + "\n")
+
+        lp_file.write("End\n")
 
 
 def solve_lp_matrix(lp_file_name):
     cp_lp = cplex.Cplex(lp_file_name)
     cp_lp.set_results_stream(None)
 
-    cp_lp.parameters.threads.set(1)
+    # cp_lp.parameters.threads.set(1)
     # cp_lp.parameters.mip.tolerances.mipgap = 0.0001
     # cp_lp.parameters.mip.strategy.probe.set(3)
 
@@ -1228,3 +1259,56 @@ def remove_lp_file(path):
     """ Safely remove lp file """
     with suppress(OSError):
         os.remove(path)
+
+
+# COPY
+def generate_lp_file_borda_owa(owa, lp_file_name, params, votes):
+    """ this function generates lp file"""
+
+    with open(lp_file_name, 'w') as lp_file:
+        lp_file.write("Maximize\nobj: ")
+        pos = 0
+        first = True
+        for i in range(params['voters']):
+            for j in range(params['orders']):
+                for k in range(params['candidates']):
+                    if not first and owa[j] >= 0.:
+                        lp_file.write(" + ")
+                    first = False
+                    lp_file.write(str(owa[j]) + " x" + str(pos))
+                    pos += 1
+        lp_file.write("\n")
+
+        lp_file.write("Subject To\n")
+        lp_file.write("c0:")
+        first = True
+        for i in range(params['candidates']):
+            if not first:
+                lp_file.write(" +")
+            first = False
+            lp_file.write(" y" + str(i))
+        lp_file.write(' = ' + str(params['orders']) + '\n')
+
+        for i in range(params['voters']):
+            for j in range(params['candidates']):
+                lp_file.write("c" + str(i * params['candidates'] + j + 1) + ": ")
+                pos = i * params['orders'] * params['candidates'] + j
+                first = True
+                for k in range(params['orders']):
+                    if not first:
+                        lp_file.write(" +")
+                    first = False
+                    lp_file.write(" x" + str(pos + params['candidates'] * k))
+
+                for k in range(0, j + 1):
+                    lp_file.write(" - y" + str(int(votes[i][k])))
+
+                lp_file.write(" <= 0 \n")
+
+        lp_file.write("Binary\n")
+        for i in range(params['voters'] * params['orders'] * params['candidates']):
+            lp_file.write("x" + str(i) + "\n")
+        for i in range(params['candidates']):
+            lp_file.write("y" + str(i) + "\n")
+
+        lp_file.write("End\n")

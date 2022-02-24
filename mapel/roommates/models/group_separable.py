@@ -5,8 +5,211 @@ from itertools import chain
 
 import numpy as np
 from scipy.special import binom
+from mapel.roommates.models._utils import convert, remove_first
 
 
+#### new ####
+def next_sig(sig):
+    new_sig = [0] * len(sig)
+    overflow = 1
+    for i in range(0, len(sig)):
+        if sig[i] == 0 and overflow == 0:
+            new_sig[i] = 0
+        elif sig[i] == 0 and overflow == 1:
+            new_sig[i] = 1
+            overflow = 0
+        elif sig[i] == 1 and overflow == 0:
+            new_sig[i] = 1
+        elif sig[i] == 1 and overflow == 1:
+            new_sig[i] = 0
+            overflow = 1
+    return new_sig
+
+import math
+def generate_roommates_gs_ideal_votes(num_agents=None, params=None):
+
+    m = num_agents
+    n = num_agents
+
+    decomposition_tree = _balanced(m)
+
+    all_inner_nodes = get_all_inner_nodes(decomposition_tree)
+
+    SIG = np.zeros([n, len(all_inner_nodes)])
+    for s in range(1, n):
+        SIG[s] = next_sig(SIG[s-1])
+
+    EXT_SIG = np.zeros([n, len(all_inner_nodes)])
+    for i, sig in enumerate(SIG):
+        ctr = 0
+        for k in range(int(math.log(n, 2))):
+            # print('k', k, int(n/2**(k+1)))
+            for t in range(int(n/2**(k+1))):
+                # print('t', t)
+                EXT_SIG[i][ctr] = sig[k]
+                ctr += 1
+                # EXT_SIG[k][2*i] = sig[i]
+                # EXT_SIG[k][2*i+1] = sig[i]
+
+    # print(SIG)
+    # print(EXT_SIG)
+
+    compute_depth(decomposition_tree)
+
+    votes = []
+    for i in range(n):
+
+        signature = list(SIG[i])
+        # signature  = [0,0,1,0,0,0,0]
+        # signature.reverse()
+        # print(signature)
+
+        # print(SIG[i])
+
+        for j, node in enumerate(all_inner_nodes):
+            node.reverse = SIG[i][node.depth]
+            # print(node.reverse)
+
+        raw_vote = sample_a_vote(decomposition_tree)
+        vote = [int(candidate.replace('x', '')) for candidate in raw_vote]
+        votes.append(vote)
+
+        for i, node in enumerate(all_inner_nodes):
+            node.reverse = False
+
+    # print(votes)
+    # print(remove_first(votes))
+
+    # order votes
+    votes = sorted(votes, key=lambda x: x[0])
+
+    return convert(votes)
+
+
+def generate_roommates_revgs_ideal_votes(num_agents=None, params=None):
+
+    m = num_agents
+    n = num_agents
+
+    decomposition_tree = _balanced(m)
+
+    all_inner_nodes = get_all_inner_nodes(decomposition_tree)
+
+    SIG = np.zeros([n, len(all_inner_nodes)])
+    for s in range(1, n):
+        SIG[s] = next_sig(SIG[s-1])
+
+    EXT_SIG = np.zeros([n, len(all_inner_nodes)])
+    for i, sig in enumerate(SIG):
+        ctr = 0
+        for k in range(int(math.log(n, 2))):
+            # print('k', k, int(n/2**(k+1)))
+            for t in range(int(n/2**(k+1))):
+                # print('t', t)
+                EXT_SIG[i][ctr] = sig[k]
+                ctr += 1
+                # EXT_SIG[k][2*i] = sig[i]
+                # EXT_SIG[k][2*i+1] = sig[i]
+
+    # print(SIG)
+    # print(EXT_SIG)
+
+    compute_depth(decomposition_tree)
+
+    votes = []
+    for i in range(n):
+
+        signature = list(SIG[i])
+        # signature  = [0,0,1,0,0,0,0]
+        # signature.reverse()
+        # print(signature)
+
+        print(SIG[i])
+
+        for j, node in enumerate(all_inner_nodes):
+            node.reverse = SIG[i][node.depth]
+            # print(node.reverse)
+
+        raw_vote = sample_a_vote(decomposition_tree)
+        vote = [int(candidate.replace('x', '')) for candidate in raw_vote]
+        votes.append(vote)
+
+        for i, node in enumerate(all_inner_nodes):
+            node.reverse = False
+
+    # print(votes)
+    # print(remove_first(votes))
+
+    votes = remove_first(votes)
+
+    for i in range(0, num_agents, 2):
+        votes[i+1].reverse()
+
+    votes = [rotate(vote, shift) for shift, vote in enumerate(votes)]
+
+    return votes
+
+# HELPER
+def rotate(vector, shift):
+    return vector[shift:] + vector[:shift]
+
+
+def generate_roommates_gs_votes(num_agents=None, params=None):
+
+    if params is None:
+        params = {}
+
+    if params is not None and 'tree' not in params:
+        params = {'tree': 'random'}
+
+    while True:
+        m = num_agents
+        n = num_agents
+
+        if params['tree'] == 'random':
+            func = lambda m, r: 1./(m-1) * binom(m - 1, r) * \
+                                binom(m - 1 + r, m)
+            buckets = [func(m, r) for r in range(1, m)]
+
+            denominator = sum(buckets)
+            # print(buckets)
+            buckets = [buckets[i]/denominator for i in range(len(buckets))]
+
+            num_internal_nodes = \
+                np.random.choice(len(buckets), 1, p=buckets)[0]+1
+
+            decomposition_tree = \
+                _decompose_tree(num_agents, num_internal_nodes)
+
+        elif params['tree'] == 'caterpillar':
+            decomposition_tree = _caterpillar(m)
+
+        elif params['tree'] == 'balanced':
+            decomposition_tree = _balanced(m)
+
+        all_inner_nodes = get_all_inner_nodes(decomposition_tree)
+
+        votes = []
+        for i in range(n):
+
+            signature = [np.random.choice([0, 1])
+                         for _ in range(len(all_inner_nodes))]
+
+            for i, node in enumerate(all_inner_nodes):
+                node.reverse = signature[i]
+
+            raw_vote = sample_a_vote(decomposition_tree)
+            vote = [int(candidate.replace('x', '')) for candidate in raw_vote]
+            votes.append(vote)
+
+            for i, node in enumerate(all_inner_nodes):
+                node.reverse = False
+
+        # return votes, decomposition_tree
+        return convert(votes)
+
+
+#### copy from 'elections' project ####
 def _decompose_tree(num_leaves, num_internal_nodes):
     """ Algorithm from: Uniform generation of a Schroder tree"""
 
@@ -79,6 +282,16 @@ def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
         return votes
 
 REVERSE = {}
+
+def compute_depth(root):
+    root.depth = 0
+    q = queue.Queue()
+    q.put(root)
+    while not q.empty():
+        node = q.get()
+        for child in node.children:
+            child.depth = node.depth+1
+            q.put(child)
 
 
 def get_all_leaves_names(node):

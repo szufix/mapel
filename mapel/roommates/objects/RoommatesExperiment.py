@@ -37,7 +37,27 @@ class RoommatesExperiment(Experiment):
         super().__init__(**kwargs)
         self.default_num_agents = 10
 
-        self.stable_sr = {}
+        self.matchings = {}
+
+        self.import_matchings()
+
+    def import_matchings(self):
+        matchings = {}
+
+        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'features',
+                            'stable_sr.csv')
+        with open(path, 'r', newline='') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=';')
+
+            for row in reader:
+                election_id = row['instance_id']
+                value = row['matching']
+                if value == '':
+                    matchings[election_id] = None
+                else:
+                    matchings[election_id] = value
+
+        self.matchings = matchings
 
     def add_instances_to_experiment(self):
 
@@ -111,6 +131,10 @@ class RoommatesExperiment(Experiment):
                           printing: bool = False) -> None:
 
         self.distance_id = distance_id
+
+        if '-pairwise' in distance_id:
+            for instance in self.instances.values():
+                instance.votes_to_pairwise_matrix()
 
         matchings = {instance_id: {} for instance_id in self.instances}
         distances = {instance_id: {} for instance_id in self.instances}
@@ -257,10 +281,12 @@ class RoommatesExperiment(Experiment):
 
     def compute_stable_sr(self):
         for instance_id in self.instances:
-            # print(instance_id)
-            usable_matching = basic.compute_stable_SR(self.instances[instance_id].votes)
-            # print(usable_matching)
-            self.stable_sr[instance_id] = usable_matching
+            print(instance_id)
+            if instance_id in ['roommates_test']:
+                self.matchings[instance_id] = 'None'
+            else:
+                usable_matching = basic.compute_stable_SR(self.instances[instance_id].votes)
+                self.matchings[instance_id] = usable_matching
 
         if self.store:
 
@@ -274,7 +300,7 @@ class RoommatesExperiment(Experiment):
                     ["instance_id", "matching"])
 
                 for instance_id in self.instances:
-                    usable_matching = self.stable_sr[instance_id]
+                    usable_matching = self.matchings[instance_id]
                     writer.writerow([instance_id, usable_matching])
 
     def compute_feature(self, feature_id: str = None, feature_params=None) -> dict:
@@ -287,12 +313,17 @@ class RoommatesExperiment(Experiment):
         features_with_time = {}
         features_with_std = {'avg_num_of_bps_for_rand_matching'}
 
+        # print(self.matchings)
+
         for instance_id in self.instances:
             print(instance_id)
             feature = features.get_feature(feature_id)
             instance = self.instances[instance_id]
-            # if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
-            value = feature(instance)
+            if feature_id in ['summed_rank_minimal_matching'] \
+                    and self.matchings[instance_id] is None:
+                value = 'None'
+            else:
+                value = feature(instance)
             #
             # elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
             #                     'number_of_cohesive_groups_brute',
@@ -379,3 +410,9 @@ class RoommatesExperiment(Experiment):
                 file_csv.write("10;20;roommates_ic;{};black;1;IC;IC;o;t\n")
         except FileExistsError:
             print("Experiment already exists!")
+
+
+    def get_election_id_from_model_name(self, model_id: str) -> str:
+        for family_id in self.families:
+            if self.families[family_id].model_id == model_id:
+                return family_id

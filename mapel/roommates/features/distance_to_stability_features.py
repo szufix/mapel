@@ -16,7 +16,6 @@ def generate_instance(num_agents):
     return instance
 
 
-
 #Only works for even number of agents
 def swap_distance_to_stable(instance):
     num_agents=len(instance)

@@ -46,14 +46,20 @@ class ElectionFamily(Family):
         self.num_candidates = num_candidates
         self.num_voters = num_voters
         self.single_election = single_election
-        self.election_ids = election_ids
         self.ballot = ballot
 
     def __getattr__(self, attr):
         if attr == 'election_ids':
             return self.instance_ids
         else:
-            return getattr(self, attr)
+            return self.__dict__[attr]
+
+    def __setattr__(self, name, value):
+        if name == "election_ids":
+            return setattr(self, 'instance_ids', value)
+        else:
+            self.__dict__[name] = value
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

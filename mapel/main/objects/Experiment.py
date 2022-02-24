@@ -57,7 +57,7 @@ class Experiment:
         self.coordinates_by_families = {}
 
         self.num_families = None
-        self.num_elections = None
+        self.num_instances = None
         self.main_order = None
         self.instance_type = instance_type
 
@@ -77,6 +77,7 @@ class Experiment:
         elif self.experiment_id != 'virtual':
             try:
                 self.instances = self.add_instances_to_experiment()
+                self.num_instances = len(self.instances)
                 print('=== Elections imported successfully! ===')
             except FileNotFoundError:
                 print('=== Elections not found! ===')
@@ -239,6 +240,9 @@ class Experiment:
             pr.print_map_2d(self, **kwargs)
         elif dim == 3:
             pr.print_map_3d(self, **kwargs)
+
+    def print_matrix(self, **kwargs):
+        pr.print_matrix(experiment=self, **kwargs)
 
     @abstractmethod
     def add_instances_to_experiment(self):

@@ -14,12 +14,10 @@ def get_range(params):
 
 def generate_roommates_euclidean_votes(num_agents: int = None, params: dict = None):
 
-    dim = params['dim']
-
-    name = f'{dim}d_{params["space"]}'
+    name = f'{params["dim"]}d_{params["space"]}'
     # print(name)
 
-    agents = np.array([get_rand(name) for _ in range(num_agents)])
+    agents = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
 
     votes = np.zeros([num_agents, num_agents], dtype=int)
     distances = np.zeros([num_agents, num_agents], dtype=float)
@@ -38,6 +36,32 @@ def generate_roommates_euclidean_votes(num_agents: int = None, params: dict = No
     return convert(votes)
 
 
+def generate_roommates_radius_votes(num_agents: int = None, params: dict = None):
+
+    dim = params['dim']
+
+    name = f'{dim}d_{params["space"]}'
+
+    agents = np.array([get_rand(name) for _ in range(num_agents)])
+
+    votes = np.zeros([num_agents, num_agents], dtype=int)
+    distances = np.zeros([num_agents, num_agents], dtype=float)
+
+    rays = np.array([np.random.random()/2. for _ in range(num_agents)])
+
+    # a_power = np.array([get_range(params) for _ in range(num_agents)])
+
+    for v in range(num_agents):
+        for c in range(num_agents):
+
+            # if v_range[v] + c_range[c] >= np.linalg.norm(voters[v] - candidates[c]):
+            #     votes[v].add(c)
+            votes[v][c] = c
+            distances[v][c] = np.linalg.norm(agents[v] - agents[c])
+            distances[v][c] = abs(distances[v][c] - rays[c])
+        votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
+
+    return convert(votes)
 
 
 
@@ -49,7 +73,9 @@ def random_ball(dimension, num_points=1, radius=1):
     return radius * (random_directions * random_radii).T
 
 
-def get_rand(model: str, cat: str = "voters") -> list:
+GEN_CTR = 0
+
+def get_rand(model: str, i: int = 0, num_agents: int = 0, cat: str = "voters") -> list:
     """ generate random values"""
     # print(model ==  "1d_uniform")
 
@@ -130,15 +156,18 @@ def get_rand(model: str, cat: str = "voters") -> list:
     elif model == "5d_cube":
         dim = 5
         point = [np.random.random() for _ in range(dim)]
-    elif model == "3d_sphere":
-        dim = 3
-        point = list(random_ball(dim)[0])
-    elif model == "4d_sphere":
-        dim = 4
-        point = list(random_ball(dim)[0])
-    elif model == "5d_sphere":
-        dim = 5
-        point = list(random_ball(dim)[0])
+    elif model == '1d_extreme':
+        if i%2 == 1:
+            i -= 0.1
+        point = i
+    elif model == '2d_extreme':
+        if i % 2 == 1:
+            alpha = 2 * math.pi * ((i-np.random.random()/100) / num_agents)
+        else:
+            alpha = 2 * math.pi * ((i+np.random.random()/100) / num_agents)
+        x = 1. * math.cos(alpha)
+        y = 1. * math.sin(alpha)
+        point = [x, y]
     else:
         print('unknown model_id', model)
         point = [0, 0]

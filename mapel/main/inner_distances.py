@@ -87,6 +87,8 @@ def swap_distance(vote_1: list, vote_2: list, matching=None) -> int:
     if matching is not None:
         for i in range(len(vote_2)):
             new_vote_2[i] = matching[vote_2[i]]
+
+    # print(vote_1, new_vote_2)
     pote_1 = vote_to_pote(vote_1)
     pote_2 = vote_to_pote(new_vote_2)
 

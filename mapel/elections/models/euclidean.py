@@ -248,6 +248,14 @@ def random_ball(dimension, num_points=1, radius=1):
     random_directions = np.random.normal(size=(dimension, num_points))
     random_directions /= linalg.norm(random_directions, axis=0)
     random_radii = np.random.random(num_points) ** (1 / dimension)
+    x = radius * (random_directions * random_radii).T
+    return x
+
+
+def random_sphere(dimension, num_points=1, radius=1):
+    random_directions = np.random.normal(size=(dimension, num_points))
+    random_directions /= linalg.norm(random_directions, axis=0)
+    random_radii = 1.
     return radius * (random_directions * random_radii).T
 
 
@@ -340,13 +348,13 @@ def get_rand(model: str, cat: str = "voters") -> list:
         point = [np.random.random() for _ in range(dim)]
     elif model == "3d_sphere":
         dim = 3
-        point = list(random_ball(dim)[0])
+        point = list(random_sphere(dim)[0])
     elif model == "4d_sphere":
         dim = 4
-        point = list(random_ball(dim)[0])
+        point = list(random_sphere(dim)[0])
     elif model == "5d_sphere":
         dim = 5
-        point = list(random_ball(dim)[0])
+        point = list(random_sphere(dim)[0])
     else:
         print('unknown model_id', model)
         point = [0, 0]
