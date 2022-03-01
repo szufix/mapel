@@ -97,6 +97,7 @@ class Experiment:
         else:
             self.distances = {}
 
+
         if isinstance(coordinates, dict):
             self.coordinates = coordinates
             print('=== Omitting import! ===')
@@ -125,6 +126,7 @@ class Experiment:
     def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
               dim: int = 2, num_neighbors: int = None, method: str = 'standard',
               zero_distance: float = 0.1, factor: float = 1.) -> None:
+
 
         if algorithm == 'spring':
             attraction_factor = 2
@@ -184,8 +186,7 @@ class Experiment:
             num_neighbors = 100
 
         if algorithm == 'spring':
-            my_pos = nx.spring_layout(graph, iterations=num_iterations,
-                                      dim=dim)
+            my_pos = nx.spring_layout(graph, iterations=num_iterations, dim=dim)
         elif algorithm in {'mds', 'MDS'}:
             my_pos = MDS(n_components=dim, dissimilarity='precomputed').fit_transform(x)
         elif algorithm in {'tsne', 'TSNE'}:
@@ -216,6 +217,7 @@ class Experiment:
                 writer = csv.writer(csvfile, delimiter=';')
                 if dim == 2:
                     writer.writerow(["instance_id", "x", "y"])
+                    print(["instance_id", "x", "y"])
                 elif dim == 3:
                     writer.writerow(["instance_id", "x", "y", "z"])
 
@@ -337,7 +339,7 @@ class Experiment:
                 coordinates_by_families[family_id] = [[] for _ in range(3)]
 
                 try:
-                    for instance_id in self.families[family_id].election_ids:
+                    for instance_id in self.families[family_id].instance_ids:
                         coordinates_by_families[family_id][0].append(self.coordinates[instance_id][0])
                         coordinates_by_families[family_id][1].append(self.coordinates[instance_id][1])
                         try:
@@ -395,7 +397,7 @@ class Experiment:
 
         with open(path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=';')
-            writer.writerow(["election_id", "x", "y"])
+            writer.writerow(["instance_id", "x", "y"])
 
             for election_id in self.instances:
                 x = round(self.coordinates[election_id][0], 5)

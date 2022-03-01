@@ -24,7 +24,7 @@ def generate_roommates_votes(model_id: str = None, num_agents: int = None,
                     'roommates_group_ic': impartial.generate_roommates_group_ic_votes,
                     'roommates_id': impartial.generate_roommates_id_votes,
                     'roommates_test': impartial.generate_roommates_id_votes,
-                    'roommates_teo': impartial.generate_roommates_id_votes,
+                    'roommates_teo': impartial.generate_roommates_teo_votes,
                    'roommates_asymmetric': impartial.generate_roommates_cy_votes,
                    'roommates_cy2': impartial.generate_roommates_cy2_votes,
                    'roommates_cy3': impartial.generate_roommates_cy3_votes,
@@ -39,6 +39,10 @@ def generate_roommates_votes(model_id: str = None, num_agents: int = None,
                    'roommates_symmetric': group_separable.generate_roommates_gs_ideal_votes,
                    'roommates_revgs_ideal': group_separable.generate_roommates_revgs_ideal_votes,
                     'roommates_radius': euclidean.generate_roommates_radius_votes,
+                    'roommates_double': euclidean.generate_roommates_double_votes,
+                    'roommates_mallows_euclidean': euclidean.generate_roommates_mallows_euclidean_votes,
+                    'roommates_malasym': impartial.generate_roommates_malasym_votes,
+
                     }
 
     if model_id in main_models:
@@ -74,11 +78,48 @@ def generate_roommates_instance(experiment=None, model_id: str = None, instance_
                      num_agents=num_agents)
 
 
+def _get_params_for_paths(experiment, family_id, j, extremes=False):
+    path = experiment.families[family_id].path
+
+    variable = path['variable']
+
+    if 'extremes' in path:
+        extremes = path['extremes']
+
+    params = {}
+    if extremes:
+        params[variable] = j / (experiment.families[family_id].size - 1)
+    elif not extremes:
+        params[variable] = (j + 1) / (experiment.families[family_id].size + 1)
+
+    if 'scale' in path:
+        params[variable] *= path['scale']
+
+    if 'start' in path:
+        params[variable] += path['start']
+    else:
+        path['start'] = 0.
+
+    if 'step' in path:
+        params[variable] = path['start'] + j * path['step']
+
+    return params, variable
+
 # PREPARE INSTANCES
 def prepare_roommates_instances(experiment=None, model_id: str = None,
                                 family_id: str = None, params: dict = None) -> None:
     _keys = []
     for j in range(experiment.families[family_id].size):
+
+        variable = None
+        path = experiment.families[family_id].path
+        if path is not None and 'variable' in path:
+            new_params, variable = _get_params_for_paths(experiment, family_id, j)
+            params = {**params, **new_params}
+
+        if params is not None and 'norm-phi' in params:
+            params['phi'] = mallows.phi_from_relphi(experiment.families[family_id].num_agents,
+                                                    relphi=params['norm-phi'])
 
         if experiment.families[family_id].single_instance:
             instance_id = family_id

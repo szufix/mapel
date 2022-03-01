@@ -74,9 +74,6 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
             self.families[family_id].election_ids = ids
 
-            print(self.families[family_id].election_ids)
-            print(self.families[family_id].instance_ids)
-
         return elections
 
     def create_structure(self) -> None:

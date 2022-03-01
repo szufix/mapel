@@ -175,7 +175,7 @@ def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty,
         reader = csv.DictReader(csv_file, delimiter=';')
 
         for row in reader:
-            election_id = row['election_id']
+            election_id = row['instance_id']
             value = row[column_id]
             if value == 'None' or value is None:
                 value = None
@@ -232,6 +232,31 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
 
     ctr = 0
 
+    # print(values)
+
+    my_shade = {}
+    for family_id in experiment.families:
+        for k in range(experiment.families[family_id].size):
+            if experiment.families[family_id].size == 1:
+                election_id = family_id
+            else:
+                election_id = family_id + '_' + str(k)
+
+            shade = values[election_id]
+
+            if shade is None:
+                my_shade[election_id] = None
+            elif normalizing_func is not None:
+                my_shade[election_id] = normalizing_func(shade)
+            else:
+                my_shade[election_id] = shade
+
+
+    local_min = min(x for x in my_shade.values() if x is not None)
+    local_max = max(x for x in my_shade.values() if x is not None)
+
+    # print(local_min, local_max)
+
     for family_id in experiment.families:
 
         for k in range(experiment.families[family_id].size):
@@ -240,16 +265,13 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
             else:
                 election_id = family_id + '_' + str(k)
 
-            shade = values[election_id]
+            shade = my_shade[election_id]
             if shade is None:
                 blank_xx.append(experiment.coordinates[election_id][0])
                 blank_yy.append(experiment.coordinates[election_id][1])
                 continue
 
-            if normalizing_func is not None:
-                shade = normalizing_func(shade)
-            else:
-                shade = (shade - _min) / (_max - _min)
+            shade = (shade - local_min) / (local_max - local_min)
             shades.append(shade)
 
             marker = experiment.families[family_id].marker
@@ -263,6 +285,8 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
                 zz.append(experiment.coordinates[election_id][2])
 
             ctr += 1
+
+    # print(shades)
 
     xx = np.asarray(xx)
     yy = np.asarray(yy)
@@ -375,11 +399,18 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
         # ax.legend(bbox_to_anchor=legend_pos, loc="upper center")
 
         if xticklabels is None:
-            lin = np.linspace(_min, _max, 6)
-            if rounding == 0:
-                xticklabels = [int(lin[i]) for i in range(6)]
+            if normalizing_func is None:
+                lin = np.linspace(_min, _max, 6)
+                if rounding == 0:
+                    xticklabels = [int(lin[i]) for i in range(6)]
+                else:
+                    xticklabels = [np.round(lin[i], rounding) for i in range(6)]
             else:
-                xticklabels = [np.round(lin[i], rounding) for i in range(6)]
+                lin = np.linspace(_min, _max, 6)
+                if rounding == 0:
+                    xticklabels = [int(_min), '', 'log', 'scale', '', str(int(_max))]
+                else:
+                    xticklabels = [_min, '', 'log', 'scale', '', str(_max)]
 
         cb = fig.colorbar(images[0], orientation="horizontal", pad=0.1, shrink=0.55,
                            ticks=ticks)

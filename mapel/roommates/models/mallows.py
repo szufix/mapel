@@ -169,3 +169,19 @@ def generate_roommates_norm_mallows_votes(num_agents=None, params=None):
 
     return convert(votes)
 
+
+def mallows_vote(vote, phi):
+    num_candidates = len(vote)
+    params = {'weight': 0, 'phi': phi}
+    raw_vote = generate_mallows_votes(1, num_candidates, params)[0]
+
+    for i in range(num_candidates):
+        vote[i] = raw_vote[vote[i]]
+
+    return vote
+
+
+def mallows_votes(votes, phi):
+    for i in range(len(votes)):
+        votes[i] = mallows_vote(votes[i], phi)
+    return votes

@@ -16,6 +16,7 @@ def get_distance(election_1: Election, election_2: Election,
     else:
         print('No such instance!')
 
+
 def get_graph_distance(graph_1, graph_2, distance_id: str = None) -> float or (float, list):
     """ Return: distance between graphs, (if applicable) optimal matching """
 

@@ -61,9 +61,9 @@ class ElectionExperiment(Experiment):
 
     def __setattr__(self, name, value):
         if name == "elections":
-            return setattr(self, 'instances', value)
+            self.instances = value
         elif name == "num_elections":
-            return setattr(self, 'num_instances', value)
+            self.num_instances = value
         else:
             self.__dict__[name] = value
 

@@ -292,18 +292,38 @@ def clustering_v1(experiment, num_clusters=20):
     from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
     import scipy.spatial.distance as ssd
 
-    distMatrix = np.zeros([experiment.num_elections, experiment.num_elections])
+    # skip the paths
+
+    SKIP = ['UNID', 'ANID', 'STID', 'ANUN', 'STUN', 'STAN',
+            'Mallows',
+            'Urn',
+            'Identity', 'Uniformity', 'Antagonism', 'Stratification',
+            ]
+
+    new_names = []
     for i, a in enumerate(list(experiment.distances)):
-        for j, b in enumerate(list(experiment.distances)):
+        if not any(tmp in a for tmp in SKIP):
+            new_names.append(a)
+    print(len(new_names))
+
+    distMatrix = np.zeros([len(new_names), len(new_names)])
+    for i, a in enumerate(new_names):
+        for j, b in enumerate(new_names):
             if a != b:
                 distMatrix[i][j] = experiment.distances[a][b]
 
+    # Zd = linkage(ssd.squareform(distMatrix), method="complete")
+    # cld = fcluster(Zd, 500, criterion='distance').reshape(len(new_names), 1)
+
     Zd = linkage(ssd.squareform(distMatrix), method="complete")
-    cld = fcluster(Zd, 12, criterion='distance').reshape(experiment.num_elections, 1)
+    cld = fcluster(Zd, 12, criterion='maxclust').reshape(len(new_names), 1)
 
     clusters = {}
-    for i, name in enumerate(experiment.coordinates):
+    for i, name in enumerate(new_names):
         clusters[name] = cld[i][0]
+    for name in experiment.coordinates:
+        if name not in clusters:
+            clusters[name] = 0
     return {'value': clusters}
 
 

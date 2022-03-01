@@ -1,5 +1,6 @@
 import numpy as np
 from mapel.roommates.models._utils import convert
+from mapel.roommates.models.mallows import mallows_votes
 
 
 def generate_roommates_ic_votes(num_agents: int = None, params=None):
@@ -34,6 +35,30 @@ def generate_roommates_id_votes(num_agents: int = None, params=None):
     return convert(votes)
 
 
+def generate_roommates_teo_votes(num_agents: int = None, params=None):
+    votes = np.zeros([num_agents, num_agents], dtype=int)
+
+    votes[0] = [i for i in range(num_agents)]
+
+    for i in range(1, num_agents):
+        votes[i][0] = i
+
+    for i in range(1, num_agents):
+        pos = i
+        pos_2 = i
+        for j in range(1, num_agents):
+            if i != j:
+                votes[pos_2][pos] = i
+            pos += 3
+            if pos >= num_agents:
+                pos = pos % num_agents + 1
+            pos_2 += 1
+            if pos_2 >= num_agents:
+                pos_2 = pos_2%num_agents + 1
+
+    return convert(votes)
+
+
 def generate_roommates_an_votes(num_agents: int = None, params=None):
     votes = [list(range(num_agents)) for _ in range(num_agents)]
 
@@ -61,6 +86,17 @@ def generate_roommates_cy_votes(num_agents: int = None, params=None):
     votes = [rotate(vote, shift) for shift, vote in enumerate(votes)]
 
     return convert(votes)
+
+
+def generate_roommates_malasym_votes(num_agents: int = None, params=None):
+    votes = [list(range(num_agents)) for _ in range(num_agents)]
+
+    votes = [rotate(vote, shift) for shift, vote in enumerate(votes)]
+
+    votes = mallows_votes(votes, params['phi'])
+
+    return convert(votes)
+
 
 def generate_roommates_cy3_votes(num_agents: int = None, params=None):
     votes = [list(range(num_agents)) for _ in range(num_agents)]

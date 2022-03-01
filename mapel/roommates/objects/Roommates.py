@@ -1,4 +1,3 @@
-
 import numpy as np
 import os
 import ast
@@ -6,7 +5,6 @@ import copy
 
 from mapel.main.objects.Instance import Instance
 from mapel.roommates.models._utils import convert
-
 
 
 class Roommates(Instance):
@@ -52,13 +50,23 @@ class Roommates(Instance):
             votes = [list(range(self.num_agents)) for _ in range(self.num_agents)]
             votes = [rotate(vote, shift) for shift, vote in enumerate(votes)]
             return convert(votes)
+        #
+        # elif self.model_id == 'roommates_teo':
+        #     # return np.array([
+        #     #     [i] * (self.num_agents-1) for i in range(self.num_agents)
+        #     # ])
+        #     tmp_teo = np.array([[1, 2, 3, 4, 5, 6, 7],
+        #                         [1, 3, 5, 7, 2, 4, 6],
+        #                         [2, 4, 6, 1, 3, 5, 7],
+        #                         [3, 5, 7, 2, 4, 6, 1],
+        #                         [4, 6, 1, 3, 5, 7, 2],
+        #                         [5, 7, 2, 4, 6, 1, 3],
+        #                         [6, 1, 3, 5, 7, 2, 4],
+        #                         [7, 2, 4, 6, 1, 3, 5]])
+        #
+        #     return tmp_teo - 1
 
-        elif self.model_id == 'roommates_teo':
-            return np.array([
-                [i] * (self.num_agents-1) for i in range(self.num_agents)
-            ])
-
-        vectors = np.zeros([self.num_agents, self.num_agents-1], dtype=int)
+        vectors = np.zeros([self.num_agents, self.num_agents - 1], dtype=int)
 
         order_votes = [[] for _ in range(self.num_agents)]
         for a in range(self.num_agents):
@@ -74,16 +82,16 @@ class Roommates(Instance):
 
     def votes_to_positionwise_vectors(self):
 
-        vectors = np.zeros([self.num_agents, self.num_agents-1])
+        vectors = np.zeros([self.num_agents, self.num_agents - 1])
 
         for i in range(self.num_agents):
             pos = 0
-            for j in range(self.num_agents-1):
+            for j in range(self.num_agents - 1):
                 vote = self.votes[i][j]
                 vectors[vote][pos] += 1
                 pos += 1
         for i in range(self.num_agents):
-            for j in range(self.num_agents-1):
+            for j in range(self.num_agents - 1):
                 vectors[i][j] /= float(self.num_agents)
 
         self.positionwise_vectors = vectors
@@ -94,8 +102,8 @@ class Roommates(Instance):
         matrix = np.zeros([self.num_agents, self.num_agents])
 
         for v in range(self.num_agents):
-            for c1 in range(self.num_agents-1):
-                for c2 in range(c1 + 1, self.num_agents-1):
+            for c1 in range(self.num_agents - 1):
+                for c2 in range(c1 + 1, self.num_agents - 1):
                     matrix[int(self.votes[v][c1])][int(self.votes[v][c2])] += 1
 
         for i in range(self.num_agents):
@@ -104,6 +112,7 @@ class Roommates(Instance):
                 matrix[j][i] = 1. - matrix[i][j]
 
         return matrix
+
 
 def old_name_extractor(first_line):
     if len(first_line) == 4:
@@ -141,7 +150,7 @@ def import_real_roommates_instance(experiment_id, election_id, shift=False):
 
             num_agents = int(my_file.readline())
 
-        num_candidates = num_agents-1
+        num_candidates = num_agents - 1
 
         for _ in range(num_agents):
             my_file.readline()
@@ -165,6 +174,5 @@ def import_real_roommates_instance(experiment_id, election_id, shift=False):
             for i in range(num_voters):
                 for j in range(num_candidates):
                     votes[i][j] -= 1
-
 
     return votes, num_agents, params, model_id
