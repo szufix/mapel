@@ -414,13 +414,26 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
 
         cb = fig.colorbar(images[0], orientation="horizontal", pad=0.1, shrink=0.55,
                            ticks=ticks)
+        import matplotlib.ticker as mticker
+
+        cb.ax.locator_params(nbins=len(xticklabels), tight=True)
+        cb.ax.tick_params(labelsize=feature_labelsize)
+
+        if ticks_pos is None:
+            ticks_pos = [0, 0.2, 0.4, 0.6, 0.8, 1]
+
+        cb.ax.xaxis.set_ticks(ticks_pos)
+
+        # ticks_loc = ax.get_xticks().tolist()
+        # print(ticks_loc)
+        #
+        # ax.xaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
 
         if xticklabels is not None:
             cb.ax.set_xticklabels(xticklabels)
-        if ticks_pos is not None:
-            cb.ax.xaxis.set_ticks(ticks_pos)
-        cb.ax.locator_params(nbins=len(xticklabels), tight=True)
-        cb.ax.tick_params(labelsize=feature_labelsize)
+
+
+
 
 
 # HELPER FUNCTIONS FOR PRINT_3D
@@ -499,7 +512,8 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
 
                     for i in range(family.size):
                         election_id = list(family.instance_ids)[i]
-                        # print(election_id)
+
+
                         try:
                             alpha = experiment.instances[election_id].alpha
                         except:
@@ -507,6 +521,8 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                                 alpha = experiment.instances[election_id].alpha
                             except:
                                 pass
+
+
 
                         if '1D _path' in label:
                             alpha *= 4
@@ -636,7 +652,8 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
 
     selected_families = list(experiment.families.keys())
     for family_id in omit:
-        selected_families.remove(family_id)
+        if family_id in selected_families:
+            selected_families.remove(family_id)
     num_selected_families = len(selected_families)
     num_selected_instances = 0
     for family_id in selected_families:
@@ -1327,6 +1344,18 @@ def adjust_the_map(experiment) -> None:
             right = experiment.get_election_id_from_model_name('roommates_symmetric')
             # up = experiment.get_election_id_from_model_name('antagonism')
             down = experiment.get_election_id_from_model_name('roommates_id')
+            adjust_the_map_on_three_points(experiment, left, right, down)
+        except Exception:
+            pass
+
+
+    elif experiment.instance_type == 'marriages':
+
+        try:
+            left = experiment.get_election_id_from_model_name('asymmetric')
+            right = experiment.get_election_id_from_model_name('symmetric')
+            # up = experiment.get_election_id_from_model_name('antagonism')
+            down = experiment.get_election_id_from_model_name('id')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
             pass

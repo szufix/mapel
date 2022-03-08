@@ -7,7 +7,7 @@ import numpy as np
 
 from mapel.elections.metrics import main_approval_distances as mad
 from mapel.elections.metrics import main_ordinal_distances as mod
-from mapel.main.inner_distances import map_str_to_func
+from mapel.main._inner_distances import map_str_to_func
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.Election import Election
 from mapel.elections.objects.OrdinalElection import OrdinalElection

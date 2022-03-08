@@ -8,6 +8,7 @@ import mapel.elections.features_main as features
 from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
+from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
 
 
 def hello():
@@ -16,7 +17,8 @@ def hello():
 
 def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
                        coordinates=None, distance_id='emd-positionwise', _import=True,
-                       shift=False, clean=False, dim=2, store=True):
+                       shift=False, dim=2, store=True):
+
     if instance_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
                                          instances=instances, dim=dim, store=store,
@@ -31,6 +33,10 @@ def prepare_experiment(experiment_id=None, instances=None, distances=None, insta
                                           distance_id=distance_id)
     elif instance_type == 'roommates':
         return RoommatesExperiment(experiment_id=experiment_id, _import=_import,
+                                   distance_id=distance_id, instance_type=instance_type)
+
+    elif instance_type == 'marriages':
+        return MarriagesExperiment(experiment_id=experiment_id, _import=_import,
                                    distance_id=distance_id, instance_type=instance_type)
 
 

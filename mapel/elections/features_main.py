@@ -11,7 +11,7 @@ import mapel.elections.features.cohesive as cohesive
 import mapel.elections.features.partylist as partylist
 import mapel.elections.features.proportionality_degree as prop_deg
 import mapel.elections.features.scores as scores
-from mapel.main.inner_distances import l2
+from mapel.main._inner_distances import l2
 
 
 # MAPPING #
@@ -36,7 +36,6 @@ def get_feature(feature_id):
             'monotonicity_1': monotonicity_1,
             'monotonicity_triplets': monotonicity_triplets,
             'partylist': partylist.partylistdistance,
-            # 'num_large_parties': partylist.partylistdistance,
             'distortion_from_all': distortion_from_all,
             'distortion_from_top_100': distortion_from_top_100,
             'pav_time': partylist.pav_time,

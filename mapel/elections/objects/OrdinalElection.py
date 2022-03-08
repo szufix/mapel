@@ -72,14 +72,12 @@ class OrdinalElection(Election):
     def get_vectors(self):
         if self.vectors is not None:
             return self.vectors
-        else:
-            return self.votes_to_positionwise_vectors()
+        return self.votes_to_positionwise_vectors()
 
     def get_matrix(self):
         if self.matrix is not None:
             return self.matrix
-        else:
-            return self.votes_to_positionwise_matrix()
+        return self.votes_to_positionwise_matrix()
 
     def votes_to_positionwise_vectors(self):
 
@@ -270,23 +268,6 @@ class OrdinalElection(Election):
                 vector[points[i]] += 1
 
         return vector, num_possible_scores
-
-    # def votes_to_viper_vectors(experiment):
-    #
-    #     vectors = [[0. for _ in range(experiment.num_voters)]
-    #                for _ in range(experiment.num_voters)]
-    #
-    #     c = experiment.num_candidates
-    #     v = experiment.num_voters
-    #     borda_vector = [sum([vectors[j][i] * (c - i - 1)
-    #                          for i in range(c)]) * v
-    #                     for j in range(experiment.num_candidates)]
-    #
-    #     for i in range(experiment.num_candidates):
-    #         for j in range(experiment.num_candidates):
-    #             vectors[i][j] /= float(experiment.num_voters)
-    #
-    #     return vectors
 
     def compute_winners(self, method=None, num_winners=None):
 

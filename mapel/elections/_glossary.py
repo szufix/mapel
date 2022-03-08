@@ -113,6 +113,9 @@ NICE_NAME = {
     'noise_model': 'noise_model',
     'approval_partylist': 'Approval_Partylist',
     'norm-mallows_mixture': 'norm-mallows_mixture',
+    'ic': 'IC',
+    'id': 'ID',
+    'urn': 'Urn',
     }
 
 

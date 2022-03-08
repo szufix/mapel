@@ -2,20 +2,24 @@ from typing import Callable, List
 from itertools import combinations, permutations
 
 from mapel.main._matchings import *
-from mapel.roommates.objects.Roommates import Roommates
+from mapel.marriages.objects.Marriages import Marriages
 from mapel.main._inner_distances import swap_distance
 
 
 # MAIN DISTANCES
 def compute_retrospective_distance(instance_1, instance_2, inner_distance):
-    cost_table = get_matching_cost_retrospective(instance_1, instance_2, inner_distance)
-    return solve_matching_vectors(cost_table)
+    cost_table_1, cost_table_2 = get_matching_cost_retrospective(instance_1, instance_2, inner_distance)
+    a,b = solve_matching_vectors(cost_table_1)
+    c,d = solve_matching_vectors(cost_table_2)
+    return a+c, b+d
+
 
 def compute_positionwise_distance(instance_1, instance_2, inner_distance):
     cost_table = get_matching_cost_positionwise(instance_1, instance_2, inner_distance)
     return solve_matching_vectors(cost_table)
 
-def compute_pos_swap_distance(instance_1: Roommates, instance_2: Roommates,
+
+def compute_pos_swap_distance(instance_1: Marriages, instance_2: Marriages,
                               inner_distance: Callable) -> (float, list):
     """ Compute Positionwise distance between ordinal elections """
     cost_table = get_matching_cost_positionwise(instance_1, instance_2, inner_distance)
@@ -26,7 +30,7 @@ def compute_pos_swap_distance(instance_1: Roommates, instance_2: Roommates,
     return sum([swap_distance(votes_1[i], votes_2[matching[i]], matching=matching) for i in range(size)])
 
 
-def compute_swap_bf_distance(instance_1: Roommates, instance_2: Roommates,
+def compute_swap_bf_distance(instance_1: Marriages, instance_2: Marriages,
                               inner_distance: Callable) -> int:
 
     obj_values = []
@@ -45,7 +49,7 @@ def compute_swap_bf_distance(instance_1: Roommates, instance_2: Roommates,
     return min(obj_values)
 
 
-def compute_pairwise_distance(instance_1: Roommates, instance_2: Roommates,
+def compute_pairwise_distance(instance_1: Marriages, instance_2: Marriages,
                               inner_distance: Callable) -> float:
     """ Compute Pairwise distance between ordinal elections """
     length = instance_1.num_agents
@@ -62,19 +66,21 @@ def print_matrix_for_tex(matrix):
         line += f' {row[-1]} \\\\'
         print(line)
 
-def get_matching_cost_retrospective(instance_1: Roommates, instance_2: Roommates,
-                                    inner_distance: Callable) -> List[list]:
+
+def get_matching_cost_retrospective(instance_1: Marriages, instance_2: Marriages,
+                                    inner_distance: Callable):
     """ Return: Cost table """
     vectors_1 = instance_1.get_retrospective_vectors()
     vectors_2 = instance_2.get_retrospective_vectors()
-    # print_matrix_for_tex(vectors_1)
-    # print('')
-    # print_matrix_for_tex(vectors_2)
-    # print(vectors_1, vectors_2)
-    size = instance_1.num_agents
-    return [[inner_distance(vectors_1[i], vectors_2[j]) for i in range(size)] for j in range(size)]
 
-def get_matching_cost_positionwise(instance_1: Roommates, instance_2: Roommates,
+    size = instance_1.num_agents
+
+    return [[inner_distance(vectors_1[0][i], vectors_2[0][j]) for i in range(size)] for j in range(size)], \
+           [[inner_distance(vectors_1[1][i], vectors_2[1][j]) for i in range(size)] for j in range(size)]
+
+
+
+def get_matching_cost_positionwise(instance_1: Marriages, instance_2: Marriages,
                                     inner_distance: Callable) -> List[list]:
     """ Return: Cost table """
     vectors_1 = instance_1.get_positionwise_vectors()

@@ -2,13 +2,13 @@
 
 
 from mapel.main.objects.Family import Family
-from mapel.roommates.objects.Roommates import Roommates
+from mapel.marriages.objects.Marriages import Marriages
 import copy
 
-import mapel.roommates.models.mallows as mallows
+import mapel.marriages.models.mallows as mallows
 
 
-class RoommatesFamily(Family):
+class MarriagesFamily(Family):
 
     def __init__(self,
                  model_id: str = None,
@@ -72,6 +72,7 @@ class RoommatesFamily(Family):
 
     def prepare_family(self, experiment_id=None, store=None):
 
+
         params = copy.deepcopy(self.params)
 
         instances = {}
@@ -79,6 +80,7 @@ class RoommatesFamily(Family):
         _keys = []
         for j in range(self.size):
 
+            variable = None
             path = self.path
             if path is not None and 'variable' in path:
                 new_params, variable = self._get_params_for_paths(j)
@@ -91,11 +93,11 @@ class RoommatesFamily(Family):
             if self.single:
                 instance_id = self.family_id
             else:
-                instance_id = f'{self.family_id}_{j}'
+                instance_id = self.family_id + '_' + str(j)
 
-            instance = Roommates(experiment_id, instance_id,
+            instance = Marriages(experiment_id, instance_id,
                                  model_id=self.model_id, num_agents=self.num_agents)
-
+            print(instance.model_id)
             instance.prepare_instance(store=store, params=params)
 
             instances[instance_id] = instance

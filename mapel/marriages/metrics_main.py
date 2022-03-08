@@ -1,20 +1,18 @@
 #!/usr/bin/env python
 
 from time import time
-from typing import Union, Callable
+from typing import Callable
 
-import networkx as nx
 import numpy as np
 
-from mapel.roommates.metrics import main_roommates_distances as mrd
 from mapel.main._inner_distances import map_str_to_func
-from mapel.roommates.objects.Roommates import Roommates
-# from mapel.roommates.objects.OrdinalElection import OrdinalElection
 from mapel.main.objects.Experiment import Experiment
+from mapel.marriages.metrics import main_marriages_distances as mrd
+from mapel.marriages.objects.Marriages import Marriages
 
 
-def get_distance(election_1: Roommates, election_2: Roommates,
-                         distance_id: str = None) -> float or (float, list):
+def get_distance(election_1: Marriages, election_2: Marriages,
+                 distance_id: str = None) -> float or (float, list):
     """ Return: distance between ordinal elections, (if applicable) optimal matching """
     inner_distance, main_distance = extract_distance_id(distance_id)
 

@@ -1,8 +1,7 @@
 import numpy as np
 import math
 from numpy import linalg
-from mapel.roommates.models._utils import convert
-from mapel.roommates.models.mallows import mallows_votes
+from mapel.marriages.models.mallows import mallows_votes
 
 ################################################################
 
@@ -13,9 +12,10 @@ def get_range(params):
         return np.random.uniform(low=params['a'], high=params['b'])
 
 
-def generate_roommates_euclidean_votes(num_agents: int = None, params: dict = None):
+def generate_euclidean_votes(num_agents: int = None, params: dict = None):
 
     name = f'{params["dim"]}d_{params["space"]}'
+    # print(name)
 
     agents = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
 
@@ -33,7 +33,7 @@ def generate_roommates_euclidean_votes(num_agents: int = None, params: dict = No
             distances[v][c] = np.linalg.norm(agents[v] - agents[c])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
-    return convert(votes)
+    return votes
 
 
 def generate_roommates_radius_votes(num_agents: int = None, params: dict = None):

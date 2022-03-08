@@ -20,7 +20,7 @@ class ElectionFamily(Family):
                  marker='o',
                  starting_from: int = 0,
                  path: dict = None,
-                 single_instance: bool = False,
+                 single: bool = False,
 
                  num_candidates=None,
                  num_voters=None,
@@ -40,7 +40,7 @@ class ElectionFamily(Family):
                          marker=marker,
                          starting_from=starting_from,
                          path=path,
-                         single_instance=single_instance,
+                         single=single,
                          instance_ids=election_ids)
 
         self.num_candidates = num_candidates

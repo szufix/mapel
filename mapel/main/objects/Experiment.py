@@ -74,7 +74,7 @@ class Experiment:
         if isinstance(instances, dict):
             self.instances = instances
             print('=== Omitting import! ===')
-        elif self.experiment_id != 'virtual':
+        elif _import and self.experiment_id != 'virtual':
             try:
                 self.instances = self.add_instances_to_experiment()
                 self.num_instances = len(self.instances)
@@ -88,7 +88,7 @@ class Experiment:
         if isinstance(distances, dict):
             self.distances = distances
             print('=== Omitting import! ===')
-        elif self.experiment_id != 'virtual':
+        elif _import and self.experiment_id != 'virtual':
             try:
                 self.distances, self.times, self.stds = self.add_distances_to_experiment()
                 print('=== Distances imported successfully! ===')
@@ -97,11 +97,10 @@ class Experiment:
         else:
             self.distances = {}
 
-
         if isinstance(coordinates, dict):
             self.coordinates = coordinates
             print('=== Omitting import! ===')
-        elif self.experiment_id != 'virtual':
+        elif _import and self.experiment_id != 'virtual':
             try:
                 self.coordinates = self.add_coordinates_to_experiment(dim=dim)
                 print('=== Coordinates imported successfully! ===')

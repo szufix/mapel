@@ -7,7 +7,7 @@ import os
 import numpy as np
 
 from mapel.elections._glossary import *
-from mapel.main.inner_distances import hamming
+from mapel.main._inner_distances import hamming
 from mapel.elections.objects.Election import Election
 
 

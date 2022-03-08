@@ -10,7 +10,7 @@ import numpy as np
 
 import mapel.elections.metrics_main as metr
 import mapel.elections.features_main as features
-from mapel.main.inner_distances import l2, chebyshev
+from mapel.main._inner_distances import l2, chebyshev
 from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.main.objects.Experiment import Experiment
 from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment

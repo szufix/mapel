@@ -8,13 +8,12 @@ from threading import Thread
 from time import sleep
 
 from mapel.main.objects.Experiment import Experiment
-from mapel.roommates.objects.RoommatesFamily import RoommatesFamily
-from mapel.roommates.objects.Roommates import Roommates
-import mapel.roommates.models_main as models_main
-import mapel.roommates.metrics_main as metr
-import mapel.roommates.features.basic_features as basic
-import mapel.roommates.features_main as features
-from mapel.main._utils import *
+from mapel.marriages.objects.MarriagesFamily import MarriagesFamily
+from mapel.marriages.objects.Marriages import Marriages
+import mapel.marriages.models_main as models_main
+import mapel.marriages.metrics_main as metr
+import mapel.marriages.features.basic_features as basic
+import mapel.marriages.features_main as features
 
 try:
     from sklearn.manifold import MDS
@@ -31,15 +30,16 @@ except ImportError as error:
     print(error)
 
 
-class RoommatesExperiment(Experiment):
+class MarriagesExperiment(Experiment):
     """Abstract set of elections."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
         self.default_num_agents = 10
+
         self.matchings = {}
-        self.import_matchings()
+
+        # self.import_matchings()
 
     def import_matchings(self):
         matchings = {}
@@ -64,60 +64,23 @@ class RoommatesExperiment(Experiment):
         instances = {}
 
         for family_id in self.families:
-            single = self.families[family_id].single
 
             ids = []
-            for j in range(self.families[family_id].size):
-                instance_id = get_instance_id(single, family_id, j)
-                instance = Roommates(self.experiment_id, instance_id)
-                instances[instance_id] = instance
-                ids.append(str(instance_id))
+            if self.families[family_id].single:
+                election_id = family_id
+                election = Marriages(self.experiment_id, election_id)
+                instances[election_id] = election
+                ids.append(str(election_id))
+            else:
+                for j in range(self.families[family_id].size):
+                    election_id = family_id + '_' + str(j)
+                    election = Marriages(self.experiment_id, election_id)
+                    instances[election_id] = election
+                    ids.append(str(election_id))
 
             self.families[family_id].instance_ids = ids
 
         return instances
-
-    def add_instance(self, model_id="none", params=None, label=None,
-                     color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
-                     num_agents=None, instance_id=None):
-
-        if num_agents is None:
-            num_agents = self.default_num_agents
-
-        return self.add_family(model_id=model_id, params=params, size=size, label=label,
-                               color=color, alpha=alpha, show=show, marker=marker,
-                               starting_from=starting_from, family_id=instance_id,
-                               num_agents=num_agents, single_instance=True)
-
-    def add_family(self, model_id: str = "none", params: dict = None, size: int = 1,
-                   label: str = None, color: str = "black", alpha: float = 1.,
-                   show: bool = True, marker: str = 'o', starting_from: int = 0,
-                   family_id: str = None, single_instance: bool = False,
-                   num_agents: int = None, path: dict = None):
-
-        if num_agents is None:
-            num_agents = self.default_num_agents
-
-        if self.families is None:
-            self.families = {}
-
-        if label is None:
-            label = family_id
-
-        self.families[family_id] = RoommatesFamily(model_id=model_id, family_id=family_id,
-                                                   params=params, label=label, color=color,
-                                                   alpha=alpha, single=single_instance,
-                                                   show=show, size=size, marker=marker,
-                                                   starting_from=starting_from,
-                                                   num_agents=num_agents, path=path)
-
-        self.num_families = len(self.families)
-        self.num_instances = sum([self.families[family_id].size for family_id in self.families])
-
-        models_main.prepare_instances(experiment=self,
-                                    model_id=self.families[family_id].model_id,
-                                    family_id=family_id,
-                                    params=copy.deepcopy(self.families[family_id].params))
 
 
     def compute_distances(self, distance_id: str = 'emd-positionwise', num_threads: int = 1,
@@ -207,6 +170,7 @@ class RoommatesExperiment(Experiment):
             family_id = None
             show = True
 
+
             if 'model_id' in row.keys():
                 model_id = str(row['model_id']).strip()
 
@@ -242,7 +206,7 @@ class RoommatesExperiment(Experiment):
 
             single_instance = size == 1
 
-            families[family_id] = RoommatesFamily(model_id=model_id,
+            families[family_id] = MarriagesFamily(model_id=model_id,
                                                   family_id=family_id,
                                                   params=params, label=label,
                                                   color=color, alpha=alpha, show=show,
@@ -305,7 +269,8 @@ class RoommatesExperiment(Experiment):
         feature_dict = {'value': {}, 'time': {}, 'std': {}}
 
         features_with_time = {}
-        features_with_std = {'avg_num_of_bps_for_rand_matching'}
+        features_with_std = {'avg_num_of_bps_for_rand_matching',
+                             'avg_number_of_bps_for_random_matching'}
 
         # print(self.matchings)
 
@@ -313,11 +278,12 @@ class RoommatesExperiment(Experiment):
             print(instance_id)
             feature = features.get_feature(feature_id)
             instance = self.instances[instance_id]
-            if feature_id in ['summed_rank_minimal_matching'] \
-                    and self.matchings[instance_id] is None:
-                value = 'None'
-            else:
-                value = feature(instance)
+            # if feature_id in ['summed_rank_minimal_matching'] \
+            #         and self.matchings[instance_id] is None:
+            #     value = 'None'
+            # else:
+            value = feature(instance.votes)
+
             #
             # elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
             #                     'number_of_cohesive_groups_brute',
@@ -361,15 +327,15 @@ class RoommatesExperiment(Experiment):
                 writer = csv.writer(csv_file, delimiter=';')
 
                 if feature_id in features_with_time:
-                    writer.writerow(["election_id", "value", 'time'])
+                    writer.writerow(["instance_id", "value", 'time'])
                     for key in feature_dict['value']:
                         writer.writerow([key, feature_dict['value'][key], round(feature_dict['time'][key],3)])
                 elif feature_id in features_with_std:
-                    writer.writerow(["election_id", "value", 'std'])
+                    writer.writerow(["instance_id", "value", 'std'])
                     for key in feature_dict['value']:
                         writer.writerow([key, feature_dict['value'][key], round(feature_dict['std'][key],3)])
                 else:
-                    writer.writerow(["election_id", "value"])
+                    writer.writerow(["instance_id", "value"])
                     for key in feature_dict['value']:
                         writer.writerow([key, feature_dict['value'][key]])
 
@@ -410,5 +376,3 @@ class RoommatesExperiment(Experiment):
         for family_id in self.families:
             if self.families[family_id].model_id == model_id:
                 return family_id
-
-

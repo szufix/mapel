@@ -10,7 +10,7 @@ except ImportError:
 
 import numpy as np
 
-from mapel.main.inner_distances import hamming
+from mapel.main._inner_distances import hamming
 
 
 # FOR SUBELECTIONS

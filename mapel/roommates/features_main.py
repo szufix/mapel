@@ -2,6 +2,7 @@
 
 import mapel.roommates.features.basic_features as basic
 
+
 # MAPPING #
 def get_feature(feature_id):
     return {'summed_rank_minimal_matching': basic.summed_rank_minimal_matching,

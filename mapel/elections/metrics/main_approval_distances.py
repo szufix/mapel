@@ -5,7 +5,7 @@ from typing import Callable, List
 
 import networkx as nx
 
-from mapel.main.matchings import *
+from mapel.main._matchings import *
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 
 

@@ -5,6 +5,7 @@ from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
 from mapel.elections.other import pabulib
 from mapel.elections._glossary import *
+from mapel.main._utils import *
 
 try:
     from sklearn.manifold import MDS
@@ -42,23 +43,18 @@ class ApprovalElectionExperiment(ElectionExperiment):
             print(family_id)
             ids = []
 
+            single = self.families[family_id].single_election
+
             if self.families[family_id].model_id in APPROVAL_MODELS or \
                     self.families[family_id].model_id in APPROVAL_FAKE_MODELS or \
                     self.families[family_id].model_id in ['pabulib']:
 
-                if self.families[family_id].single_election:
-                    election_id = family_id
+                for j in range(self.families[family_id].size):
+                    election_id = get_instance_id(single, family_id, j)
                     election = ApprovalElection(self.experiment_id, election_id,
                                                 _import=self._import)
                     elections[election_id] = election
                     ids.append(str(election_id))
-                else:
-                    for j in range(self.families[family_id].size):
-                        election_id = family_id + '_' + str(j)
-                        election = ApprovalElection(self.experiment_id, election_id,
-                                                    _import=self._import)
-                        elections[election_id] = election
-                        ids.append(str(election_id))
             else:
 
                 path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
