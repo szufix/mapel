@@ -20,6 +20,7 @@ def generate_instance(num_agents):
     return instance
 
 def number_blockingPairs(instance,matching):
+    print(matching)
     bps=0
     num_agents=len(instance)
     for i in range(num_agents):
@@ -48,7 +49,7 @@ def compute_stable_SR(votes):
             usable_matching[m.name] = matching[m].name
         return usable_matching
     except:
-        return None
+        return 'None'
 
 
 
@@ -111,6 +112,7 @@ def rank_matching(instance,best,summed):
     num_agents=len(instance)
     m = gp.Model("mip1")
     m.setParam('OutputFlag', False)
+    # m.setParam('Threads', 4)
     x = m.addVars(num_agents, num_agents, lb=0, ub=1, vtype=GRB.BINARY)
     opt = m.addVar(vtype=GRB.INTEGER, lb=0, ub=num_agents*num_agents)
     for i in range(num_agents):

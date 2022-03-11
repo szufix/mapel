@@ -95,7 +95,7 @@ class MarriagesFamily(Family):
             else:
                 instance_id = self.family_id + '_' + str(j)
 
-            instance = Marriages(experiment_id, instance_id,
+            instance = Marriages(experiment_id, instance_id, _import=False,
                                  model_id=self.model_id, num_agents=self.num_agents)
             print(instance.model_id)
             instance.prepare_instance(store=store, params=params)

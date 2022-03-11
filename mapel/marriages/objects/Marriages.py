@@ -22,7 +22,7 @@ class Marriages(Instance):
         self.retrospetive_vectors = None
         self.positionwise_vectors = None
 
-        if experiment_id != 'virtual':
+        if _import and experiment_id != 'virtual':
             try:
                 self.votes, self.num_agents, self.params, self.model_id = \
                     self.import_real_instance()

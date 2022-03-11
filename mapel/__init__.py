@@ -1,6 +1,7 @@
 
 import mapel.elections.metrics_main as metr
 import mapel.elections.models_main as ele
+import mapel.roommates.models_main as rom
 import mapel.elections._print as pr
 import mapel.elections.other.development as dev
 import mapel.elections.features_main as features
@@ -8,6 +9,7 @@ import mapel.elections.features_main as features
 from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
+from mapel.roommates.objects.Roommates import Roommates
 from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
 
 
@@ -64,6 +66,15 @@ def compute_spoilers(**kwargs):
 def generate_election(**kwargs):
     return ele.generate_election(**kwargs)
 
+
+def generate_roommates_instance(**kwargs):
+    instance = Roommates('virtual', 'tmp', **kwargs)
+    instance.prepare_instance()
+    return instance
+
+
+def generate_roommates_votes(**kwargs):
+    return rom.generate_votes(**kwargs)
 
 def compute_distance(*args, **kwargs):
     return metr.get_distance(*args, **kwargs)

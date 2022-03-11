@@ -175,7 +175,13 @@ def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty,
         reader = csv.DictReader(csv_file, delimiter=';')
 
         for row in reader:
-            election_id = row['instance_id']
+            try:
+                election_id = row['instance_id']
+            except:
+                try:
+                    election_id = row['election_id']
+                except:
+                    pass
             value = row[column_id]
             if value == 'None' or value is None:
                 value = None

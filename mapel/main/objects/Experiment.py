@@ -110,6 +110,7 @@ class Experiment:
             self.coordinates = {}
 
 
+
     @abstractmethod
     def prepare_instances(self):
         pass
@@ -125,7 +126,6 @@ class Experiment:
     def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
               dim: int = 2, num_neighbors: int = None, method: str = 'standard',
               zero_distance: float = 0.1, factor: float = 1.) -> None:
-
 
         if algorithm == 'spring':
             attraction_factor = 2
@@ -170,16 +170,6 @@ class Experiment:
         dt = [('weight', float)]
         y = x.view(dt)
         graph = nx.from_numpy_matrix(y)
-
-        # print(x)
-        # for i in range(len(x)):
-        #     for j in range(len(x)):
-        #         print(x[i][j],  x[i][j][0])
-        #         x[i][j] = x[i][j][0]
-
-
-        # x = [[float(i[0]) for i in range(row)] for row in x]
-        # print(x)
 
         if num_neighbors is None:
             num_neighbors = 100
@@ -261,7 +251,6 @@ class Experiment:
     def import_controllers(self):
         pass
 
-
     def add_coordinates_to_experiment(self, dim=2) -> dict:
         """ Import from a file precomputed coordinates of all the points --
         each point refer to one instance """
@@ -269,11 +258,9 @@ class Experiment:
         coordinates = {}
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                             "coordinates", f'{self.distance_id}_{dim}d.csv')
-
         with open(path, 'r', newline='') as csv_file:
 
             # ORIGINAL
-
             reader = csv.DictReader(csv_file, delimiter=';')
 
             warn = False

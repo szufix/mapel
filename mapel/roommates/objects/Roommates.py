@@ -23,10 +23,13 @@ class Roommates(Instance):
         self.retrospetive_vectors = None
         self.positionwise_vectors = None
 
-        if experiment_id != 'virtual':
-            self.votes, self.num_agents, self.params, self.model_id = \
-                self.import_real_instance()
-            self.alpha = self.params['alpha']
+        if _import and experiment_id != 'virtual':
+            try:
+                self.votes, self.num_agents, self.params, self.model_id = \
+                    self.import_real_instance()
+                self.alpha = self.params['alpha']
+            except:
+                pass
 
     def get_retrospective_vectors(self):
         if self.retrospetive_vectors is not None:
@@ -99,6 +102,8 @@ class Roommates(Instance):
 
     # PREPARE INSTANCE
     def prepare_instance(self, store=None, params: dict = None):
+
+
         if params is None:
             params = {}
 

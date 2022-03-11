@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from mapel.roommates.models._utils import convert
 from mapel.roommates.models.mallows import mallows_votes
@@ -43,18 +45,26 @@ def generate_roommates_teo_votes(num_agents: int = None, params=None):
     for i in range(1, num_agents):
         votes[i][0] = i
 
+    # print(votes)
+
     for i in range(1, num_agents):
         pos = i
         pos_2 = i
         for j in range(1, num_agents):
-            if i != j:
+
+            if j != 1:
                 votes[pos_2][pos] = i
+
             pos += 3
+
             if pos >= num_agents:
                 pos = pos % num_agents + 1
+
             pos_2 += 1
+
             if pos_2 >= num_agents:
-                pos_2 = pos_2%num_agents + 1
+                pos_2 = pos_2 % num_agents + 1
+    print(votes)
 
     return convert(votes)
 
@@ -134,43 +144,75 @@ def generate_roommates_revcy_votes(num_agents: int = None, params=None):
 
 
 def generate_roommates_ideal_votes(num_agents: int = None, params=None):
-    votes = [list(range(num_agents)) for _ in range(num_agents)]
+    votes = np.zeros([num_agents, num_agents], dtype=int)
 
     for i in range(num_agents):
-        if i%4 == 0:
-            votes[i][0] = i
-            for j in range(1, num_agents): # normal
-                if j%2 == 0:
-                    votes[i][j] = (i + int(j/2)) % num_agents
-                else:
-                    votes[i][j] = (i - int(j/2) - 1) % num_agents
-        elif i%4 == 1:
-            votes[i][0] = i
-            votes[i][1] = (i+1)% num_agents
-            for j in range(2, num_agents, 2): # change
-                if j%4 == 2:
-                    votes[i][j] = (i+1 - int(j/2) - 1) % num_agents
-                    votes[i][j+1] = (i+1 - int(j/2) - 2) % num_agents
-                else:
-                    votes[i][j] = (i+1 + int(j/2) - 1) % num_agents
-                    votes[i][j+1] = (i+1 + int(j/2)) % num_agents
-        elif i%4 == 2:
-            votes[i][0] = i
-            votes[i][1] = (i-1)% num_agents
-            for j in range(2, num_agents, 2): # change
-                if j%4 == 2:
-                    votes[i][j] = (i + int(j/2)) % num_agents
-                    votes[i][j+1] = (i + int(j/2) + 1) % num_agents
-                else:
-                    votes[i][j] = (i - int(j/2)) % num_agents
-                    votes[i][j+1] = (i - int(j/2) - 1) % num_agents
-        else:
-            votes[i][0] = i
-            for j in range(1, num_agents): # normal
-                if j%2 == 0:
-                    votes[i][j] = (i+1 - int(j/2) - 1) % num_agents
-                else:
-                    votes[i][j] = (i+1 + int(j/2)) % num_agents
+        votes[i][0] = i
+    print((votes))
+
+    tri_sets = math.floor(num_agents/3)
+    for x in range(tri_sets):
+        i = x*3
+        votes[i][1] = i+1
+        votes[i][2] = i+2
+        votes[i+1][1] = i+2
+        votes[i+1][2] = i
+        votes[i+2][1] = i
+        votes[i+2][2] = i+1
+
+        base = list(range(num_agents))
+        remove = [i, i+1, i+2]
+        tmp = np.setdiff1d(base, remove)
+        for j in range(i, i+3):
+            ending = np.random.permutation(tmp)
+            votes[j][3:] = ending
+
+    for i in range(tri_sets*3, num_agents):
+        base = list(range(num_agents))
+        remove = [i]
+        tmp = np.setdiff1d(base, remove)
+        ending = np.random.permutation(tmp)
+        votes[i][1:] = ending
+
+    return convert(votes)
+
+
+    #
+    # for i in range(num_agents):
+    #     if i%4 == 0:
+    #         votes[i][0] = i
+    #         for j in range(1, num_agents): # normal
+    #             if j%2 == 0:
+    #                 votes[i][j] = (i + int(j/2)) % num_agents
+    #             else:
+    #                 votes[i][j] = (i - int(j/2) - 1) % num_agents
+    #     elif i%4 == 1:
+    #         votes[i][0] = i
+    #         votes[i][1] = (i+1)% num_agents
+    #         for j in range(2, num_agents, 2): # change
+    #             if j%4 == 2:
+    #                 votes[i][j] = (i+1 - int(j/2) - 1) % num_agents
+    #                 votes[i][j+1] = (i+1 - int(j/2) - 2) % num_agents
+    #             else:
+    #                 votes[i][j] = (i+1 + int(j/2) - 1) % num_agents
+    #                 votes[i][j+1] = (i+1 + int(j/2)) % num_agents
+    #     elif i%4 == 2:
+    #         votes[i][0] = i
+    #         votes[i][1] = (i-1)% num_agents
+    #         for j in range(2, num_agents, 2): # change
+    #             if j%4 == 2:
+    #                 votes[i][j] = (i + int(j/2)) % num_agents
+    #                 votes[i][j+1] = (i + int(j/2) + 1) % num_agents
+    #             else:
+    #                 votes[i][j] = (i - int(j/2)) % num_agents
+    #                 votes[i][j+1] = (i - int(j/2) - 1) % num_agents
+    #     else:
+    #         votes[i][0] = i
+    #         for j in range(1, num_agents): # normal
+    #             if j%2 == 0:
+    #                 votes[i][j] = (i+1 - int(j/2) - 1) % num_agents
+    #             else:
+    #                 votes[i][j] = (i+1 + int(j/2)) % num_agents
     # print(votes[0:4])
     # for i in [4,5,6,7,12,13,14,15]:
     #     right = int(num_agents/2)
@@ -179,9 +221,8 @@ def generate_roommates_ideal_votes(num_agents: int = None, params=None):
     #     votes[i][left] = votes[i][right]
     #     votes[i][right] = tmp
 
-    print(votes)
+    # print(votes)
     # exit()
-    return convert(votes)
 
 # HELPER
 def rotate(vector, shift):

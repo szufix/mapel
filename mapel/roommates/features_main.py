@@ -9,6 +9,7 @@ def get_feature(feature_id):
             'min_num_bps_matching': basic.min_num_bps_matching,
             'num_of_bps_maximumWeight': basic.num_of_bps_maximumWeight,
             'avg_num_of_bps_for_rand_matching': basic.avg_num_of_bps_for_random_matching,
+            # 'minimal_rank_maximizing_matching': basic.minimal_rank_maximizing_matching,
             }.get(feature_id)
 
 

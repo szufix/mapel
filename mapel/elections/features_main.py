@@ -286,7 +286,6 @@ def max_approval_score(election):
 
 # NEW ALGORITHMS (21.02.2022) == GLOBAL FEATURES
 
-
 def clustering_v1(experiment, num_clusters=20):
     from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
     import scipy.spatial.distance as ssd

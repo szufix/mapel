@@ -6,6 +6,7 @@ import itertools
 import os
 from threading import Thread
 from time import sleep
+import time
 
 from mapel.main.objects.Experiment import Experiment
 from mapel.roommates.objects.RoommatesFamily import RoommatesFamily
@@ -39,7 +40,10 @@ class RoommatesExperiment(Experiment):
 
         self.default_num_agents = 10
         self.matchings = {}
-        self.import_matchings()
+        try:
+            self.import_matchings()
+        except:
+            pass
 
     def import_matchings(self):
         matchings = {}
@@ -304,7 +308,6 @@ class RoommatesExperiment(Experiment):
 
         feature_dict = {'value': {}, 'time': {}, 'std': {}}
 
-        features_with_time = {}
         features_with_std = {'avg_num_of_bps_for_rand_matching'}
 
         # print(self.matchings)
@@ -313,11 +316,14 @@ class RoommatesExperiment(Experiment):
             print(instance_id)
             feature = features.get_feature(feature_id)
             instance = self.instances[instance_id]
+
+            start = time.time()
             if feature_id in ['summed_rank_minimal_matching'] \
-                    and self.matchings[instance_id] is None:
+                    and (self.matchings[instance_id] is None or self.matchings[instance_id] == 'None'):
                 value = 'None'
             else:
                 value = feature(instance)
+            total_time = time.time() - start
             #
             # elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
             #                     'number_of_cohesive_groups_brute',
@@ -339,14 +345,13 @@ class RoommatesExperiment(Experiment):
             # else:
             #     value = feature(election)
 
-            if feature_id in features_with_time:
+            if feature_id in features_with_std:
                 feature_dict['value'][instance_id] = value[0]
-                feature_dict['time'][instance_id] = value[1]
-            elif feature_id in features_with_std:
-                feature_dict['value'][instance_id] = value[0]
+                feature_dict['time'][instance_id] = total_time
                 feature_dict['std'][instance_id] = value[1]
             else:
                 feature_dict['value'][instance_id] = value
+                feature_dict['time'][instance_id] = total_time
 
         if self.store:
 
@@ -360,18 +365,17 @@ class RoommatesExperiment(Experiment):
             with open(path, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
 
-                if feature_id in features_with_time:
+                if feature_id in features_with_std:
+                    writer.writerow(["election_id", "value", 'time', 'std'])
+                    for key in feature_dict['value']:
+                        writer.writerow([key, feature_dict['value'][key],
+                                         round(feature_dict['time'][key],3),
+                                        round(feature_dict['std'][key],3)])
+                else:
                     writer.writerow(["election_id", "value", 'time'])
                     for key in feature_dict['value']:
-                        writer.writerow([key, feature_dict['value'][key], round(feature_dict['time'][key],3)])
-                elif feature_id in features_with_std:
-                    writer.writerow(["election_id", "value", 'std'])
-                    for key in feature_dict['value']:
-                        writer.writerow([key, feature_dict['value'][key], round(feature_dict['std'][key],3)])
-                else:
-                    writer.writerow(["election_id", "value"])
-                    for key in feature_dict['value']:
-                        writer.writerow([key, feature_dict['value'][key]])
+                        writer.writerow([key, feature_dict['value'][key],
+                                         round(feature_dict['time'][key],3)])
 
         self.features[feature_id] = feature_dict
         return feature_dict
