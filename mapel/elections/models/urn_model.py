@@ -47,14 +47,6 @@ def generate_approval_truncated_urn_votes(num_voters: int = None, num_candidates
     ordinal_votes = generate_urn_votes(num_voters=num_voters, num_candidates=num_candidates,
                                        params=params)
 
-    # if 'max_range' not in params:
-        # params['max_range'] = 1.
-    #
-    # votes = []
-    # k = np.random.randint(low=1., high=int(params['max_range'] * num_candidates))
-    # for v in range(num_voters):
-    #     votes.append(set(ordinal_votes[v][0:k]))
-
     votes = []
     k = int(params['p'] * num_candidates)
     for v in range(num_voters):

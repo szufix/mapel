@@ -35,7 +35,7 @@ class Experiment:
 
     def __init__(self, instances=None, distances=None, dim=2, store=True,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
-                 instance_type='ordinal', _import=True, clean=False):
+                 instance_type='ordinal', _import=True, clean=False, coordinates_names=None):
 
         self._import = _import
         self.clean = clean
@@ -48,6 +48,7 @@ class Experiment:
         self.instances = None
         self.distances = None
         self.coordinates = None
+        self.coordinates_lists = {}
 
         self.families = {}
         self.times = {}
@@ -102,7 +103,13 @@ class Experiment:
             print('=== Omitting import! ===')
         elif _import and self.experiment_id != 'virtual':
             try:
-                self.coordinates = self.add_coordinates_to_experiment(dim=dim)
+                if coordinates_names is not None:
+                    for file_name in coordinates_names:
+                        self.coordinates_lists[file_name] = \
+                            self.add_coordinates_to_experiment(dim=dim, file_name=file_name)
+                    self.coordinates = self.coordinates_lists[coordinates_names[0]]
+                else:
+                    self.coordinates = self.add_coordinates_to_experiment(dim=dim)
                 print('=== Coordinates imported successfully! ===')
             except FileNotFoundError:
                 print('=== Coordinates not found! ===')
@@ -125,7 +132,7 @@ class Experiment:
 
     def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
               dim: int = 2, num_neighbors: int = None, method: str = 'standard',
-              zero_distance: float = 0.1, factor: float = 1.) -> None:
+              zero_distance: float = 0.1, factor: float = 1., saveas: str = None) -> None:
 
         if algorithm == 'spring':
             attraction_factor = 2
@@ -198,7 +205,10 @@ class Experiment:
             coordinates[instance_id] = [my_pos[i][d] for d in range(dim)]
 
         if self.store:
-            file_name = f'{self.distance_id}_{str(dim)}d.csv'
+            if saveas is None:
+                file_name = f'{self.distance_id}_{str(dim)}d.csv'
+            else:
+                file_name = saveas
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "coordinates", file_name)
             with open(path, 'w', newline='') as csvfile:
@@ -251,13 +261,15 @@ class Experiment:
     def import_controllers(self):
         pass
 
-    def add_coordinates_to_experiment(self, dim=2) -> dict:
+    def add_coordinates_to_experiment(self, dim=2, file_name=None) -> dict:
         """ Import from a file precomputed coordinates of all the points --
         each point refer to one instance """
 
         coordinates = {}
+        if file_name is None:
+            file_name = f'{self.distance_id}_{dim}d.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "coordinates", f'{self.distance_id}_{dim}d.csv')
+                            "coordinates", file_name)
         with open(path, 'r', newline='') as csv_file:
 
             # ORIGINAL

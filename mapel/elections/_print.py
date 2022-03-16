@@ -365,13 +365,12 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
     unique_markers = set(markers)
     images = []
 
-
     if mses is None:
         mses = np.asarray([ms for _ in range(len(shades))])
 
     if cmap is None:
         if rounding == 0:
-            num_colors = _max - _min + 1
+            num_colors = min(_max - _min + 1, 101)
             cmap = custom_div_cmap(num_colors=num_colors)
         else:
             cmap = custom_div_cmap()

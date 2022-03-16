@@ -19,14 +19,15 @@ def hello():
 
 def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
                        coordinates=None, distance_id='emd-positionwise', _import=True,
-                       shift=False, dim=2, store=True):
+                       shift=False, dim=2, store=True, coordinates_names=None):
 
     if instance_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
                                          instances=instances, dim=dim, store=store,
                                          instance_type=instance_type,
                                          distances=distances, coordinates=coordinates,
-                                         distance_id=distance_id)
+                                         distance_id=distance_id,
+                                         coordinates_names=coordinates_names)
     elif instance_type in ['approval', 'rule']:
         return ApprovalElectionExperiment(experiment_id=experiment_id, shift=shift,
                                           instances=instances, _import=_import,

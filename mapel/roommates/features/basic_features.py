@@ -221,6 +221,7 @@ def avg_num_of_bps_for_random_matching(instance,iterations=100):
         bps.append(number_blockingPairs(instance.votes,matching_dict))
     return statistics.mean(bps), statistics.stdev(bps)
 
+
 def num_of_bps_maximumWeight(instance) -> int:
     num_agents=len(instance.votes)
     G = nx.Graph()
@@ -228,25 +229,34 @@ def num_of_bps_maximumWeight(instance) -> int:
         for j in range(i+1,num_agents):
             G.add_edge(i,j,weight=2*(num_agents-1)-instance.votes[i].index(j)-instance.votes[j].index(i))
             #G.add_edge(i, j, weight=instance[i].index(j) + instance[j].index(i))
-    matching=nx.max_weight_matching(G, maxcardinality=True)
-    matching_dict={}
+    matching = nx.max_weight_matching(G, maxcardinality=True)
+    matching_dict = {}
     for p in matching:
-        matching_dict[p[0]]=p[1]
+        matching_dict[p[0]] = p[1]
         matching_dict[p[1]] = p[0]
     return number_blockingPairs(instance.votes,matching_dict)
 
-#
-# j=0
-# for i in range(100):
-#     instance=generate_instance(50)
-#     print(number_of_bps_maximumWeight(instance))
-#     print(min_num_bps_matching(instance))
-#
-#
-# exit()
-# instance1=generate_instance(10)
-# instance2=generate_instance(10)
-# start = time.process_time()
-# print(spear_distance_linear(instance1,instance2))
-# print(time.process_time() - start)
-# exit()
+# NEW 15.03.2022
+def mutuality(instance) -> int:
+    vectors = instance.get_retrospective_vectors()
+    score = 0
+    for vector in vectors:
+        for i, v in enumerate(vector):
+            score += abs(v-i)
+    return score
+
+def dist_from_id_1(instance) -> int:
+    vectors = instance.get_retrospective_vectors()
+    score = 0
+    for vector in vectors:
+        for i in range(len(vector)):
+            for j in range(i,len(vector)):
+                score += abs(vector[j]-vector[i])
+    return score
+
+def dist_from_id_2(instance) -> int:
+    vectors = instance.get_retrospective_vectors()
+    score = 0
+    for vector in vectors:
+        score += len(set(vector))
+    return score

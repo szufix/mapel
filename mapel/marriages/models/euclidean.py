@@ -17,7 +17,8 @@ def generate_euclidean_votes(num_agents: int = None, params: dict = None):
     name = f'{params["dim"]}d_{params["space"]}'
     # print(name)
 
-    agents = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
+    men = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
+    women = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
 
     votes = np.zeros([num_agents, num_agents], dtype=int)
     distances = np.zeros([num_agents, num_agents], dtype=float)

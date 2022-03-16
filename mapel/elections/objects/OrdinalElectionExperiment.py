@@ -25,12 +25,13 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
     def __init__(self, instances=None, distances=None, _import=True, shift=False,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
-                 instance_type='ordinal', dim=2, store=True):
+                 instance_type='ordinal', dim=2, store=True, coordinates_names=None):
         self.shift = shift
         super().__init__(instances=instances, distances=distances,
                          coordinates=coordinates, distance_id=distance_id,
                          experiment_id=experiment_id, dim=dim, store=store,
-                         instance_type=instance_type, _import=_import)
+                         instance_type=instance_type, _import=_import,
+                         coordinates_names=coordinates_names)
 
     def add_elections_to_experiment(self, with_matrices=False):
         """ Import elections from a file """
