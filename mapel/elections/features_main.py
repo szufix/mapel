@@ -187,68 +187,66 @@ def distortion_from_guardians(experiment, election_id) -> np.ndarray:
     return values
 
 
-def distortion_from_all(experiment, election_id) -> np.ndarray:
-    values = np.array([])
-    election_id_1 = election_id
-
-    for election_id_2 in experiment.elections:
-        # if election_id_2 in {'identity_10_100_0', 'uniformity_10_100_0',
-        #                      'antagonism_10_100_0', 'stratification_10_100_0'}:
-        if election_id_1 != election_id_2:
-            m = experiment.elections[election_id_1].num_candidates
-            true_distance = experiment.distances[election_id_1][election_id_2]
-            true_distance /= map_diameter(m)
-            embedded_distance = l2(np.array(experiment.coordinates[election_id_1]),
-                                   np.array(experiment.coordinates[election_id_2]))
-
-            embedded_distance /= \
-                l2(np.array(experiment.coordinates['core_800']),
-                   np.array(experiment.coordinates['core_849']))
-            try:
-                ratio = float(embedded_distance) / float(true_distance)
-            except:
-                ratio = 1.
-            values = np.append(values, ratio)
-
-    return np.mean(abs(1.-values))
+# def distortion_from_all(experiment, election_id) -> np.ndarray:
+#     values = np.array([])
+#     election_id_1 = election_id
+#
+#     for election_id_2 in experiment.elections:
+#         if election_id_1 != election_id_2:
+#             m = experiment.elections[election_id_1].num_candidates
+#             true_distance = experiment.distances[election_id_1][election_id_2]
+#             true_distance /= map_diameter(m)
+#             embedded_distance = l2(np.array(experiment.coordinates[election_id_1]),
+#                                    np.array(experiment.coordinates[election_id_2]))
+#
+#             embedded_distance /= \
+#                 l2(np.array(experiment.coordinates['core_800']),
+#                    np.array(experiment.coordinates['core_849']))
+#             try:
+#                 ratio = float(embedded_distance) / float(true_distance)
+#             except:
+#                 ratio = 1.
+#             values = np.append(values, ratio)
+#
+#     return np.mean(abs(1.-values))
 
 
-def distortion_from_top_100(experiment, election_id) -> np.ndarray:
-    values = np.array([])
-    election_id_1 = election_id
-
-    euc_dist = {}
-    for election_id_2 in experiment.elections:
-        if election_id_1 != election_id_2:
-            euc_dist[election_id_2] = l2(np.array(experiment.coordinates[election_id_1]),
-                                           np.array(experiment.coordinates[election_id_2]))
-
-    all = (sorted(euc_dist.items(), key=lambda item: item[1]))
-    top_100 = [x for x,_ in all[0:100]]
-
-
-    # all = (sorted(experiment.distances[election_id_1].items(), key=lambda item: item[1]))
-    # top_100 = [x for x,_ in all[0:100]]
-
-    for election_id_2 in experiment.elections:
-        if election_id_1 != election_id_2:
-            if election_id_2 in top_100:
-                m = experiment.elections[election_id_1].num_candidates
-                true_distance = experiment.distances[election_id_1][election_id_2]
-                true_distance /= map_diameter(m)
-                embedded_distance = l2(np.array(experiment.coordinates[election_id_1]),
-                                       np.array(experiment.coordinates[election_id_2]))
-
-                embedded_distance /= \
-                    l2(np.array(experiment.coordinates['core_800']),
-                       np.array(experiment.coordinates['core_849']))
-                try:
-                    ratio = float(embedded_distance) / float(true_distance)
-                except:
-                    ratio = 1.
-                values = np.append(values, ratio)
-
-    return np.mean(abs(1.-values))
+# def distortion_from_top_100(experiment, election_id) -> np.ndarray:
+#     values = np.array([])
+#     election_id_1 = election_id
+#
+#     euc_dist = {}
+#     for election_id_2 in experiment.elections:
+#         if election_id_1 != election_id_2:
+#             euc_dist[election_id_2] = l2(np.array(experiment.coordinates[election_id_1]),
+#                                            np.array(experiment.coordinates[election_id_2]))
+#
+#     all = (sorted(euc_dist.items(), key=lambda item: item[1]))
+#     top_100 = [x for x,_ in all[0:100]]
+#
+#
+#     # all = (sorted(experiment.distances[election_id_1].items(), key=lambda item: item[1]))
+#     # top_100 = [x for x,_ in all[0:100]]
+#
+#     for election_id_2 in experiment.elections:
+#         if election_id_1 != election_id_2:
+#             if election_id_2 in top_100:
+#                 m = experiment.elections[election_id_1].num_candidates
+#                 true_distance = experiment.distances[election_id_1][election_id_2]
+#                 true_distance /= map_diameter(m)
+#                 embedded_distance = l2(np.array(experiment.coordinates[election_id_1]),
+#                                        np.array(experiment.coordinates[election_id_2]))
+#
+#                 embedded_distance /= \
+#                     l2(np.array(experiment.coordinates['core_800']),
+#                        np.array(experiment.coordinates['core_849']))
+#                 try:
+#                     ratio = float(embedded_distance) / float(true_distance)
+#                 except:
+#                     ratio = 1.
+#                 values = np.append(values, ratio)
+#
+#     return np.mean(abs(1.-values))
 
 
 def avg_distortion_from_guardians(experiment, election_id):
@@ -261,18 +259,18 @@ def worst_distortion_from_guardians(experiment, election_id):
     return np.max(values)
 
 
-def graph_diameter(election):
-    try:
-        return nx.diameter(election.votes)
-    except Exception:
-        return 100
+# def graph_diameter(election):
+#     try:
+#         return nx.diameter(election.votes)
+#     except Exception:
+#         return 100
 
 
-def graph_diameter_log(election):
-    try:
-        return math.log(nx.diameter(election.votes))
-    except Exception:
-        return math.log(100)
+# def graph_diameter_log(election):
+#     try:
+#         return math.log(nx.diameter(election.votes))
+#     except Exception:
+#         return math.log(100)
 ##################################
 
 

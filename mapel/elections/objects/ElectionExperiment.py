@@ -7,10 +7,11 @@ import warnings
 from abc import abstractmethod
 from threading import Thread
 from time import sleep
-import numpy as np
 import ast
 
 from mapel.elections.objects.ElectionFamily import ElectionFamily
+from mapel.elections.objects.OrdinalElection import OrdinalElection
+from mapel.elections.objects.ApprovalElection import ApprovalElection
 import mapel.elections.metrics_main as metr
 import mapel.elections.models_main as _elections
 import mapel.elections.other.rules as rules
@@ -18,8 +19,8 @@ import mapel.elections.features_main as features
 import mapel.elections.models.preflib as preflib
 from mapel.elections._glossary import *
 from mapel.main.objects.Experiment import Experiment
-from mapel.main.objects.Family import Family
 import mapel.elections._print as pr
+from mapel.main._utils import *
 
 try:
     from sklearn.manifold import MDS
@@ -48,9 +49,6 @@ class ElectionExperiment(Experiment):
 
         self.all_winning_committees = {}
 
-        # self.elections = None
-        # self.num_elections = None
-
     def __getattr__(self, attr):
         if attr == 'elections':
             return self.instances
@@ -68,11 +66,28 @@ class ElectionExperiment(Experiment):
             self.__dict__[name] = value
 
     def add_instances_to_experiment(self):
-        return self.add_elections_to_experiment()
+        instances = {}
 
-    @abstractmethod
-    def add_elections_to_experiment(self):
-        pass
+        for family_id in self.families:
+            single = self.families[family_id].single
+
+            ids = []
+            for j in range(self.families[family_id].size):
+                instance_id = get_instance_id(single, family_id, j)
+
+                if self.instance_type == 'ordinal':
+                    instance = OrdinalElection(self.experiment_id, instance_id, _import=True)
+                elif self.instance_type == 'approval':
+                    instance = ApprovalElection(self.experiment_id, instance_id, _import=True)
+                else:
+                    instance = None
+
+                instances[instance_id] = instance
+                ids.append(str(instance_id))
+
+            self.families[family_id].election_ids = ids
+
+        return instances
 
     def set_default_num_candidates(self, num_candidates: int) -> None:
         """ Set default number of candidates """
@@ -101,14 +116,14 @@ class ElectionExperiment(Experiment):
                                         color=color, alpha=alpha, show=show, marker=marker,
                                         starting_from=starting_from, family_id=election_id,
                                         num_candidates=num_candidates, num_voters=num_voters,
-                                         single_election=True)
+                                        single=True)
 
     def add_election_family(self, model_id: str = "none", params: dict = None, size: int = 1,
                             label: str = None, color: str = "black", alpha: float = 1.,
                             show: bool = True, marker: str = 'o', starting_from: int = 0,
                             num_candidates: int = None, num_voters: int = None,
-                            family_id: str = None, single_election: bool = False,
-                             path: dict = None,
+                            family_id: str = None, single: bool = False,
+                            path: dict = None,
                             election_id: str = None) -> list:
         """ Add family of elections to the experiment """
 
@@ -144,7 +159,7 @@ class ElectionExperiment(Experiment):
                                                   starting_from=starting_from,
                                                   num_candidates=num_candidates,
                                                   num_voters=num_voters, path=path,
-                                                  single_election=single_election)
+                                                  single=single)
 
         self.num_families = len(self.families)
         self.num_elections = sum([self.families[family_id].size for family_id in self.families])
@@ -195,52 +210,66 @@ class ElectionExperiment(Experiment):
     def prepare_elections(self):
         """ Prepare elections for a given experiment """
 
-        if self.elections is None:
-            self.elections = {}
+        if self.instances is None:
+            self.instances = {}
 
-        elections = {}
-        if self.store:
+        for family_id in self.families:
 
-            for family_id in self.families:
-                params = self.families[family_id].params
-                model_id = self.families[family_id].model_id
+            new_instances = self.families[family_id].prepare_family(
+                store=self.store,
+                experiment_id=self.experiment_id)
 
-                # if self.clean:
-                #     path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
-                #     for file_name in os.listdir(path):
-                #         os.remove(os.path.join(path, file_name))
+            for instance_id in new_instances:
+                self.instances[instance_id] = new_instances[instance_id]
 
-                if model_id in LIST_OF_PREFLIB_MODELS:
-                    ids = preflib.prepare_preflib_family(
-                        experiment=self, model=model_id, family_id=family_id, params=params)
-
-                    self.families[family_id].election_ids = ids
-
-                elif model_id not in ['core', 'pabulib'] and (model_id in NICE_NAME or
-                                                              model_id in LIST_OF_FAKE_MODELS or
-                                                              model_id in APPROVAL_MODELS or
-                                                              model_id in APPROVAL_FAKE_MODELS):
-
-                    tmp_elections = _elections.prepare_statistical_culture_family(
-                        experiment=self, model_id=model_id, family_id=family_id, params=params)
-
-                    self.families[family_id].election_ids = tmp_elections.keys()
-
-                    # for election_id in tmp_elections:
-                    #     elections[election_id] = tmp_elections[election_id]
-
-                else:
-                    election_ids = {}
-                    for j in range(self.families[family_id].size):
-                        if self.families[family_id].single_election:
-                            election_id = family_id
-                        else:
-                            election_id = family_id + '_' + str(j)
-                        election_ids[election_id] = None
-                    self.families[family_id].election_ids = election_ids.keys()
-
-
-        # self.elections = elections
+    # def prepare_elections_old(self):
+    #     """ Prepare elections for a given experiment """
+    #
+    #     if self.elections is None:
+    #         self.elections = {}
+    #
+    #     elections = {}
+    #     if self.store:
+    #
+    #         for family_id in self.families:
+    #             params = self.families[family_id].params
+    #             model_id = self.families[family_id].model_id
+    #
+    #             # if self.clean:
+    #             #     path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
+    #             #     for file_name in os.listdir(path):
+    #             #         os.remove(os.path.join(path, file_name))
+    #
+    #             if model_id in LIST_OF_PREFLIB_MODELS:
+    #                 ids = preflib.prepare_preflib_family(
+    #                     experiment=self, model=model_id, family_id=family_id, params=params)
+    #
+    #                 self.families[family_id].election_ids = ids
+    #
+    #             elif model_id not in ['core', 'pabulib'] and (model_id in NICE_NAME or
+    #                                                           model_id in LIST_OF_FAKE_MODELS or
+    #                                                           model_id in APPROVAL_MODELS or
+    #                                                           model_id in APPROVAL_FAKE_MODELS):
+    #
+    #                 tmp_elections = _elections.prepare_statistical_culture_family(
+    #                     experiment=self, model_id=model_id, family_id=family_id, params=params)
+    #
+    #                 self.families[family_id].election_ids = tmp_elections.keys()
+    #
+    #                 # for election_id in tmp_elections:
+    #                 #     elections[election_id] = tmp_elections[election_id]
+    #
+    #             else:
+    #                 election_ids = {}
+    #                 for j in range(self.families[family_id].size):
+    #                     if self.families[family_id].single_election:
+    #                         election_id = family_id
+    #                     else:
+    #                         election_id = family_id + '_' + str(j)
+    #                     election_ids[election_id] = None
+    #                 self.families[family_id].election_ids = election_ids.keys()
+    #
+    #     # self.elections = elections
 
     def compute_winners(self, method=None, num_winners=1):
         for election_id in self.elections:
@@ -309,7 +338,15 @@ class ElectionExperiment(Experiment):
 
         for t in range(num_threads):
             threads[t].join()
+
         if self.store:
+            self.store_distances_to_file(distance_id, distances, times)
+
+        self.distances = distances
+        self.times = times
+        self.matchings = matchings
+
+    def store_distances_to_file(self, distance_id, distances, times):
 
             file_name = f'{distance_id}.csv'
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
@@ -324,10 +361,6 @@ class ElectionExperiment(Experiment):
                     distance = str(distances[election_1][election_2])
                     time = str(times[election_1][election_2])
                     writer.writerow([election_1, election_2, distance, time])
-
-        self.distances = distances
-        self.times = times
-        self.matchings = matchings
 
     def get_election_id_from_model_name(self, model_id: str) -> str:
         for family_id in self.families:
@@ -410,7 +443,7 @@ class ElectionExperiment(Experiment):
                 #         and norm-phiparams['norm-phi'] is not None:
                 #     family_id += '_' + str(float(params['norm-phi']))
 
-                single_election = size == 1
+                single = size == 1
 
                 families[family_id] = ElectionFamily(model_id=model_id,
                                                      family_id=family_id,
@@ -420,7 +453,7 @@ class ElectionExperiment(Experiment):
                                                      starting_from=starting_from,
                                                      num_candidates=num_candidates,
                                                      num_voters=num_voters, path=path,
-                                                     single_election=single_election)
+                                                     single=single)
                 starting_from += size
 
                 all_num_candidates.append(num_candidates)
@@ -434,7 +467,6 @@ class ElectionExperiment(Experiment):
             self.main_order = [i for i in range(self.num_elections)]
 
         return families
-
 
     def compute_feature(self, feature_id: str = None, feature_params=None) -> dict:
 
@@ -504,7 +536,8 @@ class ElectionExperiment(Experiment):
                 if feature_id in features_with_time:
                     writer.writerow(["election_id", "value", 'time'])
                     for key in feature_dict['value']:
-                        writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
+                        writer.writerow(
+                            [key, feature_dict['value'][key], feature_dict['time'][key]])
                 else:
                     writer.writerow(["election_id", "value"])
                     for key in feature_dict['value']:
@@ -512,7 +545,6 @@ class ElectionExperiment(Experiment):
 
         self.features[feature_id] = feature_dict
         return feature_dict
-
 
     @abstractmethod
     def create_structure(self):

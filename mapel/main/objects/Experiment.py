@@ -3,6 +3,7 @@ import csv
 import math
 import os
 import warnings
+import logging
 from abc import ABCMeta, abstractmethod
 
 import networkx as nx
@@ -40,6 +41,7 @@ class Experiment:
         self._import = _import
         self.clean = clean
         self.experiment_id = experiment_id
+
         if clean:
             self.clean_elections()
 
@@ -115,8 +117,6 @@ class Experiment:
                 print('=== Coordinates not found! ===')
         else:
             self.coordinates = {}
-
-
 
     @abstractmethod
     def prepare_instances(self):
@@ -198,7 +198,7 @@ class Experiment:
                                             method=method).fit_transform(x)
         else:
             my_pos = []
-            print("Unknown method!")
+            logging.warning("Unknown method!")
 
         coordinates = {}
         for i, instance_id in enumerate(self.distances):
@@ -233,10 +233,8 @@ class Experiment:
 
         self.coordinates = coordinates
 
-
     def print_map(self, dim: int = 2, **kwargs) -> None:
-        """ Print the two-dimensional embedding of multi-dimensional
-        map of the instances """
+        """ Print the two-dimensional embedding of multi-dimensional map of the instances """
         if dim == 2:
             pr.print_map_2d(self, **kwargs)
         elif dim == 3:
@@ -294,9 +292,14 @@ class Experiment:
                 if instance_id not in self.instances:
                     warn = True
 
+            # if warn:
+            #     text = f'Possibly outdated coordinates are imported!'
+            #     warnings.warn(text, stacklevel=2)
+
             if warn:
                 text = f'Possibly outdated coordinates are imported!'
-                warnings.warn(text)
+                logging.warning(text)
+                # warnings.warn(text)
 
         return coordinates
 

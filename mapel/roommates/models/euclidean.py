@@ -13,6 +13,36 @@ def get_range(params):
         return np.random.uniform(low=params['a'], high=params['b'])
 
 
+def weighted_l1(a1, a2, w):
+    total = 0
+    for i in range(len(a1)):
+        total += abs(a1[i]-a2[i])*w[i]
+    return total
+
+
+def generate_roommates_vectors_votes(num_agents: int = None, params: dict = None):
+
+    name = f'{params["dim"]}d_{params["space"]}'
+
+    agents = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
+    weights = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
+
+    votes = np.zeros([num_agents, num_agents], dtype=int)
+    distances = np.zeros([num_agents, num_agents], dtype=float)
+
+    for v in range(num_agents):
+        for c in range(num_agents):
+
+            votes[v][c] = c
+            distances[v][c] = weighted_l1(agents[v], agents[c], weights[v])
+        votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
+
+    return convert(votes)
+
+
+
+
+
 def generate_roommates_euclidean_votes(num_agents: int = None, params: dict = None):
 
     name = f'{params["dim"]}d_{params["space"]}'

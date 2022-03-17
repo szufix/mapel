@@ -34,44 +34,44 @@ class ApprovalElectionExperiment(ElectionExperiment):
                          experiment_id=experiment_id, dim=dim, store=store,
                          instance_type=instance_type, _import=_import)
 
-    def add_elections_to_experiment(self) -> dict:
-        """ Return: elections imported from files """
-
-        elections = {}
-
-        for family_id in self.families:
-            print(family_id)
-            ids = []
-
-            single = self.families[family_id].single_election
-
-            if self.families[family_id].model_id in APPROVAL_MODELS or \
-                    self.families[family_id].model_id in APPROVAL_FAKE_MODELS or \
-                    self.families[family_id].model_id in ['pabulib']:
-
-                for j in range(self.families[family_id].size):
-                    election_id = get_instance_id(single, family_id, j)
-                    election = ApprovalElection(self.experiment_id, election_id,
-                                                _import=self._import)
-                    elections[election_id] = election
-                    ids.append(str(election_id))
-            else:
-
-                path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                    "elections", self.families[family_id].model_id)
-                for i, name in enumerate(os.listdir(path)):
-                    if i >= self.families[family_id].size:
-                        break
-                    name = os.path.splitext(name)[0]
-                    name = f'{self.families[family_id].model_id}/{name}'
-                    election = ApprovalElection(self.experiment_id, name,
-                                                _import=self._import, shift=self.shift)
-                    elections[name] = election
-                    ids.append(str(name))
-
-            self.families[family_id].election_ids = ids
-
-        return elections
+    # def add_elections_to_experiment(self) -> dict:
+    #     """ Return: elections imported from files """
+    #
+    #     elections = {}
+    #
+    #     for family_id in self.families:
+    #         print(family_id)
+    #         ids = []
+    #
+    #         single = self.families[family_id].single_election
+    #
+    #         if self.families[family_id].model_id in APPROVAL_MODELS or \
+    #                 self.families[family_id].model_id in APPROVAL_FAKE_MODELS or \
+    #                 self.families[family_id].model_id in ['pabulib']:
+    #
+    #             for j in range(self.families[family_id].size):
+    #                 election_id = get_instance_id(single, family_id, j)
+    #                 election = ApprovalElection(self.experiment_id, election_id,
+    #                                             _import=self._import)
+    #                 elections[election_id] = election
+    #                 ids.append(str(election_id))
+    #         else:
+    #
+    #             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+    #                                 "elections", self.families[family_id].model_id)
+    #             for i, name in enumerate(os.listdir(path)):
+    #                 if i >= self.families[family_id].size:
+    #                     break
+    #                 name = os.path.splitext(name)[0]
+    #                 name = f'{self.families[family_id].model_id}/{name}'
+    #                 election = ApprovalElection(self.experiment_id, name,
+    #                                             _import=self._import, shift=self.shift)
+    #                 elections[name] = election
+    #                 ids.append(str(name))
+    #
+    #         self.families[family_id].election_ids = ids
+    #
+    #     return elections
 
     def create_structure(self) -> None:
 

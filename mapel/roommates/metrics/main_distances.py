@@ -1,5 +1,5 @@
 from typing import Callable, List
-from itertools import combinations, permutations
+from itertools import permutations
 
 from mapel.main._matchings import *
 from mapel.roommates.objects.Roommates import Roommates
@@ -11,9 +11,11 @@ def compute_retrospective_distance(instance_1, instance_2, inner_distance):
     cost_table = get_matching_cost_retrospective(instance_1, instance_2, inner_distance)
     return solve_matching_vectors(cost_table)
 
+
 def compute_positionwise_distance(instance_1, instance_2, inner_distance):
     cost_table = get_matching_cost_positionwise(instance_1, instance_2, inner_distance)
     return solve_matching_vectors(cost_table)
+
 
 def compute_pos_swap_distance(instance_1: Roommates, instance_2: Roommates,
                               inner_distance: Callable) -> (float, list):
@@ -23,12 +25,11 @@ def compute_pos_swap_distance(instance_1: Roommates, instance_2: Roommates,
     votes_1 = instance_1.votes
     votes_2 = instance_2.votes
     size = instance_1.num_agents
-    return sum([swap_distance(votes_1[i], votes_2[matching[i]], matching=matching) for i in range(size)])
+    return sum(
+        [swap_distance(votes_1[i], votes_2[matching[i]], matching=matching) for i in range(size)])
 
 
-def compute_swap_bf_distance(instance_1: Roommates, instance_2: Roommates,
-                              inner_distance: Callable) -> int:
-
+def compute_swap_bf_distance(instance_1: Roommates, instance_2: Roommates) -> int:
     obj_values = []
     tmp = True
     for matching in permutations(range(instance_1.num_agents)):
@@ -36,7 +37,7 @@ def compute_swap_bf_distance(instance_1: Roommates, instance_2: Roommates,
         votes_2 = instance_2.votes
         size = instance_1.num_agents
         value = sum([swap_distance(votes_1[matching[i]], votes_2[i], matching=matching) for i in
-                    range(size)])
+                     range(size)])
         obj_values.append(value)
         if tmp:
             print(matching, value)
@@ -53,6 +54,7 @@ def compute_pairwise_distance(instance_1: Roommates, instance_2: Roommates,
     matrix_2 = instance_2.votes_to_pairwise_matrix()
     return solve_matching_matrices(matrix_1, matrix_2, length, inner_distance)
 
+
 # HELPER FUNCTIONS #
 def print_matrix_for_tex(matrix):
     for row in matrix:
@@ -62,36 +64,24 @@ def print_matrix_for_tex(matrix):
         line += f' {row[-1]} \\\\'
         print(line)
 
+
 def get_matching_cost_retrospective(instance_1: Roommates, instance_2: Roommates,
                                     inner_distance: Callable) -> List[list]:
     """ Return: Cost table """
     vectors_1 = instance_1.get_retrospective_vectors()
     vectors_2 = instance_2.get_retrospective_vectors()
-    # print_matrix_for_tex(vectors_1)
-    # print('')
-    # print_matrix_for_tex(vectors_2)
-    # print(vectors_1, vectors_2)
     size = instance_1.num_agents
     return [[inner_distance(vectors_1[i], vectors_2[j]) for i in range(size)] for j in range(size)]
 
+
 def get_matching_cost_positionwise(instance_1: Roommates, instance_2: Roommates,
-                                    inner_distance: Callable) -> List[list]:
+                                   inner_distance: Callable) -> List[list]:
     """ Return: Cost table """
     vectors_1 = instance_1.get_positionwise_vectors()
     vectors_2 = instance_2.get_positionwise_vectors()
     size = instance_1.num_agents
     return [[inner_distance(vectors_1[i], vectors_2[j]) for i in range(size)] for j in range(size)]
 
-# def get_matching_cost_pos_swap(instance_1: Roommates, instance_2: Roommates,
-#                                 matching) -> List[list]:
-#     """ Return: Cost table """
-#     votes_1 = instance_1.votes
-#     votes_2 = instance_2.votes
-#
-#     size = instance_1.num_agents
-#     return [[swap_distance(votes_1[i], votes_2[j], matching=matching) for i in range(size)]
-#             for j in range(size)]
-
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 22.10.2021 #
+# LAST CLEANUP ON: 16.03.2022 #
 # # # # # # # # # # # # # # # #

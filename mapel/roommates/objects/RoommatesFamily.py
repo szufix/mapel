@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
+import copy
 
 from mapel.main.objects.Family import Family
 from mapel.roommates.objects.Roommates import Roommates
-import copy
+from mapel.main._utils import *
 
 import mapel.roommates.models.mallows as mallows
 
@@ -72,12 +73,12 @@ class RoommatesFamily(Family):
 
     def prepare_family(self, experiment_id=None, store=None):
 
-        params = copy.deepcopy(self.params)
-
         instances = {}
 
         _keys = []
         for j in range(self.size):
+
+            params = copy.deepcopy(self.params)
 
             path = self.path
             if path is not None and 'variable' in path:
@@ -88,10 +89,7 @@ class RoommatesFamily(Family):
                 params['phi'] = mallows.phi_from_relphi(self.num_agents,
                                                         relphi=params['norm-phi'])
 
-            if self.single:
-                instance_id = self.family_id
-            else:
-                instance_id = f'{self.family_id}_{j}'
+            instance_id = get_instance_id(self.single, self.family_id, j)
 
             instance = Roommates(experiment_id, instance_id, _import=False,
                                  model_id=self.model_id, num_agents=self.num_agents)

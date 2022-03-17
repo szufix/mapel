@@ -2,8 +2,8 @@
 import os
 
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
-from mapel.elections.objects.OrdinalElection import OrdinalElection
-from mapel.elections._glossary import *
+
+
 
 try:
     from sklearn.manifold import MDS
@@ -33,49 +33,50 @@ class OrdinalElectionExperiment(ElectionExperiment):
                          instance_type=instance_type, _import=_import,
                          coordinates_names=coordinates_names)
 
-    def add_elections_to_experiment(self, with_matrices=False):
-        """ Import elections from a file """
 
-        elections = {}
-
-        for family_id in self.families:
-
-            ids = []
-
-            if self.families[family_id].model_id in NICE_NAME or \
-                    self.families[family_id].model_id in LIST_OF_FAKE_MODELS or \
-                    self.families[family_id].model_id in LIST_OF_PREFLIB_MODELS:
-
-                if self.families[family_id].single_election:
-                    name = family_id
-                    election = OrdinalElection(self.experiment_id, name,
-                                               with_matrix=with_matrices, shift=self.shift)
-                    elections[name] = election
-                    ids.append(str(name))
-                else:
-                    for j in range(self.families[family_id].size):
-                        name = family_id + '_' + str(j)
-                        election = OrdinalElection(self.experiment_id, name,
-                                                   with_matrix=with_matrices, shift=self.shift)
-                        elections[name] = election
-                        ids.append(str(name))
-            else:
-
-                path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                    "elections", self.families[family_id].model_id)
-                for i, name in enumerate(os.listdir(path)):
-                    if i >= self.families[family_id].size:
-                        break
-                    name = os.path.splitext(name)[0]
-                    name = f'{self.families[family_id].model_id}/{name}'
-                    election = OrdinalElection(self.experiment_id, name,
-                                               _import=self._import, shift=self.shift)
-                    elections[name] = election
-                    ids.append(str(name))
-
-            self.families[family_id].election_ids = ids
-
-        return elections
+    # def add_elections_to_experiment_old(self, with_matrices=False):
+    #     """ Import elections from a file """
+    #
+    #     elections = {}
+    #
+    #     for family_id in self.families:
+    #
+    #         ids = []
+    #
+    #         if self.families[family_id].model_id in NICE_NAME or \
+    #                 self.families[family_id].model_id in LIST_OF_FAKE_MODELS or \
+    #                 self.families[family_id].model_id in LIST_OF_PREFLIB_MODELS:
+    #
+    #             if self.families[family_id].single_election:
+    #                 name = family_id
+    #                 election = OrdinalElection(self.experiment_id, name,
+    #                                            with_matrix=with_matrices, shift=self.shift)
+    #                 elections[name] = election
+    #                 ids.append(str(name))
+    #             else:
+    #                 for j in range(self.families[family_id].size):
+    #                     name = family_id + '_' + str(j)
+    #                     election = OrdinalElection(self.experiment_id, name,
+    #                                                with_matrix=with_matrices, shift=self.shift)
+    #                     elections[name] = election
+    #                     ids.append(str(name))
+    #         else:
+    #
+    #             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+    #                                 "elections", self.families[family_id].model_id)
+    #             for i, name in enumerate(os.listdir(path)):
+    #                 if i >= self.families[family_id].size:
+    #                     break
+    #                 name = os.path.splitext(name)[0]
+    #                 name = f'{self.families[family_id].model_id}/{name}'
+    #                 election = OrdinalElection(self.experiment_id, name,
+    #                                            _import=self._import, shift=self.shift)
+    #                 elections[name] = election
+    #                 ids.append(str(name))
+    #
+    #         self.families[family_id].election_ids = ids
+    #
+    #     return elections
 
     def create_structure(self) -> None:
 

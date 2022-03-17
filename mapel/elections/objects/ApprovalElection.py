@@ -45,7 +45,6 @@ class ApprovalElection(Election):
                     self.alpha = 1
                     pass
 
-
     def votes_to_approvalwise_vector(self) -> None:
         """ Convert votes to ... """
 
@@ -59,6 +58,7 @@ class ApprovalElection(Election):
                                                          range(self.num_candidates)]))
         elif self.model == 'approval_skeleton':
             self.approvalwise_vector = np.sort(get_skeleton_approvalwise_vector(self))
+
         else:
             approvalwise_vector = np.zeros([self.num_candidates])
             for vote in self.votes:
@@ -66,7 +66,6 @@ class ApprovalElection(Election):
                     approvalwise_vector[c] += 1
             approvalwise_vector = approvalwise_vector / self.num_voters
             self.approvalwise_vector = np.sort(approvalwise_vector)
-            # print(self.approvalwise_vector)
 
 
     def votes_to_coapproval_frequency_vectors(self, vector_type='A') -> None:
@@ -120,7 +119,6 @@ class ApprovalElection(Election):
                         matrix[c_1][c_2] += 1
         matrix = matrix / self.num_voters
         self.candidatelikeness_original_vectors = matrix
-
 
     def votes_to_candidatelikeness_sorted_vectors(self) -> None:
         """ Convert votes to ... """

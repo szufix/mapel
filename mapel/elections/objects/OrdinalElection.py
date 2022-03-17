@@ -3,13 +3,16 @@ import itertools
 import os
 
 import numpy as np
+from scipy.stats import gamma
 
+import mapel.elections.models.mallows as mallows
 from mapel.elections._glossary import *
 from mapel.elections.models.group_separable import get_gs_caterpillar_vectors
 from mapel.elections.models.mallows import get_mallows_vectors
 from mapel.elections.models.preflib import get_sushi_vectors
 from mapel.elections.models.single_crossing import get_single_crossing_vectors
 from mapel.elections.models.single_peaked import get_walsh_vectors, get_conitzer_vectors
+from mapel.elections.models_main import generate_ordinal_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
@@ -21,61 +24,73 @@ class OrdinalElection(Election):
     def __init__(self, experiment_id, election_id, votes=None, with_matrix=False, alpha=None,
                  model_id=None, params=None,
                  ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None,
-                 _import: bool = False, shift: bool = False):
+                 _import: bool = False, shift: bool = False, variable = None):
 
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
                          model_id=model_id, ballot=ballot,
                          num_voters=num_voters, num_candidates=num_candidates)
+
         self.params = params
+        self.variable = variable
 
-        if votes is not None:
-            self.model_id = model_id
-            if str(votes[0]) in LIST_OF_FAKE_MODELS:
-                self.fake = True
-                self.votes = votes[0]
-                self.num_candidates = votes[1]
-                self.num_voters = votes[2]
-            else:
-                self.votes = votes
-                self.num_candidates = len(votes[0])
-                self.num_voters = len(votes)
-                self.potes = self.votes_to_potes()
-        else:
-            self.fake = check_if_fake(experiment_id, election_id)
-            if self.fake:
-                self.model_id, self.params, self.num_voters, \
-                self.num_candidates = import_fake_soc_election(experiment_id, election_id)
-            else:
-                self.votes, self.num_voters, self.num_candidates, self.params, \
-                    self.model_id = import_real_soc_election(experiment_id, election_id, shift)
-                try:
-                    self.alpha = 1
-                    if self.params and 'alpha' in self.params:
-                        self.alpha = self.params['alpha']
-                except KeyError:
-                    pass
-                self.potes = self.votes_to_potes()
+        self.vectors = []
+        self.matrix = []
 
-        # self.approval_votes = convert_ordinal_to_approval(self.votes)
-        self.candidatelikeness_original_vectors = {}
+        if _import and experiment_id != 'virtual':
+            try:
+                if votes is not None:
+                    self.model_id = model_id
+                    if str(votes[0]) in LIST_OF_FAKE_MODELS:
+                        self.fake = True
+                        self.votes = votes[0]
+                        self.num_candidates = votes[1]
+                        self.num_voters = votes[2]
+                    else:
+                        self.votes = votes
+                        self.num_candidates = len(votes[0])
+                        self.num_voters = len(votes)
+                        self.potes = self.votes_to_potes()
+                else:
 
-        # print(election_id)
+                    self.fake = check_if_fake(experiment_id, election_id)
+                    if self.fake:
+                        self.model_id, self.params, self.num_voters, \
+                        self.num_candidates = import_fake_soc_election(experiment_id, election_id)
+                    else:
+                        self.votes, self.num_voters, self.num_candidates, self.params, \
+                            self.model_id = import_real_soc_election(experiment_id, election_id, shift)
+                        try:
+                            self.alpha = 1
+                            if self.params and 'alpha' in self.params:
+                                self.alpha = self.params['alpha']
+                        except KeyError:
+                            print("Error")
+                            pass
+                        self.potes = self.votes_to_potes()
 
-        if with_matrix:
-            self.matrix = self.import_matrix()
-            self.vectors = self.matrix.transpose()
-        else:
-            self.votes_to_positionwise_vectors()
+                # self.approval_votes = convert_ordinal_to_approval(self.votes)
+                self.candidatelikeness_original_vectors = {}
+
+                # print(election_id)
+
+                if with_matrix:
+                    self.matrix = self.import_matrix()
+                    self.vectors = self.matrix.transpose()
+                else:
+                    self.votes_to_positionwise_vectors()
+
+            except:
+                pass
 
         self.borda_points = []
 
     def get_vectors(self):
-        if self.vectors is not None:
+        if self.vectors is not None and len(self.vectors) > 0:
             return self.vectors
         return self.votes_to_positionwise_vectors()
 
     def get_matrix(self):
-        if self.matrix is not None:
+        if self.matrix is not None and len(self.matrix) > 0:
             return self.matrix
         return self.votes_to_positionwise_matrix()
 
@@ -281,6 +296,68 @@ class OrdinalElection(Election):
             self.winners = compute_stv_winners(election=self, num_winners=num_winners)
         if method in {'approx_cc', 'approx_hb', 'approx_pav'}:
             self.winners = generate_winners(election=self, num_winners=num_winners, method=method)
+
+    # PREPARE INSTANCE
+    def prepare_instance(self, store=None, params: dict = None):
+
+        """ main function: generate election """
+
+        if params is None:
+            params = {}
+
+        self.params = params
+
+        if self.model_id == 'all_votes':
+            alpha = 1
+        else:
+            params, alpha = update_params(params, self.variable, self.model_id, self.num_candidates)
+
+        self.params = params
+        self.votes = generate_ordinal_votes(model_id=self.model_id, num_candidates=self.num_candidates,
+                                       num_voters=self.num_voters, params=params)
+        self.params = params
+        # election = OrdinalElection("virtual", "virtual", votes=votes, model_id=self.model_id,
+        #                            num_candidates=self.num_candidates, params=params,
+        #                            num_voters=self.num_voters, ballot=self.ballot, alpha=alpha)
+
+        # elif ballot == 'approval':
+        #     votes = generate_approval_votes(model_id=model_id, num_candidates=num_candidates,
+        #                                     num_voters=num_voters, params=params)
+        #     election = ApprovalElection(experiment.experiment_id, election_id, votes=votes,
+        #                                 model_id=model_id,
+        #                                 num_candidates=num_candidates,
+        #                                 num_voters=num_voters, ballot=ballot, alpha=alpha)
+
+        if store:
+            self.store_ordinal_election()
+            # store_ordinal_election(experiment, model_id, election_id, num_candidates,
+            #                        num_voters, params, ballot)
+            # if ballot == 'approval':
+            #     store_approval_election(self, model_id, election_id, num_candidates,
+            #                             num_voters, params, ballot)
+
+
+    # STORE
+    def store_ordinal_election(self):
+        """ Store ordinal election in a .soc file """
+
+        if self.model_id in LIST_OF_FAKE_MODELS:
+            path = os.path.join("experiments", str(self.experiment_id),
+                                "elections", (str(self.election_id) + ".soc"))
+            file_ = open(path, 'w')
+            file_.write(f'$ {self.model_id} {self.params} \n')
+            file_.write(str(self.num_candidates) + '\n')
+            file_.write(str(self.num_voters) + '\n')
+            file_.close()
+
+        else:
+
+            path = os.path.join("experiments", str(self.experiment_id), "elections",
+                                (str(self.election_id) + ".soc"))
+
+            store_votes_in_a_file(self, self.model_id, self.election_id,
+                                  self.num_candidates, self.num_voters,
+                                  self.params, path, self.ballot, votes=self.votes)
 
 
 def get_fake_multiplication(num_candidates, params, model):
@@ -593,3 +670,83 @@ def convert_ordinal_to_approval(votes):
         approval_votes[i] = set(vote[0:k])
 
     return approval_votes
+
+
+# HELPER FUNCTIONS
+
+
+def update_params(params, variable, model_id, num_candidates):
+
+    if variable is not None:
+        params['alpha'] = params[variable]
+        params['variable'] = variable
+
+        if model_id in APPROVAL_MODELS:
+            if 'p' not in params:
+                params['p'] = np.random.rand()
+            elif type(params['p']) is list:
+                params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+
+    else:
+        if model_id in ['approval_partylist']:
+            return params, 1
+
+        if model_id in APPROVAL_MODELS:
+            if 'p' not in params:
+                params['p'] = np.random.rand()
+            elif type(params['p']) is list:
+                params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+
+        if 'phi' in params and type(params['phi']) is list:
+            params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
+
+        if model_id == 'mallows' and params['phi'] is None:
+            params['phi'] = np.random.random()
+        elif model_id == 'norm-mallows' and 'norm-phi' not in params:
+            params['norm-phi'] = np.random.random()
+        elif model_id in ['urn_model', 'approval_urn'] and 'alpha' not in params:
+            params['alpha'] = gamma.rvs(0.8)
+
+        if model_id == 'norm-mallows':
+            params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+            if 'weight' not in params:
+                params['weight'] = 0.
+
+        if model_id == 'mallows_matrix_path':
+            params['norm-phi'] = params['alpha']
+            params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+
+        if model_id == 'erdos_renyi_graph' and params['p'] is None:
+            params['p'] = np.random.random()
+
+        if 'alpha' not in params:
+            if 'norm-phi' in params:
+                params['alpha'] = params['norm-phi']
+            elif 'phi' in params:
+                params['alpha'] = params['phi']
+            else:
+                params['alpha'] = np.random.rand()
+        elif type(params['alpha']) is list:
+            params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
+
+    return params, params['alpha']
+
+
+# HELPER FUNCTIONS #
+
+
+def prepare_parties(model_id=None, params=None):
+    parties = []
+
+    if model_id == '2d_gaussian_party':
+        for i in range(params['num_parties']):
+            point = np.random.rand(1, 2)
+            parties.append(point)
+
+    elif model_id in ['1d_gaussian_party', 'conitzer_party', 'walsh_party']:
+        for i in range(params['num_parties']):
+            point = np.random.rand(1, 1)
+            parties.append(point)
+
+    return parties
+
