@@ -475,7 +475,8 @@ class ElectionExperiment(Experiment):
 
         feature_dict = {'value': {}, 'time': {}}
 
-        features_with_time = {'lowest_dodgson_score', 'highest_cc_score', 'highest_hb_score'}
+        features_with_time = {'lowest_dodgson_score', 'highest_cc_score', 'highest_hb_score',
+                              'highest_pav_score'}
 
         global_featuers = {'clustering'}
 
@@ -499,7 +500,15 @@ class ElectionExperiment(Experiment):
                                     'cohesiveness',
                                     'partylist',
                                     'highest_cc_score',
-                                    'highest_hb_score']:
+                                    'highest_hb_score',
+                                    'highest_pav_score',
+                                    'greedy_approx_cc_score',
+                                    'removal_approx_cc_score',
+                                    'greedy_approx_hb_score',
+                                    'removal_approx_hb_score',
+                                    'greedy_approx_pav_score',
+                                    'removal_approx_pav_score',
+                                    'rand_approx_pav_score',]:
                     value = feature(election, feature_params)
 
                 elif feature_id in {'avg_distortion_from_guardians',

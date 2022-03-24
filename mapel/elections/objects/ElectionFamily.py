@@ -139,7 +139,7 @@ def _get_params_for_paths(family, j, extremes=False):
     if 'extremes' in path:
         extremes = path['extremes']
 
-    params = {}
+    params = {'variable': variable}
     if extremes:
         params[variable] = j / (family.size - 1)
     elif not extremes:

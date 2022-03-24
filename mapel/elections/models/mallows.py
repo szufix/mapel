@@ -84,7 +84,7 @@ def generate_mallows_votes(num_voters, num_candidates, params):
     V = []
     for i in range(num_voters):
         vote = mallowsVote(num_candidates, insertion_probabilites_list)
-        if params['weight'] > 0:
+        if 'weight' in params and params['weight'] > 0:
             probability = np.random.random()
             if probability <= params['weight']:
                 vote.reverse()

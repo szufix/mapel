@@ -103,7 +103,6 @@ class Roommates(Instance):
     # PREPARE INSTANCE
     def prepare_instance(self, store=None, params: dict = None):
 
-
         if params is None:
             params = {}
 
@@ -114,8 +113,12 @@ class Roommates(Instance):
         elif self.model_id == 'roommates_urn' and 'alpha' not in params:
             params['alpha'] = np.random.rand()
 
-        else:
+        elif 'alpha' not in params:
             params['alpha'] = 1
+
+        if 'variable' in params:
+            params['alpha'] = params[params['variable']]
+
         self.alpha = params['alpha']
 
         self.votes = generate_votes(model_id=self.model_id, num_agents=self.num_agents, params=params)

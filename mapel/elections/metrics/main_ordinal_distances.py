@@ -58,19 +58,11 @@ def compute_voterlikeness_distance(election_1: OrdinalElection, election_2: Ordi
 
 
 def compute_swap_bf_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+    """ Compute Swap distance between elections (using brute force) """
     obj_values = []
-
-    # print(election_1.votes, election_2.votes)
-
     for mapping in permutations(range(election_1.num_candidates)):
-        # print(mapping)
         cost_table = get_matching_cost_swap_bf(election_1, election_2, mapping)
-        # print(cost_table)
         obj_values.append(solve_matching_vectors(cost_table)[0])
-
-    # print(obj_values)
-    # print(min(obj_values))
-
     return min(obj_values)
 
 
@@ -93,12 +85,10 @@ def compute_discrete_distance(election_1: OrdinalElection, election_2: OrdinalEl
     """ Compute Discrete distance between elections """
     return election_1.num_voters - compute_voter_subelection(election_1, election_2)
 
-
 # SUBELECTIONS #
 def compute_voter_subelection(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Voter-Subelection """
     return lp.solve_lp_voter_subelection(election_1, election_2)
-
 
 def compute_candidate_subelection(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Candidate-Subelection """
@@ -108,15 +98,12 @@ def compute_candidate_subelection(election_1: OrdinalElection, election_2: Ordin
     lp.remove_lp_file(path)
     return objective_value
 
-
 # HELPER FUNCTIONS #
 def get_matching_cost_pos_swap(election_1: OrdinalElection, election_2: OrdinalElection,
                                matching) -> List[list]:
     """ Return: Cost table """
     votes_1 = election_1.votes
     votes_2 = election_2.votes
-
-    # print(votes_1, votes_2, matching)
     size = election_1.num_voters
     return [[swap_distance(votes_1[i], votes_2[j], matching=matching) for i in range(size)]
             for j in range(size)]
@@ -149,5 +136,5 @@ def get_matching_cost_swap_bf(election_1: OrdinalElection, election_2: OrdinalEl
     return cost_table
 
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 22.10.2021 #
+# LAST CLEANUP ON: 17.03.2022 #
 # # # # # # # # # # # # # # # #

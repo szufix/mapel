@@ -11,6 +11,8 @@ import mapel.elections.features.cohesive as cohesive
 import mapel.elections.features.partylist as partylist
 import mapel.elections.features.proportionality_degree as prop_deg
 import mapel.elections.features.scores as scores
+import mapel.elections.features.approx as approx
+# import mapel.elections.features.optimal as optimal
 from mapel.main._inner_distances import l2
 
 
@@ -23,8 +25,8 @@ def get_feature(feature_id):
             'lowest_dodgson_score': scores.lowest_dodgson_score,
             'avg_distortion_from_guardians': avg_distortion_from_guardians,
             'worst_distortion_from_guardians': worst_distortion_from_guardians,
-            'graph_diameter': graph_diameter,
-            'graph_diameter_log': graph_diameter_log,
+            # 'graph_diameter': graph_diameter,
+            # 'graph_diameter_log': graph_diameter_log,
             'max_approval_score': max_approval_score,
             'cohesiveness': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
             'number_of_cohesive_groups': cohesive.count_number_of_cohesive_groups,
@@ -36,14 +38,23 @@ def get_feature(feature_id):
             'monotonicity_1': monotonicity_1,
             'monotonicity_triplets': monotonicity_triplets,
             'partylist': partylist.partylistdistance,
-            'distortion_from_all': distortion_from_all,
-            'distortion_from_top_100': distortion_from_top_100,
+            # 'distortion_from_all': distortion_from_all,
+            # 'distortion_from_top_100': distortion_from_top_100,
             'pav_time': partylist.pav_time,
             'justified_ratio': justified_ratio,
             'highest_cc_score': scores.highest_cc_score,
             'highest_hb_score': scores.highest_hb_score,
+            'highest_pav_score': scores.highest_pav_score,
             'clustering': clustering_v1,
+            'greedy_approx_cc_score': approx.get_greedy_approx_cc_score,
+            'removal_approx_cc_score': approx.get_removal_approx_cc_score,
+            'greedy_approx_hb_score': approx.get_greedy_approx_hb_score,
+            'removal_approx_hb_score': approx.get_removal_approx_hb_score,
+            'greedy_approx_pav_score': approx.get_greedy_approx_pav_score,
+            'removal_approx_pav_score': approx.get_removal_approx_pav_score,
+            'rand_approx_pav_score': approx.get_rand_approx_pav_score,
             }.get(feature_id)
+
 
 
 def justified_ratio(election, feature_params) -> float:

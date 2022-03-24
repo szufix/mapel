@@ -52,7 +52,7 @@ class RoommatesFamily(Family):
         if 'extremes' in path:
             extremes = path['extremes']
 
-        params = {}
+        params = {'variable': variable}
         if extremes:
             params[variable] = j / (self.size - 1)
         elif not extremes:

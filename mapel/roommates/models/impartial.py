@@ -13,16 +13,22 @@ def generate_roommates_ic_votes(num_agents: int = None):
     return convert(votes)
 
 
-def generate_roommates_group_ic_votes(num_agents: int = None):
+def generate_roommates_group_ic_votes(num_agents: int = None, params: dict = None):
     """ Impartial Culture with two groups """
 
-    votes_1 = [list(np.random.permutation(int(num_agents / 2))) +
-               list(np.random.permutation([j for j in range(int(num_agents / 2), num_agents)]))
-               for _ in range(int(num_agents / 2))]
+    if 'proportion' not in params:
+        params['proportion'] = 0.5
 
-    votes_2 = [list(np.random.permutation([j for j in range(int(num_agents / 2), num_agents)])) +
-               list(np.random.permutation(int(num_agents / 2)))
-               for _ in range(int(num_agents / 2))]
+    size_1 = int(params['proportion'] * num_agents)
+    size_2 = int(num_agents - size_1)
+
+    votes_1 = [list(np.random.permutation(size_1)) +
+               list(np.random.permutation([j for j in range(size_1, num_agents)]))
+               for _ in range(size_1)]
+
+    votes_2 = [list(np.random.permutation([j for j in range(size_1, num_agents)])) +
+               list(np.random.permutation(size_1))
+               for _ in range(size_2)]
 
     votes = votes_1 + votes_2
 

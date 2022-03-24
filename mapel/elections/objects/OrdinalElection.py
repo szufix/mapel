@@ -68,10 +68,7 @@ class OrdinalElection(Election):
                             pass
                         self.potes = self.votes_to_potes()
 
-                # self.approval_votes = convert_ordinal_to_approval(self.votes)
                 self.candidatelikeness_original_vectors = {}
-
-                # print(election_id)
 
                 if with_matrix:
                     self.matrix = self.import_matrix()
@@ -195,7 +192,7 @@ class OrdinalElection(Election):
         return np.array(borda_vector)
 
     def votes_to_candidatelikeness_original_vectors(self) -> None:
-        """ Convert votes to ... """
+        """ convert VOTES to candidate-likeness VECTORS """
         matrix = np.zeros([self.num_candidates, self.num_candidates])
 
         for c_1 in range(self.num_candidates):
@@ -299,8 +296,6 @@ class OrdinalElection(Election):
 
     # PREPARE INSTANCE
     def prepare_instance(self, store=None, params: dict = None):
-
-        """ main function: generate election """
 
         if params is None:
             params = {}

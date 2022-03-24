@@ -4,6 +4,7 @@ import math
 import os
 import sys
 from typing import Union
+from mapel.elections.features.approx import get_hb_score
 
 import numpy as np
 try:
@@ -101,17 +102,23 @@ def lowest_dodgson_score(election):
                     D[k] = threshold - diff
         D[target_id] = 0  # always winning
 
-        file_name = f'{np.random.random()}.lp'
-        path = os.path.join(os.getcwd(), "trash", file_name)
-        lp.generate_lp_file_dodgson_score(path, N=N, e=e, D=D)
-        score, total_time = lp.solve_lp_dodgson_score(path)
+        # file_name = f'{np.random.random()}.lp'
+        # file_name = 'tmp_old.lp'
+        # path = os.path.join(os.getcwd(), "trash", file_name)
+        # lp.generate_lp_file_dodgson_score_old(path, N=N, e=e, D=D)
+        # score, total_time = lp.solve_lp_dodgson_score(path)
+        # lp.remove_lp_file(path)
 
-        lp.remove_lp_file(path)
+        score = lp.solve_lp_file_dodgson_score(election, N=N, e=e, D=D)
+
+        # if election.election_id == 'Impartial Culture_2' and target_id == 0:
+        #     exit()
 
         if score < min_score:
             min_score = score
 
-    return min_score, total_time
+    print(min_score)
+    return min_score, 0
 
 
 def highest_cc_score(election, feature_params):
@@ -127,10 +134,20 @@ def highest_cc_score(election, feature_params):
 def highest_hb_score(election, feature_params):
     if election.model_id in LIST_OF_FAKE_MODELS:
         return 'None', 'None'
-    winners, obj_value, total_time = win.generate_winners(election=election,
+    winners, total_time = win.generate_winners(election=election,
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",
                                              type='borda_owa', name='hb')
+    return get_hb_score(election, winners), total_time
+
+
+def highest_pav_score(election, feature_params):
+    if election.model_id in LIST_OF_FAKE_MODELS:
+        return 'None', 'None'
+    winners, obj_value, total_time = win.generate_winners(election=election,
+                                             num_winners=feature_params['committee_size'],
+                                             ballot="ordinal",
+                                             type='bloc_owa', name='hb')
     return obj_value, total_time
 
 

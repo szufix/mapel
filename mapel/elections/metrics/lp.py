@@ -10,7 +10,116 @@ except ImportError:
 
 import numpy as np
 
-from mapel.main._inner_distances import hamming
+# NEW ILP
+def solve_rand_approx_pav(election, committee_size, W, C, ctr=0, fixed=[]):
+    if ctr == 5:
+        return 0
+
+    cp = cplex.Cplex()
+    cp.parameters.threads.set(1)
+
+    m = election.num_candidates
+    n = election.num_voters
+    k = committee_size
+
+    # OBJECTIVE FUNCTION
+    cp.objective.set_sense(cp.objective.sense.minimize)
+    names = []
+    obj = []
+    for j in range(n):
+        for l in range(k):
+            for i in range(m):
+                names.append(f'x{l}_{i}_{j}')
+                obj.append(W[l] * C[j][i])
+    types = [cp.variables.type.continuous] * len(names)
+    cp.variables.add(obj=obj, names=names, types=types,
+                     lb=[0.] * len(names), ub=[1.] * len(names))
+
+    # ADD MISSING VARIABLES
+    names = []
+    for i in range(m):
+        names.append(f'y{i}')
+    cp.variables.add(names=list(names),
+                     types=[cp.variables.type.continuous] * len(names),
+                     lb=[0.] * len(names), ub=[1.] * len(names))
+
+    # FIRST SINGLE CONSTRAINT
+    ind = []
+    val = []
+    for i in range(m):
+        ind.append(f'y{i}')
+        val.append(1.)
+    cp.linear_constraints.add(lin_expr=[cplex.SparsePair(ind=ind, val=val)],
+                              senses=['E'],
+                              rhs=[committee_size],
+                              names=['C1'])
+
+    # SECOND GROUP OF CONSTRAINTS
+    lin_expr = []
+    rhs = []
+    for i in range(m):
+        for j in range(n):
+            val = []
+            ind = []
+            for l in range(k):
+                ind.append(f'x{l}_{i}_{j}')
+                val.append(1.)
+            ind.append(f'y{i}')
+            val.append(-1.)
+            lin_expr.append(cplex.SparsePair(ind=ind, val=val))
+            rhs.append(0.)
+    cp.linear_constraints.add(lin_expr=lin_expr,
+                              senses=['L'] * len(rhs),
+                              rhs=rhs,
+                              names=['C2_' + str(i) for i in range(len(rhs))])
+
+    # THIRD GROUP OF CONSTRAINTS
+    lin_expr = []
+    rhs = []
+    for j in range(n):
+        for l in range(k):
+            val = []
+            ind = []
+            for i in range(m):
+                ind.append(f'x{l}_{i}_{j}')
+                val.append(1.)
+            lin_expr.append(cplex.SparsePair(ind=ind, val=val))
+            rhs.append(1.)
+    cp.linear_constraints.add(lin_expr=lin_expr,
+                              senses=['G'] * len(rhs),
+                              rhs=rhs,
+                              names=['C3_' + str(i) for i in range(len(rhs))])
+
+    # FIXED
+    lin_expr = []
+    rhs = []
+    for i in fixed:
+        ind = [f'y{i}']
+        val = [1.]
+    lin_expr.append(cplex.SparsePair(ind=ind, val=val))
+    rhs.append(1.)
+    cp.linear_constraints.add(lin_expr=lin_expr,
+                              senses=['E'] * len(rhs),
+                              rhs=rhs,
+                              names=['C4_' + str(i) for i in range(len(rhs))])
+
+    cp.parameters.threads.set(1)
+    cp.set_results_stream(None)
+    try:
+        cp.solve()
+    except:  # cplex.CplexSolverError:
+        print("Exception raised while solving")
+        return
+
+    ### TO DO LATER ###
+
+    score, fixed = print_results(election, committee_size, cp)
+
+    if len(fixed) < committee_size:
+        print(score)
+        solve_rand_approx_pav(election, committee_size, W, C, ctr+1, fixed)
+    else:
+        return score
 
 
 # FOR SUBELECTIONS
@@ -26,17 +135,18 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name='0'):
     for v1 in range(election_1.num_voters):
         for v2 in range(election_2.num_voters):
             names.append('N' + str(v1) + '_' + str(v2))
-    cp.variables.add(obj=[1.] * election_1.num_voters * election_2.num_voters,
-                     names=names,
-                     types=[cp.variables.type.binary] * election_1.num_voters * election_2.num_voters)
+    obj = [1.] * len(names)
+    types = [cp.variables.type.binary] * len(names)
+    cp.variables.add(obj=obj, names=names, types=types)
 
     # FIRST CONSTRAINT FOR VOTERS
     lin_expr = []
     for v1 in range(election_1.num_voters):
+        val = [1.0] * election_2.num_voters
         ind = []
         for v2 in range(election_2.num_voters):
             ind.append('N' + str(v1) + '_' + str(v2))
-        lin_expr.append(cplex.SparsePair(ind=ind, val=[1.0] * election_2.num_voters))
+        lin_expr.append(cplex.SparsePair(ind=ind, val=val))
     cp.linear_constraints.add(lin_expr=lin_expr,
                               senses=['L'] * election_1.num_voters,
                               rhs=[1.0] * election_1.num_voters,
@@ -563,7 +673,104 @@ def solve_lp_matching_interval(cost_table, length_1, length_2):
 
 
 # DODGSON SCORE
-def generate_lp_file_dodgson_score(lp_file_name, N=None, e=None, D=None):
+def solve_lp_file_dodgson_score(election, N=None, e=None, D=None):
+
+    cp = cplex.Cplex()
+    # cp.parameters.threads.set(1)
+
+    # OBJECTIVE FUNCTION
+    cp.objective.set_sense(cp.objective.sense.minimize)
+
+    names = []
+    obj = []
+    for i in range(len(N)):
+        for j in range(1, len(D)):
+            names.append("y" + str(i) + "_" + str(j))
+            obj.append(j)
+    types = [cp.variables.type.integer] * len(names)
+    cp.variables.add(obj=obj, names=names, types=types)
+
+    # ADD MISSING VARIABLES
+    names = []
+    for i in range(len(N)):
+        names.append("y" + str(i) + "_" + str(0))
+    cp.variables.add(names=list(names),
+                     types=[cp.variables.type.integer] * len(names))
+
+    # FIRST GROUP OF CONSTRAINTS
+    lin_expr = []
+    rhs = []
+    for i in range(len(N)):
+        ind = ["y" + str(i) + "_" + str(0)]
+        val = [1.]
+        lin_expr.append(cplex.SparsePair(ind=ind, val=val))
+        rhs.append(N[i])
+    cp.linear_constraints.add(lin_expr=lin_expr,
+                              senses=['E'] * len(rhs),
+                              rhs=rhs,
+                              names=['C1_' + str(i) for i in range(len(rhs))])
+
+    # SECOND GROUP OF CONSTRAINTS
+    lin_expr = []
+    rhs = []
+    for k in range(len(D)):
+
+        # if election.election_id == 'Impartial Culture_2' and k==0:
+        #     continue
+
+        val = []
+        ind = []
+        for i in range(len(N)):
+            for j in range(1, len(D)):
+                ind.append("y" + str(i) + "_" + str(j))
+                value = e[i][j][k] - e[i][j - 1][k]
+                val.append(value)
+        lin_expr.append(cplex.SparsePair(ind=ind, val=val))
+        rhs.append(D[k])
+
+    cp.linear_constraints.add(lin_expr=lin_expr,
+                              senses=['G'] * len(rhs),
+                              rhs=rhs,
+                              names=['C2_' + str(i) for i in range(len(rhs))])
+
+    # THIRD GROUP OF CONSTRAINTS
+    lin_expr = []
+    rhs = []
+    for i in range(len(N)):
+        for j in range(1, len(D)):
+            ind = []
+            val = []
+            ind.append("y" + str(i) + "_" + str(j - 1))
+            ind.append("y" + str(i) + "_" + str(j))
+            val.append(1.)
+            val.append(-1.)
+            lin_expr.append(cplex.SparsePair(ind=ind, val=val))
+            rhs.append(0.)
+    cp.linear_constraints.add(lin_expr=lin_expr,
+                              senses=['G'] * len(rhs),
+                              rhs=rhs,
+                              names=['C3_' + str(i) for i in range(len(rhs))])
+    # cp.write("tmp.lp")
+    #
+    # cp.read("tmp.lp")
+
+    # SOLVE THE ILP
+    cp.parameters.threads.set(1)
+    cp.set_results_stream(None)
+    try:
+        cp.solve()
+    except:  # cplex.CplexSolverError:
+        print("Exception raised while solving")
+        return
+
+    # for x in cp.solution.get_values():
+    #     if x <0 or x > 1:
+    #         print(x)
+
+    return cp.solution.get_objective_value()
+
+
+def generate_lp_file_dodgson_score_old(lp_file_name, N=None, e=None, D=None):
 
     with open(lp_file_name, 'w') as lp_file:
 
@@ -597,7 +804,8 @@ def generate_lp_file_dodgson_score(lp_file_name, N=None, e=None, D=None):
                     if not first:
                         lp_file.write(" +")
                     first = False
-                    lp_file.write(" " + str(e[i][j][k] - e[i][j - 1][k]) + " y" + str(i) + "_" + str(j))
+                    lp_file.write(
+                        " " + str(e[i][j][k] - e[i][j - 1][k]) + " y" + str(i) + "_" + str(j))
             lp_file.write(" >= " + str(D[k]) + "\n")
             ctr_c += 1
         # """
@@ -606,17 +814,22 @@ def generate_lp_file_dodgson_score(lp_file_name, N=None, e=None, D=None):
             for j in range(1, len(D)):
                 lp_file.write("c" + str(ctr_c) + ":")
                 lp_file.write(
-                    " y" + str(i) + "_" + str(j - 1) + " - y" + str(i) + "_" + str(j) + " >= 0" + "\n")
+                    " y" + str(i) + "_" + str(j - 1) + " - y" + str(i) + "_" + str(
+                        j) + " >= 0" + "\n")
                 ctr_c += 1
         # """
         # """
-        # probably unnecessary
-        for i in range(len(N)):
-            for j in range(len(D)):
-                lp_file.write("c" + str(ctr_c) + ":")
-                lp_file.write(" y" + str(i) + "_" + str(j) + " >= 0" + "\n")
-                ctr_c += 1
-        # """
+
+
+        # Bounds
+        # lp_file.write("Bounds\n")
+        # #  0 <= y0_1 <= 1
+        # for i in range(len(N)):
+        #     for j in range(len(D)):
+        #         lp_file.write("c" + str(ctr_c) + ":")
+        #         lp_file.write("0 <= y" + str(i) + "_" + str(j) + " <= 0" + "\n")
+        #         ctr_c += 1
+
         # """
         lp_file.write("General\n")
         for i in range(len(N)):
@@ -624,6 +837,7 @@ def generate_lp_file_dodgson_score(lp_file_name, N=None, e=None, D=None):
                 lp_file.write("y" + str(i) + "_" + str(j) + "\n")
             ctr_c += 1
         # """
+
         lp_file.write("End\n")
 
 
@@ -731,11 +945,10 @@ def solve_lp_borda_owa(params, votes, owa):
             winner_id += 1
     winners = sorted(winners)
 
-    return winners, cp.solution.get_objective_value(), stop-start
+    return winners, stop-start
 
 
 # FOR WINNERS - needs update
-
 def generate_lp_file_bloc_owa(owa, lp_file_name, params, votes, t_bloc):
     """ this function generates lp file"""
 
@@ -1312,3 +1525,56 @@ def generate_lp_file_borda_owa(owa, lp_file_name, params, votes):
             lp_file.write("y" + str(i) + "\n")
 
         lp_file.write("End\n")
+
+
+# TMP - PRINT
+
+def print_results(election, committee_size, cp):
+
+    result = [0.] * election.num_candidates
+    for i in range(election.num_candidates):
+        result[i] = cp.solution.get_values('y' + str(i))
+    # print(result)
+
+    fixed = []
+    for i, r in enumerate(result):
+        if r >= 0.5:
+            fixed.append(i)
+
+
+    winner_id = 0
+    winners = [-1] * committee_size
+    for i in range(election.num_candidates):
+        if result[i] == 1.:
+            winners[winner_id] = i
+            winner_id += 1
+    winners = sorted(winners)
+
+    def get_pav_score(election, winners) -> float:
+
+        num_voters = election.num_voters
+        num_candidates = election.num_candidates
+        votes = election.votes
+
+        score = 0
+
+        vector = [0.] * num_candidates
+        for i in range(len(winners)):
+            vector[i] = 1.
+
+        for i in range(num_voters):
+            ctr = 1.
+            for j in range(num_candidates):
+                if votes[i][j] in winners:
+                    score += (1. / ctr) * vector[j]
+                    ctr += 1
+
+        return score
+
+    try:
+        score = get_pav_score(election, winners)
+    except:
+        score = -1
+
+    print(score)
+    return score, fixed

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import ast
-import copy
 import os
 
 import numpy as np
@@ -66,7 +65,6 @@ class ApprovalElection(Election):
                     approvalwise_vector[c] += 1
             approvalwise_vector = approvalwise_vector / self.num_voters
             self.approvalwise_vector = np.sort(approvalwise_vector)
-
 
     def votes_to_coapproval_frequency_vectors(self, vector_type='A') -> None:
         """ Convert votes to ... """
@@ -146,7 +144,7 @@ class ApprovalElection(Election):
         reverse_approvals = [set() for _ in range(self.num_candidates)]
         for i, vote in enumerate(self.votes):
             for c in vote:
-                reverse_approvals[c].add(i)
+                reverse_approvals[c].add({i})
 
         self.reverse_approvals = reverse_approvals
 
@@ -226,8 +224,8 @@ def import_fake_app_election(experiment_id: str, name: str):
     return fake_model_name, params, num_voters, num_candidates
 
 
-def check_if_fake(experiment_id: str, name: str) -> bool:
-    file_name = f'{name}.app'
+def check_if_fake(experiment_id: str, election_id: str) -> bool:
+    file_name = f'{election_id}.app'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     line = my_file.readline().strip()

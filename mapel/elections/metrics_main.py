@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import logging
 from time import time
 from typing import Callable
 
@@ -23,7 +23,7 @@ def get_distance(election_1: Election, election_2: Election,
     elif type(election_1) is OrdinalElection and type(election_2) is OrdinalElection:
         return get_ordinal_distance(election_1, election_2, distance_id=distance_id)
     else:
-        print('No such instance!')
+        logging.warning('No such instance!')
 
 
 def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElection,
@@ -63,7 +63,6 @@ def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElectio
         'discrete': mod.compute_discrete_distance,
         'voter_subelection': mod.compute_voter_subelection,
         'candidate_subelection': mod.compute_candidate_subelection,
-        # 'spearman': mod.compute_spearman_distance,
         'swap_bf': mod.compute_swap_bf_distance,
     }
 
@@ -116,5 +115,5 @@ def run_single_thread(experiment: Experiment, thread_ids: list,
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 13.10.2021 #
+# LAST CLEANUP ON: 17.03.2022 #
 # # # # # # # # # # # # # # # #

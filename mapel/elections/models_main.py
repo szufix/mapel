@@ -141,7 +141,6 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
 
 
 
-
 def store_approval_election(experiment, model_id, election_id, num_candidates, num_voters,
                             params, ballot):
     """ Store approval election in an .app file """

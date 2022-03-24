@@ -490,3 +490,42 @@ class Experiment:
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
         for file_name in os.listdir(path):
             os.remove(os.path.join(path, file_name))
+
+    def get_feature(self, feature_id):
+
+        # if feature_id not in self.features:
+        #     self.features[feature_id] = self.import_feature(feature_id)
+
+        self.features[feature_id] = self.import_feature(feature_id)
+
+        return self.features[feature_id]
+
+    def import_feature(self, feature_id):
+        return pr.get_values_from_csv_file(self, feature_id=feature_id)
+
+    def normalize_feature_by_feature(self, nom=None, denom=None, saveas=None):
+
+        f1 = self.get_feature(nom)
+        f2 = self.get_feature(denom)
+        f3 = {}
+
+
+
+        for election_id in f1:
+            if f1[election_id] is None:
+                f3[election_id] = None
+            else:
+                f3[election_id] = f1[election_id] / f2[election_id]
+
+        self.store_feature(feature_dict=f3, saveas=saveas)
+
+    def store_feature(self, feature_dict=None, saveas=None):
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                    "features", f'{saveas}.csv')
+
+        with open(path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+            writer.writerow(["election_id", "value"])
+            # writer.writerow(["election_id", "value", "bound", "num_large_parties"])
+            for key in feature_dict:
+                writer.writerow([key, str(feature_dict[key])])

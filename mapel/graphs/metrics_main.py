@@ -2,7 +2,7 @@
 
 import networkx as nx
 
-from mapel.elections.metrics import main_graph_distances as mgd
+from mapel.graphs.metric import main_graph_distances as mgd
 from mapel.elections.objects.Election import Election
 from mapel.graphs.objects.Graph import Graph
 

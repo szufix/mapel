@@ -9,7 +9,7 @@ import mapel.roommates.models.impartial as impartial
 import mapel.roommates.models.mallows as mallows
 import mapel.roommates.models.urn as urn
 import mapel.roommates.models.group_separable as group_separable
-import mapel.roommates.models.other as other
+
 
 
 def generate_votes(model_id: str = None, num_agents: int = None,
@@ -24,12 +24,12 @@ def generate_votes(model_id: str = None, num_agents: int = None,
         'roommates_double': euclidean.generate_roommates_double_votes,
         'roommates_mallows_euclidean': euclidean.generate_roommates_mallows_euclidean_votes,
         'roommates_vectors': euclidean.generate_roommates_vectors_votes,
-        'roommates_malasym': other.generate_roommates_malasym_votes,
+        'roommates_malasym': mallows.generate_roommates_malasym_votes,
+        'roommates_group_ic': impartial.generate_roommates_group_ic_votes,
     }
 
     main_models_without_params = {
         'roommates_ic': impartial.generate_roommates_ic_votes,
-        'roommates_group_ic': impartial.generate_roommates_group_ic_votes,
         'roommates_id': impartial.generate_roommates_id_votes,
         'roommates_chaos': impartial.generate_roommates_chaos_votes,
         'roommates_symmetric': impartial.generate_roommates_symmetric_votes,
