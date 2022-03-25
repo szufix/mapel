@@ -66,9 +66,10 @@ def get_ordinal_winners(params, votes, rule):
         t_bloc = params["orders"]
         all_winners = []
         for i in range(params['elections']):
-            winners, obj_vaue, total_time = get_winners_bloc_owa(params, votes, params['candidates'], owa, t_bloc)
+            winners, total_time = get_winners_bloc_owa(params, votes, owa, t_bloc)
             all_winners += winners
-        return all_winners, obj_vaue, total_time
+        # print(winners)
+        return all_winners, total_time
 
     elif rule['type'] == 'stv':
         all_winners = []
@@ -185,15 +186,9 @@ def get_winners_borda_owa(params, votes, owa):
 #     return winners, obj_value, total_time
 
 
-def get_winners_bloc_owa(params, votes, candidates, owa, t_bloc):
+def get_winners_bloc_owa(params, votes, owa, t_bloc):
+    return lp.solve_lp_bloc_owa(params, votes, owa, t_bloc)
 
-    rand_name = str(np.random.random())
-    lp_file_name = str(rand_name + ".lp")
-    lp.generate_lp_file_bloc_owa(owa, lp_file_name, params, votes, t_bloc)
-    winners, obj_value, total_time = lp.get_winners_from_lp(lp_file_name, params, candidates)
-    os.remove(lp_file_name)
-    winners = sorted(winners)
-    return winners, obj_value, total_time
 
 
 def get_winners_stv(params, votes, candidates):
@@ -288,10 +283,6 @@ def get_winners_stv(params, votes, candidates):
 #         return get_winners_approx_pav_greedy(votes, params)
 
 
-
-def get_winners_approx_cc(votes, params):
-
-    return get_winners_approx_cc_greedy(votes, params)
 
 
 def check_hb_dissat(votes, params, winners):

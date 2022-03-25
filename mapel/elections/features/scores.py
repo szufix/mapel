@@ -4,7 +4,7 @@ import math
 import os
 import sys
 from typing import Union
-from mapel.elections.features.approx import get_hb_score
+from mapel.elections.features.approx import *
 
 import numpy as np
 try:
@@ -124,11 +124,11 @@ def lowest_dodgson_score(election):
 def highest_cc_score(election, feature_params):
     if election.model_id in LIST_OF_FAKE_MODELS:
         return 'None', 'None'
-    winners, obj_value, total_time = win.generate_winners(election=election,
+    winners, total_time = win.generate_winners(election=election,
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",
                                              type='borda_owa', name='cc')
-    return obj_value, total_time
+    return get_cc_score(election, winners), total_time
 
 
 def highest_hb_score(election, feature_params):
@@ -144,11 +144,11 @@ def highest_hb_score(election, feature_params):
 def highest_pav_score(election, feature_params):
     if election.model_id in LIST_OF_FAKE_MODELS:
         return 'None', 'None'
-    winners, obj_value, total_time = win.generate_winners(election=election,
+    winners, total_time = win.generate_winners(election=election,
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",
                                              type='bloc_owa', name='hb')
-    return obj_value, total_time
+    return get_pav_score(election, winners), total_time
 
 
 # HELPER FUNCTIONS

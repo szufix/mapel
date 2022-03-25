@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import math
 from contextlib import suppress
 
 try:
@@ -867,7 +868,7 @@ def solve_lp_dodgson_score(lp_file_name):
     return cp_lp.solution.get_objective_value(), stop-start
 
 
-# FOR WINNERS - "NEW"
+# FOR WINNERS - updated
 def solve_lp_borda_owa(params, votes, owa):
 
     num_voters = params['voters']
@@ -940,7 +941,7 @@ def solve_lp_borda_owa(params, votes, owa):
     winner_id = 0
     winners = [0.] * num_orders
     for i in range(num_candidates):
-        if result[i] == 1.:
+        if math.isclose(result[i], 1.):
             winners[winner_id] = i
             winner_id += 1
     winners = sorted(winners)
@@ -949,8 +950,12 @@ def solve_lp_borda_owa(params, votes, owa):
 
 
 # FOR WINNERS - needs update
-def generate_lp_file_bloc_owa(owa, lp_file_name, params, votes, t_bloc):
+def solve_lp_bloc_owa(params, votes, owa, t_bloc):
     """ this function generates lp file"""
+
+
+    rand_name = str(np.random.random())
+    lp_file_name = str(rand_name + ".lp")
 
     lp_file = open(lp_file_name, 'w')
     lp_file.write("Maximize\nobj: ")
@@ -1002,12 +1007,10 @@ def generate_lp_file_bloc_owa(owa, lp_file_name, params, votes, t_bloc):
         lp_file.write("y" + str(i) + "\n")
 
     lp_file.write("End\n")
+    lp_file.close()
 
 
-def get_winners_from_lp(tmp_file, params, candidates):
-    """ this function ..."""
-
-    cp_lp = cplex.Cplex(tmp_file)
+    cp_lp = cplex.Cplex(lp_file_name)
     cp_lp.parameters.threads.set(1)
     cp_lp.set_results_stream(None)
 
@@ -1029,15 +1032,15 @@ def get_winners_from_lp(tmp_file, params, candidates):
     winner_id = 0
     winners = [0.] * params['orders']
     for i in range(params['candidates']):
-        if result[i] == 1.:
+        if math.isclose(result[i], 1.):
             if params['pure']:
                 winners[winner_id] = i
-            else:
-                winners[winner_id] = candidates[i]
             winner_id += 1
     winners = sorted(winners)
 
-    return winners, cp_lp.solution.get_objective_value(), stop-start
+    os.remove(lp_file_name)
+
+    return winners, stop-start
 
 
 """
