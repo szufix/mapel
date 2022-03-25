@@ -9,11 +9,12 @@ from abc import ABCMeta, abstractmethod
 import networkx as nx
 import numpy as np
 
+from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
+
 COLORS = []
 
 from mapel.main.objects.Family import Family
 import mapel.elections._print as pr
-
 
 try:
     from sklearn.manifold import MDS
@@ -176,7 +177,7 @@ class Experiment:
 
         dt = [('weight', float)]
         y = x.view(dt)
-        graph = nx.from_numpy_matrix(y)
+        graph = nx.from_numpy_array(y)
 
         if num_neighbors is None:
             num_neighbors = 100
@@ -196,6 +197,11 @@ class Experiment:
                                             n_neighbors=num_neighbors,
                                             max_iter=num_iterations,
                                             method=method).fit_transform(x)
+        elif algorithm.lower() == 'kamada-kawai':
+            my_pos = KamadaKawai().embed(
+                distances=x
+            )
+
         else:
             my_pos = []
             logging.warning("Unknown method!")
@@ -361,7 +367,6 @@ class Experiment:
                             pass
         self.coordinates_by_families = coordinates_by_families
 
-
     def get_distance(self, i, j):
         """ Compute Euclidean distance in two-dimensional space"""
 
@@ -413,7 +418,7 @@ class Experiment:
         px -= cx
         py -= cy
         x_new, y_new = px * c - py * s, px * s + py * c
-        px, py = x_new + cx,  y_new + cy
+        px, py = x_new + cx, y_new + cy
 
         return px, py
 
@@ -509,8 +514,6 @@ class Experiment:
         f2 = self.get_feature(denom)
         f3 = {}
 
-
-
         for election_id in f1:
             if f1[election_id] is None:
                 f3[election_id] = None
@@ -521,7 +524,7 @@ class Experiment:
 
     def store_feature(self, feature_dict=None, saveas=None):
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                    "features", f'{saveas}.csv')
+                            "features", f'{saveas}.csv')
 
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
