@@ -1,6 +1,5 @@
 import gurobipy as gp
 from gurobipy import GRB
-# from matching.games import StableRoommates
 from random import shuffle
 import statistics
 import warnings
@@ -8,7 +7,7 @@ import sys
 import time
 import networkx as nx
 sys.setrecursionlimit(10000)
-warnings.filterwarnings("error")
+# warnings.filterwarnings("error")
 
 def generate_instance(num_agents):
     man=[]

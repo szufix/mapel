@@ -1,6 +1,11 @@
 import gurobipy as gp
 from gurobipy import GRB
-from mapel.roommates.matching.games import StableRoommates
+
+try:
+    from mapel.roommates.matching.games import StableRoommates
+except:
+    pass
+
 from random import shuffle
 import statistics
 import warnings
