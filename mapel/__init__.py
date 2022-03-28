@@ -1,7 +1,6 @@
 
 import mapel.elections.metrics_main as metr
 import mapel.elections.models_main as ele
-import mapel.roommates.models_main as rom
 import mapel.elections._print as pr
 import mapel.elections.other.development as dev
 import mapel.elections.features_main as features
@@ -14,6 +13,7 @@ try:
     from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
     from mapel.roommates.objects.Roommates import Roommates
     from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
+    import mapel.roommates.models_main as rom
 except:
     pass
 
