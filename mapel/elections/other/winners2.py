@@ -289,7 +289,6 @@ def check_hb_dissat(votes, params, winners):
 
     num_voters = params['voters']
     num_candidates = params['candidates']
-    num_winners = params['orders']
 
     dissat = 0
 
@@ -307,9 +306,6 @@ def check_pav_dissat(votes, params, winners):
 
     num_voters = params['voters']
     num_candidates = params['candidates']
-    num_winners = params['orders']
-
-    #print(votes)
 
     dissat = 0
 

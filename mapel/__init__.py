@@ -6,11 +6,17 @@ import mapel.elections._print as pr
 import mapel.elections.other.development as dev
 import mapel.elections.features_main as features
 
+from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
-from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
-from mapel.roommates.objects.Roommates import Roommates
-from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
+
+try:
+    from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
+    from mapel.roommates.objects.Roommates import Roommates
+    from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
+except:
+    pass
+
 
 
 def hello():
@@ -65,8 +71,9 @@ def compute_spoilers(**kwargs):
 
 ### WITHOUT EXPERIMENT ###
 def generate_election(**kwargs):
-    return ele.generate_election(**kwargs)
-
+    election = OrdinalElection("vitrual", "virtual", **kwargs)
+    election.prepare_instance()
+    return election
 
 def generate_roommates_instance(**kwargs):
     instance = Roommates('virtual', 'tmp', **kwargs)

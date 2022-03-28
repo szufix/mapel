@@ -685,8 +685,8 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
             label = family.label
             if dim == 2:
                 if '_path' in label or 'urn' in label or 'Urn' in label\
-                        or 'Mallows' in label or 'mallows' in label: # or\
-                        # 'variable' in family.path:
+                        or 'Mallows' in label or 'mallows' in label or\
+                        'variable' in family.path:
 
                     if 'background' in label:
                         label = '_nolegend_'
