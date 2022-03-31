@@ -214,10 +214,11 @@ def get_cc_score(election, winners) -> float:
     for i in range(num_voters):
         for j in range(num_candidates):
             if votes[i][j] in winners:
-                score += 1.
+                score += num_candidates - j - 1
                 break
 
     return score
+
 
 def get_hb_score(election, winners) -> float:
     num_voters = election.num_voters

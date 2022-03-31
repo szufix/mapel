@@ -133,7 +133,8 @@ class Experiment:
 
     def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
               dim: int = 2, num_neighbors: int = None, method: str = 'standard',
-              zero_distance: float = 0.1, factor: float = 1., saveas: str = None) -> None:
+              zero_distance: float = 0.1, factor: float = 1., saveas: str = None,
+              init_pos: dict = None, fixed=True) -> None:
 
         if algorithm == 'spring':
             attraction_factor = 2
@@ -143,6 +144,18 @@ class Experiment:
         num_elections = len(self.distances)
 
         x = np.zeros((num_elections, num_elections))
+
+        initial_positions = None
+
+        if init_pos is not None:
+            initial_positions = {}
+            for i, instance_id_1 in enumerate(self.distances):
+                if instance_id_1 in init_pos:
+                    # initial_positions.update(0='portal')
+                    initial_positions[i] = init_pos[instance_id_1]
+
+        # print(initial_positions)
+
 
         for i, instance_id_1 in enumerate(self.distances):
             for j, instance_id_2 in enumerate(self.distances):
@@ -197,9 +210,10 @@ class Experiment:
                                             n_neighbors=num_neighbors,
                                             max_iter=num_iterations,
                                             method=method).fit_transform(x)
-        elif algorithm.lower() == 'kamada-kawai':
+        elif algorithm.lower() in {'kamada-kawai', 'kamada'}:
             my_pos = KamadaKawai().embed(
-                distances=x
+                distances=x, initial_positions=initial_positions,
+                fix_initial_positions=fixed
             )
 
         else:

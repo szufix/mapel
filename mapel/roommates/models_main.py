@@ -19,6 +19,7 @@ def generate_votes(model_id: str = None, num_agents: int = None,
         'roommates_norm-mallows': mallows.generate_roommates_norm_mallows_votes,
         'roommates_urn': urn.generate_roommates_urn_votes,
         'roommates_euclidean': euclidean.generate_roommates_euclidean_votes,
+        'roommates_reverse_euclidean': euclidean.generate_roommates_reverse_euclidean_votes,
         'roommates_gs': group_separable.generate_roommates_gs_votes,
         'roommates_radius': euclidean.generate_roommates_radius_votes,
         'roommates_double': euclidean.generate_roommates_double_votes,
@@ -34,6 +35,7 @@ def generate_votes(model_id: str = None, num_agents: int = None,
         'roommates_chaos': impartial.generate_roommates_chaos_votes,
         'roommates_symmetric': impartial.generate_roommates_symmetric_votes,
         'roommates_asymmetric': impartial.generate_roommates_asymmetric_votes,
+        'roommates_tmp': impartial.generate_roommates_ic_votes,
     }
 
     if model_id in main_models_with_params:

@@ -3,7 +3,7 @@
 import numpy as np
 from mapel.roommates.models._utils import convert
 from mapel.main._utils import *
-
+import logging
 
 def generate_roommates_ic_votes(num_agents: int = None):
     """ Impartial Culture """
@@ -89,6 +89,9 @@ def generate_roommates_symmetric_votes(num_agents: int = None):
 
 def generate_roommates_chaos_votes(num_agents: int = None):
     """ One of four extreme points for Compass """
+
+    if num_agents-1 % 3 == 0:
+        logging.warning("Incorrect realization of Chaos instance")
 
     num_rooms = num_agents // 2
     matrix = np.zeros([num_agents, num_agents - 1], dtype=int)

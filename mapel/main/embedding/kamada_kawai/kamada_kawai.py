@@ -132,7 +132,7 @@ def _get_positions_adam(distances, k, positions, fixed_positions_indexes):
 
 def _apply_initial_positions(positions, initial_positions):
     if initial_positions is not None:
-        for pos_index, position in initial_positions.values():
+        for pos_index, position in initial_positions.items():
             positions[pos_index] = position
 
 
