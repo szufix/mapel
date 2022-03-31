@@ -1,7 +1,7 @@
 
 import scipy.special
 
-from mapel.elections.features.approx import get_cc_score
+from mapel.elections.features.scores import get_cc_score
 
 
 def get_banzhaf_cc_score(election, feature_params):

@@ -12,7 +12,7 @@ import mapel.elections.features.partylist as partylist
 import mapel.elections.features.proportionality_degree as prop_deg
 import mapel.elections.features.scores as scores
 import mapel.elections.features.approx as approx
-import mapel.elections.features.modern as modern
+import mapel.elections.features.banzhaf_cc as modern
 from mapel.main._inner_distances import l2
 
 
