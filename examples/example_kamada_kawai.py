@@ -1,4 +1,6 @@
 import mapel
+from mapel.main.features.distortion import calculate_distortion
+from mapel.main.features.monotonicity import calculate_monotonicity
 
 
 def import_experiment():
@@ -10,8 +12,9 @@ def import_experiment():
                                           instance_type=instance_type,
                                           distance_id=distance_id)
 
-    experiment.embed(algorithm='kamada-kawai')
-    experiment.print_map()
+    # experiment.embed(algorithm='kamada-kawai')
+    # experiment.print_map()
+    calculate_monotonicity(experiment)#, ['Impartial Culture_0', 'Impartial Culture_1', 'Impartial Culture_4', 'Impartial Culture_5'])
 
 
 if __name__ == '__main__':
