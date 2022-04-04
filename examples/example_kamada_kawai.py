@@ -14,7 +14,7 @@ def import_experiment():
 
     # experiment.embed(algorithm='kamada-kawai')
     # experiment.print_map()
-    calculate_monotonicity(experiment)#, ['Impartial Culture_0', 'Impartial Culture_1', 'Impartial Culture_4', 'Impartial Culture_5'])
+    calculate_monotonicity(experiment)
 
 
 if __name__ == '__main__':
