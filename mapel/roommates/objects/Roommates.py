@@ -43,15 +43,16 @@ class Roommates(Instance):
 
     def votes_to_retrospective_vectors(self):
 
-        if self.model_id == 'roommates_test':
+        if self.model_id == 'roommates_tmp': # A-S-SYM
 
-            def rotate(vector, shift):
-                shift = shift % len(vector)
-                return vector[shift:] + vector[:shift]
+            n = self.num_agents // 2
 
-            votes = [list(range(self.num_agents)) for _ in range(self.num_agents)]
-            votes = [rotate(vote, shift) for shift, vote in enumerate(votes)]
-            return convert(votes)
+            vector = [n-i-1 for i in range(n)] + [2*n-i-2 for i in range(n-1)]
+
+            vectors = [vector for _ in range(self.num_agents)]
+            vectors = np.array(vectors)
+            self.retrospetive_vectors = vectors
+            return vectors
 
         vectors = np.zeros([self.num_agents, self.num_agents - 1], dtype=int)
 

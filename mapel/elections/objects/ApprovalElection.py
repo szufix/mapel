@@ -8,17 +8,26 @@ import numpy as np
 from mapel.elections._glossary import *
 from mapel.main._inner_distances import hamming
 from mapel.elections.objects.Election import Election
+from mapel.elections.models_main import generate_approval_votes, store_votes_in_a_file
+from mapel.elections.objects.Election import Election
+from mapel.elections.objects.OrdinalElection import update_params
+from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
+    compute_stv_winners
+from mapel.elections.other.winners2 import generate_winners
 
 
 class ApprovalElection(Election):
 
     def __init__(self, experiment_id, election_id, votes=None, alpha=1, model_id=None,
                  ballot='approval', num_voters=None, num_candidates=None, _import=False,
-                 shift: bool = False):
+                 shift: bool = False, params=None, variable=None):
 
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
                          model_id=model_id, ballot=ballot, num_voters=num_voters,
                          num_candidates=num_candidates)
+
+        self.params = params
+        self.variable = variable
 
         self.approvalwise_vector = []
         self.coapproval_frequency_vectors = []
@@ -37,7 +46,7 @@ class ApprovalElection(Election):
                     import_fake_app_election(experiment_id, election_id)
             else:
                 self.votes, self.num_voters, self.num_candidates, self.params, \
-                    self.model = import_real_app_election(experiment_id, election_id, shift)
+                self.model = import_real_app_election(experiment_id, election_id, shift)
                 try:
                     self.alpha = self.params['alpha']
                 except:
@@ -148,6 +157,66 @@ class ApprovalElection(Election):
 
         self.reverse_approvals = reverse_approvals
 
+    # PREPARE INSTANCE
+    def prepare_instance(self, store=None, params: dict = None):
+
+        if params is None:
+            params = {}
+
+        self.params = params
+
+        if self.model_id == 'all_votes':
+            alpha = 1
+        else:
+            params, alpha = update_params(params, self.variable, self.model_id,
+                                          self.num_candidates)
+
+        self.params = params
+        self.votes = generate_approval_votes(model_id=self.model_id,
+                                             num_candidates=self.num_candidates,
+                                             num_voters=self.num_voters, params=params)
+        self.params = params
+        # election = OrdinalElection("virtual", "virtual", votes=votes, model_id=self.model_id,
+        #                            num_candidates=self.num_candidates, params=params,
+        #                            num_voters=self.num_voters, ballot=self.ballot, alpha=alpha)
+
+        # elif ballot == 'approval':
+        #     votes = generate_approval_votes(model_id=model_id, num_candidates=num_candidates,
+        #                                     num_voters=num_voters, params=params)
+        #     election = ApprovalElection(experiment.experiment_id, election_id, votes=votes,
+        #                                 model_id=model_id,
+        #                                 num_candidates=num_candidates,
+        #                                 num_voters=num_voters, ballot=ballot, alpha=alpha)
+
+        if store:
+            self.store_approval_election()
+            # store_ordinal_election(experiment, model_id, election_id, num_candidates,
+            #                        num_voters, params, ballot)
+            # if ballot == 'approval':
+            #     store_approval_election(self, model_id, election_id, num_candidates,
+            #                             num_voters, params, ballot)
+
+    # STORE
+    def store_approval_election(self):
+        """ Store approval election in an .app file """
+
+        if self.model_id in APPROVAL_FAKE_MODELS:
+            path = os.path.join("experiments", str(self.experiment_id),
+                                "elections", (str(self.election_id) + ".app"))
+            file_ = open(path, 'w')
+            file_.write(f'$ {self.model_id} {self.params} \n')
+            file_.write(str(self.num_candidates) + '\n')
+            file_.write(str(self.num_voters) + '\n')
+            file_.close()
+
+        else:
+            path = os.path.join("experiments", str(self.experiment_id), "elections",
+                                (str(self.election_id) + ".app"))
+
+            store_votes_in_a_file(self, self.model_id, self.election_id,
+                                  self.num_candidates, self.num_voters,
+                                  self.params, path, self.ballot, votes=self.votes)
+
 
 def import_real_app_election(experiment_id: str, election_id: str, shift=False):
     """ Import real approval election from .app file """
@@ -198,7 +267,7 @@ def import_real_app_election(experiment_id: str, election_id: str, shift=False):
         for i, vote in enumerate(votes):
             new_vote = set()
             for c in vote:
-                new_vote.add(c-1)
+                new_vote.add(c - 1)
             votes[i] = new_vote
 
     return votes, num_voters, num_candidates, params, model_id
@@ -233,13 +302,12 @@ def check_if_fake(experiment_id: str, election_id: str) -> bool:
 
 
 def get_skeleton_approvalwise_vector(election):
-
     phi = election.params['phi']
     p = election.params['p']
     k = int(p * election.num_candidates)
 
-    vector = [phi*p for _ in range(election.num_candidates)]
+    vector = [phi * p for _ in range(election.num_candidates)]
     for i in range(k):
-        vector[i] += 1-phi
+        vector[i] += 1 - phi
 
     return np.array(vector)

@@ -140,29 +140,6 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
 
 
 
-
-def store_approval_election(experiment, model_id, election_id, num_candidates, num_voters,
-                            params, ballot):
-    """ Store approval election in an .app file """
-
-    if model_id in APPROVAL_FAKE_MODELS:
-        path = os.path.join("experiments", str(experiment.experiment_id),
-                            "elections", (str(election_id) + ".app"))
-        file_ = open(path, 'w')
-        file_.write(f'$ {model_id} {params} \n')
-        file_.write(str(num_candidates) + '\n')
-        file_.write(str(num_voters) + '\n')
-        file_.close()
-
-    else:
-        path = os.path.join("experiments", str(experiment.experiment_id), "elections",
-                            (str(election_id) + ".app"))
-
-        store_votes_in_a_file(experiment, model_id, election_id, num_candidates, num_voters,
-                              params, path, ballot)
-
-
-
 def store_votes_in_a_file(election, model_id, election_id, num_candidates, num_voters,
                           params, path, ballot, votes=None):
     """ Store votes in a file """

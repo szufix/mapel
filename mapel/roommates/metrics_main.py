@@ -21,7 +21,7 @@ def get_distance(election_1: Roommates, election_2: Roommates,
     }
 
     metrics_with_inner_distance = {
-        'retrospective': mrd.compute_retrospective_distance,
+        'mutual_attraction': mrd.compute_retrospective_distance,
         'positionwise': mrd.compute_positionwise_distance,
         'pos_swap': mrd.compute_pos_swap_distance,
         'swap_bf': mrd.compute_swap_bf_distance,

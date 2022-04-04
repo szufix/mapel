@@ -4,7 +4,6 @@ import math
 import os
 import sys
 from typing import Union
-from mapel.elections.features.approx import *
 
 import numpy as np
 try:
@@ -168,3 +167,65 @@ def _potes_to_unique_potes(potes):
     return unique_potes, n
 
 
+# GET SCORE
+def get_score(election, winners, rule) -> float:
+    if rule == 'cc':
+        return get_cc_score(election, winners)
+    elif rule == 'hb':
+        return get_hb_score(election, winners)
+    elif rule == 'pav':
+        return get_pav_score(election, winners)
+
+
+def get_cc_score(election, winners) -> float:
+    num_voters = election.num_voters
+    num_candidates = election.num_candidates
+    votes = election.votes
+
+    score = 0
+
+    for i in range(num_voters):
+        for j in range(num_candidates):
+            if votes[i][j] in winners:
+                score += num_candidates - j - 1
+                break
+
+    return score
+
+
+def get_hb_score(election, winners) -> float:
+    num_voters = election.num_voters
+    num_candidates = election.num_candidates
+    votes = election.votes
+
+    score = 0
+
+    for i in range(num_voters):
+        ctr = 1.
+        for j in range(num_candidates):
+            if votes[i][j] in winners:
+                score += (1. / ctr) * (num_candidates - j - 1)
+                ctr += 1
+
+    return score
+
+
+def get_pav_score(election, winners) -> float:
+    num_voters = election.num_voters
+    num_candidates = election.num_candidates
+    votes = election.votes
+
+    score = 0
+
+    vector = [0.] * num_candidates
+    for i in range(len(winners)):
+        vector[i] = 1.
+
+    for i in range(num_voters):
+        ctr = 1.
+        for j in range(num_candidates):
+            if votes[i][j] in winners:
+                score += (1. / ctr) * vector[j]
+                ctr += 1
+
+    return score

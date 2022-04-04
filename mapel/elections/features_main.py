@@ -12,7 +12,7 @@ import mapel.elections.features.partylist as partylist
 import mapel.elections.features.proportionality_degree as prop_deg
 import mapel.elections.features.scores as scores
 import mapel.elections.features.approx as approx
-# import mapel.elections.features.optimal as optimal
+import mapel.elections.features.banzhaf_cc as modern
 from mapel.main._inner_distances import l2
 
 
@@ -53,6 +53,7 @@ def get_feature(feature_id):
             'greedy_approx_pav_score': approx.get_greedy_approx_pav_score,
             'removal_approx_pav_score': approx.get_removal_approx_pav_score,
             'rand_approx_pav_score': approx.get_rand_approx_pav_score,
+            'banzhaf_cc_score': modern.get_banzhaf_cc_score,
             }.get(feature_id)
 
 

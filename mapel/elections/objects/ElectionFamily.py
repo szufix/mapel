@@ -3,6 +3,7 @@
 import copy
 from mapel.main.objects.Family import Family
 from mapel.elections.objects.OrdinalElection import OrdinalElection
+from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections._glossary import *
 from mapel.main._utils import *
 import mapel.elections.models.mallows as mallows
@@ -66,49 +67,92 @@ class ElectionFamily(Family):
 
         ballot = get_ballot_from_model(self.model_id)
 
-        # if model_id in PARTY_MODELS:
-        #     params['party'] = prepare_parties(params=params, model_id=model_id)
+        if ballot == 'ordinal':
 
-        elections = {}
-        _keys = []
-        for j in range(self.size):
+            # if model_id in PARTY_MODELS:
+            #     params['party'] = prepare_parties(params=params, model_id=model_id)
 
-            params = copy.deepcopy(self.params)
+            elections = {}
+            _keys = []
+            for j in range(self.size):
 
-            variable = None
-            path = self.path
-            if path is not None and 'variable' in path:
-                new_params, variable = _get_params_for_paths(self, j)
-                params = {**params, **new_params}
+                params = copy.deepcopy(self.params)
 
-            if params is not None and 'norm-phi' in params:
-                params['phi'] = mallows.phi_from_relphi(
-                                    self.num_candidates, relphi=params['norm-phi'])
+                variable = None
+                path = self.path
+                if path is not None and 'variable' in path:
+                    new_params, variable = _get_params_for_paths(self, j)
+                    params = {**params, **new_params}
 
-            if self.model_id in {'all_votes'}:
-                params['iter_id'] = j
+                if params is not None and 'norm-phi' in params:
+                    params['phi'] = mallows.phi_from_relphi(
+                                        self.num_candidates, relphi=params['norm-phi'])
 
-            if self.model_id in {'crate'}:
-                new_params = _get_params_for_crate(j)
-                params = {**params, **new_params}
+                if self.model_id in {'all_votes'}:
+                    params['iter_id'] = j
 
-            election_id = get_instance_id(self.single, self.family_id, j)
+                if self.model_id in {'crate'}:
+                    new_params = _get_params_for_crate(j)
+                    params = {**params, **new_params}
 
-            election = OrdinalElection(experiment_id, election_id, model_id=self.model_id,
-                                         num_voters=self.num_voters,
-                                         num_candidates=self.num_candidates,
-                                         params=copy.deepcopy(params), ballot=ballot,
-                                        variable=variable, _import=False,
-                                       )
+                election_id = get_instance_id(self.single, self.family_id, j)
 
-            election.prepare_instance(store=store, params=params)
+                election = OrdinalElection(experiment_id, election_id, model_id=self.model_id,
+                                             num_voters=self.num_voters,
+                                             num_candidates=self.num_candidates,
+                                             params=copy.deepcopy(params), ballot=ballot,
+                                            variable=variable, _import=False,
+                                           )
 
-            elections[election_id] = election
+                election.prepare_instance(store=store, params=params)
 
-            _keys.append(election_id)
+                elections[election_id] = election
 
-        self.election_ids = _keys
+                _keys.append(election_id)
 
+            self.election_ids = _keys
+
+        elif ballot == 'approval':
+
+            elections = {}
+            _keys = []
+            for j in range(self.size):
+
+                params = copy.deepcopy(self.params)
+
+                variable = None
+                path = self.path
+                if path is not None and 'variable' in path:
+                    new_params, variable = _get_params_for_paths(self, j)
+                    params = {**params, **new_params}
+
+                if params is not None and 'norm-phi' in params:
+                    params['phi'] = mallows.phi_from_relphi(
+                        self.num_candidates, relphi=params['norm-phi'])
+
+                if self.model_id in {'all_votes'}:
+                    params['iter_id'] = j
+
+                if self.model_id in {'crate'}:
+                    new_params = _get_params_for_crate(j)
+                    params = {**params, **new_params}
+
+                election_id = get_instance_id(self.single, self.family_id, j)
+
+                election = ApprovalElection(experiment_id, election_id, model_id=self.model_id,
+                                           num_voters=self.num_voters,
+                                           num_candidates=self.num_candidates,
+                                           params=copy.deepcopy(params), ballot=ballot,
+                                           variable=variable, _import=False,
+                                           )
+
+                election.prepare_instance(store=store, params=params)
+
+                elections[election_id] = election
+
+                _keys.append(election_id)
+
+            self.election_ids = _keys
 
         return elections
 
