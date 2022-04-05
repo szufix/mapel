@@ -1,3 +1,4 @@
+import random
 import unittest
 import uuid
 from collections import defaultdict
@@ -85,15 +86,17 @@ def calculate_distortion_naive(experiment: Experiment, election_ids: List[str] =
 
 class TestDistortion(unittest.TestCase):
     def test_calculate_monotonicity(self):
-        n = 300
+        n = 500
         election_ids = [str(uuid.uuid4()) for _ in range(n)]
 
         experiment = MockExperiment(election_ids)
 
-        m1 = calculate_distortion(experiment, election_ids, 0.9)
+        elections_subset = random.sample(election_ids, 300)
+
+        m1 = calculate_distortion(experiment, elections_subset, 0.9)
         print("m1 done")
-        m2 = calculate_distortion_naive(experiment, election_ids, 0.9)
+        m2 = calculate_distortion_naive(experiment, elections_subset, 0.9)
         print("m2 done")
 
-        for el_id in election_ids:
+        for el_id in elections_subset:
             self.assertAlmostEqual(m1[el_id], m2[el_id])

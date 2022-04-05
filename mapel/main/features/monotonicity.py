@@ -1,3 +1,4 @@
+import random
 import unittest
 import uuid
 from collections import defaultdict
@@ -100,15 +101,17 @@ def calculate_monotonicity_naive(experiment: Experiment, election_ids: List[str]
 
 class TestMonotonicity(unittest.TestCase):
     def test_calculate_monotonicity(self):
-        n = 200
+        n = 400
         election_ids = [str(uuid.uuid4()) for _ in range(n)]
 
         experiment = MockExperiment(election_ids)
 
-        m1 = calculate_monotonicity(experiment, election_ids, 0.95)
+        elections_subset = random.sample(election_ids, 200)
+
+        m1 = calculate_monotonicity(experiment, elections_subset, 0.95)
         print("m1 done")
-        m2 = calculate_monotonicity_naive(experiment, election_ids, 0.95)
+        m2 = calculate_monotonicity_naive(experiment, elections_subset, 0.95)
         print("m2 done")
 
-        for el_id in election_ids:
+        for el_id in elections_subset:
             self.assertAlmostEqual(m1[el_id], m2[el_id])
