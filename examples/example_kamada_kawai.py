@@ -12,8 +12,8 @@ def import_experiment():
                                           instance_type=instance_type,
                                           distance_id=distance_id)
 
-    # experiment.embed(algorithm='kamada-kawai')
-    # experiment.print_map()
+    experiment.embed(algorithm='kamada-kawai')
+    experiment.print_map()
     calculate_monotonicity(experiment)
 
 
