@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 
@@ -18,8 +18,12 @@ def extract_selected_distances(experiment: Experiment, election_ids: List[str]):
     return distances
 
 
-def extract_selected_coordinates(experiment: Experiment, election_ids: List[str]):
-    return np.array([experiment.coordinates[election_id] for election_id in election_ids])
+def extract_selected_coordinates(coordinates: Dict, election_ids: List[str]):
+    return np.array([coordinates[election_id] for election_id in election_ids])
+
+
+def extract_selected_coordinates_from_experiment(experiment: Experiment, election_ids: List[str]):
+    return extract_selected_coordinates(experiment.coordinates, election_ids)
 
 
 def extract_calculated_distances(coordinates: np.array):

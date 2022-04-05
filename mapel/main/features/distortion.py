@@ -7,7 +7,7 @@ from typing import List
 
 import numpy as np
 
-from mapel.main.features.common import extract_selected_coordinates, extract_selected_distances, \
+from mapel.main.features.common import extract_selected_coordinates_from_experiment, extract_selected_distances, \
     extract_calculated_distances, MockExperiment
 from mapel.main.objects.Experiment import Experiment
 
@@ -30,7 +30,7 @@ def calculate_distortion(experiment: Experiment, election_ids: List[str] = None,
 
     n = len(election_ids)
 
-    coordinates = extract_selected_coordinates(experiment, election_ids)
+    coordinates = extract_selected_coordinates_from_experiment(experiment, election_ids)
     distances = extract_selected_distances(experiment, election_ids)
 
     calculated_distances = np.linalg.norm(coordinates[:, np.newaxis] - coordinates[np.newaxis, :], axis=2)
@@ -55,7 +55,7 @@ def calculate_distortion(experiment: Experiment, election_ids: List[str] = None,
 
 
 def calculate_distortion_naive(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0):
-    coordinates = extract_selected_coordinates(experiment, election_ids)
+    coordinates = extract_selected_coordinates_from_experiment(experiment, election_ids)
 
     desired_distances = extract_selected_distances(experiment, election_ids)
     calculated_distances = extract_calculated_distances(coordinates)

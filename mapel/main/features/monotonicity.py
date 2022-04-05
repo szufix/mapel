@@ -7,7 +7,7 @@ from typing import List
 import numpy as np
 
 from mapel.main.features.common import extract_selected_distances, \
-    extract_selected_coordinates, MockExperiment
+    extract_selected_coordinates_from_experiment, MockExperiment
 from mapel.main.objects.Experiment import Experiment
 
 
@@ -20,7 +20,7 @@ def calculate_monotonicity(experiment: Experiment, election_ids: List[str] = Non
     if election_ids is None:
         election_ids = list(experiment.distances.keys())
 
-    coordinates = extract_selected_coordinates(experiment, election_ids)
+    coordinates = extract_selected_coordinates_from_experiment(experiment, election_ids)
 
     desired_distances = extract_selected_distances(experiment, election_ids)
     calculated_distances = np.linalg.norm(coordinates[:, np.newaxis] - coordinates[np.newaxis, :], axis=2)
@@ -62,7 +62,7 @@ def _get_triangles_differences(distances, good_distances_mask):
 
 def calculate_monotonicity_naive(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0,
                                  error_tolerance=0.01):
-    coordinates = extract_selected_coordinates(experiment, election_ids)
+    coordinates = extract_selected_coordinates_from_experiment(experiment, election_ids)
 
     desired_distances = extract_selected_distances(experiment, election_ids)
     calculated_distances = np.linalg.norm(coordinates[:, np.newaxis] - coordinates[np.newaxis, :], axis=2)
