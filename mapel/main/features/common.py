@@ -33,3 +33,15 @@ def extract_calculated_distances(coordinates: np.array):
             calculated_distances[i, j] = calculated_distances[j, i] = np.linalg.norm(pos_i - pos_j)
 
     return calculated_distances
+
+
+class MockExperiment:
+    def __init__(self, election_ids):
+        self.coordinates = {
+            e: np.random.uniform(-10, 10, size=(2,)) for e in election_ids
+        }
+
+        self.distances = {
+            e1: {e2: np.random.uniform(1, 20) for e2 in election_ids}
+            for e1 in election_ids
+        }

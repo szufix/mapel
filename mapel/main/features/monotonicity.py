@@ -5,8 +5,8 @@ from typing import List
 
 import numpy as np
 
-from mapel.main.features.common import extract_calculated_distances, extract_selected_distances, \
-    extract_selected_coordinates
+from mapel.main.features.common import extract_selected_distances, \
+    extract_selected_coordinates, MockExperiment
 from mapel.main.objects.Experiment import Experiment
 
 
@@ -103,22 +103,12 @@ class TestMonotonicity(unittest.TestCase):
         n = 200
         election_ids = [str(uuid.uuid4()) for _ in range(n)]
 
-        class MockExperiment:
-            def __init__(self):
-                self.coordinates = {
-                    e: np.random.uniform(-10, 10, size=(2,)) for e in election_ids
-                }
-
-                self.distances = {
-                    e1: {e2: np.random.uniform(-10, 10) for e2 in election_ids}
-                    for e1 in election_ids
-                }
-
-        experiment = MockExperiment()
+        experiment = MockExperiment(election_ids)
 
         m1 = calculate_monotonicity(experiment, election_ids, 0.95)
         print("m1 done")
         m2 = calculate_monotonicity_naive(experiment, election_ids, 0.95)
         print("m2 done")
 
-        self.assertEqual(m1, m2)
+        for el_id in election_ids:
+            self.assertAlmostEqual(m1[el_id], m2[el_id])
