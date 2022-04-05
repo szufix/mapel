@@ -508,7 +508,9 @@ class ElectionExperiment(Experiment):
                                     'removal_approx_hb_score',
                                     'greedy_approx_pav_score',
                                     'removal_approx_pav_score',
-                                    'rand_approx_pav_score',]:
+                                    'rand_approx_pav_score',
+                                    'banzhaf_cc_score',
+                                    'ranging_cc_score']:
                     value = feature(election, feature_params)
 
                 elif feature_id in {'avg_distortion_from_guardians',

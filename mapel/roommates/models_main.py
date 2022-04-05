@@ -11,7 +11,6 @@ import mapel.roommates.models.urn as urn
 import mapel.roommates.models.group_separable as group_separable
 
 
-
 def generate_votes(model_id: str = None, num_agents: int = None,
                    params: dict = None) -> Union[list, np.ndarray]:
 
@@ -35,7 +34,6 @@ def generate_votes(model_id: str = None, num_agents: int = None,
         'roommates_chaos': impartial.generate_roommates_chaos_votes,
         'roommates_symmetric': impartial.generate_roommates_symmetric_votes,
         'roommates_asymmetric': impartial.generate_roommates_asymmetric_votes,
-        'roommates_tmp': impartial.generate_roommates_ic_votes,
     }
 
     if model_id in main_models_with_params:

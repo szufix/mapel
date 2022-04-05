@@ -128,32 +128,24 @@ def generate_roommates_radius_votes(num_agents: int = None, params: dict = None)
         for c in range(num_agents):
             votes[v][c] = c
             distances[v][c] = np.linalg.norm(agents[v] - agents[c])
-            distances[v][c] = abs(distances[v][c] - rays[c])
+            distances[v][c] = distances[v][c] - rays[c]
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
     return convert(votes)
 
 
-
-
-
 def generate_roommates_mallows_euclidean_votes(num_agents: int = None, params: dict = None):
 
     name = f'{params["dim"]}d_{params["space"]}'
-    # print(name)
 
     agents = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
 
     votes = np.zeros([num_agents, num_agents], dtype=int)
     distances = np.zeros([num_agents, num_agents], dtype=float)
 
-    # a_power = np.array([get_range(params) for _ in range(num_agents)])
-
     for v in range(num_agents):
         for c in range(num_agents):
 
-            # if v_range[v] + c_range[c] >= np.linalg.norm(voters[v] - candidates[c]):
-            #     votes[v].add(c)
             votes[v][c] = c
             distances[v][c] = np.linalg.norm(agents[v] - agents[c])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
