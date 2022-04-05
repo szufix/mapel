@@ -828,7 +828,7 @@ def saveas_tex(saveas=None):
 # MAIN FUNCTIONS
 def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
                  saveas="matrix", show=True, ms=8, title=None, omit=None,
-                 self_distances=False, yticks='left', with_std=False, time=False):
+                 self_distances=False, yticks='left', with_std=False, time=False, dpi=100):
     """Print the matrix with average distances between each pair of experiments """
 
     if omit is None:
@@ -989,7 +989,7 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
 
     if experiment.store:
         file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
-        plt.savefig(file_name, bbox_inches='tight')
+        plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
 
     if show:
         plt.show()

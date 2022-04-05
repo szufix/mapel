@@ -2,43 +2,50 @@
 import scipy.special
 
 from mapel.elections.features.scores import get_cc_score
+import time
 
 
 def get_banzhaf_cc_score(election, feature_params):
 
     committee_size = feature_params['committee_size']
 
-    m = election.num_candidates
-    k = committee_size
-    W = set()
+    winners = set()
+    BASE = {}
+    BINOM = {}
 
-    for _ in range(k):
+    start = time.time()
+    for _ in range(committee_size):
         highest_c = 0
         highest_score = 0
-        for c in range(m):
-            if c in W:
+        for c in range(election.num_candidates):
+            if c in winners:
                 continue
-            candidate_score = sum([voter_score(election, v, c, k, W) for v in range(election.num_voters)])
+            candidate_score = sum([voter_score(BASE, BINOM, election, v, c, committee_size, winners)
+                                   for v in range(election.num_voters)])
             if candidate_score > highest_score:
                 highest_score = candidate_score
                 highest_c = c
-        W.add(highest_c)
+        winners.add(highest_c)
+    stop = time.time()
 
-    return get_cc_score(election, W)
+    # print(stop - start)
+    # print(get_cc_score(election, W))
+
+    return get_cc_score(election, winners)
 
 
-def voter_score(election, v, c, k, W):
+def voter_score(BASE, BINOM, election, v, c, committee_size, winners):
+
     potes = election.votes_to_potes()
-
     m = election.num_candidates
 
     Wa = 0
     for i in range(potes[v][c]):
-        if election.votes[v][i] in W:
+        if election.votes[v][i] in winners:
             Wa += 1
-    Wb = len(W) - Wa - 1
+    Wb = len(winners) - Wa
 
-    c_score = delta_c(potes[v][c], Wa, Wb, m, k)
+    c_score = delta_c(BASE, BINOM, potes[v][c], Wa, Wb, m, committee_size)
 
     r = []
     for i in range(m):
@@ -47,42 +54,39 @@ def voter_score(election, v, c, k, W):
         else:
             r.append(1)
 
-    d_score = sum(delta_d(potes[v][d], Wa, Wb, m, k, r[d]) for d in range(election.num_candidates) if d != c)
+    d_score = sum(delta_d(BASE, BINOM, potes[v][d], Wa, Wb, m, committee_size, r[d])
+                  for d in range(election.num_candidates) if d != c)
 
     return c_score + d_score
 
 
-def delta_c(pos, Wa, Wb, m, k):
-    score = 0
-    for t in range(1, k+1):
-        score += big_C(pos, t, Wa, Wb, m, k) * gamma(pos, t, m)
-    return score
+def delta_c(BASE, BINOM, pos, Wa, Wb, m, committee_size):
+    name = f'c_{pos}_{Wa}_{Wb}'
+    if name not in BASE:
+        score = big_C(BINOM, pos, Wa, Wb, m, committee_size) * (m-pos-1)
+        BASE[name] = score
+    return BASE[name]
 
 
-def delta_d(pos, Wa, Wb, m, k, r_d):
-    score = 0
-    for t in range(1, k+1):
-        score += big_C(pos, t, Wa, Wb, m, k) * (gamma(pos, t, m) - gamma(pos, t+r_d, m))
-    return score
+def delta_d(BASE, BINOM, pos, Wa, Wb, m, committee_size, r_d):
+    name = f'd_{pos}_{Wa}_{Wb}_{r_d}'
+    if name not in BASE:
+        score = big_C(BINOM, pos, Wa, Wb, m, committee_size) * ( (m-pos-1) - (m-pos-1)*(1-r_d) )
+        BASE[name] = score
+    return BASE[name]
 
 
-def big_C(pos, t, Wa, Wb, m, k):
-    if t > Wa:
-        if pos - 1 - Wa <= 0 or t - 1 - Wa <= 0:
-            b_1 = 1
-        else:
-            b_1 = scipy.special.binom(pos - 1 - Wa, t - 1 - Wa)
-        if m - pos - Wb <= 0 or t - k - Wb <= 0:
-            b_2 = 1
-        else:
-            b_2 = scipy.special.binom(m - pos - Wb, t - k - Wb)
-        return b_1 * b_2
-    else:
-        return 0
+def big_C(BINOM, pos, Wa, Wb, m, committee_size):
+    if Wa == 0:
+        name = f'{pos}_{Wb}'
+        if name not in BINOM:
 
+            if m - pos - Wb <= 0 or 1 - committee_size - Wb <= 0:
+                b_2 = 1
+            else:
+                b_2 = scipy.special.binom(m - pos - Wb, 1 - committee_size - Wb)
 
-def gamma(pos, t, m):
-    if t == 1:
-        return m-pos-1
-    else:
-        return 0
+            BINOM[name] = b_2
+
+        return BINOM[name]
+    return 0

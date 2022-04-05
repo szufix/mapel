@@ -1,4 +1,3 @@
-import copy
 import os
 import pickle
 
@@ -175,11 +174,10 @@ def mallows_vote(vote, phi):
     num_candidates = len(vote)
     params = {'weight': 0, 'phi': phi}
     raw_vote = generate_mallows_votes(1, num_candidates, params)[0]
-
+    new_vote = [0] * len(vote)
     for i in range(num_candidates):
-        vote[i] = raw_vote[vote[i]]
-
-    return vote
+        new_vote[raw_vote[i]] = vote[i]
+    return new_vote
 
 
 def mallows_votes(votes, phi):
