@@ -3,6 +3,7 @@ import logging
 from time import time
 from typing import Callable
 
+import copy
 import numpy as np
 
 from mapel.elections.metrics import main_approval_distances as mad
@@ -97,13 +98,14 @@ def run_single_thread(experiment: Experiment, thread_ids: list,
                       distances: dict, times: dict, matchings: dict,
                       printing: bool, t) -> None:
     """ Single thread for computing distances """
+
     for instance_id_1, instance_id_2 in thread_ids:
         if t == 0 and printing:
             print(instance_id_1, instance_id_2)
         start_time = time()
-        distance = get_distance(experiment.instances[instance_id_1],
-                                experiment.instances[instance_id_2],
-                                distance_id=experiment.distance_id)
+        distance = get_distance(copy.deepcopy(experiment.instances[instance_id_1]),
+                                copy.deepcopy(experiment.instances[instance_id_2]),
+                                distance_id=copy.deepcopy(experiment.distance_id))
         if type(distance) is tuple:
             distance, matching = distance
             matching = np.array(matching)
@@ -113,6 +115,7 @@ def run_single_thread(experiment: Experiment, thread_ids: list,
         distances[instance_id_2][instance_id_1] = distances[instance_id_1][instance_id_2]
         times[instance_id_1][instance_id_2] = time() - start_time
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
+        print(distance)
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 17.03.2022 #

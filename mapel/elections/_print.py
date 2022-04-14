@@ -40,13 +40,16 @@ def print_map_2d(experiment,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
                  legend=True, adjust=False, feature_labelsize=14,
                  column_id='value', title_size=16, ticks_pos=None,
-                 feature_ids = None) -> None:
+                 feature_ids=None, omit=None) -> None:
 
     if textual is None:
         textual = []
 
     if roads is None:
         roads = []
+
+    if omit is None:
+        omit = []
 
     experiment.compute_coordinates_by_families()
 
@@ -85,7 +88,7 @@ def print_map_2d(experiment,
                              feature_id=feature_id, rounding=rounding,
                              normalizing_func=normalizing_func, ticks_pos=ticks_pos,
                              marker_func=marker_func, limit=limit,
-                             xticklabels=xticklabels, ms=ms, cmap=cmap,
+                             xticklabels=xticklabels, ms=ms, cmap=cmap, omit=omit,
                              ticks=ticks, column_id=column_id, feature_labelsize=feature_labelsize)
     elif feature_ids is not None:
         color_map_by_features(experiment=experiment, fig=fig, ax=ax,
@@ -194,6 +197,8 @@ def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty,
             value = row[column_id]
             if value == 'None' or value is None:
                 value = None
+            elif column_id == 'time' and float(value) == 0.:
+                value = None
             else:
                 value = float(value)
                 if value >= limit:
@@ -211,32 +216,36 @@ def convert_none(value):
     return value
 
 
-def import_values_for_feature(experiment, feature_id=None, limit=None, normalizing_func=None,
-                              marker_func=None, dim=2, column_id='value'):
-    """ Import values for a feature_id """
+def convert_none_time(value):
+    if value == 0.:
+        return None
+    return value
 
-    # print(experiment.features)
+
+def import_values_for_feature(experiment, feature_id=None, limit=None, normalizing_func=None,
+                              marker_func=None, dim=2, column_id='value', omit=None):
+    """ Import values for a feature_id """
 
     if isinstance(feature_id, str):
         if feature_id in experiment.features:
             values = experiment.features[feature_id][column_id]
-            values = {k: convert_none(v) for k, v in values.items()}
+            if column_id == 'time':
+                values = {k: convert_none_time(v) for k, v in values.items()}
+            else:
+                values = {k: convert_none(v) for k, v in values.items()}
+
         else:
             values = get_values_from_csv_file(experiment, feature_id=feature_id,
                                               limit=limit, column_id=column_id)
-            if feature_id=='partylist' and column_id=='value':
+            if feature_id == 'partylist' and column_id == 'value':
                 bounds = get_values_from_csv_file(experiment, feature_id=feature_id,
                                               limit=limit, column_id='bound')
     else:
         values = feature_id
 
-
     _min = min(x for x in values.values() if x is not None)
     _max = max(x for x in values.values() if x is not None)
 
-    # if normalizing_func is not None:
-    #     _min = normalizing_func(_min)
-    #     _max = normalizing_func(_max)
 
     shades = []
     xx = []
@@ -247,7 +256,6 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
 
     ctr = 0
 
-    # print(values)
 
     my_shade = {}
     for family_id in experiment.families:
@@ -259,18 +267,15 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
 
             shade = values[election_id]
 
-            if shade is None:
+            if shade is None or election_id in omit:
                 my_shade[election_id] = None
             elif normalizing_func is not None:
                 my_shade[election_id] = normalizing_func(shade)
             else:
                 my_shade[election_id] = shade
 
-
     local_min = min(x for x in my_shade.values() if x is not None)
     local_max = max(x for x in my_shade.values() if x is not None)
-
-    # print(local_min, local_max)
 
     for family_id in experiment.families:
 
@@ -301,8 +306,6 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
 
             ctr += 1
 
-    # print(shades)
-
     xx = np.asarray(xx)
     yy = np.asarray(yy)
     if dim == 3:
@@ -314,14 +317,12 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
         mses = np.asarray([1.+20.*(b/(v+1)) for b,v in zip(bounds.values(), values.values())])
     else:
         mses = None
-    return xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy
+    return xx, yy, zz, shades, markers, mses, local_min, local_max, blank_xx, blank_yy
 
 
 def import_values_for_features(experiment, feature_ids=None, limit=None, normalizing_func=None,
                               marker_func=None, dim=2, column_id='value'):
     """ Import values for a feature_id """
-
-    # print(experiment.features)
 
     values_1 = get_values_from_csv_file(experiment, feature_id=feature_ids[0],
                                               limit=limit, column_id=column_id)
@@ -329,15 +330,6 @@ def import_values_for_features(experiment, feature_ids=None, limit=None, normali
     values_2 = get_values_from_csv_file(experiment, feature_id=feature_ids[1],
                                               limit=limit, column_id=column_id)
 
-
-    # _min = min(x for x in values.values() if x is not None)
-    # _max = max(x for x in values.values() if x is not None)
-
-    # if normalizing_func is not None:
-    #     _min = normalizing_func(_min)
-    #     _max = normalizing_func(_max)
-
-    shades = []
     xx = []
     yy = []
     zz = []
@@ -449,10 +441,12 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
 def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, limit=np.infty,
                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
                          cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
-                         feature_labelsize=14, ticks_pos=None):
+                         feature_labelsize=14, ticks_pos=None, omit=None):
+
     xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy = import_values_for_feature(
         experiment, feature_id=feature_id, limit=limit, normalizing_func=normalizing_func,
-        marker_func=marker_func, dim=dim, column_id=column_id)
+        marker_func=marker_func, dim=dim, column_id=column_id, omit=omit)
+
     unique_markers = set(markers)
     images = []
 
@@ -465,8 +459,6 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
             cmap = custom_div_cmap(num_colors=num_colors)
         else:
             cmap = custom_div_cmap()
-
-    # print(shades, mses)
 
     for um in unique_markers:
         masks = (markers == um)
@@ -481,35 +473,27 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
         elif dim == 3:
             images.append(ax.scatter(xx[masks], yy[masks], zz[masks], c=shades[masks], vmin=0,
                                      vmax=1, cmap=cmap, marker=um, s=ms))
-    # print(blank_xx)
 
     images.append(ax.scatter(blank_xx, blank_yy, marker='.', alpha=0.1))
 
     if dim == 2:
 
-        # from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
-        # ax_divider = make_axes_locatable(ax)
-        # cax = ax_divider.append_axes("bottom", size="5%", pad="5%")
-
-        # ax.legend(bbox_to_anchor=legend_pos, loc="upper center")
-
         if xticklabels is None:
-            if normalizing_func is None:
-                lin = np.linspace(_min, _max, 6)
-                if rounding == 0:
-                    xticklabels = [int(lin[i]) for i in range(6)]
-                else:
-                    xticklabels = [np.round(lin[i], rounding) for i in range(6)]
+            # if normalizing_func is None:
+            lin = np.linspace(_min, _max, 6)
+            if rounding == 0:
+                xticklabels = [int(lin[i]) for i in range(6)]
             else:
-                lin = np.linspace(_min, _max, 6)
-                if rounding == 0:
-                    xticklabels = [int(_min), '', 'log', 'scale', '', str(int(_max))]
-                else:
-                    xticklabels = [_min, '', 'log', 'scale', '', str(_max)]
+                xticklabels = [np.round(lin[i], rounding) for i in range(6)]
+            # else:
+            #     lin = np.linspace(_min, _max, 6)
+            #     if rounding == 0:
+            #         xticklabels = [int(_min), '', 'log', 'scale', '', str(int(_max))]
+            #     else:
+            #         xticklabels = [_min, '', 'log', 'scale', '', str(_max)]
 
         cb = fig.colorbar(images[0], orientation="horizontal", pad=0.1, shrink=0.55,
                            ticks=ticks)
-        import matplotlib.ticker as mticker
 
         cb.ax.locator_params(nbins=len(xticklabels), tight=True)
         cb.ax.tick_params(labelsize=feature_labelsize)
@@ -518,11 +502,6 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
             ticks_pos = [0, 0.2, 0.4, 0.6, 0.8, 1]
 
         cb.ax.xaxis.set_ticks(ticks_pos)
-
-        # ticks_loc = ax.get_xticks().tolist()
-        # print(ticks_loc)
-        #
-        # ax.xaxis.set_major_locator(mticker.FixedLocator(ticks_loc))
 
         if xticklabels is not None:
             cb.ax.set_xticklabels(xticklabels)
@@ -684,26 +663,33 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
         if family.show:
             label = family.label
             if dim == 2:
+                # print(family.path)
+                # print('variable' in family.path.keys())
                 if '_path' in label or 'urn' in label or 'Urn' in label\
                         or 'Mallows' in label or 'mallows' in label or\
-                        'variable' in family.path:
-
+                        'variable' in family.path or 'varibale' in family.path:
+                    # print("yes", family.path)
                     if 'background' in label:
                         label = '_nolegend_'
 
                     for i in range(family.size):
                         election_id = list(family.instance_ids)[i]
-
+                        print(experiment.instances[election_id].model_id)
 
                         try:
                             alpha = experiment.instances[election_id].alpha
                         except:
                             try:
-                                alpha = experiment.instances[election_id].alpha
+                                alpha = experiment.elections[election_id].alpha
                             except:
+                                alpha = 1
                                 pass
 
+                        if 'A_' in election_id or 'B_' in election_id or 'C_' in election_id:
+                            alpha = 1 - alpha
 
+                        if alpha is None or alpha > 1:
+                            alpha = 1
 
                         if '1D _path' in label:
                             alpha *= 4
@@ -712,8 +698,8 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                         elif 'scale' in family.path:
                             alpha *= 1./family.path['scale']
 
-                        if alpha > 1:
-                            alpha = 1.
+                        # if alpha > 1:
+                        #     alpha = 1.
                         alpha *= family.alpha
                         alpha = (alpha + 0.2) / 1.2
                         # print(alpha)
@@ -974,15 +960,15 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
     if yticks != 'none':
         ax.set_yticks(y_axis)
         if yticks == 'left':
-            ax.set_yticklabels(y_values, rotation=25, size=10)
+            ax.set_yticklabels(y_values, rotation=25, size=8)
         if yticks == 'right':
-            ax.set_yticklabels(y_values, rotation=-25, size=10)
+            ax.set_yticklabels(y_values, rotation=-25, size=8)
             ax.yaxis.tick_right()
     else:
         ax.set_yticks([])
 
     ax.set_xticks(x_axis)
-    ax.set_xticklabels(x_values, rotation=80, size=10)
+    ax.set_xticklabels(x_values, rotation=80, size=8)
 
     if title:
         plt.title(title)
@@ -1020,7 +1006,13 @@ def map_diameter(c):
 
 
 # SKELETON RELATED
-def add_textual(experiment=None, textual=None, ax=None, size=12):
+def name_from_label(experiment, name):
+    for family in experiment.families.values():
+        if family.label == name:
+            return family.family_id
+    return 'None'
+
+def add_textual(experiment=None, textual=None, ax=None, size=14):
     """ Add textual """
 
     def my_text(x1, y1, text, color="black", alpha=1., size=size):
@@ -1030,9 +1022,10 @@ def add_textual(experiment=None, textual=None, ax=None, size=12):
                 bbox=dict(boxstyle="round", ec="black", fc="white"))
 
     for name in textual:
+        name_id = name_from_label(experiment, name)
 
-        x = experiment.coordinates[name][0]
-        y = experiment.coordinates[name][1]
+        x = experiment.coordinates[name_id][0]
+        y = experiment.coordinates[name_id][1]
         if name in RULE_NAME_MAP:
             name = RULE_NAME_MAP[name]
 
@@ -1073,7 +1066,7 @@ def skeleton_coloring(experiment=None, ax=None, ms=None, dim=2):
     for family_id in experiment.families:
         if experiment.families[family_id].show:
             if dim == 2:
-                if family_id in {'A', 'B', 'C', 'D', 'E'}:
+                if family_id in {'A', 'B', 'C', 'WAL', 'CON', 'D', 'E'}:
                     MAL_COUNT = len(experiment.coordinates_by_families[family_id][0])
                     print(MAL_COUNT)
                     for i in range(MAL_COUNT):
@@ -1084,9 +1077,9 @@ def skeleton_coloring(experiment=None, ax=None, ms=None, dim=2):
                             color = (normphi, 0.75, normphi)
                         elif family_id == 'C':  # Mal 0.5
                             color = (1, normphi, normphi)
-                        elif family_id == 'D':  # Walsh
+                        elif family_id in ['D', 'WAL']:  # Walsh
                             color = (1, normphi, 1)
-                        elif family_id == 'E':  # Conitzer
+                        elif family_id in ['E', 'CON']:  # Conitzer
                             color = (1, 0.5, normphi)
                         else:
                             color = 'black'
@@ -1480,14 +1473,21 @@ def adjust_the_map_on_three_points(experiment, left, right, down) -> None:
 def adjust_the_map(experiment) -> None:
     if experiment.instance_type == 'ordinal':
 
+        # try:
         try:
             left = experiment.get_election_id_from_model_name('uniformity')
             right = experiment.get_election_id_from_model_name('identity')
-            # up = experiment.get_election_id_from_model_name('antagonism')
             down = experiment.get_election_id_from_model_name('stratification')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
-            pass
+                # try:
+                #     left = experiment.get_election_id_from_model_name('real_uniformity')
+                #     right = experiment.get_election_id_from_model_name('real_identity')
+                #     down = experiment.get_election_id_from_model_name('real_stratification')
+                #     adjust_the_map_on_three_points(experiment, left, right, down)
+                # except Exception:
+                #     pass
+                pass
 
     elif experiment.instance_type == 'approval':
         try:

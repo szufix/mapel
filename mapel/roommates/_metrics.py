@@ -1,6 +1,10 @@
 #!/usr/bin/env python
-import logging
+import copy
+import csv
+import itertools
 from time import time
+import logging
+import os
 from typing import Callable
 
 import numpy as np
@@ -50,15 +54,17 @@ def extract_distance_id(distance_id: str) -> (Callable, str):
 
 def run_single_thread(experiment: Experiment, thread_ids: list,
                       distances: dict, times: dict, matchings: dict,
-                      printing: bool) -> None:
+                      printing: bool, t) -> None:
     """ Single thread for computing distances """
     for election_id_1, election_id_2 in thread_ids:
-        if printing:
+        if t == 0 and printing:
             print(election_id_1, election_id_2)
         start_time = time()
-        distance = get_distance(experiment.instances[election_id_1],
-                                experiment.instances[election_id_2],
-                                distance_id=experiment.distance_id)
+
+        distance = get_distance(copy.deepcopy(experiment.instances[election_id_1]),
+                                copy.deepcopy(experiment.instances[election_id_2]),
+                                distance_id=copy.deepcopy(experiment.distance_id),
+                                )
         if type(distance) is tuple:
             distance, matching = distance
             matching = np.array(matching)
@@ -68,6 +74,23 @@ def run_single_thread(experiment: Experiment, thread_ids: list,
         distances[election_id_2][election_id_1] = distances[election_id_1][election_id_2]
         times[election_id_1][election_id_2] = time() - start_time
         times[election_id_2][election_id_1] = times[election_id_1][election_id_2]
+
+    if experiment.store:
+
+        file_name = f'{experiment.distance_id}_p{t}.csv'
+        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances",
+                            file_name)
+
+        with open(path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+            writer.writerow(
+                ["instance_id_1", "instance_id_2", "distance", "time"])
+
+            for election_id_1, election_id_2 in thread_ids:
+                distance = float(distances[election_id_1][election_id_2])
+                time_ = float(times[election_id_1][election_id_2])
+                writer.writerow([election_id_1, election_id_2, distance, time_])
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 13.10.2021 #

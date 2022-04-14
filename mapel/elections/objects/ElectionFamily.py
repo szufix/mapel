@@ -98,13 +98,13 @@ class ElectionFamily(Family):
                 election_id = get_instance_id(self.single, self.family_id, j)
 
                 election = OrdinalElection(experiment_id, election_id, model_id=self.model_id,
-                                             num_voters=self.num_voters,
+                                             num_voters=self.num_voters, label=self.label,
                                              num_candidates=self.num_candidates,
                                              params=copy.deepcopy(params), ballot=ballot,
                                             variable=variable, _import=False,
                                            )
 
-                election.prepare_instance(store=store, params=params)
+                election.prepare_instance(store=store)
 
                 elections[election_id] = election
 

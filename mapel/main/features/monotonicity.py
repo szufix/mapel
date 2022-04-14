@@ -16,7 +16,7 @@ def _remove_diagonal(A):
 
 
 def calculate_monotonicity(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0,
-                           error_tolerance=0.01):
+                           error_tolerance=0.1):
     if election_ids is None:
         election_ids = list(experiment.distances.keys())
 

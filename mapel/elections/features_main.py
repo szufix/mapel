@@ -14,11 +14,21 @@ import mapel.elections.features.scores as scores
 import mapel.elections.features.approx as approx
 import mapel.elections.features.banzhaf_cc as banzhaf_cc
 import mapel.elections.features.ranging_cc as ranging_cc
+import mapel.elections.features.vc_diversity as vcd
 from mapel.main._inner_distances import l2
 
 
+import mapel.roommates.features.basic_features as basic
+from mapel.main._glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
+from mapel.main._features_main import get_main_local_feature, get_main_global_feature
+
+
 # MAPPING #
-def get_feature(feature_id):
+def get_global_feature(feature_id):
+
+    if feature_id in MAIN_GLOBAL_FEATUERS:
+        return get_main_global_feature(feature_id)
+
     return {'borda_std': borda_std,
             'highest_borda_score': scores.highest_borda_score,
             'highest_plurality_score': scores.highest_plurality_score,
@@ -56,6 +66,10 @@ def get_feature(feature_id):
             'rand_approx_pav_score': approx.get_rand_approx_pav_score,
             'banzhaf_cc_score': banzhaf_cc.get_banzhaf_cc_score,
             'ranging_cc_score': ranging_cc.get_ranging_cc_score,
+            'num_of_diff_votes': vcd.num_of_diff_votes,
+            'voterlikeness_sqrt': vcd.voterlikeness_sqrt,
+            'voterlikeness_harmonic': vcd.voterlikeness_harmonic,
+            'borda_diversity': vcd.borda_diversity,
             }.get(feature_id)
 
 

@@ -117,7 +117,7 @@ def rank_matching(instance,best,summed):
     num_agents=len(instance)
     m = gp.Model("mip1")
     m.setParam('OutputFlag', False)
-    # m.setParam('Threads', 4)
+    m.setParam('Threads', 10)
     x = m.addVars(num_agents, num_agents, lb=0, ub=1, vtype=GRB.BINARY)
     opt = m.addVar(vtype=GRB.INTEGER, lb=0, ub=num_agents*num_agents)
     for i in range(num_agents):
@@ -126,7 +126,7 @@ def rank_matching(instance,best,summed):
         for j in range(num_agents):
             m.addConstr(x[i, j]  == x[j, i])
     for i in range(num_agents):
-        m.addConstr(gp.quicksum(x[i, j] for j in range(num_agents)) <= 1)
+        m.addConstr(gp.quicksum(x[i, j] for j in range(num_agents)) == 1)
     for i in range(num_agents):
         for j in range(i+1,num_agents):
             better_pairs=[]
@@ -150,7 +150,7 @@ def rank_matching(instance,best,summed):
     matching={}
     for i in range(num_agents):
         for j in range(num_agents):
-            if x[i, j].X == 1:
+            if abs(x[i, j].X - 1) < 0.05:
                 matching[i]=j
                 matching[j]=i
     return int(m.objVal), matching
@@ -184,7 +184,7 @@ def min_num_bps_matching(instance):
     matching={}
     for i in range(num_agents):
         for j in range(num_agents):
-            if x[i, j].X == 1:
+            if abs(x[i, j].X - 1) < 0.05:
                 matching[i]=j
                 matching[j]=i
     #return int(m.objVal), matching
@@ -196,6 +196,7 @@ def summed_rank_maximal_matching(instance):
         print('ERROR IN summed_rank_maximal_matching')
         exit(0)
     return val
+
 
 def summed_rank_minimal_matching(instance):
     val,matching= rank_matching(instance.votes,False,True)

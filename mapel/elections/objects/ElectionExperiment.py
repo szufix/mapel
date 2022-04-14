@@ -16,11 +16,11 @@ import mapel.elections.metrics_main as metr
 import mapel.elections.models_main as _elections
 import mapel.elections.other.rules as rules
 import mapel.elections.features_main as features
-import mapel.elections.models.preflib as preflib
 from mapel.elections._glossary import *
 from mapel.main.objects.Experiment import Experiment
 import mapel.elections._print as pr
 from mapel.main._utils import *
+from mapel.main._glossary import *
 
 try:
     from sklearn.manifold import MDS
@@ -222,55 +222,6 @@ class ElectionExperiment(Experiment):
             for instance_id in new_instances:
                 self.instances[instance_id] = new_instances[instance_id]
 
-    # def prepare_elections_old(self):
-    #     """ Prepare elections for a given experiment """
-    #
-    #     if self.elections is None:
-    #         self.elections = {}
-    #
-    #     elections = {}
-    #     if self.store:
-    #
-    #         for family_id in self.families:
-    #             params = self.families[family_id].params
-    #             model_id = self.families[family_id].model_id
-    #
-    #             # if self.clean:
-    #             #     path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
-    #             #     for file_name in os.listdir(path):
-    #             #         os.remove(os.path.join(path, file_name))
-    #
-    #             if model_id in LIST_OF_PREFLIB_MODELS:
-    #                 ids = preflib.prepare_preflib_family(
-    #                     experiment=self, model=model_id, family_id=family_id, params=params)
-    #
-    #                 self.families[family_id].election_ids = ids
-    #
-    #             elif model_id not in ['core', 'pabulib'] and (model_id in NICE_NAME or
-    #                                                           model_id in LIST_OF_FAKE_MODELS or
-    #                                                           model_id in APPROVAL_MODELS or
-    #                                                           model_id in APPROVAL_FAKE_MODELS):
-    #
-    #                 tmp_elections = _elections.prepare_statistical_culture_family(
-    #                     experiment=self, model_id=model_id, family_id=family_id, params=params)
-    #
-    #                 self.families[family_id].election_ids = tmp_elections.keys()
-    #
-    #                 # for election_id in tmp_elections:
-    #                 #     elections[election_id] = tmp_elections[election_id]
-    #
-    #             else:
-    #                 election_ids = {}
-    #                 for j in range(self.families[family_id].size):
-    #                     if self.families[family_id].single_election:
-    #                         election_id = family_id
-    #                     else:
-    #                         election_id = family_id + '_' + str(j)
-    #                     election_ids[election_id] = None
-    #                 self.families[family_id].election_ids = election_ids.keys()
-    #
-    #     # self.elections = elections
-
     def compute_winners(self, method=None, num_winners=1):
         for election_id in self.elections:
             self.elections[election_id].compute_winners(method=method, num_winners=num_winners)
@@ -297,7 +248,8 @@ class ElectionExperiment(Experiment):
                 election.votes_to_coapproval_frequency_vectors(vector_type=vector_type)
         elif '-voterlikeness' in distance_id:
             for election in self.elections.values():
-                election.votes_to_voterlikeness_vectors(vector_type=vector_type)
+                # election.votes_to_voterlikeness_vectors(vector_type=vector_type)
+                election.votes_to_voterlikeness_matrix(vector_type=vector_type)
         elif '-candidatelikeness' in distance_id:
             for election in self.elections.values():
                 # print(election)
@@ -473,6 +425,10 @@ class ElectionExperiment(Experiment):
         if feature_params is None:
             feature_params = {}
 
+        num_iterations = 1
+        if 'num_interations' in feature_params:
+            num_iterations = feature_params['num_interations']
+
         feature_dict = {'value': {}, 'time': {}}
 
         features_with_time = {'lowest_dodgson_score', 'highest_cc_score', 'highest_hb_score',
@@ -480,11 +436,24 @@ class ElectionExperiment(Experiment):
 
         global_featuers = {'clustering'}
 
-        feature = features.get_feature(feature_id)
+        if feature_id in MAIN_GLOBAL_FEATUERS:
 
-        if feature_id in global_featuers:
-            feature_dict = feature(self)
+            feature = features.get_global_feature(feature_id)
+
+            values = feature(self, election_ids=list(self.instances))
+
+            for instance_id in self.instances:
+                feature_dict['value'][instance_id] = values[instance_id]
+                feature_dict['time'][instance_id] = 0
+
+        # elif feature_id in global_featuers:
+        #     feature_dict = feature(self)
+
         else:
+
+            feature = features.get_global_feature(feature_id)
+
+
             for election_id in self.elections:
                 print(election_id)
                 election = self.elections[election_id]
@@ -526,8 +495,6 @@ class ElectionExperiment(Experiment):
                     feature_dict['time'][election_id] = value[1]
                 else:
                     feature_dict['value'][election_id] = value
-
-        # print(feature_dict)
 
         if self.store:
             if feature_id in EMBEDDING_RELATED_FEATURE:

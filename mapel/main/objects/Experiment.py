@@ -9,6 +9,10 @@ from abc import ABCMeta, abstractmethod
 import networkx as nx
 import numpy as np
 
+import itertools
+import matplotlib.pyplot as plt
+from scipy.stats import stats
+
 from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 
 COLORS = []
@@ -119,6 +123,10 @@ class Experiment:
         else:
             self.coordinates = {}
 
+        for family_id in self.families:
+            for instance_id in self.families[family_id].instance_ids:
+                self.instances[instance_id].label = self.families[family_id].label
+
     @abstractmethod
     def prepare_instances(self):
         pass
@@ -155,7 +163,6 @@ class Experiment:
                     initial_positions[i] = init_pos[instance_id_1]
 
         # print(initial_positions)
-
 
         for i, instance_id_1 in enumerate(self.distances):
             for j, instance_id_2 in enumerate(self.distances):
@@ -215,10 +222,20 @@ class Experiment:
                 distances=x, initial_positions=initial_positions,
                 fix_initial_positions=fixed
             )
-
+        elif algorithm.lower() in {'geo'}:
+            f1 = self.import_feature('voterlikeness_sqrt')
+            f2 = self.import_feature('borda_diversity')
+            for f in f1:
+                if f1[f] is None:
+                    f1[f] = 0
+                if f2[f] is None:
+                    f2[f] = 0
+            my_pos = [[f1[e], f2[e]] for e in f1]
         else:
             my_pos = []
             logging.warning("Unknown method!")
+
+        print(my_pos)
 
         coordinates = {}
         for i, instance_id in enumerate(self.distances):
@@ -546,3 +563,110 @@ class Experiment:
             # writer.writerow(["election_id", "value", "bound", "num_large_parties"])
             for key in feature_dict:
                 writer.writerow([key, str(feature_dict[key])])
+
+    def import_distances(self, distance_id):
+
+        distances = {}
+
+        file_name = f'{distance_id}.csv'
+        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'distances', file_name)
+
+        with open(path, 'r', newline='') as csv_file:
+
+            reader = csv.DictReader(csv_file, delimiter=';')
+
+            for row in reader:
+                try:
+                    instance_id_1 = row['election_id_1']
+                    instance_id_2 = row['election_id_2']
+                except:
+                    try:
+                        instance_id_1 = row['instance_id_1']
+                        instance_id_2 = row['instance_id_2']
+                    except:
+                        pass
+
+                if instance_id_1 not in self.instances or instance_id_2 not in self.instances:
+                    continue
+
+                if instance_id_1 not in distances:
+                    distances[instance_id_1] = {}
+
+                if instance_id_2 not in distances:
+                    distances[instance_id_2] = {}
+
+                try:
+                    distances[instance_id_1][instance_id_2] = float(row['distance'])
+                    distances[instance_id_2][instance_id_1] = distances[instance_id_1][
+                        instance_id_2]
+                except KeyError:
+                    pass
+
+        return distances
+
+    def print_correlation(self, distance_id_1='spearman', distance_id_2='l1-mutual_attraction',
+                          title=None):
+
+        all_distances = {}
+
+        all_distances[distance_id_1] = self.import_distances(distance_id=distance_id_1)
+        all_distances[distance_id_2] = self.import_distances(distance_id=distance_id_2)
+
+        names = list(all_distances.keys())
+
+        def nice(name):
+            return{
+                'spearman': 'Spearman',
+                'l1-mutual_attraction': '$\ell_1$ Mutual Attraction',
+                'emd-positionwise': 'EMD-Positionwise',
+                }.get(name)
+
+        def normalize(name):
+            return{
+                'spearman': 1./12,
+                'l1-mutual_attraction': 1./12,
+                'emd-positionwise': 1.,
+                }.get(name)
+
+
+        for name_1, name_2 in itertools.combinations(names, 2):
+
+            # for target in ['double', 'radius', '2g-IC', 'IC_', '1d_', 'maleuc', 'malasym', 'vec']:
+            #         ['MD', 'MA', 'CH', 'ID', '2d_rev', 'Mallows']:
+            # for target in ['MD']:
+
+            values_x = []
+            values_y = []
+            empty_x = []
+            empty_y = []
+            for e1, e2 in itertools.combinations(all_distances[name_1], 2):
+                # if e1 in ['IC'] or e2 in ['IC']:
+                # if target in e1 or target in e2:
+                #     empty_x.append(all_distances[name_1][e1][e2])
+                #     empty_y.append(all_distances[name_2][e1][e2])
+                # else:
+                values_x.append(all_distances[name_1][e1][e2] * normalize(name_1))
+                values_y.append(all_distances[name_2][e1][e2] * normalize(name_2))
+
+            fig = plt.figure()
+            ax = fig.add_subplot()
+
+            ax.scatter(values_x, values_y, s=4, alpha=0.01, color='purple')
+            # ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
+
+            pear = round(stats.pearsonr(values_x, values_y)[0], 3)
+            pear_text = f'PCC = {pear}'
+            print('pear', pear)
+            # plt.text(0.7, 0.1, pear_text, transform=ax.transAxes, size=14)
+
+            if title is None:
+                title = f'{nice(name_1)} vs {nice(name_2)}'
+            # title=f'{target}'
+
+            plt.xlabel(nice(name_1), size=20)
+            plt.ylabel(nice(name_2), size=20)
+            # plt.title(title, size=24)
+            # saveas = f'images/correlation/corr_{name_1}_{name_2}_{target}'
+            saveas = f'images/correlation/corr_{name_1}_{name_2}'
+            plt.savefig(saveas, bbox_inches='tight')
+            plt.show()

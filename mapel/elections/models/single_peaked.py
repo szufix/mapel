@@ -2,6 +2,7 @@ import numpy as np
 from random import *
 
 from scipy.special import binom
+from mapel.elections.models.mallows import phi_from_relphi, mallows_votes
 
 
 def generate_sp_party(model=None, num_voters=None, num_candidates=None, params=None) -> np.ndarray:
@@ -223,3 +224,25 @@ def get_walsh_vectors(m):
         for t in range(m):
             P[i][t] = probW(m, i + 1, t + 1)
     return P
+
+
+########  MALLOWS SP  ########
+def generate_conitzer_mallows_votes(num_voters, num_candidates, params):
+
+    params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+
+    votes = generate_ordinal_sp_conitzer_votes(num_voters=num_voters, num_candidates=num_candidates)
+
+    votes = mallows_votes(votes, params['phi'])
+
+    return votes
+
+
+def generate_walsh_mallows_votes(num_voters, num_candidates, params):
+    params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+
+    votes = generate_ordinal_sp_walsh_votes(num_voters=num_voters, num_candidates=num_candidates)
+
+    votes = mallows_votes(votes, params['phi'])
+
+    return votes

@@ -99,7 +99,9 @@ def generate_roommates_double_votes(num_agents: int = None, params: dict = None)
     agents_wishes = np.zeros([num_agents, 2])
 
     for v in range(num_agents):
+        # while agents_wishes[v][0] <= 0 or agents_wishes[v][0] >= 1:
         agents_wishes[v][0] = np.random.normal(agents_reality[v][0], params['std'])
+        # while agents_wishes[v][1] <= 0 or agents_wishes[v][1] >= 1:
         agents_wishes[v][1] = np.random.normal(agents_reality[v][1], params['std'])
 
     votes = np.zeros([num_agents, num_agents], dtype=int)

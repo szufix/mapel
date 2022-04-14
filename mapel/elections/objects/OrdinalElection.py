@@ -2,6 +2,7 @@ import ast
 import itertools
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import gamma
 
@@ -17,12 +18,14 @@ from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
 from mapel.elections.other.winners2 import generate_winners
+from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 
+from sklearn.manifold import MDS
 
 class OrdinalElection(Election):
 
     def __init__(self, experiment_id, election_id, votes=None, with_matrix=False, alpha=None,
-                 model_id=None, params=None,
+                 model_id=None, params=None, label=None,
                  ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None,
                  _import: bool = False, shift: bool = False, variable = None):
 
@@ -32,6 +35,7 @@ class OrdinalElection(Election):
 
         self.params = params
         self.variable = variable
+        self.label = label
 
         self.vectors = []
         self.matrix = []
@@ -78,6 +82,19 @@ class OrdinalElection(Election):
 
             except:
                 pass
+
+
+        if params is None:
+            params = {}
+
+        self.params = params
+
+        if self.model_id == 'all_votes':
+            alpha = 1
+        else:
+            params, alpha = update_params(params, self.variable, self.model_id, self.num_candidates)
+
+        self.params = params
 
         self.borda_points = []
 
@@ -209,9 +226,14 @@ class OrdinalElection(Election):
         return [self.vector_to_interval(vectors[i], precision=precision)
                 for i in range(len(vectors))]
 
-    def votes_to_voterlikeness_matrix(self) -> np.ndarray:
+    def votes_to_voterlikeness_vectors(self) -> np.ndarray:
+        return self.votes_to_voterlikeness_matrix()
+
+    def votes_to_voterlikeness_matrix(self, vector_type=None) -> np.ndarray:
         """ convert VOTES to voter-likeness MATRIX """
         matrix = np.zeros([self.num_voters, self.num_voters])
+        # print(self.votes)
+        self.potes = self.votes_to_potes()
 
         for v1 in range(self.num_voters):
             for v2 in range(self.num_voters):
@@ -235,7 +257,7 @@ class OrdinalElection(Election):
         # VOTERLIKENESS IS SYMETRIC
         for i in range(self.num_voters):
             for j in range(i + 1, self.num_voters):
-                # matrix[i][j] /= float(experiment.num_candidates)
+                # matrix[i][j] **= 0.5
                 matrix[j][i] = matrix[i][j]
 
         return matrix
@@ -295,42 +317,13 @@ class OrdinalElection(Election):
             self.winners = generate_winners(election=self, num_winners=num_winners, method=method)
 
     # PREPARE INSTANCE
-    def prepare_instance(self, store=None, params: dict = None):
+    def prepare_instance(self, store=None):
 
-        if params is None:
-            params = {}
-
-        self.params = params
-
-        if self.model_id == 'all_votes':
-            alpha = 1
-        else:
-            params, alpha = update_params(params, self.variable, self.model_id, self.num_candidates)
-
-        self.params = params
         self.votes = generate_ordinal_votes(model_id=self.model_id, num_candidates=self.num_candidates,
-                                       num_voters=self.num_voters, params=params)
-        self.params = params
-        # election = OrdinalElection("virtual", "virtual", votes=votes, model_id=self.model_id,
-        #                            num_candidates=self.num_candidates, params=params,
-        #                            num_voters=self.num_voters, ballot=self.ballot, alpha=alpha)
-
-        # elif ballot == 'approval':
-        #     votes = generate_approval_votes(model_id=model_id, num_candidates=num_candidates,
-        #                                     num_voters=num_voters, params=params)
-        #     election = ApprovalElection(experiment.experiment_id, election_id, votes=votes,
-        #                                 model_id=model_id,
-        #                                 num_candidates=num_candidates,
-        #                                 num_voters=num_voters, ballot=ballot, alpha=alpha)
+                                       num_voters=self.num_voters, params=self.params)
 
         if store:
             self.store_ordinal_election()
-            # store_ordinal_election(experiment, model_id, election_id, num_candidates,
-            #                        num_voters, params, ballot)
-            # if ballot == 'approval':
-            #     store_approval_election(self, model_id, election_id, num_candidates,
-            #                             num_voters, params, ballot)
-
 
     # STORE
     def store_ordinal_election(self):
@@ -353,6 +346,53 @@ class OrdinalElection(Election):
             store_votes_in_a_file(self, self.model_id, self.election_id,
                                   self.num_candidates, self.num_voters,
                                   self.params, path, self.ballot, votes=self.votes)
+
+    def mini_map(self):
+        potes = self.votes_to_potes()
+
+        distances = np.zeros([len(potes), len(potes)])
+        for v1 in range(len(potes)):
+            for v2 in range(len(potes)):
+                swap_distance = 0
+                for i, j in itertools.combinations(potes[0], 2):
+                    if (potes[v1][i] > potes[v1][j] and
+                        potes[v2][i] < potes[v2][j]) or \
+                            (potes[v1][i] < potes[v1][j] and
+                             potes[v2][i] > potes[v2][j]):
+                        swap_distance += 1
+                distances[v1][v2] = swap_distance
+
+        # my_pos = KamadaKawai().embed(
+        #     distances=distances,
+        # )
+        my_pos = MDS(n_components=2, dissimilarity='precomputed').fit_transform(distances)
+        X = []
+        Y = []
+        for elem in my_pos:
+            X.append(elem[0])
+            Y.append(elem[1])
+        plt.scatter(X, Y, color='blue', s=12, alpha=0.3)
+        plt.xlim([-100,100])
+        plt.ylim([-100,100])
+        plt.title(self.label, size=26)
+        plt.axis('off')
+
+        file_name = os.path.join(os.getcwd(), "images", "mini_maps", f'{self.label}.png')
+        plt.savefig(file_name, bbox_inches='tight', dpi=250)
+        # plt.clf()
+        # plt.savefig(file_name, bbox_inches=bbox_inches, dpi=250)
+        plt.show()
+
+
+
+
+
+
+
+
+
+
+
 
 
 def get_fake_multiplication(num_candidates, params, model):
@@ -394,12 +434,6 @@ def get_fake_vectors_single(fake_model_name, num_candidates, num_voters):
             for _ in range(num_candidates):
                 vectors[i][i] = 0.5
                 vectors[i][num_candidates - i - 1] = 0.5
-
-    # elif fake_model_name == 'walsh_fake':
-    #     vectors = _sp.walsh(num_candidates)
-    #
-    # elif fake_model_name == 'conitzer_fake':
-    #     vectors = _sp.conitzer(num_candidates)
 
     return vectors
 
@@ -728,8 +762,6 @@ def update_params(params, variable, model_id, num_candidates):
 
 
 # HELPER FUNCTIONS #
-
-
 def prepare_parties(model_id=None, params=None):
     parties = []
 

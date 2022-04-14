@@ -5,17 +5,20 @@ import csv
 import itertools
 import os
 from threading import Thread
+from multiprocessing import Process, Queue
 from time import sleep
 import time
 
 from mapel.main.objects.Experiment import Experiment
 from mapel.roommates.objects.RoommatesFamily import RoommatesFamily
 from mapel.roommates.objects.Roommates import Roommates
-import mapel.roommates.models_main as models_main
-import mapel.roommates.metrics_main as metr
+import mapel.roommates._models as models_main
+import mapel.roommates._metrics as metr
 import mapel.roommates.features.basic_features as basic
-import mapel.roommates.features_main as features
+import mapel.roommates._features as features
 from mapel.main._utils import *
+from mapel.main._glossary import *
+from mapel.elections._print import get_values_from_csv_file
 
 try:
     from sklearn.manifold import MDS
@@ -151,6 +154,9 @@ class RoommatesExperiment(Experiment):
 
         num_distances = len(ids)
 
+        threads = []
+        processes =[]
+
         for t in range(num_threads):
             print(f'Starting thread: {t}')
             sleep(0.1)
@@ -158,16 +164,39 @@ class RoommatesExperiment(Experiment):
             stop = int((t + 1) * num_distances / num_threads)
             thread_ids = ids[start:stop]
 
-            threads[t] = Thread(target=metr.run_single_thread, args=(self, thread_ids,
+            # thread = Thread(target=metr.run_single_thread, args=(self, thread_ids,
+            #                                                          distances, times, matchings,
+            #                                                          printing, t))
+            process = Process(target=metr.run_single_thread, args=(self, thread_ids,
                                                                      distances, times, matchings,
-                                                                     printing))
-            threads[t].start()
+                                                                     printing, t ))
 
+            # thread.start()
+            # threads.append(thread)
+            process.start()
+            processes.append(process)
+
+        # for thread in threads:
+        #     thread.join()
+        for process in processes:
+            process.join()
+
+        distances = {instance_id: {} for instance_id in self.instances}
+        times = {instance_id: {} for instance_id in self.instances}
         for t in range(num_threads):
-            threads[t].join()
+
+            file_name = f'{distance_id}_p{t}.csv'
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
+                                file_name)
+
+            with open(path, 'r', newline='') as csv_file:
+                reader = csv.DictReader(csv_file, delimiter=';')
+
+                for row in reader:
+                    distances[row['instance_id_1']][row['instance_id_2']] = float(row['distance'])
+                    times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
         if self.store:
-
             file_name = f'{distance_id}.csv'
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
                                 file_name)
@@ -185,6 +214,13 @@ class RoommatesExperiment(Experiment):
         self.distances = distances
         self.times = times
         self.matchings = matchings
+
+        for instance_id_1 in self.distances:
+            for instance_id_2 in self.distances[instance_id_1]:
+                self.distances[instance_id_2][instance_id_1] = self.distances[instance_id_1][instance_id_2]
+                self.times[instance_id_2][instance_id_1] = self.times[instance_id_1][instance_id_2]
+
+
 
     def import_controllers(self):
         """ Import controllers from a file """
@@ -310,48 +346,85 @@ class RoommatesExperiment(Experiment):
 
         features_with_std = {'avg_num_of_bps_for_rand_matching'}
 
-        # print(self.matchings)
+        num_iterations = 1
+        if 'num_iterations' in feature_params:
+            num_iterations = feature_params['num_iterations']
 
-        for instance_id in self.instances:
-            print(instance_id)
-            feature = features.get_feature(feature_id)
-            instance = self.instances[instance_id]
+        if feature_id in MAIN_GLOBAL_FEATUERS:
 
-            start = time.time()
-            if feature_id in ['summed_rank_minimal_matching'] \
-                    and (self.matchings[instance_id] is None or self.matchings[instance_id] == 'None'):
-                value = 'None'
+            feature = features.get_global_feature(feature_id)
+
+            values = feature(self, election_ids=list(self.instances))
+
+            for instance_id in self.instances:
+                feature_dict['value'][instance_id] = values[instance_id]
+                feature_dict['time'][instance_id] = 0
+
+        else:
+
+            if feature_id == 'summed_rank_difference':
+                minimal = get_values_from_csv_file(self, feature_id='summed_rank_minimal_matching')
+                maximal = get_values_from_csv_file(self, feature_id='summed_rank_maximal_matching')
+
+                for instance_id in self.instances:
+                    if minimal[instance_id] is None:
+                        value = 'None'
+                    else:
+                        value = abs(maximal[instance_id] - minimal[instance_id])
+                    feature_dict['value'][instance_id] = value
+                    feature_dict['time'][instance_id] = 0
+
             else:
-                value = feature(instance)
-            total_time = time.time() - start
-            #
-            # elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
-            #                     'number_of_cohesive_groups_brute',
-            #                     'proportionality_degree_pav',
-            #                     'proportionality_degree_av',
-            #                     'proportionality_degree_cc',
-            #                     'justified_ratio',
-            #                     'cohesiveness',
-            #                     'partylist',
-            #                     'highest_cc_score',
-            #                     'highest_hb_score']:
-            #     value = feature(election, feature_params)
-            #
-            # elif feature_id in {'avg_distortion_from_guardians',
-            #                     'worst_distortion_from_guardians',
-            #                     'distortion_from_all',
-            #                     'distortion_from_top_100'}:
-            #     value = feature(self, election_id)
-            # else:
-            #     value = feature(election)
+                for instance_id in self.instances:
+                    print(instance_id)
+                    feature = features.get_local_feature(feature_id)
+                    instance = self.instances[instance_id]
 
-            if feature_id in features_with_std:
-                feature_dict['value'][instance_id] = value[0]
-                feature_dict['time'][instance_id] = total_time
-                feature_dict['std'][instance_id] = value[1]
-            else:
-                feature_dict['value'][instance_id] = value
-                feature_dict['time'][instance_id] = total_time
+                    start = time.time()
+
+                    for _ in range(num_iterations):
+
+                        if feature_id in ['summed_rank_minimal_matching',
+                                          'summed_rank_maximal_matching',
+                                          'minimal_rank_maximizing_matching',
+                                          ] \
+                                and (self.matchings[instance_id] is None or self.matchings[instance_id] == 'None'):
+                            value = 'None'
+                        else:
+                            value = feature(instance)
+
+                        print(value)
+
+                    total_time = time.time() - start
+                    total_time /= num_iterations
+                    #
+                    # elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
+                    #                     'number_of_cohesive_groups_brute',
+                    #                     'proportionality_degree_pav',
+                    #                     'proportionality_degree_av',
+                    #                     'proportionality_degree_cc',
+                    #                     'justified_ratio',
+                    #                     'cohesiveness',
+                    #                     'partylist',
+                    #                     'highest_cc_score',
+                    #                     'highest_hb_score']:
+                    #     value = feature(election, feature_params)
+                    #
+                    # elif feature_id in {'avg_distortion_from_guardians',
+                    #                     'worst_distortion_from_guardians',
+                    #                     'distortion_from_all',
+                    #                     'distortion_from_top_100'}:
+                    #     value = feature(self, election_id)
+                    # else:
+                    #     value = feature(election)
+
+                    if feature_id in features_with_std:
+                        feature_dict['value'][instance_id] = value[0]
+                        feature_dict['time'][instance_id] = total_time
+                        feature_dict['std'][instance_id] = value[1]
+                    else:
+                        feature_dict['value'][instance_id] = value
+                        feature_dict['time'][instance_id] = total_time
 
         if self.store:
 

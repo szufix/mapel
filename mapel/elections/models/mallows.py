@@ -78,6 +78,7 @@ def mallowsVote(m, insertion_probabilites_list):
 
 
 def generate_mallows_votes(num_voters, num_candidates, params):
+    # print(params['norm-phi'], params['phi'])
     insertion_probabilites_list = []
     for i in range(1, num_candidates):
         insertion_probabilites_list.append(computeInsertionProbas(i, params['phi']))
@@ -576,4 +577,20 @@ def approval_partylist_votes(num_voters=None, num_candidates=None, params=None):
                     vote.remove(el)
                 votes.append(vote)
 
+    return votes
+
+
+def mallows_vote(vote, phi):
+    num_candidates = len(vote)
+    params = {'weight': 0, 'phi': phi}
+    raw_vote = generate_mallows_votes(1, num_candidates, params)[0]
+    new_vote = [0] * len(vote)
+    for i in range(num_candidates):
+        new_vote[raw_vote[i]] = vote[i]
+    return new_vote
+
+
+def mallows_votes(votes, phi):
+    for i in range(len(votes)):
+        votes[i] = mallows_vote(votes[i], phi)
     return votes

@@ -13,7 +13,7 @@ try:
     from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
     from mapel.roommates.objects.Roommates import Roommates
     from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
-    import mapel.roommates.models_main as rom
+    import mapel.roommates._models as rom
 except:
     pass
 
