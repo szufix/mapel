@@ -40,7 +40,7 @@ def print_map_2d(experiment,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
                  legend=True, adjust=False, feature_labelsize=14,
                  column_id='value', title_size=16, ticks_pos=None,
-                 feature_ids=None, omit=None) -> None:
+                 feature_ids=None, omit=None, textual_size=16) -> None:
 
     if textual is None:
         textual = []
@@ -80,7 +80,7 @@ def print_map_2d(experiment,
     if not axis:
         plt.axis('off')
 
-    add_textual(experiment=experiment, textual=textual, ax=ax)
+    add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size)
 
     # COLORING
     if feature_id is not None:
@@ -482,9 +482,9 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
             # if normalizing_func is None:
             lin = np.linspace(_min, _max, 6)
             if rounding == 0:
-                xticklabels = [int(lin[i]) for i in range(6)]
+                xticklabels = [str(int(lin[i])) for i in range(6)]
             else:
-                xticklabels = [np.round(lin[i], rounding) for i in range(6)]
+                xticklabels = [str(np.round(lin[i], rounding)) for i in range(6)]
             # else:
             #     lin = np.linspace(_min, _max, 6)
             #     if rounding == 0:
@@ -492,19 +492,22 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
             #     else:
             #         xticklabels = [_min, '', 'log', 'scale', '', str(_max)]
 
-        cb = fig.colorbar(images[0], orientation="horizontal", pad=0.1, shrink=0.55,
-                           ticks=ticks)
+    if limit < np.infty:
+        xticklabels[-1] += '+'
 
-        cb.ax.locator_params(nbins=len(xticklabels), tight=True)
-        cb.ax.tick_params(labelsize=feature_labelsize)
+    cb = fig.colorbar(images[0], orientation="horizontal", pad=0.1, shrink=0.55,
+                       ticks=ticks)
 
-        if ticks_pos is None:
-            ticks_pos = [0, 0.2, 0.4, 0.6, 0.8, 1]
+    cb.ax.locator_params(nbins=len(xticklabels), tight=True)
+    cb.ax.tick_params(labelsize=feature_labelsize)
 
-        cb.ax.xaxis.set_ticks(ticks_pos)
+    if ticks_pos is None:
+        ticks_pos = [0, 0.2, 0.4, 0.6, 0.8, 1]
 
-        if xticklabels is not None:
-            cb.ax.set_xticklabels(xticklabels)
+    cb.ax.xaxis.set_ticks(ticks_pos)
+
+    if xticklabels is not None:
+        cb.ax.set_xticklabels(xticklabels)
 
 
 def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, limit=np.infty,
@@ -1012,7 +1015,8 @@ def name_from_label(experiment, name):
             return family.family_id
     return 'None'
 
-def add_textual(experiment=None, textual=None, ax=None, size=14):
+
+def add_textual(experiment=None, textual=None, ax=None, size=16):
     """ Add textual """
 
     def my_text(x1, y1, text, color="black", alpha=1., size=size):

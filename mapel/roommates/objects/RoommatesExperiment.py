@@ -360,6 +360,13 @@ class RoommatesExperiment(Experiment):
                 feature_dict['value'][instance_id] = values[instance_id]
                 feature_dict['time'][instance_id] = 0
 
+        elif feature_id == 'distortion_from_all':
+            feature = features.get_global_feature(feature_id)
+            for instance_id in self.instances:
+                values = feature(self, self.instances[instance_id])
+                print(instance_id, values)
+                feature_dict['value'][instance_id] = values
+                feature_dict['time'][instance_id] = 0
         else:
 
             if feature_id == 'summed_rank_difference':
@@ -377,6 +384,7 @@ class RoommatesExperiment(Experiment):
             else:
                 for instance_id in self.instances:
                     print(instance_id)
+                    feature = features.get_local_feature(feature_id)
                     feature = features.get_local_feature(feature_id)
                     instance = self.instances[instance_id]
 

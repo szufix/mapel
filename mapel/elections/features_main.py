@@ -46,7 +46,7 @@ def get_global_feature(feature_id):
             'proportionality_degree_pav': prop_deg.proportionality_degree_pav,
             'proportionality_degree_cc': prop_deg.proportionality_degree_cc,
             'abstract': abstract,
-            'monotonicity_1': monotonicity_1,
+            'distortion': distortion,
             'monotonicity_triplets': monotonicity_triplets,
             'partylist': partylist.partylistdistance,
             # 'distortion_from_all': distortion_from_all,
@@ -108,7 +108,7 @@ def justified_ratio(election, feature_params) -> float:
     # return len(covered) / float(election.num_voters)
 
 
-def monotonicity_1(experiment, election) -> float:
+def distortion(experiment, election) -> float:
     e0 = election.election_id
     c0 = np.array(experiment.coordinates[e0])
     distortion = 0
