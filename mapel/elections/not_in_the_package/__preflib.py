@@ -38,7 +38,6 @@ def get_preflib_meta(data_name):
 
 
 
-
 # STARE - needs update
 def compute_preflib_elections(elections_name):
     if elections_name == "netflix3":

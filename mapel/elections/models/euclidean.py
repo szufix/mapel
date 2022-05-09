@@ -189,18 +189,34 @@ def generate_2d_gaussian_party(num_voters=None, num_candidates=None, params=None
 def generate_ordinal_euclidean_votes(model: str = None, num_voters: int = None,
                                      num_candidates: int = None,
                                      params: dict = None) -> np.ndarray:
+    if 'dim' in params:
+        dim = params['dim']
+    else:
+        dim = 2
+
     voters = np.zeros([num_voters, params['dim']])
     candidates = np.zeros([num_voters, params['dim']])
     votes = np.zeros([num_voters, num_candidates], dtype=int)
     distances = np.zeros([num_voters, num_candidates], dtype=float)
 
-    for v in range(num_voters):
-        voters[v] = get_rand(model)
-    # voters = sorted(voters)
+    if model == 'euclidean':
+        if params['space'] == 'uniform':
+            voters = np.random.rand(num_voters, dim)
+            candidates = np.random.rand(num_candidates, dim)
+        elif params['space'] == 'gaussian':
+            voters = np.random.normal(loc=0.5, scale=0.15, size=(num_voters, dim))
+            candidates = np.random.normal(loc=0.5, scale=0.15, size=(num_candidates, dim))
+        elif params['space'] == 'sphere':
+            voters = np.array([list(random_sphere(dim)[0]) for _ in range(num_voters)])
+            candidates = np.array([list(random_sphere(dim)[0]) for _ in range(num_candidates)])
+    else:
+        for v in range(num_voters):
+            voters[v] = get_rand(model)
+        # voters = sorted(voters)
 
-    for v in range(num_candidates):
-        candidates[v] = get_rand(model)
-    # candidates = sorted(candidates)
+        for v in range(num_candidates):
+            candidates[v] = get_rand(model)
+        # candidates = sorted(candidates)
 
     for v in range(num_voters):
         for c in range(num_candidates):
@@ -326,14 +342,6 @@ def get_rand(model: str, cat: str = "voters") -> list:
             return np.random.normal(loc=0.25, scale=0.15, size=3)
         else:
             return np.random.normal(loc=0.75, scale=0.15, size=3)
-    elif model in ['3d_gaussian']:
-        point = [np.random.normal(0.5, 0.15),
-                 np.random.normal(0.5, 0.15),
-                 np.random.normal(0.5, 0.15)]
-        while np.linalg.norm(point - np.array([0.5, 0.5, 0.5])) > 0.5:
-            point = [np.random.normal(0.5, 0.15),
-                     np.random.normal(0.5, 0.15),
-                     np.random.normal(0.5, 0.15)]
     elif model == "4d_cube":
         dim = 4
         point = [np.random.random() for _ in range(dim)]

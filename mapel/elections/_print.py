@@ -52,12 +52,12 @@ def print_map_2d(experiment,
         omit = []
 
     experiment.compute_coordinates_by_families()
-
-    if adjust_single:
-        adjust_the_map_on_one_point(experiment)
-
-    if adjust:
-        adjust_the_map(experiment)
+    #
+    # if adjust_single:
+    #     adjust_the_map_on_one_point(experiment)
+    #
+    # if adjust:
+    #     adjust_the_map(experiment)
 
     if angle != 0:
         experiment.rotate(angle)
@@ -65,7 +65,7 @@ def print_map_2d(experiment,
     if reverse:
         experiment.reverse()
 
-    if experiment.store and (adjust or update):
+    if experiment.store and update:
         experiment.update()
 
     # if feature_id is not None:
@@ -795,9 +795,9 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
             pass
 
         if bbox_inches is None:
-            plt.savefig(file_name, bbox_inches='tight', dpi=250)
+            plt.savefig(file_name, bbox_inches='tight', dpi=500)
         else:
-            plt.savefig(file_name, bbox_inches=bbox_inches, dpi=250)
+            plt.savefig(file_name, bbox_inches=bbox_inches, dpi=500)
 
 
 
@@ -963,15 +963,15 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
     if yticks != 'none':
         ax.set_yticks(y_axis)
         if yticks == 'left':
-            ax.set_yticklabels(y_values, rotation=25, size=8)
+            ax.set_yticklabels(y_values, rotation=25, size=ms+2)
         if yticks == 'right':
-            ax.set_yticklabels(y_values, rotation=-25, size=8)
+            ax.set_yticklabels(y_values, rotation=-25, size=ms+2)
             ax.yaxis.tick_right()
     else:
         ax.set_yticks([])
 
     ax.set_xticks(x_axis)
-    ax.set_xticklabels(x_values, rotation=80, size=8)
+    ax.set_xticklabels(x_values, rotation=80, size=ms+2)
 
     if title:
         plt.title(title)
@@ -1475,6 +1475,7 @@ def adjust_the_map_on_three_points(experiment, left, right, down) -> None:
 
 
 def adjust_the_map(experiment) -> None:
+    print("hello")
     if experiment.instance_type == 'ordinal':
 
         # try:

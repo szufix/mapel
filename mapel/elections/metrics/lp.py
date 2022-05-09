@@ -4,6 +4,8 @@ import os
 import math
 from contextlib import suppress
 
+from mapel.elections.features.dependent_rounding import approx_rand_tree
+
 try:
     import cplex
 except ImportError:
@@ -11,10 +13,14 @@ except ImportError:
 
 import numpy as np
 
+
 # NEW ILP
-def solve_rand_approx_pav(election, committee_size, W, C, ctr=0, fixed=[]):
-    if ctr == 5:
+def solve_rand_approx_pav(election, committee_size, W, C, ctr=0, fixed=None):
+    if ctr == 1:
         return 0
+
+    if fixed is None:
+        fixed = []
 
     cp = cplex.Cplex()
     cp.parameters.threads.set(1)
@@ -104,7 +110,6 @@ def solve_rand_approx_pav(election, committee_size, W, C, ctr=0, fixed=[]):
                               rhs=rhs,
                               names=['C4_' + str(i) for i in range(len(rhs))])
 
-    cp.parameters.threads.set(1)
     cp.set_results_stream(None)
     try:
         cp.solve()
@@ -114,13 +119,60 @@ def solve_rand_approx_pav(election, committee_size, W, C, ctr=0, fixed=[]):
 
     ### TO DO LATER ###
 
-    score, fixed = print_results(election, committee_size, cp)
+    # score, fixed = print_results(election, committee_size, cp)
 
-    if len(fixed) < committee_size:
-        print(score)
-        solve_rand_approx_pav(election, committee_size, W, C, ctr+1, fixed)
-    else:
+    values = [0.] * election.num_candidates
+    for i in range(election.num_candidates):
+        values[i] = cp.solution.get_values('y' + str(i))
+    # print("values:", values)
+
+    final_values = approx_rand_tree(values)
+    # print(final_values)
+
+    winner_id = 0
+    winners = [-1] * committee_size
+    for i in range(election.num_candidates):
+        if final_values[f'x{i}'] == 1.:
+            winners[winner_id] = i
+            winner_id += 1
+    winners = sorted(winners)
+
+    def get_pav_score(election, winners) -> float:
+
+        num_voters = election.num_voters
+        num_candidates = election.num_candidates
+        votes = election.votes
+
+        score = 0
+
+        vector = [0.] * num_candidates
+        for i in range(len(winners)):
+            vector[i] = 1.
+
+        for i in range(num_voters):
+            ctr = 1.
+            for j in range(num_candidates):
+                if votes[i][j] in winners:
+                    score += (1. / ctr) * vector[j]
+                    ctr += 1
+
         return score
+
+    try:
+        score = get_pav_score(election, winners)
+    except:
+        score = -1
+
+    # print(score)
+    return score
+
+    # if len(fixed) < committee_size:
+    #
+    #     print(score, fixed)
+    #
+    #     solve_rand_approx_pav(election, committee_size, W, C, ctr+1, fixed)
+    # else:
+    #     return score
 
 
 # FOR SUBELECTIONS

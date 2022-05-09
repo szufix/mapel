@@ -80,7 +80,7 @@ def _run_over_tree(node):
 
         if a + b >= 1:
             node.value = a + b - 1
-            if np.random.random() > (1-a) / ((1-a)+(1-b)):
+            if np.random.random() > (1-a) / ((1-a)+(1-b)+0.00001):
                 node.children[0].value = 1
                 node.election_id = node.children[1].election_id
             else:
@@ -89,7 +89,7 @@ def _run_over_tree(node):
 
         else:
             node.value = a + b
-            if np.random.random() > a / (a+b):
+            if np.random.random() > a / (a+b+0.00001):
                 node.children[0].value = 0
                 node.election_id = node.children[1].election_id
             else:
@@ -99,8 +99,6 @@ def _run_over_tree(node):
         if a+b == 1.:
             node.value = None
 
-
-
 def _get_final_values_from_tree(node, values):
     if node.value is not None and node.election_id not in values:
         values[node.election_id] = int(node.value)
@@ -108,13 +106,20 @@ def _get_final_values_from_tree(node, values):
         _get_final_values_from_tree(child, values)
 
 
-values = [0.7, 0.5, 0.5, 0.5, 0.2, 0.6, 0.5, 0.5]
-root = _prepare_tree(values)
-print_tree(root)
-_run_over_tree(root)
-print("\n")
-print_tree(root)
-values = {}
-_get_final_values_from_tree(root, values)
-print(values)
+def approx_rand_tree(values):
+    root = _prepare_tree(values)
+    _run_over_tree(root)
+    values = {}
+    _get_final_values_from_tree(root, values)
+    return values
+
+# values = [0.7, 0.5, 0.5, 0.5, 0.2, 0.6, 0.5, 0.5]
+# root = _prepare_tree(values)
+# print_tree(root)
+# _run_over_tree(root)
+# print("\n")
+# print_tree(root)
+# values = {}
+# _get_final_values_from_tree(root, values)
+# print(values)
 

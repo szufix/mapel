@@ -16,7 +16,7 @@ from scipy.stats import stats
 from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 
 COLORS = []
-
+from PIL import Image
 from mapel.main.objects.Family import Family
 import mapel.elections._print as pr
 
@@ -202,22 +202,22 @@ class Experiment:
         if num_neighbors is None:
             num_neighbors = 100
 
-        if algorithm == 'spring':
+        if algorithm.lower() == 'spring':
             my_pos = nx.spring_layout(graph, iterations=num_iterations, dim=dim)
-        elif algorithm in {'mds', 'MDS'}:
+        elif algorithm.lower() in {'mds'}:
             my_pos = MDS(n_components=dim, dissimilarity='precomputed').fit_transform(x)
-        elif algorithm in {'tsne', 'TSNE'}:
+        elif algorithm.lower() in {'tsne'}:
             my_pos = TSNE(n_components=dim).fit_transform(x)
-        elif algorithm in {'se', 'SE'}:
+        elif algorithm.lower() in {'se'}:
             my_pos = SpectralEmbedding(n_components=dim).fit_transform(x)
-        elif algorithm in {'isomap', 'ISOMAP'}:
+        elif algorithm.lower() in {'isomap'}:
             my_pos = Isomap(n_components=dim, n_neighbors=num_neighbors).fit_transform(x)
-        elif algorithm in {'lle', 'LLE'}:
+        elif algorithm.lower() in {'lle'}:
             my_pos = LocallyLinearEmbedding(n_components=dim,
                                             n_neighbors=num_neighbors,
                                             max_iter=num_iterations,
                                             method=method).fit_transform(x)
-        elif algorithm.lower() in {'kamada-kawai', 'kamada'}:
+        elif algorithm.lower() in {'kamada-kawai', 'kamada', 'kawai'}:
             my_pos = KamadaKawai().embed(
                 distances=x, initial_positions=initial_positions,
                 fix_initial_positions=fixed
@@ -235,11 +235,11 @@ class Experiment:
             my_pos = []
             logging.warning("Unknown method!")
 
-        print(my_pos)
-
-        coordinates = {}
+        self.coordinates = {}
         for i, instance_id in enumerate(self.distances):
-            coordinates[instance_id] = [my_pos[i][d] for d in range(dim)]
+            self.coordinates[instance_id] = [my_pos[i][d] for d in range(dim)]
+
+        pr.adjust_the_map(self)
 
         if self.store:
             if saveas is None:
@@ -259,8 +259,8 @@ class Experiment:
 
                 ctr = 0
                 for instance_id in self.instances:
-                    x = round(coordinates[instance_id][0], 5)
-                    y = round(coordinates[instance_id][1], 5)
+                    x = round(self.coordinates[instance_id][0], 5)
+                    y = round(self.coordinates[instance_id][1], 5)
                     if dim == 2:
                         writer.writerow([instance_id, x, y])
                     elif dim == 3:
@@ -268,7 +268,7 @@ class Experiment:
                         writer.writerow([instance_id, x, y, z])
                     ctr += 1
 
-        self.coordinates = coordinates
+        # self.coordinates = coordinates
 
     def print_map(self, dim: int = 2, **kwargs) -> None:
         """ Print the two-dimensional embedding of multi-dimensional map of the instances """
@@ -623,11 +623,10 @@ class Experiment:
 
         def normalize(name):
             return{
-                'spearman': 1./12,
-                'l1-mutual_attraction': 1./12,
+                'spearman': 1.,
+                'l1-mutual_attraction': 1.,
                 'emd-positionwise': 1.,
                 }.get(name)
-
 
         for name_1, name_2 in itertools.combinations(names, 2):
 
@@ -651,8 +650,32 @@ class Experiment:
             fig = plt.figure()
             ax = fig.add_subplot()
 
+            a = []
+            b = []
+            for x,y in zip(values_x, values_y):
+                a.append(x/y)
+                b.append(y/x)
+            print("avg", sum(b)/len(b))
+            print("avg", sum(a) / len(a))
+            print(max(a), min(a))
+            print(max(b), min(b))
+            limit_1 = 1.48
+            b_approx = [x for x in b if x>limit_1]
+            print(len(b), len(b_approx), (len(b)-len(b_approx))/len(b))
+
+            limit_2 = 0.82
+            b_approx = [x for x in b if x<limit_2]
+            print(len(b), len(b_approx), (len(b)-len(b_approx))/len(b))
+
+
+            b_approx = [x for x in b if (x<limit_2 or x>limit_1)]
+            print(len(b), len(b_approx), (len(b)-len(b_approx))/len(b))
+
+            empty_x = np.linspace(0,500,100)
+            empty_y = [limit_1*x for x in empty_x]
+
             ax.scatter(values_x, values_y, s=4, alpha=0.01, color='purple')
-            # ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
+            ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
 
             pear = round(stats.pearsonr(values_x, values_y)[0], 3)
             pear_text = f'PCC = {pear}'
@@ -669,4 +692,36 @@ class Experiment:
             # saveas = f'images/correlation/corr_{name_1}_{name_2}_{target}'
             saveas = f'images/correlation/corr_{name_1}_{name_2}'
             plt.savefig(saveas, bbox_inches='tight')
-            plt.show()
+            # plt.show()
+
+    def merge_election_images(self, size=250):
+
+        images = []
+        for election in self.instances.values():
+            print(election.label)
+            # Read the two images
+            images.append(Image.open(f'images/mini_maps/{election.label}.png'))
+        # resize, first image
+        # image1 = image1.resize((426, 240))
+        image1_size = images[0].size
+
+        new_image = Image.new('RGB', (5 * image1_size[0], 8 * image1_size[1]), (size, size, size))
+        # new_image = Image.new('RGB', (5 * image1_size[0], 2 * image1_size[1]), (250, 250, 250))
+
+        print(len(images))
+        for i in range(5):
+            new_image.paste(images[i], (image1_size[0] * i, 0))
+            new_image.paste(images[i + 5], (image1_size[0] * i, image1_size[1]))
+            new_image.paste(images[i+10], (image1_size[0]*i, image1_size[1]*2))
+            new_image.paste(images[i+15], (image1_size[0]*i, image1_size[1]*3))
+            new_image.paste(images[i+20], (image1_size[0]*i, image1_size[1]*4))
+            new_image.paste(images[i+25], (image1_size[0]*i, image1_size[1]*5))
+            new_image.paste(images[i+30], (image1_size[0]*i, image1_size[1]*6))
+            new_image.paste(images[i+35], (image1_size[0]*i, image1_size[1]*7))
+
+        # new_image.paste(images[0], (0, 0))
+        # new_image.paste(image2, (image1_size[0], 0))
+        # new_image.paste(image3, (0, image1_size[1]))
+        # new_image.paste(image4, (image1_size[0], image1_size[1]))
+        new_image.save(f'images/mini_maps/mini_maps.jpg', "JPEG", quality=85)
+        # new_image.show()

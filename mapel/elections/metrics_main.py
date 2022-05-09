@@ -4,6 +4,8 @@ from time import time
 from typing import Callable
 
 import copy
+import os
+import csv
 import numpy as np
 
 from mapel.elections.metrics import main_approval_distances as mad
@@ -115,7 +117,22 @@ def run_single_thread(experiment: Experiment, thread_ids: list,
         distances[instance_id_2][instance_id_1] = distances[instance_id_1][instance_id_2]
         times[instance_id_1][instance_id_2] = time() - start_time
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
-        print(distance)
+
+    if experiment.store:
+
+        file_name = f'{experiment.distance_id}_p{t}.csv'
+        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances",
+                            file_name)
+
+        with open(path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+            writer.writerow(
+                ["instance_id_1", "instance_id_2", "distance", "time"])
+
+            for election_id_1, election_id_2 in thread_ids:
+                distance = float(distances[election_id_1][election_id_2])
+                time_ = float(times[election_id_1][election_id_2])
+                writer.writerow([election_id_1, election_id_2, distance, time_])
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 17.03.2022 #

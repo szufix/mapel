@@ -6,6 +6,7 @@ import os
 import warnings
 from abc import abstractmethod
 from threading import Thread
+from multiprocessing import Process, Queue
 from time import sleep
 import ast
 
@@ -207,13 +208,15 @@ class ElectionExperiment(Experiment):
     #                 matrix[i][j] = row[candidate_id]
     #     return matrix
 
-    def prepare_elections(self):
+    def prepare_elections(self, printing=False):
         """ Prepare elections for a given experiment """
 
         if self.instances is None:
             self.instances = {}
 
         for family_id in self.families:
+            if printing:
+                print(f'Preparing: {family_id}')
 
             new_instances = self.families[family_id].prepare_family(
                 store=self.store,
@@ -263,7 +266,6 @@ class ElectionExperiment(Experiment):
         distances = {election_id: {} for election_id in self.elections}
         times = {election_id: {} for election_id in self.elections}
 
-        threads = [{} for _ in range(num_threads)]
 
         ids = []
         for i, election_1 in enumerate(self.elections):
@@ -276,6 +278,9 @@ class ElectionExperiment(Experiment):
 
         num_distances = len(ids)
 
+        threads = []
+        processes = []
+
         for t in range(num_threads):
             print(f'Starting thread: {t}')
             sleep(0.1)
@@ -283,13 +288,38 @@ class ElectionExperiment(Experiment):
             stop = int((t + 1) * num_distances / num_threads)
             thread_ids = ids[start:stop]
 
-            threads[t] = Thread(target=metr.run_single_thread, args=(self, thread_ids,
-                                                                     distances, times, matchings,
-                                                                     printing, t))
-            threads[t].start()
+            # thread = Thread(target=metr.run_single_thread, args=(self, thread_ids,
+            #                                                          distances, times, matchings,
+            #                                                          printing, t))
+            process = Process(target=metr.run_single_thread, args=(self, thread_ids,
+                                                                   distances, times, matchings,
+                                                                   printing, t))
 
+            # thread.start()
+            # threads.append(thread)
+            process.start()
+            processes.append(process)
+
+        # for t in range(num_threads):
+        #     threads[t].join()
+        for process in processes:
+            process.join()
+
+        distances = {instance_id: {} for instance_id in self.instances}
+        times = {instance_id: {} for instance_id in self.instances}
         for t in range(num_threads):
-            threads[t].join()
+
+            file_name = f'{distance_id}_p{t}.csv'
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
+                                file_name)
+
+            with open(path, 'r', newline='') as csv_file:
+                reader = csv.DictReader(csv_file, delimiter=';')
+
+                for row in reader:
+                    distances[row['instance_id_1']][row['instance_id_2']] = float(row['distance'])
+                    times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
+
 
         if self.store:
             self.store_distances_to_file(distance_id, distances, times)
@@ -299,20 +329,19 @@ class ElectionExperiment(Experiment):
         self.matchings = matchings
 
     def store_distances_to_file(self, distance_id, distances, times):
+        file_name = f'{distance_id}.csv'
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
+                            file_name)
 
-            file_name = f'{distance_id}.csv'
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
-                                file_name)
+        with open(path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+            writer.writerow(
+                ["instance_id_1", "instance_id_2", "distance", "time"])
 
-            with open(path, 'w', newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(
-                    ["election_id_1", "election_id_2", "distance", "time"])
-
-                for election_1, election_2 in itertools.combinations(self.elections, 2):
-                    distance = str(distances[election_1][election_2])
-                    time = str(times[election_1][election_2])
-                    writer.writerow([election_1, election_2, distance, time])
+            for election_1, election_2 in itertools.combinations(self.elections, 2):
+                distance = str(distances[election_1][election_2])
+                time = str(times[election_1][election_2])
+                writer.writerow([election_1, election_2, distance, time])
 
     def get_election_id_from_model_name(self, model_id: str) -> str:
         for family_id in self.families:
@@ -434,6 +463,9 @@ class ElectionExperiment(Experiment):
         features_with_time = {'lowest_dodgson_score', 'highest_cc_score', 'highest_hb_score',
                               'highest_pav_score'}
 
+
+        features_with_dissat = {'highest_hb_score', 'highest_pav_score'}
+
         global_featuers = {'clustering'}
 
         if feature_id in MAIN_GLOBAL_FEATUERS:
@@ -490,11 +522,17 @@ class ElectionExperiment(Experiment):
                 else:
                     value = feature(election)
 
-                if feature_id in features_with_time:
+                if feature_id in features_with_dissat:
+                    feature_dict['value'][election_id] = value[0]
+                    feature_dict['time'][election_id] = value[1]
+                    feature_dict['dissat'][election_id] = value[2]
+                elif feature_id in features_with_time:
                     feature_dict['value'][election_id] = value[0]
                     feature_dict['time'][election_id] = value[1]
                 else:
                     feature_dict['value'][election_id] = value
+
+
 
         if self.store:
             if feature_id in EMBEDDING_RELATED_FEATURE:

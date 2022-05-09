@@ -17,6 +17,7 @@ import mapel.elections.models.single_crossing as single_crossing
 import mapel.elections.models.single_peaked as single_peaked
 import mapel.elections.models.urn_model as urn_model
 from mapel.elections._glossary import *
+from mapel.elections.models.preflib import generate_preflib_votes
 
 
 def generate_approval_votes(model_id: str = None, num_candidates: int = None,
@@ -56,6 +57,11 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
 
 def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num_voters: int = None,
                            params: dict = None) -> Union[list, np.ndarray]:
+
+    if model_id in LIST_OF_PREFLIB_MODELS:
+        return generate_preflib_votes(model_id=model_id, num_candidates=num_candidates,
+                                      num_voters=num_voters, params=params)
+
     naked_models = {'impartial_culture': impartial.generate_ordinal_ic_votes,
                     'iac': impartial.generate_impartial_anonymous_culture_election,
                     'conitzer': single_peaked.generate_ordinal_sp_conitzer_votes,
@@ -74,18 +80,19 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
                         '2d_disc': euclidean.generate_ordinal_euclidean_votes,
                         '2d_square': euclidean.generate_ordinal_euclidean_votes,
                         '2d_gaussian': euclidean.generate_ordinal_euclidean_votes,
+                        '3d_gaussian': euclidean.generate_ordinal_euclidean_votes,
                         '3d_cube': euclidean.generate_ordinal_euclidean_votes,
                         '4d_cube': euclidean.generate_ordinal_euclidean_votes,
                         '5d_cube': euclidean.generate_ordinal_euclidean_votes,
                         '10d_cube': euclidean.generate_ordinal_euclidean_votes,
-                        '20d_cube': euclidean.generate_ordinal_euclidean_votes,
                         '2d_sphere': euclidean.generate_ordinal_euclidean_votes,
                         '3d_sphere': euclidean.generate_ordinal_euclidean_votes,
                         '4d_sphere': euclidean.generate_ordinal_euclidean_votes,
                         '5d_sphere': euclidean.generate_ordinal_euclidean_votes,
                         '4d_ball': euclidean.generate_ordinal_euclidean_votes,
                         '5d_ball': euclidean.generate_ordinal_euclidean_votes,
-                        '2d_grid': euclidean.generate_elections_2d_grid}
+                        '2d_grid': euclidean.generate_elections_2d_grid,
+                        'euclidean': euclidean.generate_ordinal_euclidean_votes}
 
     party_models = {'1d_gaussian_party': euclidean.generate_1d_gaussian_party,
                     '2d_gaussian_party': euclidean.generate_2d_gaussian_party,
@@ -99,7 +106,8 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
                            'group-separable':
                                group_separable.generate_ordinal_group_separable_votes,
 
-                           'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,}
+                           'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
+                           'weighted_stratification': impartial.generate_weighted_stratification_votes}
 
     double_param_models = {'mallows': mallows.generate_mallows_votes,
                            'norm-mallows': mallows.generate_mallows_votes,
@@ -139,6 +147,7 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
         votes = [[int(x) for x in row] for row in votes]
 
     return votes
+
 
 
 def store_votes_in_a_file(election, model_id, election_id, num_candidates, num_voters,
@@ -183,6 +192,8 @@ def store_votes_in_a_file(election, model_id, election_id, num_candidates, num_v
                     if j < len(counted_votes[i][1]) - 1:
                         file_.write(", ")
                 file_.write("\n")
+
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 22.10.2021 #

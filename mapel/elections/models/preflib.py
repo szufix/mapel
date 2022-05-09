@@ -45,12 +45,12 @@ def generate_preflib_election(experiment=None, model=None, name=None,
 
 
 # REAL
-def generate_votes_preflib(model, num_voters=None, num_candidates=None, folder=None,
+def generate_votes_preflib(model, num_candidates=None, num_voters=None,  folder=None,
                            selection_method='random'):
     """ Generate votes based on elections from Preflib """
 
     long_name = str(model)
-    file_name = 'real_data/' + folder + '/' + long_name + '.txt'
+    file_name = '_real_data/' + folder + '/' + long_name + '.txt'
     file_votes = open(file_name, 'r')
     original_num_voters = int(file_votes.readline())
     if original_num_voters == 0:
@@ -84,8 +84,9 @@ def generate_votes_preflib(model, num_voters=None, num_candidates=None, folder=N
 
         # NEW 17.12.2020
         if selection_method == 'random':
-            selected_candidates = np.random.sample([j for j in range(original_num_candidates)],
-                                              num_candidates)
+            selected_candidates = [j for j in range(original_num_candidates)]
+            np.random.shuffle(selected_candidates)
+            selected_candidates = selected_candidates[0:num_candidates]
         elif selection_method == 'borda':
             scores = get_borda_scores(original_votes, original_num_voters, original_num_candidates)
             order_by_score = [x for _, x in
@@ -111,9 +112,9 @@ def generate_votes_preflib(model, num_voters=None, num_candidates=None, folder=N
             if len(vote) != len(set(vote)):
                 print(vote)
             new_votes.append(vote)
-        return new_votes
+        return np.array(new_votes)
     else:
-        return votes
+        return np.array(votes)
 
 
 def import_freq(elections_model):
@@ -235,3 +236,70 @@ def get_sushi_matrix():
             [0.0982, 0.0636, 0.1214, 0.0638, 0.0728, 0.1546, 0.0376, 0.1396, 0.166, 0.0824],
             [0.0836, 0.0352, 0.1048, 0.1084, 0.101, 0.1692, 0.0236, 0.0958, 0.2222, 0.0562],
             [0.078, 0.0222, 0.0744, 0.1958, 0.086, 0.1616, 0.02, 0.0264, 0.296, 0.0396]]
+
+
+def generate_preflib_votes(model_id=None, num_candidates=None, num_voters=None, params=None):
+    model = model_id
+    # list of IDs larger than 10
+    folder = ''
+    if model == 'irish':
+        folder = 'irish_s1'
+        # folder = 'irish_f'
+        ids = [1, 3]
+    elif model == 'glasgow':
+        folder = 'glasgow_s1'
+        # folder = 'glasgow_f'
+        ids = [2, 3, 4, 5, 6, 7, 8, 9, 11, 13, 16, 19, 21]
+    elif model == 'formula':
+        folder = 'formula_s1'
+        # 17 races or more
+        ids = [17, 35, 37, 40, 41, 42, 44, 45, 46, 47, 48]
+    elif model == 'skate':
+        folder = 'skate_ic'
+        # 9 judges
+        ids = [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+               25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+               35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 47, 48]
+    elif model == 'sushi':
+        folder = 'sushi_ff'
+        ids = [1]
+    elif model == 'grenoble':
+        folder = 'grenoble_ff'
+        ids = [1]
+    elif model == 'tshirt':
+        folder = 'tshirt_ff'
+        ids = [1]
+    elif model == 'cities_survey':
+        folder = 'cities_survey_s1'
+        ids = [1, 2]
+    elif model == 'aspen':
+        folder = 'aspen_s1'
+        ids = [1]
+    elif model == 'marble':
+        folder = 'marble_ff'
+        ids = [1, 2, 3, 4, 5]
+    elif model == 'cycling_tdf':
+        folder = 'cycling_tdf_s1'
+        # ids = [e for e in range(1, 69+1)]
+        selection_method = 'random'
+        ids = [14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26]
+    elif model == 'cycling_gdi':
+        folder = 'cycling_gdi_s1'
+        ids = [i for i in range(2, 23 + 1)]
+    elif model == 'ers':
+        folder = 'ers_s1'
+        # folder = 'ers_f'
+        # 500 voters or more
+        ids = [3, 9, 23, 31, 32, 33, 36, 38, 40, 68, 77, 79, 80]
+    elif model == 'ice_races':
+        folder = 'ice_races_s1'
+        # 80 voters or more
+        ids = [4, 5, 8, 9, 15, 20, 23, 24, 31, 34, 35, 37, 43, 44, 49]
+    else:
+        ids = []
+    # print(params)
+    model = model_id + '_' + str(params['id'])
+    # print(model)
+    votes = generate_votes_preflib(model, num_candidates, num_voters, folder)
+
+    return votes

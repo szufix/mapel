@@ -54,6 +54,7 @@ def monotonicity(experiment, instance) -> float:
 #
 def distortion_from_all(experiment, election):
     values = np.array([])
+    one_side_values = np.array([])
     election_id_1 = election.instance_id
 
     for election_id_2 in experiment.instances:
@@ -74,12 +75,15 @@ def distortion_from_all(experiment, election):
             #     ratio = float(embedded_distance) / float(true_distance)
             # except:
             #     ratio = 1.
+            one_side_ratio = embedded_distance / true_distance
+            one_side_values = np.append(one_side_values, one_side_ratio)
 
             ratio = max(embedded_distance, true_distance) / min(embedded_distance, true_distance)
 
             values = np.append(values, ratio)
 
-    if election_id_1 == 'IC_0':
-        print(values)
+    # print(min(one_side_values), max(one_side_values))
+    # if election_id_1 == 'IC_0':
+    #     print(values)
 
     return np.mean(values)

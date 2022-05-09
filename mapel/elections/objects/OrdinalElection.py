@@ -1,6 +1,8 @@
 import ast
 import itertools
 import os
+import csv
+import math
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,6 +38,7 @@ class OrdinalElection(Election):
         self.params = params
         self.variable = variable
         self.label = label
+        self.store = True
 
         self.vectors = []
         self.matrix = []
@@ -97,6 +100,19 @@ class OrdinalElection(Election):
         self.params = params
 
         self.borda_points = []
+
+
+        self.distances = None
+        try:
+            self.distances = self._import_distances()
+        except:
+            pass
+
+        self.coordinates = None
+        try:
+            self.coordinates = self._import_coordinates()
+        except:
+            pass
 
     def get_vectors(self):
         if self.vectors is not None and len(self.vectors) > 0:
@@ -347,7 +363,160 @@ class OrdinalElection(Election):
                                   self.num_candidates, self.num_voters,
                                   self.params, path, self.ballot, votes=self.votes)
 
-    def mini_map(self):
+    def compute_distances(self):
+
+        potes = self.votes_to_potes()
+
+        distances = np.zeros([len(potes), len(potes)])
+        for v1 in range(len(potes)):
+            for v2 in range(len(potes)):
+                swap_distance = 0
+                for i, j in itertools.combinations(potes[0], 2):
+                    if (potes[v1][i] > potes[v1][j] and
+                        potes[v2][i] < potes[v2][j]) or \
+                            (potes[v1][i] < potes[v1][j] and
+                             potes[v2][i] > potes[v2][j]):
+                        swap_distance += 1
+                distances[v1][v2] = swap_distance
+
+        if self.store:
+            file_name = f'{self.election_id}.csv'
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
+
+            with open(path, 'w', newline='') as csv_file:
+                writer = csv.writer(csv_file, delimiter=';')
+                writer.writerow(
+                    ["v1", "v2", "distance"])
+
+                for v1 in range(len(potes)):
+                    for v2 in range(len(potes)):
+                        distance = str(distances[v1][v2])
+                        writer.writerow([v1, v2, distance])
+
+        self.distances = distances
+        return distances
+
+    def _import_distances(self):
+
+        file_name = f'{self.election_id}.csv'
+        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'distances',
+                            file_name)
+
+        distances = np.zeros([self.num_voters, self.num_voters])
+        with open(path, 'r', newline='') as csv_file:
+
+            reader = csv.DictReader(csv_file, delimiter=';')
+
+            for row in reader:
+                distances[int(row['v1'])][int(row['v2'])] = float(row['distance'])
+                distances[int(row['v2'])][int(row['v1'])] = float(row['distance'])
+
+        return distances
+
+    @staticmethod
+    def rotate_point(cx, cy, angle, px, py) -> (float, float):
+        """ Rotate two-dimensional point by an angle """
+        s, c = math.sin(angle), math.cos(angle)
+        px -= cx
+        py -= cy
+        x_new, y_new = px * c - py * s, px * s + py * c
+        px, py = x_new + cx, y_new + cy
+
+        return px, py
+
+    def rotate(self, angle) -> None:
+        """ Rotate all the points by a given angle """
+        for instance_id in range(len(self.coordinates)):
+            self.coordinates[instance_id][0], self.coordinates[instance_id][1] = \
+                self.rotate_point(0.5, 0.5, angle, self.coordinates[instance_id][0],
+                                  self.coordinates[instance_id][1])
+
+    def embed(self, algorithm='MDS'):
+
+        # my_pos = KamadaKawai().embed(
+        #     distances=distances,
+        # )
+        self.coordinates = MDS(n_components=2, dissimilarity='precomputed').fit_transform(self.distances)
+        # ADJUST
+
+        # find max dist
+        print(self.model_id)
+        if not 'identity' in self.model_id.lower():
+            dist = np.zeros([len(self.coordinates), len(self.coordinates)])
+            for pos_1, pos_2 in itertools.combinations([i for i in range(len(self.coordinates))], 2):
+                # print(pos_1, pos_2)
+                dist[pos_1][pos_2] = np.linalg.norm(self.coordinates[pos_1] - self.coordinates[pos_2])
+
+            result = np.where(dist == np.amax(dist))
+            id_1 = result[0][0]
+            id_2 = result[1][0]
+
+            # rotate
+            left = id_1
+            right = id_2
+
+            try:
+                d_x = self.coordinates[right][0] - self.coordinates[left][0]
+                d_y = self.coordinates[right][1] - self.coordinates[left][1]
+                alpha = math.atan(d_x / d_y)
+                self.rotate(alpha - math.pi / 2.)
+                self.rotate(math.pi / 4.)
+            except Exception:
+                pass
+
+        if self.store:
+            file_name = f'{self.election_id}.csv'
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates", file_name)
+
+            with open(path, 'w', newline='') as csv_file:
+                writer = csv.writer(csv_file, delimiter=';')
+                writer.writerow(["vote_id", "x", "y"])
+
+                for vote_id in range(self.num_voters):
+                    x = str(self.coordinates[vote_id][0])
+                    y = str(self.coordinates[vote_id][1])
+                    writer.writerow([vote_id, x, y])
+
+        return self.coordinates
+
+    def _import_coordinates(self):
+
+        file_name = f'{self.election_id}.csv'
+        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'coordinates',
+                            file_name)
+        coordinates = np.zeros([self.num_voters, 2])
+        with open(path, 'r', newline='') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=';')
+
+            for row in reader:
+                coordinates[int(row['vote_id'])] = [float(row['x']), float(row['y'])]
+        return coordinates
+
+    def print_map(self, show=True, radius=100):
+        plt.figure(figsize=(6.4, 6.4))
+
+        X=[]
+        Y=[]
+        for elem in self.coordinates:
+            X.append(elem[0])
+            Y.append(elem[1])
+        plt.scatter(X, Y, color='blue', s=12, alpha=0.3)
+        plt.xlim([-radius, radius])
+        plt.ylim([-radius, radius])
+        plt.title(self.label, size=26)
+        plt.axis('off')
+
+
+
+        file_name = os.path.join(os.getcwd(), "images", "mini_maps", f'{self.label}.png')
+        plt.savefig(file_name, bbox_inches='tight', dpi=250)
+        if show:
+            plt.show()
+        else:
+            plt.clf()
+
+    def online_mini_map(self):
+
         potes = self.votes_to_potes()
 
         distances = np.zeros([len(potes), len(potes)])
@@ -382,6 +551,7 @@ class OrdinalElection(Election):
         # plt.clf()
         # plt.savefig(file_name, bbox_inches=bbox_inches, dpi=250)
         plt.show()
+
 
 
 

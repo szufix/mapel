@@ -97,6 +97,20 @@ def generate_roommates_ic_votes(num_agents: int = None, params=None):
             votes[j] = base
         return votes
 
+
+def generate_weighted_stratification_votes(num_voters: int = None, num_candidates: int = None,
+                                           params=None):
+    if params is None:
+        params = {}
+    if 'w' in params:
+        w = params['w']
+    else:
+        w = 0.5
+
+    return [list(np.random.permutation(int(w*num_candidates))) +
+             list(np.random.permutation([j for j in range(int(w*num_candidates), num_candidates)]))
+            for _ in range(num_voters)]
+
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 14.10.2021 #
 # # # # # # # # # # # # # # # #

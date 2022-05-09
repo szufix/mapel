@@ -137,7 +137,7 @@ def highest_hb_score(election, feature_params):
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",
                                              type='borda_owa', name='hb')
-    return get_hb_score(election, winners), total_time
+    return get_hb_score(election, winners), total_time, get_hb_dissat(election, winners)
 
 
 def highest_pav_score(election, feature_params):
@@ -147,7 +147,7 @@ def highest_pav_score(election, feature_params):
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",
                                              type='bloc_owa', name='hb')
-    return get_pav_score(election, winners), total_time
+    return get_pav_score(election, winners), total_time, get_pav_dissat(election, winners)
 
 
 # HELPER FUNCTIONS
@@ -229,3 +229,41 @@ def get_pav_score(election, winners) -> float:
                 ctr += 1
 
     return score
+
+
+def get_hb_dissat(election, winners) -> float:
+
+    num_voters = election.num_voters
+    num_candidates = election.num_candidates
+
+    dissat = 0
+
+    for i in range(num_voters):
+        ctr = 1.
+        for j in range(num_candidates):
+            if election.votes[i][j] in winners:
+                dissat += (1. / ctr) * (j)
+                ctr += 1
+
+    return dissat
+
+
+def get_pav_dissat(election, winners) -> float:
+
+    num_voters = election.num_voters
+    num_candidates = election.num_candidates
+
+    dissat = 0
+
+    vector = [0. for _ in range(100)]
+    for i in range(10,100):
+        vector[i] = 1.
+
+    for i in range(num_voters):
+        ctr = 1.
+        for j in range(num_candidates):
+            if election.votes[i][j] in winners:
+                dissat += ((1. / ctr) * vector[j])
+                ctr += 1
+
+    return dissat

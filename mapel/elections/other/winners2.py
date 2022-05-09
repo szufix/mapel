@@ -285,39 +285,3 @@ def get_winners_stv(params, votes, candidates):
 
 
 
-def check_hb_dissat(votes, params, winners):
-
-    num_voters = params['voters']
-    num_candidates = params['candidates']
-
-    dissat = 0
-
-    for i in range(num_voters):
-        ctr = 1.
-        for j in range(num_candidates):
-            if votes[i][j] in winners:
-                dissat += (1. / ctr) * (j)
-                ctr += 1
-
-    return dissat
-
-
-def check_pav_dissat(votes, params, winners):
-
-    num_voters = params['voters']
-    num_candidates = params['candidates']
-
-    dissat = 0
-
-    vector = [0. for _ in range(100)]
-    for i in range(10,100):
-        vector[i] = 1.
-
-    for i in range(num_voters):
-        ctr = 1.
-        for j in range(num_candidates):
-            if votes[i][j] in winners:
-                dissat += ((1. / ctr) * vector[j])
-                ctr += 1
-
-    return dissat

@@ -25,6 +25,8 @@ def generate_real_stratification_votes(num_voters=None, num_candidates=None):
     return [list(np.random.permutation(int(num_candidates/2))) +
              list(np.random.permutation([j for j in range(int(num_candidates/2), num_candidates)]))
             for _ in range(num_voters)]
+
+
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 22.10.2021 #
 # # # # # # # # # # # # # # # #
