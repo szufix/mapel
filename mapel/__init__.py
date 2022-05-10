@@ -1,9 +1,9 @@
 
-import mapel.elections.metrics_main as metr
-import mapel.elections.models_main as ele
-import mapel.elections._print as pr
+import mapel.elections.metrics_ as metr
+import mapel.elections.models_ as ele
+import mapel.elections.print_ as pr
 import mapel.elections.other.development as dev
-import mapel.elections.features_main as features
+import mapel.elections.features_ as features
 
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
@@ -13,7 +13,7 @@ try:
     from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
     from mapel.roommates.objects.Roommates import Roommates
     from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
-    import mapel.roommates._models as rom
+    import mapel.roommates.models_ as rom
 except:
     pass
 

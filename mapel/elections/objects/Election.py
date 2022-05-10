@@ -6,7 +6,7 @@ import os
 
 import numpy as np
 
-from mapel.elections._glossary import *
+from mapel.elections.glossary_ import *
 from mapel.main.objects.Instance import Instance
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners

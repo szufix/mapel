@@ -19,7 +19,7 @@ except ImportError:
     abcrules = None
     preferences = None
 
-from mapel.elections._glossary import *
+from mapel.elections.glossary_ import *
 from mapel.elections.metrics import lp
 from mapel.elections.other import winners2 as win
 
@@ -127,7 +127,7 @@ def highest_cc_score(election, feature_params):
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",
                                              type='borda_owa', name='cc')
-    return get_cc_score(election, winners), total_time
+    return get_cc_score(election, winners)
 
 
 def highest_hb_score(election, feature_params):
@@ -137,7 +137,7 @@ def highest_hb_score(election, feature_params):
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",
                                              type='borda_owa', name='hb')
-    return get_hb_score(election, winners), total_time, get_hb_dissat(election, winners)
+    return get_hb_score(election, winners), get_hb_dissat(election, winners)
 
 
 def highest_pav_score(election, feature_params):
@@ -147,7 +147,7 @@ def highest_pav_score(election, feature_params):
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",
                                              type='bloc_owa', name='hb')
-    return get_pav_score(election, winners), total_time, get_pav_dissat(election, winners)
+    return get_pav_score(election, winners), get_pav_dissat(election, winners)
 
 
 # HELPER FUNCTIONS

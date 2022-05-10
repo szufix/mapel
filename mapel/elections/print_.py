@@ -12,7 +12,7 @@ try:
 except ImportError:
     tikzplotlib = None
 
-from mapel.elections._glossary import *
+from mapel.elections.glossary_ import *
 import copy
 
 
@@ -68,9 +68,6 @@ def print_map_2d(experiment,
     if experiment.store and update:
         experiment.update()
 
-    # if feature_id is not None:
-    #     fig = plt.figure(figsize=(6.4, 6.4 + 0.48))
-    # else:
     fig = plt.figure(figsize=(6.4, 6.4))
 
     ax = fig.add_subplot()
@@ -705,8 +702,6 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                         #     alpha = 1.
                         alpha *= family.alpha
                         alpha = (alpha + 0.2) / 1.2
-                        # print(alpha)
-                        # print(alpha)
                         if i == family.size - 1:
                             ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
                                        experiment.coordinates_by_families[family.family_id][1][i],
@@ -795,9 +790,9 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
             pass
 
         if bbox_inches is None:
-            plt.savefig(file_name, bbox_inches='tight', dpi=500)
+            plt.savefig(file_name, bbox_inches='tight', dpi=250)
         else:
-            plt.savefig(file_name, bbox_inches=bbox_inches, dpi=500)
+            plt.savefig(file_name, bbox_inches=bbox_inches, dpi=250)
 
 
 

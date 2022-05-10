@@ -9,17 +9,18 @@ from threading import Thread
 from multiprocessing import Process, Queue
 from time import sleep
 import ast
+import time
 
 from mapel.elections.objects.ElectionFamily import ElectionFamily
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
-import mapel.elections.metrics_main as metr
-import mapel.elections.models_main as _elections
+import mapel.elections.metrics_ as metr
+import mapel.elections.models_ as _elections
 import mapel.elections.other.rules as rules
-import mapel.elections.features_main as features
-from mapel.elections._glossary import *
+import mapel.elections.features_ as features
+from mapel.elections.glossary_ import *
 from mapel.main.objects.Experiment import Experiment
-import mapel.elections._print as pr
+import mapel.elections.print_ as pr
 from mapel.main._utils import *
 from mapel.main._glossary import *
 
@@ -242,7 +243,6 @@ class ElectionExperiment(Experiment):
 
         self.distance_id = distance_id
 
-        # precompute vectors, matrices, etc...
         if '-approvalwise' in distance_id:
             for election in self.elections.values():
                 election.votes_to_approvalwise_vector()
@@ -260,7 +260,6 @@ class ElectionExperiment(Experiment):
         elif '-pairwise' in distance_id:
             for election in self.elections.values():
                 election.votes_to_pairwise_matrix()
-        # continue with normal code
 
         matchings = {election_id: {} for election_id in self.elections}
         distances = {election_id: {} for election_id in self.elections}
@@ -320,7 +319,6 @@ class ElectionExperiment(Experiment):
                     distances[row['instance_id_1']][row['instance_id_2']] = float(row['distance'])
                     times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
-
         if self.store:
             self.store_distances_to_file(distance_id, distances, times)
 
@@ -330,18 +328,16 @@ class ElectionExperiment(Experiment):
 
     def store_distances_to_file(self, distance_id, distances, times):
         file_name = f'{distance_id}.csv'
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
-                            file_name)
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
 
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
-            writer.writerow(
-                ["instance_id_1", "instance_id_2", "distance", "time"])
+            writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
 
             for election_1, election_2 in itertools.combinations(self.elections, 2):
                 distance = str(distances[election_1][election_2])
-                time = str(times[election_1][election_2])
-                writer.writerow([election_1, election_2, distance, time])
+                time_ = str(times[election_1][election_2])
+                writer.writerow([election_1, election_2, distance, time_])
 
     def get_election_id_from_model_name(self, model_id: str) -> str:
         for family_id in self.families:
@@ -415,14 +411,6 @@ class ElectionExperiment(Experiment):
 
                 if 'show' in row.keys():
                     show = row['show'].strip() == 't'
-                #
-                # if model_id in {'urn_model'} and 'alpha' in params:
-                #     family_id += '_' + str(float(params['alpha']))
-                # elif model_id in {'mallows'} and 'phi' in params:
-                #     family_id += '_' + str(float(params['phi']))
-                # elif model_id in {'norm-mallows', 'norm-mallows_matrix'} \
-                #         and norm-phiparams['norm-phi'] is not None:
-                #     family_id += '_' + str(float(params['norm-phi']))
 
                 single = size == 1
 
@@ -460,15 +448,9 @@ class ElectionExperiment(Experiment):
 
         feature_dict = {'value': {}, 'time': {}}
 
-        features_with_time = {'lowest_dodgson_score', 'highest_cc_score', 'highest_hb_score',
-                              'highest_pav_score'}
-
-
         features_with_dissat = {'highest_hb_score', 'highest_pav_score'}
 
-        global_featuers = {'clustering'}
-
-        if feature_id in MAIN_GLOBAL_FEATUERS:
+        if feature_id in MAIN_GLOBAL_FEATUERS or feature_id in ELECTION_GLOBAL_FEATURES:
 
             feature = features.get_global_feature(feature_id)
 
@@ -478,89 +460,97 @@ class ElectionExperiment(Experiment):
                 feature_dict['value'][instance_id] = values[instance_id]
                 feature_dict['time'][instance_id] = 0
 
-        # elif feature_id in global_featuers:
-        #     feature_dict = feature(self)
-
         else:
 
-            feature = features.get_global_feature(feature_id)
+            feature = features.get_local_feature(feature_id)
 
+            for instance_id in self.elections:
+                print(instance_id)
+                instance = self.elections[instance_id]
 
-            for election_id in self.elections:
-                print(election_id)
-                election = self.elections[election_id]
-                if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
-                    value = feature(self, election)
+                start = time.time()
 
-                elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
-                                    'number_of_cohesive_groups_brute',
-                                    'proportionality_degree_pav',
-                                    'proportionality_degree_av',
-                                    'proportionality_degree_cc',
-                                    'justified_ratio',
-                                    'cohesiveness',
-                                    'partylist',
-                                    'highest_cc_score',
-                                    'highest_hb_score',
-                                    'highest_pav_score',
-                                    'greedy_approx_cc_score',
-                                    'removal_approx_cc_score',
-                                    'greedy_approx_hb_score',
-                                    'removal_approx_hb_score',
-                                    'greedy_approx_pav_score',
-                                    'removal_approx_pav_score',
-                                    'rand_approx_pav_score',
-                                    'banzhaf_cc_score',
-                                    'ranging_cc_score']:
-                    value = feature(election, feature_params)
+                for _ in range(num_iterations):
 
-                elif feature_id in {'avg_distortion_from_guardians',
-                                    'worst_distortion_from_guardians',
-                                    'distortion_from_all',
-                                    'distortion_from_top_100'}:
-                    value = feature(self, election_id)
-                else:
-                    value = feature(election)
+                    if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
+                        value = feature(self, instance)
+
+                    elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
+                                        'number_of_cohesive_groups_brute',
+                                        'proportionality_degree_pav',
+                                        'proportionality_degree_av',
+                                        'proportionality_degree_cc',
+                                        'justified_ratio',
+                                        'cohesiveness',
+                                        'partylist',
+                                        'highest_cc_score',
+                                        'highest_hb_score',
+                                        'highest_pav_score',
+                                        'greedy_approx_cc_score',
+                                        'removal_approx_cc_score',
+                                        'greedy_approx_hb_score',
+                                        'removal_approx_hb_score',
+                                        'greedy_approx_pav_score',
+                                        'removal_approx_pav_score',
+                                        'rand_approx_pav_score',
+                                        'banzhaf_cc_score',
+                                        'ranging_cc_score']:
+                        value = feature(instance, feature_params)
+
+                    elif feature_id in {'avg_distortion_from_guardians',
+                                        'worst_distortion_from_guardians',
+                                        'distortion_from_all',
+                                        'distortion_from_top_100'}:
+                        value = feature(self, instance_id)
+                    else:
+                        value = feature(instance)
+
+                total_time = time.time() - start
+                total_time /= num_iterations
 
                 if feature_id in features_with_dissat:
-                    feature_dict['value'][election_id] = value[0]
-                    feature_dict['time'][election_id] = value[1]
-                    feature_dict['dissat'][election_id] = value[2]
-                elif feature_id in features_with_time:
-                    feature_dict['value'][election_id] = value[0]
-                    feature_dict['time'][election_id] = value[1]
+                    feature_dict['value'][instance_id] = value[0]
+                    feature_dict['time'][instance_id] = total_time
+                    feature_dict['dissat'][instance_id] = value[1]
                 else:
-                    feature_dict['value'][election_id] = value
-
-
+                    feature_dict['value'][instance_id] = value
+                    feature_dict['time'][instance_id] = total_time
 
         if self.store:
-            if feature_id in EMBEDDING_RELATED_FEATURE:
-                path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                    "features", f'{feature_id}__{self.distance_id}.csv')
-            else:
-                path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                    "features", f'{feature_id}.csv')
-
-            with open(path, 'w', newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=';')
-                if feature_id in {'partylist'}:
-                    writer.writerow(["election_id", "value", "bound", "num_large_parties"])
-                    for key in feature_dict:
-                        writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
-                                         feature_dict[key][2]])
-                if feature_id in features_with_time:
-                    writer.writerow(["election_id", "value", 'time'])
-                    for key in feature_dict['value']:
-                        writer.writerow(
-                            [key, feature_dict['value'][key], feature_dict['time'][key]])
-                else:
-                    writer.writerow(["election_id", "value"])
-                    for key in feature_dict['value']:
-                        writer.writerow([key, feature_dict['value'][key]])
+            self.store_election_feature(feature_id, feature_dict)
 
         self.features[feature_id] = feature_dict
         return feature_dict
+
+    def store_election_feature(self, feature_id, feature_dict):
+
+        features_with_dissat = {'highest_hb_score', 'highest_pav_score'}
+
+        if feature_id in EMBEDDING_RELATED_FEATURE:
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                "features", f'{feature_id}__{self.distance_id}.csv')
+        else:
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                "features", f'{feature_id}.csv')
+
+        with open(path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+            if feature_id in {'partylist'}:
+                writer.writerow(["election_id", "value", "bound", "num_large_parties"])
+                for key in feature_dict:
+                    writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
+                                     feature_dict[key][2]])
+            if feature_id in features_with_dissat:
+                writer.writerow(["election_id", "value", 'time', 'dissat'])
+                for key in feature_dict['value']:
+                    writer.writerow(
+                        [key, feature_dict['value'][key], feature_dict['time'][key],
+                         feature_dict['dissat'][key]])
+            else:
+                writer.writerow(["election_id", "value", "time"])
+                for key in feature_dict['value']:
+                    writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
+
 
     @abstractmethod
     def create_structure(self):

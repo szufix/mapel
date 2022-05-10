@@ -4,7 +4,7 @@ import os
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
 from mapel.elections.other import pabulib
-from mapel.elections._glossary import *
+from mapel.elections.glossary_ import *
 from mapel.main._utils import *
 
 try:

@@ -394,7 +394,6 @@ def _balanced(num_leaves):
             tmp_root.add_child(node)
             ctr += 1
 
-    # print_tree(root)
     return root
 
 

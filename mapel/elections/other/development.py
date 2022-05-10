@@ -8,8 +8,8 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 
-import mapel.elections.metrics_main as metr
-import mapel.elections.features_main as features
+import mapel.elections.metrics_ as metr
+import mapel.elections.features_ as features
 from mapel.main._inner_distances import l2, chebyshev
 from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.main.objects.Experiment import Experiment

@@ -6,8 +6,8 @@ import ast
 from mapel.main.objects.Instance import Instance
 from mapel.roommates.models._utils import convert
 
-from mapel.roommates._models import generate_votes
-from mapel.elections._glossary import *
+from mapel.roommates.models_ import generate_votes
+from mapel.elections.glossary_ import *
 
 
 class Roommates(Instance):

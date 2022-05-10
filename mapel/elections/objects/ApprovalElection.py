@@ -5,10 +5,10 @@ import os
 
 import numpy as np
 
-from mapel.elections._glossary import *
+from mapel.elections.glossary_ import *
 from mapel.main._inner_distances import hamming
 from mapel.elections.objects.Election import Election
-from mapel.elections.models_main import generate_approval_votes, store_votes_in_a_file
+from mapel.elections.models_ import generate_approval_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
 from mapel.elections.objects.OrdinalElection import update_params
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \

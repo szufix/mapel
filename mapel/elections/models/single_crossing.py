@@ -15,8 +15,6 @@ def generate_ordinal_single_crossing_votes(num_voters: int = None,
     else:
         domain_id = 'naive'
 
-    print(domain_id)
-
     votes = np.zeros([num_voters, num_candidates])
 
     # GENERATE DOMAIN

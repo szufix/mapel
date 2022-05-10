@@ -12,13 +12,13 @@ import time
 from mapel.main.objects.Experiment import Experiment
 from mapel.roommates.objects.RoommatesFamily import RoommatesFamily
 from mapel.roommates.objects.Roommates import Roommates
-import mapel.roommates._models as models_main
-import mapel.roommates._metrics as metr
+import mapel.roommates.models_ as models_main
+import mapel.roommates.metrics_ as metr
 import mapel.roommates.features.basic_features as basic
-import mapel.roommates._features as features
+import mapel.roommates.features_ as features
 from mapel.main._utils import *
 from mapel.main._glossary import *
-from mapel.elections._print import get_values_from_csv_file
+from mapel.elections.print_ import get_values_from_csv_file
 
 try:
     from sklearn.manifold import MDS

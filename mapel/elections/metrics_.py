@@ -87,6 +87,7 @@ def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElectio
 
 
 def extract_distance_id(distance_id: str) -> (Callable, str):
+    """ Return: inner distance (distance between votes) name and main distance name """
     if '-' in distance_id:
         inner_distance, main_distance = distance_id.split('-')
         inner_distance = map_str_to_func(inner_distance)
@@ -96,7 +97,7 @@ def extract_distance_id(distance_id: str) -> (Callable, str):
     return inner_distance, main_distance
 
 
-def run_single_thread(experiment: Experiment, thread_ids: list,
+def run_single_thread(exp: Experiment, thread_ids: list,
                       distances: dict, times: dict, matchings: dict,
                       printing: bool, t) -> None:
     """ Single thread for computing distances """
@@ -105,9 +106,9 @@ def run_single_thread(experiment: Experiment, thread_ids: list,
         if t == 0 and printing:
             print(instance_id_1, instance_id_2)
         start_time = time()
-        distance = get_distance(copy.deepcopy(experiment.instances[instance_id_1]),
-                                copy.deepcopy(experiment.instances[instance_id_2]),
-                                distance_id=copy.deepcopy(experiment.distance_id))
+        distance = get_distance(copy.deepcopy(exp.instances[instance_id_1]),
+                                copy.deepcopy(exp.instances[instance_id_2]),
+                                distance_id=copy.deepcopy(exp.distance_id))
         if type(distance) is tuple:
             distance, matching = distance
             matching = np.array(matching)
@@ -118,22 +119,22 @@ def run_single_thread(experiment: Experiment, thread_ids: list,
         times[instance_id_1][instance_id_2] = time() - start_time
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
-    if experiment.store:
+    if exp.store:
+        store_distances(exp, thread_ids, distances, times)
 
-        file_name = f'{experiment.distance_id}_p{t}.csv'
-        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances",
-                            file_name)
 
-        with open(path, 'w', newline='') as csv_file:
-            writer = csv.writer(csv_file, delimiter=';')
-            writer.writerow(
-                ["instance_id_1", "instance_id_2", "distance", "time"])
-
-            for election_id_1, election_id_2 in thread_ids:
-                distance = float(distances[election_id_1][election_id_2])
-                time_ = float(times[election_id_1][election_id_2])
-                writer.writerow([election_id_1, election_id_2, distance, time_])
+def store_distances(exp, thread_ids, distances, times):
+    """ Store distances to file """
+    file_name = f'{exp.distance_id}_p{t}.csv'
+    path = os.path.join(os.getcwd(), "experiments", exp.experiment_id, "distances", file_name)
+    with open(path, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=';')
+        writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
+        for election_id_1, election_id_2 in thread_ids:
+            distance = float(distances[election_id_1][election_id_2])
+            time_ = float(times[election_id_1][election_id_2])
+            writer.writerow([election_id_1, election_id_2, distance, time_])
 
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 17.03.2022 #
+# LAST CLEANUP ON: 10.05.2022 #
 # # # # # # # # # # # # # # # #

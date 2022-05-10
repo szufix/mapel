@@ -9,13 +9,13 @@ import numpy as np
 from scipy.stats import gamma
 
 import mapel.elections.models.mallows as mallows
-from mapel.elections._glossary import *
+from mapel.elections.glossary_ import *
 from mapel.elections.models.group_separable import get_gs_caterpillar_vectors
 from mapel.elections.models.mallows import get_mallows_vectors
 from mapel.elections.models.preflib import get_sushi_vectors
 from mapel.elections.models.single_crossing import get_single_crossing_vectors
 from mapel.elections.models.single_peaked import get_walsh_vectors, get_conitzer_vectors
-from mapel.elections.models_main import generate_ordinal_votes, store_votes_in_a_file
+from mapel.elections.models_ import generate_ordinal_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners

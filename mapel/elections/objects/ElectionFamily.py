@@ -4,7 +4,7 @@ import copy
 from mapel.main.objects.Family import Family
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
-from mapel.elections._glossary import *
+from mapel.elections.glossary_ import *
 from mapel.main._utils import *
 import mapel.elections.models.mallows as mallows
 

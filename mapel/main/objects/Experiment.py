@@ -18,7 +18,7 @@ from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 COLORS = []
 from PIL import Image
 from mapel.main.objects.Family import Family
-import mapel.elections._print as pr
+import mapel.elections.print_ as pr
 
 try:
     from sklearn.manifold import MDS

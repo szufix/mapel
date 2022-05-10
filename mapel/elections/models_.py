@@ -16,7 +16,7 @@ import mapel.elections.models.mallows as mallows
 import mapel.elections.models.single_crossing as single_crossing
 import mapel.elections.models.single_peaked as single_peaked
 import mapel.elections.models.urn_model as urn_model
-from mapel.elections._glossary import *
+from mapel.elections.glossary_ import *
 from mapel.elections.models.preflib import generate_preflib_votes
 
 
@@ -147,7 +147,6 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
         votes = [[int(x) for x in row] for row in votes]
 
     return votes
-
 
 
 def store_votes_in_a_file(election, model_id, election_id, num_candidates, num_voters,

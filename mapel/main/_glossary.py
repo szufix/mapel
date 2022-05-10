@@ -3,6 +3,8 @@ MAIN_LOCAL_FEATUERS = []
 
 MAIN_GLOBAL_FEATUERS = ['calculate_distortion', 'calculate_monotonicity']
 
+ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans'}
+
 COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
 
 RULE_NAME_MATRIX = {
