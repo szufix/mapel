@@ -5,8 +5,7 @@ import itertools
 import os
 import warnings
 from abc import abstractmethod
-from threading import Thread
-from multiprocessing import Process, Queue
+from multiprocessing import Process
 from time import sleep
 import ast
 import time
@@ -18,7 +17,6 @@ import mapel.elections.metrics_ as metr
 import mapel.elections.models_ as _elections
 import mapel.elections.other.rules as rules
 import mapel.elections.features_ as features
-from mapel.elections.glossary_ import *
 from mapel.main.objects.Experiment import Experiment
 import mapel.elections.print_ as pr
 from mapel.main._utils import *
@@ -78,7 +76,8 @@ class ElectionExperiment(Experiment):
                 instance_id = get_instance_id(single, family_id, j)
 
                 if self.instance_type == 'ordinal':
-                    instance = OrdinalElection(self.experiment_id, instance_id, _import=True)
+                    instance = OrdinalElection(self.experiment_id, instance_id, _import=True,
+                                               fast_import=self.fast_import)
                 elif self.instance_type == 'approval':
                     instance = ApprovalElection(self.experiment_id, instance_id, _import=True)
                 else:
@@ -167,47 +166,24 @@ class ElectionExperiment(Experiment):
         self.num_elections = sum([self.families[family_id].size for family_id in self.families])
         self.main_order = [i for i in range(self.num_elections)]
 
-        params = self.families[family_id].params
-        model_id = self.families[family_id].model_id
+        # params = self.families[family_id].params
+        # model_id = self.families[family_id].model_id
 
-        elections = _elections.prepare_statistical_culture_family(experiment=self,
-                                                                  model_id=model_id,
-                                                                  family_id=family_id,
-                                                                  params=copy.deepcopy(params))
+        # elections = _elections.prepare_statistical_culture_family(experiment=self,
+        #                                                           model_id=model_id,
+        #                                                           family_id=family_id,
+        #                                                           params=copy.deepcopy(params))
+        new_instances = self.families[family_id].prepare_family(
+            store=self.store,
+            experiment_id=self.experiment_id)
 
-        self.families[family_id].instance_ids = list(elections.keys())
+        for instance_id in new_instances:
+            self.instances[instance_id] = new_instances[instance_id]
 
-        return list(elections.keys())
+        self.families[family_id].instance_ids = list(new_instances.keys())
 
-    # def add_matrices_to_experiment(experiment):
-    #     """ Import elections from a file """
-    #
-    #     matrices = {}
-    #     vectors = {}
-    #
-    #     for family_id in experiment.families:
-    #         for j in range(experiment.families[family_id].size):
-    #             election_id = family_id + '_' + str(j)
-    #             matrix = experiment.import_matrix(election_id)
-    #             matrices[election_id] = matrix
-    #             vectors[election_id] = matrix.transpose()
-    #
-    #     return matrices, vectors
+        return list(new_instances.keys())
 
-    # def import_matrix(experiment, election_id):
-    #
-    #     file_name = election_id + '.csv'
-    #     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-    #     'matrices', file_name)
-    #     num_candidates = experiment.elections[election_id].num_candidates
-    #     matrix = np.zeros([num_candidates, num_candidates])
-    #
-    #     with open(path, 'r', newline='') as csv_file:
-    #         reader = csv.DictReader(csv_file, delimiter=',')
-    #         for i, row in enumerate(reader):
-    #             for j, candidate_id in enumerate(row):
-    #                 matrix[i][j] = row[candidate_id]
-    #     return matrix
 
     def prepare_elections(self, printing=False):
         """ Prepare elections for a given experiment """
@@ -236,10 +212,10 @@ class ElectionExperiment(Experiment):
                 self.elections[election_id].compute_alternative_winners(
                     method=method, party_id=party_id, num_winners=num_winners)
 
-    def compute_distances(self, distance_id: str = 'emd-positionwise', num_threads: int = 1,
+    def compute_distances(self, distance_id: str = 'emd-positionwise', num_processes: int = 1,
                           self_distances: bool = False, vector_type: str = 'A',
                           printing: bool = False) -> None:
-        """ Compute distances between elections (using threads) """
+        """ Compute distances between elections (using processes) """
 
         self.distance_id = distance_id
 
@@ -251,11 +227,9 @@ class ElectionExperiment(Experiment):
                 election.votes_to_coapproval_frequency_vectors(vector_type=vector_type)
         elif '-voterlikeness' in distance_id:
             for election in self.elections.values():
-                # election.votes_to_voterlikeness_vectors(vector_type=vector_type)
                 election.votes_to_voterlikeness_matrix(vector_type=vector_type)
         elif '-candidatelikeness' in distance_id:
             for election in self.elections.values():
-                # print(election)
                 election.votes_to_candidatelikeness_sorted_vectors()
         elif '-pairwise' in distance_id:
             for election in self.elections.values():
@@ -264,7 +238,6 @@ class ElectionExperiment(Experiment):
         matchings = {election_id: {} for election_id in self.elections}
         distances = {election_id: {} for election_id in self.elections}
         times = {election_id: {} for election_id in self.elections}
-
 
         ids = []
         for i, election_1 in enumerate(self.elections):
@@ -277,56 +250,52 @@ class ElectionExperiment(Experiment):
 
         num_distances = len(ids)
 
-        threads = []
-        processes = []
+        if self.experiment_id == 'virtual' or num_processes == 1:
+            metr.run_single_process(self, ids, distances, times, matchings, printing)
 
-        for t in range(num_threads):
-            print(f'Starting thread: {t}')
-            sleep(0.1)
-            start = int(t * num_distances / num_threads)
-            stop = int((t + 1) * num_distances / num_threads)
-            thread_ids = ids[start:stop]
+        else:
+            processes = []
+            for t in range(num_processes):
+                print(f'Starting thread: {t}')
+                sleep(0.1)
+                start = int(t * num_distances / num_processes)
+                stop = int((t + 1) * num_distances / num_processes)
+                instances_ids = ids[start:stop]
 
-            # thread = Thread(target=metr.run_single_thread, args=(self, thread_ids,
-            #                                                          distances, times, matchings,
-            #                                                          printing, t))
-            process = Process(target=metr.run_single_thread, args=(self, thread_ids,
-                                                                   distances, times, matchings,
-                                                                   printing, t))
+                process = Process(target=metr.run_multiple_processes, args=(self, instances_ids,
+                                                                            distances, times,
+                                                                            matchings,
+                                                                            printing, t))
+                process.start()
+                processes.append(process)
 
-            # thread.start()
-            # threads.append(thread)
-            process.start()
-            processes.append(process)
+            for process in processes:
+                process.join()
 
-        # for t in range(num_threads):
-        #     threads[t].join()
-        for process in processes:
-            process.join()
+            distances = {instance_id: {} for instance_id in self.instances}
+            times = {instance_id: {} for instance_id in self.instances}
+            for t in range(num_processes):
 
-        distances = {instance_id: {} for instance_id in self.instances}
-        times = {instance_id: {} for instance_id in self.instances}
-        for t in range(num_threads):
+                file_name = f'{distance_id}_p{t}.csv'
+                path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
+                                    file_name)
 
-            file_name = f'{distance_id}_p{t}.csv'
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
-                                file_name)
+                with open(path, 'r', newline='') as csv_file:
+                    reader = csv.DictReader(csv_file, delimiter=';')
 
-            with open(path, 'r', newline='') as csv_file:
-                reader = csv.DictReader(csv_file, delimiter=';')
-
-                for row in reader:
-                    distances[row['instance_id_1']][row['instance_id_2']] = float(row['distance'])
-                    times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
+                    for row in reader:
+                        distances[row['instance_id_1']][row['instance_id_2']] = float(
+                            row['distance'])
+                        times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
         if self.store:
-            self.store_distances_to_file(distance_id, distances, times)
+            self._store_distances_to_file(distance_id, distances, times)
 
         self.distances = distances
         self.times = times
         self.matchings = matchings
 
-    def store_distances_to_file(self, distance_id, distances, times):
+    def _store_distances_to_file(self, distance_id, distances, times):
         file_name = f'{distance_id}.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
 
@@ -437,7 +406,8 @@ class ElectionExperiment(Experiment):
 
         return families
 
-    def compute_feature(self, feature_id: str = None, feature_params=None) -> dict:
+    def compute_feature(self, feature_id: str = None, feature_params=None,
+                        printing=False) -> dict:
 
         if feature_params is None:
             feature_params = {}
@@ -448,13 +418,11 @@ class ElectionExperiment(Experiment):
 
         feature_dict = {'value': {}, 'time': {}}
 
-        features_with_dissat = {'highest_hb_score', 'highest_pav_score'}
-
         if feature_id in MAIN_GLOBAL_FEATUERS or feature_id in ELECTION_GLOBAL_FEATURES:
 
             feature = features.get_global_feature(feature_id)
 
-            values = feature(self, election_ids=list(self.instances))
+            values = feature(self, electielection_idson_ids=list(self.instances))
 
             for instance_id in self.instances:
                 feature_dict['value'][instance_id] = values[instance_id]
@@ -465,7 +433,8 @@ class ElectionExperiment(Experiment):
             feature = features.get_local_feature(feature_id)
 
             for instance_id in self.elections:
-                print(instance_id)
+                if printing:
+                    print(instance_id)
                 instance = self.elections[instance_id]
 
                 start = time.time()
@@ -508,7 +477,7 @@ class ElectionExperiment(Experiment):
                 total_time = time.time() - start
                 total_time /= num_iterations
 
-                if feature_id in features_with_dissat:
+                if feature_id in FEATURES_WITH_DISSAT:
                     feature_dict['value'][instance_id] = value[0]
                     feature_dict['time'][instance_id] = total_time
                     feature_dict['dissat'][instance_id] = value[1]
@@ -517,18 +486,16 @@ class ElectionExperiment(Experiment):
                     feature_dict['time'][instance_id] = total_time
 
         if self.store:
-            self.store_election_feature(feature_id, feature_dict)
+            self._store_election_feature(feature_id, feature_dict)
 
         self.features[feature_id] = feature_dict
         return feature_dict
 
-    def store_election_feature(self, feature_id, feature_dict):
-
-        features_with_dissat = {'highest_hb_score', 'highest_pav_score'}
+    def _store_election_feature(self, feature_id, feature_dict):
 
         if feature_id in EMBEDDING_RELATED_FEATURE:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "features", f'{feature_id}__{self.distance_id}.csv')
+                                "features", f'{feature_id}_{self.embedding_id}.csv')
         else:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "features", f'{feature_id}.csv')
@@ -540,7 +507,7 @@ class ElectionExperiment(Experiment):
                 for key in feature_dict:
                     writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
                                      feature_dict[key][2]])
-            if feature_id in features_with_dissat:
+            if feature_id in FEATURES_WITH_DISSAT:
                 writer.writerow(["election_id", "value", 'time', 'dissat'])
                 for key in feature_dict['value']:
                     writer.writerow(
@@ -550,7 +517,6 @@ class ElectionExperiment(Experiment):
                 writer.writerow(["election_id", "value", "time"])
                 for key in feature_dict['value']:
                     writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
-
 
     @abstractmethod
     def create_structure(self):

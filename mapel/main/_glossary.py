@@ -3,7 +3,7 @@ MAIN_LOCAL_FEATUERS = []
 
 MAIN_GLOBAL_FEATUERS = ['calculate_distortion', 'calculate_monotonicity']
 
-ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans'}
+ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans', 'distortion_from_all'}
 
 COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
 
@@ -166,9 +166,11 @@ GRAPH_MODELS = {'erdos_renyi_graph', 'watts_strogatz_graph', 'barabasi_albert_gr
 
 NOT_ABCVOTING_RULES = {'borda_c4', 'random'}
 
-EMBEDDING_RELATED_FEATURE = {'monotonicity_triplets'}
+EMBEDDING_RELATED_FEATURE = ['monotonicity_triplets', 'distortion_from_all']
 
 ROOMMATES_PROBLEM_MODELS = {'roommates_ic'}
+
+FEATURES_WITH_DISSAT = {'highest_hb_score', 'highest_pav_score'}
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

@@ -32,6 +32,49 @@ def distortion_from_guardians(experiment, election_id) -> np.ndarray:
     return values
 
 
+def distortion_from_all(experiment, election_ids):
+
+    all_values = {}
+
+    for election_id in election_ids:
+
+        values = np.array([])
+        one_side_values = np.array([])
+        election_id_1 = election_id
+
+        for election_id_2 in experiment.instances:
+            # if election_id_2 in {'identity_10_100_0', 'uniformity_10_100_0',
+            #                      'antagonism_10_100_0', 'stratification_10_100_0'}:
+            if election_id_1 != election_id_2:
+                # m = experiment.instances[election_id_1].num_candidates
+                # print(election_id_1, election_id_2)
+                true_distance = experiment.distances[election_id_1][election_id_2]
+                true_distance /= experiment.distances['ID']['UN']
+                embedded_distance = l2(np.array(experiment.coordinates[election_id_1]),
+                                       np.array(experiment.coordinates[election_id_2]))
+
+                embedded_distance /= \
+                    l2(np.array(experiment.coordinates['ID']),
+                       np.array(experiment.coordinates['UN']))
+                # try:
+                #     ratio = float(embedded_distance) / float(true_distance)
+                # except:
+                #     ratio = 1.
+                one_side_ratio = embedded_distance / true_distance
+                one_side_values = np.append(one_side_values, one_side_ratio)
+
+                ratio = max(embedded_distance, true_distance) / min(embedded_distance, true_distance)
+
+                values = np.append(values, ratio)
+
+        # print(min(one_side_values), max(one_side_values))
+        # if election_id_1 == 'IC_0':
+        #     print(values)
+
+        all_values[election_id_1] = np.mean(values)
+
+    return all_values
+
 
 # def distortion_from_all(experiment, election_id) -> np.ndarray:
 #     values = np.array([])

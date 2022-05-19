@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import numpy as np
+from mapel.main._inner_distances import l2
+
 import mapel.elections.features.cohesive as cohesive
 import mapel.elections.features.partylist as partylist
 import mapel.elections.features.proportionality_degree as prop_deg
@@ -23,6 +26,7 @@ def get_global_feature(feature_id):
 
     return {'clustering': clustering.clustering_v1,
             'clustering_kmeans': clustering.clustering_kmeans,
+            'distortion_from_all': distortion.distortion_from_all,
             }.get(feature_id)
 
 

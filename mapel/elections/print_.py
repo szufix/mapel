@@ -12,7 +12,7 @@ try:
 except ImportError:
     tikzplotlib = None
 
-from mapel.elections.glossary_ import *
+from mapel.main._glossary import *
 import copy
 
 

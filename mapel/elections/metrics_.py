@@ -33,7 +33,7 @@ def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElec
                           distance_id: str = None) -> float or (float, list):
     """ Return: distance between approval elections, (if applicable) optimal matching """
 
-    inner_distance, main_distance = extract_distance_id(distance_id)
+    inner_distance, main_distance = _extract_distance_id(distance_id)
 
     metrics_without_params = {
         'flow': mad.compute_flow,
@@ -60,7 +60,7 @@ def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElectio
                          distance_id: str = None) -> float or (float, list):
     """ Return: distance between ordinal elections, (if applicable) optimal matching """
 
-    inner_distance, main_distance = extract_distance_id(distance_id)
+    inner_distance, main_distance = _extract_distance_id(distance_id)
 
     metrics_without_params = {
         'discrete': mod.compute_discrete_distance,
@@ -86,7 +86,7 @@ def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElectio
                                                               inner_distance)
 
 
-def extract_distance_id(distance_id: str) -> (Callable, str):
+def _extract_distance_id(distance_id: str) -> (Callable, str):
     """ Return: inner distance (distance between votes) name and main distance name """
     if '-' in distance_id:
         inner_distance, main_distance = distance_id.split('-')
@@ -97,12 +97,35 @@ def extract_distance_id(distance_id: str) -> (Callable, str):
     return inner_distance, main_distance
 
 
-def run_single_thread(exp: Experiment, thread_ids: list,
+def run_single_process(exp: Experiment, instances_ids: list,
+                      distances: dict, times: dict, matchings: dict,
+                      printing: bool) -> None:
+    """ Single thread for computing distances """
+
+    for instance_id_1, instance_id_2 in instances_ids:
+        if printing:
+            print(instance_id_1, instance_id_2)
+        start_time = time()
+        distance = get_distance(copy.deepcopy(exp.instances[instance_id_1]),
+                                copy.deepcopy(exp.instances[instance_id_2]),
+                                distance_id=copy.deepcopy(exp.distance_id))
+        if type(distance) is tuple:
+            distance, matching = distance
+            matching = np.array(matching)
+            matchings[instance_id_1][instance_id_2] = matching
+            matchings[instance_id_2][instance_id_1] = np.argsort(matching)
+        distances[instance_id_1][instance_id_2] = distance
+        distances[instance_id_2][instance_id_1] = distances[instance_id_1][instance_id_2]
+        times[instance_id_1][instance_id_2] = time() - start_time
+        times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
+
+
+def run_multiple_processes(exp: Experiment, instances_ids: list,
                       distances: dict, times: dict, matchings: dict,
                       printing: bool, t) -> None:
     """ Single thread for computing distances """
 
-    for instance_id_1, instance_id_2 in thread_ids:
+    for instance_id_1, instance_id_2 in instances_ids:
         if t == 0 and printing:
             print(instance_id_1, instance_id_2)
         start_time = time()
@@ -120,21 +143,22 @@ def run_single_thread(exp: Experiment, thread_ids: list,
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
     if exp.store:
-        store_distances(exp, thread_ids, distances, times)
+        _store_distances(exp, instances_ids, distances, times, t)
 
 
-def store_distances(exp, thread_ids, distances, times):
+def _store_distances(exp, instances_ids, distances, times, t):
     """ Store distances to file """
     file_name = f'{exp.distance_id}_p{t}.csv'
     path = os.path.join(os.getcwd(), "experiments", exp.experiment_id, "distances", file_name)
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
         writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
-        for election_id_1, election_id_2 in thread_ids:
+        for election_id_1, election_id_2 in instances_ids:
             distance = float(distances[election_id_1][election_id_2])
             time_ = float(times[election_id_1][election_id_2])
             writer.writerow([election_id_1, election_id_2, distance, time_])
 
+
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 10.05.2022 #
+# LAST CLEANUP ON: 16.05.2022 #
 # # # # # # # # # # # # # # # #

@@ -4,7 +4,7 @@ import copy
 from mapel.main.objects.Family import Family
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
-from mapel.elections.glossary_ import *
+from mapel.main._glossary import *
 from mapel.main._utils import *
 import mapel.elections.models.mallows as mallows
 
@@ -106,6 +106,8 @@ class ElectionFamily(Family):
 
                 election.prepare_instance(store=store)
 
+                election.compute_potes()
+
                 elections[election_id] = election
 
                 _keys.append(election_id)
@@ -140,13 +142,14 @@ class ElectionFamily(Family):
                 election_id = get_instance_id(self.single, self.family_id, j)
 
                 election = ApprovalElection(experiment_id, election_id, model_id=self.model_id,
-                                           num_voters=self.num_voters,
-                                           num_candidates=self.num_candidates,
-                                           params=copy.deepcopy(params), ballot=ballot,
-                                           variable=variable, _import=False,
+                                             num_voters=self.num_voters, label=self.label,
+                                             num_candidates=self.num_candidates,
+                                             params=copy.deepcopy(params), ballot=ballot,
+                                            variable=variable, _import=False
                                            )
 
                 election.prepare_instance(store=store, params=params)
+                # election.prepare_instance(store=store)
 
                 elections[election_id] = election
 

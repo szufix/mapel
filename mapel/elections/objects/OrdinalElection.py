@@ -4,12 +4,11 @@ import os
 import csv
 import math
 
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import gamma
 
 import mapel.elections.models.mallows as mallows
-from mapel.elections.glossary_ import *
+from mapel.main._glossary import *
 from mapel.elections.models.group_separable import get_gs_caterpillar_vectors
 from mapel.elections.models.mallows import get_mallows_vectors
 from mapel.elections.models.preflib import get_sushi_vectors
@@ -20,28 +19,32 @@ from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
 from mapel.elections.other.winners2 import generate_winners
-from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
+from mapel.main._inner_distances import swap_distance_between_potes, spearman_distance_between_potes
+from mapel.elections.features.other import is_condorcet
 
 from sklearn.manifold import MDS
+
 
 class OrdinalElection(Election):
 
     def __init__(self, experiment_id, election_id, votes=None, with_matrix=False, alpha=None,
                  model_id=None, params=None, label=None,
                  ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None,
-                 _import: bool = False, shift: bool = False, variable = None):
+                 _import: bool = False, shift: bool = False, variable=None, fast_import=False):
 
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
-                         model_id=model_id, ballot=ballot,
+                         model_id=model_id, ballot=ballot, label=label,
                          num_voters=num_voters, num_candidates=num_candidates)
+        print(label)
 
         self.params = params
         self.variable = variable
-        self.label = label
-        self.store = True
 
         self.vectors = []
         self.matrix = []
+        self.borda_points = []
+        self.potes = None
+        self.condorcet = None
 
         if _import and experiment_id != 'virtual':
             try:
@@ -56,7 +59,7 @@ class OrdinalElection(Election):
                         self.votes = votes
                         self.num_candidates = len(votes[0])
                         self.num_voters = len(votes)
-                        self.potes = self.votes_to_potes()
+                        self.compute_potes()
                 else:
 
                     self.fake = check_if_fake(experiment_id, election_id)
@@ -65,7 +68,8 @@ class OrdinalElection(Election):
                         self.num_candidates = import_fake_soc_election(experiment_id, election_id)
                     else:
                         self.votes, self.num_voters, self.num_candidates, self.params, \
-                            self.model_id = import_real_soc_election(experiment_id, election_id, shift)
+                        self.model_id = import_real_soc_election(experiment_id, election_id,
+                                                                 shift, fast_import)
                         try:
                             self.alpha = 1
                             if self.params and 'alpha' in self.params:
@@ -73,7 +77,8 @@ class OrdinalElection(Election):
                         except KeyError:
                             print("Error")
                             pass
-                        self.potes = self.votes_to_potes()
+
+                        self.compute_potes()
 
                 self.candidatelikeness_original_vectors = {}
 
@@ -86,7 +91,6 @@ class OrdinalElection(Election):
             except:
                 pass
 
-
         if params is None:
             params = {}
 
@@ -95,24 +99,12 @@ class OrdinalElection(Election):
         if self.model_id == 'all_votes':
             alpha = 1
         else:
-            params, alpha = update_params(params, self.variable, self.model_id, self.num_candidates)
+            params, alpha = update_params_ordinal(params, self.variable, self.model_id,
+                                                  self.num_candidates)
 
         self.params = params
+        print(self.params)
 
-        self.borda_points = []
-
-
-        self.distances = None
-        try:
-            self.distances = self._import_distances()
-        except:
-            pass
-
-        self.coordinates = None
-        try:
-            self.coordinates = self._import_coordinates()
-        except:
-            pass
 
     def get_vectors(self):
         if self.vectors is not None and len(self.vectors) > 0:
@@ -125,7 +117,6 @@ class OrdinalElection(Election):
         return self.votes_to_positionwise_matrix()
 
     def votes_to_positionwise_vectors(self):
-
         vectors = np.zeros([self.num_candidates, self.num_candidates])
 
         if self.model_id == 'conitzer_matrix':
@@ -248,27 +239,12 @@ class OrdinalElection(Election):
     def votes_to_voterlikeness_matrix(self, vector_type=None) -> np.ndarray:
         """ convert VOTES to voter-likeness MATRIX """
         matrix = np.zeros([self.num_voters, self.num_voters])
-        # print(self.votes)
-        self.potes = self.votes_to_potes()
+        self.compute_potes()
 
         for v1 in range(self.num_voters):
             for v2 in range(self.num_voters):
-                # Spearman distance between votes
-                # matrix[v1][v2] = sum([abs(experiment.potes[v1][c]
-                # - experiment.potes[v2][c]) for c in range(experiment.num_candidates)])
-
-                # Swap distance between votes
-
-                # for i in range(self.num_candidates):
-                #     for j in range(i + 1, self.num_candidates):
-                swap_distance = 0
-                for i, j in itertools.combinations(self.potes[0], 2):
-                    if (self.potes[v1][i] > self.potes[v1][j] and
-                        self.potes[v2][i] < self.potes[v2][j]) or \
-                            (self.potes[v1][i] < self.potes[v1][j] and
-                             self.potes[v2][i] > self.potes[v2][j]):
-                        swap_distance += 1
-                matrix[v1][v2] = swap_distance
+                matrix[v1][v2] = swap_distance_between_potes(self.potes[v1], self.potes[v2])
+                # matrix[v1][v2] = spearman_distance_between_potes(self.potes[v1], self.potes[v2])
 
         # VOTERLIKENESS IS SYMETRIC
         for i in range(self.num_voters):
@@ -335,16 +311,17 @@ class OrdinalElection(Election):
     # PREPARE INSTANCE
     def prepare_instance(self, store=None):
 
-        self.votes = generate_ordinal_votes(model_id=self.model_id, num_candidates=self.num_candidates,
-                                       num_voters=self.num_voters, params=self.params)
+        self.votes = generate_ordinal_votes(model_id=self.model_id,
+                                            num_candidates=self.num_candidates,
+                                            num_voters=self.num_voters,
+                                            params=self.params)
 
         if store:
-            self.store_ordinal_election()
+            self._store_ordinal_election()
 
     # STORE
-    def store_ordinal_election(self):
+    def _store_ordinal_election(self):
         """ Store ordinal election in a .soc file """
-
         if self.model_id in LIST_OF_FAKE_MODELS:
             path = os.path.join("experiments", str(self.experiment_id),
                                 "elections", (str(self.election_id) + ".soc"))
@@ -359,210 +336,36 @@ class OrdinalElection(Election):
             path = os.path.join("experiments", str(self.experiment_id), "elections",
                                 (str(self.election_id) + ".soc"))
 
-            store_votes_in_a_file(self, self.model_id, self.election_id,
-                                  self.num_candidates, self.num_voters,
+            store_votes_in_a_file(self, self.model_id, self.num_candidates, self.num_voters,
                                   self.params, path, self.ballot, votes=self.votes)
 
-    def compute_distances(self):
+    def compute_distances(self, distance_id='swap'):
 
-        potes = self.votes_to_potes()
-
-        distances = np.zeros([len(potes), len(potes)])
-        for v1 in range(len(potes)):
-            for v2 in range(len(potes)):
-                swap_distance = 0
-                for i, j in itertools.combinations(potes[0], 2):
-                    if (potes[v1][i] > potes[v1][j] and
-                        potes[v2][i] < potes[v2][j]) or \
-                            (potes[v1][i] < potes[v1][j] and
-                             potes[v2][i] > potes[v2][j]):
-                        swap_distance += 1
-                distances[v1][v2] = swap_distance
-
-        if self.store:
-            file_name = f'{self.election_id}.csv'
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
-
-            with open(path, 'w', newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(
-                    ["v1", "v2", "distance"])
-
-                for v1 in range(len(potes)):
-                    for v2 in range(len(potes)):
-                        distance = str(distances[v1][v2])
-                        writer.writerow([v1, v2, distance])
-
-        self.distances = distances
-        return distances
-
-    def _import_distances(self):
-
-        file_name = f'{self.election_id}.csv'
-        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'distances',
-                            file_name)
+        self.compute_potes()
 
         distances = np.zeros([self.num_voters, self.num_voters])
-        with open(path, 'r', newline='') as csv_file:
+        for v1 in range(self.num_voters):
+            for v2 in range(len(self.potes)):
+                if distance_id == 'swap':
+                    distances[v1][v2] = swap_distance_between_potes(
+                        self.potes[v1], self.potes[v2])
+                elif distance_id == 'spearman':
+                    distances[v1][v2] = spearman_distance_between_potes(
+                        self.potes[v1], self.potes[v2])
 
-            reader = csv.DictReader(csv_file, delimiter=';')
+        self.distances = distances
 
-            for row in reader:
-                distances[int(row['v1'])][int(row['v2'])] = float(row['distance'])
-                distances[int(row['v2'])][int(row['v1'])] = float(row['distance'])
+        if self.store:
+            self._store_distances()
 
         return distances
 
-    @staticmethod
-    def rotate_point(cx, cy, angle, px, py) -> (float, float):
-        """ Rotate two-dimensional point by an angle """
-        s, c = math.sin(angle), math.cos(angle)
-        px -= cx
-        py -= cy
-        x_new, y_new = px * c - py * s, px * s + py * c
-        px, py = x_new + cx, y_new + cy
+    def is_condorcet(self):
+        """ Check if election witness Condorcet winner"""
+        if self.condorcet is None:
+            self.condorcet = is_condorcet(self)
 
-        return px, py
-
-    def rotate(self, angle) -> None:
-        """ Rotate all the points by a given angle """
-        for instance_id in range(len(self.coordinates)):
-            self.coordinates[instance_id][0], self.coordinates[instance_id][1] = \
-                self.rotate_point(0.5, 0.5, angle, self.coordinates[instance_id][0],
-                                  self.coordinates[instance_id][1])
-
-    def embed(self, algorithm='MDS'):
-
-        # my_pos = KamadaKawai().embed(
-        #     distances=distances,
-        # )
-        self.coordinates = MDS(n_components=2, dissimilarity='precomputed').fit_transform(self.distances)
-        # ADJUST
-
-        # find max dist
-        print(self.model_id)
-        if not 'identity' in self.model_id.lower():
-            dist = np.zeros([len(self.coordinates), len(self.coordinates)])
-            for pos_1, pos_2 in itertools.combinations([i for i in range(len(self.coordinates))], 2):
-                # print(pos_1, pos_2)
-                dist[pos_1][pos_2] = np.linalg.norm(self.coordinates[pos_1] - self.coordinates[pos_2])
-
-            result = np.where(dist == np.amax(dist))
-            id_1 = result[0][0]
-            id_2 = result[1][0]
-
-            # rotate
-            left = id_1
-            right = id_2
-
-            try:
-                d_x = self.coordinates[right][0] - self.coordinates[left][0]
-                d_y = self.coordinates[right][1] - self.coordinates[left][1]
-                alpha = math.atan(d_x / d_y)
-                self.rotate(alpha - math.pi / 2.)
-                self.rotate(math.pi / 4.)
-            except Exception:
-                pass
-
-        if self.store:
-            file_name = f'{self.election_id}.csv'
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates", file_name)
-
-            with open(path, 'w', newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(["vote_id", "x", "y"])
-
-                for vote_id in range(self.num_voters):
-                    x = str(self.coordinates[vote_id][0])
-                    y = str(self.coordinates[vote_id][1])
-                    writer.writerow([vote_id, x, y])
-
-        return self.coordinates
-
-    def _import_coordinates(self):
-
-        file_name = f'{self.election_id}.csv'
-        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'coordinates',
-                            file_name)
-        coordinates = np.zeros([self.num_voters, 2])
-        with open(path, 'r', newline='') as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=';')
-
-            for row in reader:
-                coordinates[int(row['vote_id'])] = [float(row['x']), float(row['y'])]
-        return coordinates
-
-    def print_map(self, show=True, radius=100):
-        plt.figure(figsize=(6.4, 6.4))
-
-        X=[]
-        Y=[]
-        for elem in self.coordinates:
-            X.append(elem[0])
-            Y.append(elem[1])
-        plt.scatter(X, Y, color='blue', s=12, alpha=0.3)
-        plt.xlim([-radius, radius])
-        plt.ylim([-radius, radius])
-        plt.title(self.label, size=26)
-        plt.axis('off')
-
-
-
-        file_name = os.path.join(os.getcwd(), "images", "mini_maps", f'{self.label}.png')
-        plt.savefig(file_name, bbox_inches='tight', dpi=250)
-        if show:
-            plt.show()
-        else:
-            plt.clf()
-
-    def online_mini_map(self):
-
-        potes = self.votes_to_potes()
-
-        distances = np.zeros([len(potes), len(potes)])
-        for v1 in range(len(potes)):
-            for v2 in range(len(potes)):
-                swap_distance = 0
-                for i, j in itertools.combinations(potes[0], 2):
-                    if (potes[v1][i] > potes[v1][j] and
-                        potes[v2][i] < potes[v2][j]) or \
-                            (potes[v1][i] < potes[v1][j] and
-                             potes[v2][i] > potes[v2][j]):
-                        swap_distance += 1
-                distances[v1][v2] = swap_distance
-
-        # my_pos = KamadaKawai().embed(
-        #     distances=distances,
-        # )
-        my_pos = MDS(n_components=2, dissimilarity='precomputed').fit_transform(distances)
-        X = []
-        Y = []
-        for elem in my_pos:
-            X.append(elem[0])
-            Y.append(elem[1])
-        plt.scatter(X, Y, color='blue', s=12, alpha=0.3)
-        plt.xlim([-100,100])
-        plt.ylim([-100,100])
-        plt.title(self.label, size=26)
-        plt.axis('off')
-
-        file_name = os.path.join(os.getcwd(), "images", "mini_maps", f'{self.label}.png')
-        plt.savefig(file_name, bbox_inches='tight', dpi=250)
-        # plt.clf()
-        # plt.savefig(file_name, bbox_inches=bbox_inches, dpi=250)
-        plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
+        return self.condorcet
 
 
 def get_fake_multiplication(num_candidates, params, model):
@@ -806,7 +609,8 @@ def old_name_extractor(first_line):
     return model_name
 
 
-def import_real_soc_election(experiment_id: str, election_id: str, shift=False):
+def import_real_soc_election(experiment_id: str, election_id: str, shift=False,
+                             fast_import=False):
     """ Import real ordinal election form .soc file """
 
     file_name = f'{election_id}.soc'
@@ -825,15 +629,14 @@ def import_real_soc_election(experiment_id: str, election_id: str, shift=False):
         if experiment_id == 'original_ordinal_map':
             params = {}
             model_name = old_name_extractor(first_line)
-            # print(model_name)
         else:
-            # params = {}
             if len(first_line) <= 2:
                 params = {}
             else:
                 params = ast.literal_eval(" ".join(first_line[2:]))
 
         num_candidates = int(my_file.readline())
+
 
     for _ in range(num_candidates):
         my_file.readline()
@@ -842,6 +645,14 @@ def import_real_soc_election(experiment_id: str, election_id: str, shift=False):
     num_voters = int(line[0])
     num_options = int(line[2])
     votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
+
+
+    ## TMP
+    # if fast_import:
+    #     my_file.close()
+    #     return votes, num_voters, num_candidates, params, model_name
+    ## END OF TMP
+
 
     it = 0
     for j in range(num_options):
@@ -865,68 +676,65 @@ def import_real_soc_election(experiment_id: str, election_id: str, shift=False):
 def convert_ordinal_to_approval(votes):
     approval_votes = [{} for _ in range(len(votes))]
     for i, vote in enumerate(votes):
-        k = int(np.random.beta(2, 6)*len(votes[0]))+1
+        k = int(np.random.beta(2, 6) * len(votes[0])) + 1
         approval_votes[i] = set(vote[0:k])
 
     return approval_votes
 
 
 # HELPER FUNCTIONS
+def update_params_ordinal_mallows(params):
+    if 'phi' in params and type(params['phi']) is list:
+        params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
+    elif params['phi'] is None:
+        params['phi'] = np.random.random()
+    params['alpha'] = params['phi']
 
 
-def update_params(params, variable, model_id, num_candidates):
+def update_params_ordinal_norm_mallows(params, num_candidates):
+    if params['norm-phi'] is None:
+        params['norm-phi'] = np.random.random()
+    params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+    if 'weight' not in params:
+        params['weight'] = 0.
+    params['alpha'] = params['norm-phi']
+
+def update_params_ordinal_urn_model(params):
+    if params['alpha'] is None:
+        params['alpha'] = gamma.rvs(0.8)
+
+
+def update_params_ordinal_mallows_matrix_path(params, num_candidates):
+    params['norm-phi'] = params['alpha']
+    params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+
+
+def update_params_ordinal_alpha(params):
+    if 'alpha' not in params:
+        params['alpha'] = 1
+    elif type(params['alpha']) is list:
+        params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
+
+
+def update_params_ordinal(params, variable, model_id, num_candidates):
 
     if variable is not None:
+
         params['alpha'] = params[variable]
         params['variable'] = variable
 
-        if model_id in APPROVAL_MODELS:
-            if 'p' not in params:
-                params['p'] = np.random.rand()
-            elif type(params['p']) is list:
-                params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
-
     else:
-        if model_id in ['approval_partylist']:
-            return params, 1
 
-        if model_id in APPROVAL_MODELS:
-            if 'p' not in params:
-                params['p'] = np.random.rand()
-            elif type(params['p']) is list:
-                params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+        if model_id == 'mallows':
+            update_params_ordinal_mallows(params)
+        elif model_id == 'norm_mallows':
+            update_params_ordinal_norm_mallows(params, num_candidates)
+        elif model_id == 'urn_model':
+            update_params_ordinal_urn_model(params)
+        elif model_id == 'mallows_matrix_path':
+            update_params_ordinal_mallows_matrix_path(params, num_candidates)
 
-        if 'phi' in params and type(params['phi']) is list:
-            params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
-
-        if model_id == 'mallows' and params['phi'] is None:
-            params['phi'] = np.random.random()
-        elif model_id == 'norm-mallows' and 'norm-phi' not in params:
-            params['norm-phi'] = np.random.random()
-        elif model_id in ['urn_model', 'approval_urn'] and 'alpha' not in params:
-            params['alpha'] = gamma.rvs(0.8)
-
-        if model_id == 'norm-mallows':
-            params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
-            if 'weight' not in params:
-                params['weight'] = 0.
-
-        if model_id == 'mallows_matrix_path':
-            params['norm-phi'] = params['alpha']
-            params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
-
-        if model_id == 'erdos_renyi_graph' and params['p'] is None:
-            params['p'] = np.random.random()
-
-        if 'alpha' not in params:
-            if 'norm-phi' in params:
-                params['alpha'] = params['norm-phi']
-            elif 'phi' in params:
-                params['alpha'] = params['phi']
-            else:
-                params['alpha'] = np.random.rand()
-        elif type(params['alpha']) is list:
-            params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
+        update_params_ordinal_alpha(params)
 
     return params, params['alpha']
 
@@ -946,4 +754,3 @@ def prepare_parties(model_id=None, params=None):
             parties.append(point)
 
     return parties
-

@@ -4,7 +4,7 @@ import os
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
 from mapel.elections.other import pabulib
-from mapel.elections.glossary_ import *
+from mapel.main._glossary import *
 from mapel.main._utils import *
 
 try:
@@ -27,12 +27,18 @@ class ApprovalElectionExperiment(ElectionExperiment):
 
     def __init__(self, instances=None, distances=None, _import=True, shift=False,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
-                 instance_type='approval', dim=2, store=True):
+                 instance_type='approval', dim=2, store=True,
+                                         coordinates_names=None,
+                                         embedding_id='kamada',
+                                         fast_import=False):
         self.shift = shift
         super().__init__(instances=instances, distances=distances,
                          coordinates=coordinates, distance_id=distance_id,
                          experiment_id=experiment_id, dim=dim, store=store,
-                         instance_type=instance_type, _import=_import)
+                         instance_type=instance_type, _import=_import,
+                         coordinates_names=coordinates_names,
+                         embedding_id=embedding_id,
+                         fast_import=fast_import)
 
     # def add_elections_to_experiment(self) -> dict:
     #     """ Return: elections imported from files """

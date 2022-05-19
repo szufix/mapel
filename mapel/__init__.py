@@ -25,7 +25,8 @@ def hello():
 
 def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
                        coordinates=None, distance_id='emd-positionwise', _import=True,
-                       shift=False, dim=2, store=True, coordinates_names=None):
+                       shift=False, dim=2, store=True, coordinates_names=None,
+                       embedding_id='kamada', fast_import=False):
 
     if instance_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
@@ -33,13 +34,18 @@ def prepare_experiment(experiment_id=None, instances=None, distances=None, insta
                                          instance_type=instance_type,
                                          distances=distances, coordinates=coordinates,
                                          distance_id=distance_id,
-                                         coordinates_names=coordinates_names)
+                                         coordinates_names=coordinates_names,
+                                         embedding_id=embedding_id,
+                                         fast_import=fast_import)
     elif instance_type in ['approval', 'rule']:
         return ApprovalElectionExperiment(experiment_id=experiment_id, shift=shift,
-                                          instances=instances, _import=_import,
-                                          instance_type=instance_type,
-                                          distances=distances, coordinates=coordinates,
-                                          distance_id=distance_id)
+                                         instances=instances, dim=dim, store=store,
+                                         instance_type=instance_type,
+                                         distances=distances, coordinates=coordinates,
+                                         distance_id=distance_id,
+                                         coordinates_names=coordinates_names,
+                                         embedding_id=embedding_id,
+                                         fast_import=fast_import)
     elif instance_type == 'roommates':
         return RoommatesExperiment(experiment_id=experiment_id, _import=_import,
                                    distance_id=distance_id, instance_type=instance_type)
@@ -75,6 +81,7 @@ def generate_election(**kwargs):
     election.prepare_instance()
     return election
 
+
 def generate_roommates_instance(**kwargs):
     instance = Roommates('virtual', 'tmp', **kwargs)
     instance.prepare_instance()
@@ -83,6 +90,7 @@ def generate_roommates_instance(**kwargs):
 
 def generate_roommates_votes(**kwargs):
     return rom.generate_votes(**kwargs)
+
 
 def compute_distance(*args, **kwargs):
     return metr.get_distance(*args, **kwargs)

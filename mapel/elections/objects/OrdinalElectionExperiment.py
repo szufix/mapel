@@ -25,13 +25,16 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
     def __init__(self, instances=None, distances=None, _import=True, shift=False,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
-                 instance_type='ordinal', dim=2, store=True, coordinates_names=None):
+                 instance_type='ordinal', dim=2, store=True, coordinates_names=None,
+                 embedding_id='kamada', fast_import=False):
         self.shift = shift
         super().__init__(instances=instances, distances=distances,
                          coordinates=coordinates, distance_id=distance_id,
                          experiment_id=experiment_id, dim=dim, store=store,
                          instance_type=instance_type, _import=_import,
-                         coordinates_names=coordinates_names)
+                         coordinates_names=coordinates_names,
+                         embedding_id=embedding_id,
+                         fast_import=fast_import)
 
 
     # def add_elections_to_experiment_old(self, with_matrices=False):

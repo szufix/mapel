@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
-import copy
-import os
 from collections import Counter
 from typing import Union
 
 import numpy as np
-from scipy.stats import gamma
 
 import mapel.elections.models.euclidean as euclidean
 import mapel.elections.models.group_separable as group_separable
@@ -16,7 +13,7 @@ import mapel.elections.models.mallows as mallows
 import mapel.elections.models.single_crossing as single_crossing
 import mapel.elections.models.single_peaked as single_peaked
 import mapel.elections.models.urn_model as urn_model
-from mapel.elections.glossary_ import *
+from mapel.main._glossary import *
 from mapel.elections.models.preflib import generate_preflib_votes
 
 
@@ -29,12 +26,12 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                    'approval_noise_model': mallows.generate_approval_noise_model_votes,
                    'approval_urn': urn_model.generate_approval_urn_votes,
                    'approval_euclidean': euclidean.generate_approval_euclidean_votes,
-                   'approval_disjoint_resampling': mallows.generate_approval_disjoint_shumallows_votes,
+                   'approval_disjoint_resampling': mallows.generate_approval_disjoint_resamplin_votes,
                    'approval_vcr': euclidean.generate_approval_vcr_votes,
                    'approval_truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
                    'approval_truncated_urn': urn_model.generate_approval_truncated_urn_votes,
                    'approval_moving_resampling': mallows.generate_approval_moving_resampling_votes,
-                   'approval_simplex_shumallows': mallows.generate_approval_simplex_shumallows_votes,
+                   'approval_simplex_resampling': mallows.generate_approval_simplex_resampling_votes,
                    'approval_anti_pjr': mallows.approval_anti_pjr_votes,
                    'approval_partylist': mallows.approval_partylist_votes,
                    }
@@ -105,12 +102,12 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
     single_param_models = {'urn_model': urn_model.generate_urn_votes,
                            'group-separable':
                                group_separable.generate_ordinal_group_separable_votes,
-
                            'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
                            'weighted_stratification': impartial.generate_weighted_stratification_votes}
 
     double_param_models = {'mallows': mallows.generate_mallows_votes,
                            'norm-mallows': mallows.generate_mallows_votes,
+                           'norm-mallows_with_walls':  mallows.generate_norm_mallows_with_walls_votes,
                            'norm-mallows_mixture': mallows.generate_norm_mallows_mixture_votes,
                            'walsh_mallows': single_peaked.generate_walsh_mallows_votes,
                            'conitzer_mallows': single_peaked.generate_conitzer_mallows_votes,}
@@ -149,14 +146,13 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
     return votes
 
 
-def store_votes_in_a_file(election, model_id, election_id, num_candidates, num_voters,
+def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
                           params, path, ballot, votes=None):
     """ Store votes in a file """
     if votes is None:
         votes = election.votes
 
     with open(path, 'w') as file_:
-
         if model_id in NICE_NAME:
             file_.write("# " + NICE_NAME[model_id] + " " + str(params) + "\n")
         else:
@@ -193,7 +189,6 @@ def store_votes_in_a_file(election, model_id, election_id, num_candidates, num_v
                 file_.write("\n")
 
 
-
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 22.10.2021 #
+# LAST CLEANUP ON: 16.05.2022 #
 # # # # # # # # # # # # # # # #

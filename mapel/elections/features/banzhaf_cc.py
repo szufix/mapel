@@ -36,7 +36,7 @@ def get_banzhaf_cc_score(election, feature_params):
 
 def voter_score(BASE, BINOM, election, v, c, committee_size, winners):
 
-    potes = election.votes_to_potes()
+    potes = election.get_potes()
     m = election.num_candidates
 
     Wa = 0

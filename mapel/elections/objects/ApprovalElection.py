@@ -5,26 +5,34 @@ import os
 
 import numpy as np
 
-from mapel.elections.glossary_ import *
+from scipy.stats import gamma
+
+import mapel.elections.models.mallows as mallows
+from mapel.main._glossary import *
 from mapel.main._inner_distances import hamming
 from mapel.elections.objects.Election import Election
 from mapel.elections.models_ import generate_approval_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
-from mapel.elections.objects.OrdinalElection import update_params
+# from mapel.elections.objects.OrdinalElection import update_params
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
 from mapel.elections.other.winners2 import generate_winners
+
+from mapel.main._inner_distances import hamming
+
+
 
 
 class ApprovalElection(Election):
 
     def __init__(self, experiment_id, election_id, votes=None, alpha=1, model_id=None,
                  ballot='approval', num_voters=None, num_candidates=None, _import=False,
-                 shift: bool = False, params=None, variable=None):
+                 shift: bool = False, params=None, variable=None, label=None):
 
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
                          model_id=model_id, ballot=ballot, num_voters=num_voters,
-                         num_candidates=num_candidates)
+                         num_candidates=num_candidates, label=label)
+        print(label)
 
         self.params = params
         self.variable = variable
@@ -35,26 +43,31 @@ class ApprovalElection(Election):
         self.pairwise_matrix = []
         self.candidatelikeness_original_vectors = []
         self.candidatelikeness_sorted_vectors = []
-        self.model = model_id
         self.hamming_candidates = []
         self.reverse_approvals = []
 
-        if _import:
-            fake = check_if_fake(experiment_id, election_id)
-            if fake:
-                self.model, self.params, self.num_voters, self.num_candidates = \
-                    import_fake_app_election(experiment_id, election_id)
-            else:
-                self.votes, self.num_voters, self.num_candidates, self.params, \
-                self.model = import_real_app_election(experiment_id, election_id, shift)
-                try:
-                    self.alpha = self.params['alpha']
-                except:
-                    self.alpha = 1
-                    pass
+        if _import and experiment_id != 'virtual':
+            try:
+                fake = check_if_fake(experiment_id, election_id)
+                if fake:
+                    self.model_id, self.params, self.num_voters, self.num_candidates = \
+                        import_fake_app_election(experiment_id, election_id)
+                else:
+                    self.votes, self.num_voters, self.num_candidates, self.params, \
+                    self.model_id = import_real_app_election(experiment_id, election_id, shift)
+                    try:
+                        self.alpha = self.params['alpha']
+                    except:
+                        self.alpha = 1
+                        pass
+            except:
+                pass
+
+
+        print(self.model_id)
 
     def votes_to_approvalwise_vector(self) -> None:
-        """ Convert votes to ... """
+        """ Convert votes to approvalwise vectors """
 
         if self.model == 'approval_half_1':
             self.approvalwise_vector = np.sort(np.array([0.75 for _ in
@@ -76,7 +89,7 @@ class ApprovalElection(Election):
             self.approvalwise_vector = np.sort(approvalwise_vector)
 
     def votes_to_coapproval_frequency_vectors(self, vector_type='A') -> None:
-        """ Convert votes to ... """
+        """ Convert votes to frequency vectors """
         vectors = np.zeros([self.num_candidates, self.num_candidates * 2])
         for vote in self.votes:
             size = len(vote)
@@ -104,7 +117,7 @@ class ApprovalElection(Election):
         self.coapproval_frequency_vectors = vectors
 
     def votes_to_pairwise_matrix(self) -> None:
-        """ Convert votes to ... """
+        """ Convert votes to pairwise matrix """
         matrix = np.zeros([self.num_candidates, self.num_candidates])
 
         for c_1 in range(self.num_candidates):
@@ -176,25 +189,8 @@ class ApprovalElection(Election):
                                              num_candidates=self.num_candidates,
                                              num_voters=self.num_voters, params=params)
         self.params = params
-        # election = OrdinalElection("virtual", "virtual", votes=votes, model_id=self.model_id,
-        #                            num_candidates=self.num_candidates, params=params,
-        #                            num_voters=self.num_voters, ballot=self.ballot, alpha=alpha)
-
-        # elif ballot == 'approval':
-        #     votes = generate_approval_votes(model_id=model_id, num_candidates=num_candidates,
-        #                                     num_voters=num_voters, params=params)
-        #     election = ApprovalElection(experiment.experiment_id, election_id, votes=votes,
-        #                                 model_id=model_id,
-        #                                 num_candidates=num_candidates,
-        #                                 num_voters=num_voters, ballot=ballot, alpha=alpha)
-
         if store:
             self.store_approval_election()
-            # store_ordinal_election(experiment, model_id, election_id, num_candidates,
-            #                        num_voters, params, ballot)
-            # if ballot == 'approval':
-            #     store_approval_election(self, model_id, election_id, num_candidates,
-            #                             num_voters, params, ballot)
 
     # STORE
     def store_approval_election(self):
@@ -213,13 +209,29 @@ class ApprovalElection(Election):
             path = os.path.join("experiments", str(self.experiment_id), "elections",
                                 (str(self.election_id) + ".app"))
 
-            store_votes_in_a_file(self, self.model_id, self.election_id,
-                                  self.num_candidates, self.num_voters,
+            store_votes_in_a_file(self, self.model_id, self.num_candidates, self.num_voters,
                                   self.params, path, self.ballot, votes=self.votes)
 
+    def compute_distances(self, distance_id='hamming'):
+
+        distances = np.zeros([self.num_voters, self.num_voters])
+        for v1 in range(self.num_voters):
+            for v2 in range(self.num_voters):
+                if distance_id == 'hamming':
+                    distances[v1][v2] = hamming(self.votes[v1], self.votes[v2])
+
+        self.distances = distances
+
+        if self.store:
+            self._store_distances()
+
+        return distances
 
 def import_real_app_election(experiment_id: str, election_id: str, shift=False):
     """ Import real approval election from .app file """
+
+    # print("model", model_id)
+    print("model")
 
     file_name = f'{election_id}.app'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
@@ -239,6 +251,7 @@ def import_real_app_election(experiment_id: str, election_id: str, shift=False):
             params = ast.literal_eval(" ".join(first_line[2:]))
 
         num_candidates = int(my_file.readline())
+
 
     for _ in range(num_candidates):
         my_file.readline()
@@ -269,6 +282,7 @@ def import_real_app_election(experiment_id: str, election_id: str, shift=False):
             for c in vote:
                 new_vote.add(c - 1)
             votes[i] = new_vote
+    my_file.close()
 
     return votes, num_voters, num_candidates, params, model_id
 
@@ -298,6 +312,7 @@ def check_if_fake(experiment_id: str, election_id: str) -> bool:
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     line = my_file.readline().strip()
+    my_file.close()
     return line[0] == '$'
 
 
@@ -311,3 +326,61 @@ def get_skeleton_approvalwise_vector(election):
         vector[i] += 1 - phi
 
     return np.array(vector)
+
+
+def update_params(params, variable, model_id, num_candidates):
+
+    if variable is not None:
+
+        if model_id in APPROVAL_MODELS:
+            if 'p' not in params:
+                params['p'] = np.random.rand()
+            elif type(params['p']) is list:
+                params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+
+        params['alpha'] = params[variable]
+        params['variable'] = variable
+
+    else:
+        if model_id in ['approval_partylist']:
+            return params, 1
+
+        if model_id in APPROVAL_MODELS:
+            if 'p' not in params:
+                params['p'] = np.random.rand()
+            elif type(params['p']) is list:
+                params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+
+        if 'phi' in params and type(params['phi']) is list:
+            params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
+
+        if model_id == 'mallows' and params['phi'] is None:
+            params['phi'] = np.random.random()
+        elif model_id == 'norm-mallows' and 'norm-phi' not in params:
+            params['norm-phi'] = np.random.random()
+        elif model_id in ['urn_model', 'approval_urn'] and 'alpha' not in params:
+            params['alpha'] = gamma.rvs(0.8)
+
+        if model_id == 'norm-mallows':
+            params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+            if 'weight' not in params:
+                params['weight'] = 0.
+
+        if model_id == 'mallows_matrix_path':
+            params['norm-phi'] = params['alpha']
+            params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+
+        if model_id == 'erdos_renyi_graph' and params['p'] is None:
+            params['p'] = np.random.random()
+
+        if 'alpha' not in params:
+            if 'norm-phi' in params:
+                params['alpha'] = params['norm-phi']
+            elif 'phi' in params:
+                params['alpha'] = params['phi']
+            else:
+                params['alpha'] = np.random.rand()
+        elif type(params['alpha']) is list:
+            params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
+
+    return params, params['alpha']

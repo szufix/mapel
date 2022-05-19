@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 import csv
+import itertools
+import logging
 import math
 import os
 import warnings
-import logging
 from abc import ABCMeta, abstractmethod
 
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-
-import itertools
-import matplotlib.pyplot as plt
 from scipy.stats import stats
 
 from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
@@ -41,16 +40,19 @@ class Experiment:
 
     def __init__(self, instances=None, distances=None, dim=2, store=True,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
-                 instance_type='ordinal', _import=True, clean=False, coordinates_names=None):
+                 instance_type='ordinal', _import=True, clean=False, coordinates_names=None,
+                 embedding_id='kamada', fast_import=False):
 
         self._import = _import
         self.clean = clean
         self.experiment_id = experiment_id
+        self.fast_import = fast_import
 
         if clean:
             self.clean_elections()
 
         self.distance_id = distance_id
+        self.embedding_id = embedding_id
 
         self.instances = None
         self.distances = None
@@ -125,6 +127,7 @@ class Experiment:
 
         for family_id in self.families:
             for instance_id in self.families[family_id].instance_ids:
+                print(self.families[family_id].label)
                 self.instances[instance_id].label = self.families[family_id].label
 
     @abstractmethod
@@ -144,10 +147,9 @@ class Experiment:
               zero_distance: float = 0.1, factor: float = 1., saveas: str = None,
               init_pos: dict = None, fixed=True) -> None:
 
+        attraction_factor = 1
         if algorithm == 'spring':
             attraction_factor = 2
-        else:
-            attraction_factor = 1
 
         num_elections = len(self.distances)
 
@@ -159,10 +161,7 @@ class Experiment:
             initial_positions = {}
             for i, instance_id_1 in enumerate(self.distances):
                 if instance_id_1 in init_pos:
-                    # initial_positions.update(0='portal')
                     initial_positions[i] = init_pos[instance_id_1]
-
-        # print(initial_positions)
 
         for i, instance_id_1 in enumerate(self.distances):
             for j, instance_id_2 in enumerate(self.distances):
@@ -243,9 +242,9 @@ class Experiment:
 
         if self.store:
             if saveas is None:
-                file_name = f'{self.distance_id}_{str(dim)}d.csv'
+                file_name = f'{algorithm}_{self.distance_id}_{str(dim)}d.csv'
             else:
-                file_name = saveas
+                file_name = f'{saveas}.csv'
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "coordinates", file_name)
             with open(path, 'w', newline='') as csvfile:
@@ -302,9 +301,10 @@ class Experiment:
 
         coordinates = {}
         if file_name is None:
-            file_name = f'{self.distance_id}_{dim}d.csv'
+            file_name = f'{self.embedding_id}_{self.distance_id}_{dim}d.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                             "coordinates", file_name)
+        print(path)
         with open(path, 'r', newline='') as csv_file:
 
             # ORIGINAL
@@ -378,8 +378,10 @@ class Experiment:
 
                 try:
                     for instance_id in self.families[family_id].instance_ids:
-                        coordinates_by_families[family_id][0].append(self.coordinates[instance_id][0])
-                        coordinates_by_families[family_id][1].append(self.coordinates[instance_id][1])
+                        coordinates_by_families[family_id][0].append(
+                            self.coordinates[instance_id][0])
+                        coordinates_by_families[family_id][1].append(
+                            self.coordinates[instance_id][1])
                         try:
                             coordinates_by_families[family_id][2].append(
                                 self.coordinates[instance_id][2])
@@ -497,7 +499,8 @@ class Experiment:
 
                 try:
                     distances[instance_id_1][instance_id_2] = float(row['distance'])
-                    distances[instance_id_2][instance_id_1] = distances[instance_id_1][instance_id_2]
+                    distances[instance_id_2][instance_id_1] = distances[instance_id_1][
+                        instance_id_2]
                 except KeyError:
                     pass
 
@@ -615,18 +618,18 @@ class Experiment:
         names = list(all_distances.keys())
 
         def nice(name):
-            return{
+            return {
                 'spearman': 'Spearman',
                 'l1-mutual_attraction': '$\ell_1$ Mutual Attraction',
                 'emd-positionwise': 'EMD-Positionwise',
-                }.get(name)
+            }.get(name)
 
         def normalize(name):
-            return{
+            return {
                 'spearman': 1.,
                 'l1-mutual_attraction': 1.,
                 'emd-positionwise': 1.,
-                }.get(name)
+            }.get(name)
 
         for name_1, name_2 in itertools.combinations(names, 2):
 
@@ -652,27 +655,26 @@ class Experiment:
 
             a = []
             b = []
-            for x,y in zip(values_x, values_y):
-                a.append(x/y)
-                b.append(y/x)
-            print("avg", sum(b)/len(b))
+            for x, y in zip(values_x, values_y):
+                a.append(x / y)
+                b.append(y / x)
+            print("avg", sum(b) / len(b))
             print("avg", sum(a) / len(a))
             print(max(a), min(a))
             print(max(b), min(b))
             limit_1 = 1.48
-            b_approx = [x for x in b if x>limit_1]
-            print(len(b), len(b_approx), (len(b)-len(b_approx))/len(b))
+            b_approx = [x for x in b if x > limit_1]
+            print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
 
             limit_2 = 0.82
-            b_approx = [x for x in b if x<limit_2]
-            print(len(b), len(b_approx), (len(b)-len(b_approx))/len(b))
+            b_approx = [x for x in b if x < limit_2]
+            print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
 
+            b_approx = [x for x in b if (x < limit_2 or x > limit_1)]
+            print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
 
-            b_approx = [x for x in b if (x<limit_2 or x>limit_1)]
-            print(len(b), len(b_approx), (len(b)-len(b_approx))/len(b))
-
-            empty_x = np.linspace(0,500,100)
-            empty_y = [limit_1*x for x in empty_x]
+            empty_x = np.linspace(0, 500, 100)
+            empty_y = [limit_1 * x for x in empty_x]
 
             ax.scatter(values_x, values_y, s=4, alpha=0.01, color='purple')
             ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
@@ -694,34 +696,34 @@ class Experiment:
             plt.savefig(saveas, bbox_inches='tight')
             # plt.show()
 
-    def merge_election_images(self, size=250):
+    def merge_election_images(self, size=250, name=None):
 
         images = []
         for election in self.instances.values():
             print(election.label)
             # Read the two images
-            images.append(Image.open(f'images/mini_maps/{election.label}.png'))
+            images.append(Image.open(f'images/{name}/{election.label}.png'))
         # resize, first image
         # image1 = image1.resize((426, 240))
         image1_size = images[0].size
 
-        new_image = Image.new('RGB', (5 * image1_size[0], 8 * image1_size[1]), (size, size, size))
+        new_image = Image.new('RGB', (5 * image1_size[0], 6 * image1_size[1]), (size, size, size))
         # new_image = Image.new('RGB', (5 * image1_size[0], 2 * image1_size[1]), (250, 250, 250))
 
         print(len(images))
         for i in range(5):
             new_image.paste(images[i], (image1_size[0] * i, 0))
             new_image.paste(images[i + 5], (image1_size[0] * i, image1_size[1]))
-            new_image.paste(images[i+10], (image1_size[0]*i, image1_size[1]*2))
-            new_image.paste(images[i+15], (image1_size[0]*i, image1_size[1]*3))
-            new_image.paste(images[i+20], (image1_size[0]*i, image1_size[1]*4))
-            new_image.paste(images[i+25], (image1_size[0]*i, image1_size[1]*5))
-            new_image.paste(images[i+30], (image1_size[0]*i, image1_size[1]*6))
-            new_image.paste(images[i+35], (image1_size[0]*i, image1_size[1]*7))
+            new_image.paste(images[i + 10], (image1_size[0] * i, image1_size[1] * 2))
+            new_image.paste(images[i + 15], (image1_size[0] * i, image1_size[1] * 3))
+            new_image.paste(images[i + 20], (image1_size[0] * i, image1_size[1] * 4))
+            new_image.paste(images[i + 25], (image1_size[0] * i, image1_size[1] * 5))
+            # new_image.paste(images[i + 30], (image1_size[0] * i, image1_size[1] * 6))
+            # new_image.paste(images[i + 35], (image1_size[0] * i, image1_size[1] * 7))
 
         # new_image.paste(images[0], (0, 0))
         # new_image.paste(image2, (image1_size[0], 0))
         # new_image.paste(image3, (0, image1_size[1]))
         # new_image.paste(image4, (image1_size[0], image1_size[1]))
-        new_image.save(f'images/mini_maps/mini_maps.jpg', "JPEG", quality=85)
+        new_image.save(f'images/{name}/microscope.png', "PNG", quality=85)
         # new_image.show()

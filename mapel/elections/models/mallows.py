@@ -220,6 +220,7 @@ def generate_approval_resampling_votes(num_voters=None, num_candidates=None, par
     # for c in range(num_candidates):
     #     if rand.np() <= params['p']:
     #         central_vote.add(c)
+    print(params)
 
     k = int(params['p'] * num_candidates)
     # print(k)
@@ -349,7 +350,7 @@ def generate_approval_noise_model_votes(num_voters=None, num_candidates=None,
     return votes
 
 
-def generate_approval_simplex_shumallows_votes(num_voters=None, num_candidates=None,
+def generate_approval_simplex_resampling_votes(num_voters=None, num_candidates=None,
                                                     params=None):
         if 'phi' not in params:
             phi = np.random.random()
@@ -403,7 +404,7 @@ def generate_approval_simplex_shumallows_votes(num_voters=None, num_candidates=N
         return votes
 
 
-def generate_approval_disjoint_shumallows_votes(num_voters=None, num_candidates=None, params=None):
+def generate_approval_disjoint_resamplin_votes(num_voters=None, num_candidates=None, params=None):
     if 'phi' not in params:
         phi = np.random.random()
     else:
@@ -593,4 +594,20 @@ def mallows_vote(vote, phi):
 def mallows_votes(votes, phi):
     for i in range(len(votes)):
         votes[i] = mallows_vote(votes[i], phi)
+    return votes
+
+
+def generate_norm_mallows_with_walls_votes(num_voters, num_candidates, params):
+    votes = []
+    upper_half_size = int(num_candidates*params['p'])
+    if upper_half_size == 0 or upper_half_size == num_candidates:
+        return np.array(generate_mallows_votes(num_voters, num_candidates, params))
+
+    lower_half_size = num_candidates - upper_half_size
+    upper_half_votes = np.array(generate_mallows_votes(num_voters, upper_half_size, params))
+    lower_half_votes = np.array(generate_mallows_votes(num_voters, lower_half_size, params)) \
+                       + upper_half_size
+    for i in range(num_voters):
+        v = np.concatenate([upper_half_votes[i], lower_half_votes[i]])
+        votes.append(v)
     return votes

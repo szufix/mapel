@@ -9,7 +9,6 @@ def get_main_local_feature(feature_id):
 
 
 def get_main_global_feature(feature_id):
-
     return {
         'calculate_distortion': calculate_distortion,
         'calculate_monotonicity': calculate_monotonicity,

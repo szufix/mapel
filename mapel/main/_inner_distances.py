@@ -100,6 +100,21 @@ def swap_distance(vote_1: list, vote_2: list, matching=None) -> int:
     return swap_distance
 
 
+def swap_distance_between_potes(pote_1: list, pote_2: list) -> int:
+    """ Return: Swap distance between two potes """
+    swap_distance = 0
+    for i, j in itertools.combinations(pote_1, 2):
+        if (pote_1[i] > pote_1[j] and
+            pote_2[i] < pote_2[j]) or \
+                (pote_1[i] < pote_1[j] and
+                 pote_2[i] > pote_2[j]):
+            swap_distance += 1
+    return swap_distance
+
+
+def spearman_distance_between_potes(pote_1: list, pote_2: list) -> int:
+    return sum([abs(pote_1[c] - pote_2[c]) for c in range(len(pote_1))])
+
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #
 # # # # # # # # # # # # # # # #

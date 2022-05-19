@@ -2,6 +2,7 @@
 
 import numpy as np
 import scipy.special
+import math
 
 
 def justified_ratio(election, feature_params) -> float:
@@ -84,3 +85,26 @@ def max_approval_score(election):
         for c in vote:
             score[c] += 1
     return max(score)
+
+
+def is_condorcet(election):
+    """ Check if election witness Condorcet winner"""
+    for i in range(election.num_candidates):
+
+        condocret_winner = True
+        for j in range(election.num_candidates):
+
+            diff = 0
+            for k in range(election.num_voters):
+
+                if election.potes[k][i] <= election.potes[k][j]:
+                    diff += 1
+
+            if diff < math.ceil((election.num_voters + 1) / 2.):
+                condocret_winner = False
+                break
+
+        if condocret_winner:
+            return True
+
+    return False

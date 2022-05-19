@@ -19,7 +19,7 @@ except ImportError:
     abcrules = None
     preferences = None
 
-from mapel.elections.glossary_ import *
+from mapel.main._glossary import *
 from mapel.elections.metrics import lp
 from mapel.elections.other import winners2 as win
 
@@ -45,7 +45,7 @@ def highest_copeland_score(election) -> Union[int, str]:
     if election.model_id in LIST_OF_FAKE_MODELS:
         return 'None'
 
-    election.votes_to_potes()
+    election.get_potes()
 
     scores = np.zeros([election.num_candidates])
 
