@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
-import numpy as np
-from mapel.main._inner_distances import l2
-
-import mapel.elections.features.cohesive as cohesive
 import mapel.elections.features.partylist as partylist
-import mapel.elections.features.proportionality_degree as prop_deg
+# import mapel.elections.features.cohesive as cohesive
+# import mapel.elections.features.proportionality_degree as prop_deg
 import mapel.elections.features.scores as scores
 import mapel.elections.features.approx as approx
 import mapel.elections.features.banzhaf_cc as banzhaf_cc
@@ -43,12 +40,12 @@ def get_local_feature(feature_id):
             'avg_distortion_from_guardians': distortion.avg_distortion_from_guardians,
             'worst_distortion_from_guardians': distortion.worst_distortion_from_guardians,
             'max_approval_score': other.max_approval_score,
-            'cohesiveness': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
-            'number_of_cohesive_groups': cohesive.count_number_of_cohesive_groups,
-            'number_of_cohesive_groups_brute': cohesive.count_number_of_cohesive_groups_brute,
-            'proportionality_degree_av': prop_deg.proportionality_degree_av,
-            'proportionality_degree_pav': prop_deg.proportionality_degree_pav,
-            'proportionality_degree_cc': prop_deg.proportionality_degree_cc,
+            # 'cohesiveness': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
+            # 'number_of_cohesive_groups': cohesive.count_number_of_cohesive_groups,
+            # 'number_of_cohesive_groups_brute': cohesive.count_number_of_cohesive_groups_brute,
+            # 'proportionality_degree_av': prop_deg.proportionality_degree_av,
+            # 'proportionality_degree_pav': prop_deg.proportionality_degree_pav,
+            # 'proportionality_degree_cc': prop_deg.proportionality_degree_cc,
             'abstract': other.abstract,
             'distortion': distortion,
             'monotonicity_triplets': distortion.monotonicity_triplets,
@@ -72,7 +69,6 @@ def get_local_feature(feature_id):
             'voterlikeness_harmonic': vcd.voterlikeness_harmonic,
             'borda_diversity': vcd.borda_diversity,
             }.get(feature_id)
-
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 10.05.2022 #

@@ -239,67 +239,7 @@ def get_sushi_matrix():
 
 
 def generate_preflib_votes(model_id=None, num_candidates=None, num_voters=None, params=None):
-    model = model_id
-    # list of IDs larger than 10
-    folder = ''
-    if model == 'irish':
-        folder = 'irish_s1'
-        # folder = 'irish_f'
-        ids = [1, 3]
-    elif model == 'glasgow':
-        folder = 'glasgow_s1'
-        # folder = 'glasgow_f'
-        ids = [2, 3, 4, 5, 6, 7, 8, 9, 11, 13, 16, 19, 21]
-    elif model == 'formula':
-        folder = 'formula_s1'
-        # 17 races or more
-        ids = [17, 35, 37, 40, 41, 42, 44, 45, 46, 47, 48]
-    elif model == 'skate':
-        folder = 'skate_ic'
-        # 9 judges
-        ids = [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-               25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-               35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 47, 48]
-    elif model == 'sushi':
-        folder = 'sushi_ff'
-        ids = [1]
-    elif model == 'grenoble':
-        folder = 'grenoble_ff'
-        ids = [1]
-    elif model == 'tshirt':
-        folder = 'tshirt_ff'
-        ids = [1]
-    elif model == 'cities_survey':
-        folder = 'cities_survey_s1'
-        ids = [1, 2]
-    elif model == 'aspen':
-        folder = 'aspen_s1'
-        ids = [1]
-    elif model == 'marble':
-        folder = 'marble_ff'
-        ids = [1, 2, 3, 4, 5]
-    elif model == 'cycling_tdf':
-        folder = 'cycling_tdf_s1'
-        # ids = [e for e in range(1, 69+1)]
-        selection_method = 'random'
-        ids = [14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26]
-    elif model == 'cycling_gdi':
-        folder = 'cycling_gdi_s1'
-        ids = [i for i in range(2, 23 + 1)]
-    elif model == 'ers':
-        folder = 'ers_s1'
-        # folder = 'ers_f'
-        # 500 voters or more
-        ids = [3, 9, 23, 31, 32, 33, 36, 38, 40, 68, 77, 79, 80]
-    elif model == 'ice_races':
-        folder = 'ice_races_s1'
-        # 80 voters or more
-        ids = [4, 5, 8, 9, 15, 20, 23, 24, 31, 34, 35, 37, 43, 44, 49]
-    else:
-        ids = []
-    # print(params)
-    model = model_id + '_' + str(params['id'])
-    # print(model)
-    votes = generate_votes_preflib(model, num_candidates, num_voters, folder)
 
-    return votes
+    model = f'{model_id}_{params["id"]}'
+    votes = generate_votes_preflib(model, num_candidates, num_voters, params['folder'])
+    return np.array(votes)

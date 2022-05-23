@@ -143,7 +143,7 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
     if model_id not in LIST_OF_FAKE_MODELS:
         votes = [[int(x) for x in row] for row in votes]
 
-    return votes
+    return np.array(votes)
 
 
 def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
@@ -156,7 +156,7 @@ def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
         if model_id in NICE_NAME:
             file_.write("# " + NICE_NAME[model_id] + " " + str(params) + "\n")
         else:
-            file_.write("# " + model_id + "\n")
+            file_.write("# " + model_id + " " + str(params) + "\n")
 
         file_.write(str(num_candidates) + "\n")
 

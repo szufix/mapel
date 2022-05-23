@@ -444,27 +444,8 @@ class ElectionExperiment(Experiment):
                     if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
                         value = feature(self, instance)
 
-                    elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
-                                        'number_of_cohesive_groups_brute',
-                                        'proportionality_degree_pav',
-                                        'proportionality_degree_av',
-                                        'proportionality_degree_cc',
-                                        'justified_ratio',
-                                        'cohesiveness',
-                                        'partylist',
-                                        'highest_cc_score',
-                                        'highest_hb_score',
-                                        'highest_pav_score',
-                                        'greedy_approx_cc_score',
-                                        'removal_approx_cc_score',
-                                        'greedy_approx_hb_score',
-                                        'removal_approx_hb_score',
-                                        'greedy_approx_pav_score',
-                                        'removal_approx_pav_score',
-                                        'rand_approx_pav_score',
-                                        'banzhaf_cc_score',
-                                        'ranging_cc_score']:
-                        value = feature(instance, feature_params)
+                    elif feature_id in ELECTION_FEATURES_WITH_PARAMS:
+                        value = instance.get_feature(feature_id, feature_params=feature_params)
 
                     elif feature_id in {'avg_distortion_from_guardians',
                                         'worst_distortion_from_guardians',
@@ -472,7 +453,7 @@ class ElectionExperiment(Experiment):
                                         'distortion_from_top_100'}:
                         value = feature(self, instance_id)
                     else:
-                        value = feature(instance)
+                        value = instance.get_feature(feature_id)
 
                 total_time = time.time() - start
                 total_time /= num_iterations

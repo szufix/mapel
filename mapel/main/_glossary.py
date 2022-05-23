@@ -1,3 +1,23 @@
+ELECTION_FEATURES_WITH_PARAMS = ['largest_cohesive_group', 'number_of_cohesive_groups',
+                                 'number_of_cohesive_groups_brute',
+                                 'proportionality_degree_pav',
+                                 'proportionality_degree_av',
+                                 'proportionality_degree_cc',
+                                 'justified_ratio',
+                                 'cohesiveness',
+                                 'partylist',
+                                 'highest_cc_score',
+                                 'highest_hb_score',
+                                 'highest_pav_score',
+                                 'greedy_approx_cc_score',
+                                 'removal_approx_cc_score',
+                                 'greedy_approx_hb_score',
+                                 'removal_approx_hb_score',
+                                 'greedy_approx_pav_score',
+                                 'removal_approx_pav_score',
+                                 'rand_approx_pav_score',
+                                 'banzhaf_cc_score',
+                                 'ranging_cc_score']
 
 MAIN_LOCAL_FEATUERS = []
 
@@ -122,15 +142,13 @@ NICE_NAME = {
     'ic': 'IC',
     'id': 'ID',
     'urn': 'Urn',
-    }
-
+}
 
 LIST_OF_PREFLIB_MODELS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
                           'tshirt', 'cities_survey', 'aspen', 'ers',
                           'marble', 'cycling_tdf', 'cycling_gdi',
                           'ice_races', 'grenoble', 'speed_skating',
                           'irish_bis', 'speed_skating_bis', 'skate_bis'}
-
 
 LIST_OF_FAKE_MODELS = {'identity', 'uniformity', 'antagonism',
                        'stratification', 'mallows_matrix_path',
@@ -141,8 +159,7 @@ LIST_OF_FAKE_MODELS = {'identity', 'uniformity', 'antagonism',
                        'walsh_path', 'conitzer_path'}
 
 PATHS = {'unid', 'stan', 'anid', 'stid', 'anun', 'stun',
-         'mallows_matrix_path', 'walsh_path', 'conitzer_path',}
-
+         'mallows_matrix_path', 'walsh_path', 'conitzer_path', }
 
 PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
                 'walsh_party', 'conitzer_party', 'mallows_party'}

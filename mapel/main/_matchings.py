@@ -17,13 +17,7 @@ def solve_matching_vectors(cost_table) -> (float, list):
 
 def solve_matching_matrices(matrix_1, matrix_2, length, inner_distance) -> float:
     """ Return: objective value"""
-    file_name = f'{np.random.random()}.lp'
-    path = os.path.join(os.getcwd(), 'trash', file_name)
-    lp.generate_lp_file_matching_matrix(path, matrix_1, matrix_2, length, inner_distance)
-    matching_cost = lp.solve_lp_matrix(path)
-    lp.remove_lp_file(path)
-    return matching_cost
-
+    return lp.generate_lp_file_matching_matrix(matrix_1, matrix_2, length, inner_distance)
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 04.03.2022 #

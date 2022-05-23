@@ -127,7 +127,6 @@ class Experiment:
 
         for family_id in self.families:
             for instance_id in self.families[family_id].instance_ids:
-                print(self.families[family_id].label)
                 self.instances[instance_id].label = self.families[family_id].label
 
     @abstractmethod

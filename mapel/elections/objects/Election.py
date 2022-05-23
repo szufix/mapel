@@ -15,6 +15,7 @@ from mapel.main.objects.Instance import Instance
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
 from mapel.elections.other.winners2 import generate_winners
+from mapel.elections.features_ import get_local_feature
 
 
 from sklearn.manifold import MDS
@@ -44,6 +45,8 @@ class Election(Instance):
         self.votes = votes
         self.model_id = model_id
         self.potes = None
+
+        self.features = {}
 
         self.distances = None
         if not fast_import:
@@ -75,7 +78,7 @@ class Election(Instance):
     def compute_potes(self):
         """ Convert votes to positional votes """
         if self.potes is None:
-            self.potes = np.array([[vote.index(i) for i, _ in enumerate(vote)]
+            self.potes = np.array([[list(vote).index(i) for i, _ in enumerate(vote)]
                                    for vote in self.votes])
 
     def vector_to_interval(self, vector, precision=None) -> list:
@@ -315,6 +318,18 @@ class Election(Instance):
             self.coordinates[instance_id][0], self.coordinates[instance_id][1] = \
                 self.rotate_point(0.5, 0.5, angle, self.coordinates[instance_id][0],
                                   self.coordinates[instance_id][1])
+
+    def compute_feature(self, feature_id, feature_params=None):
+        feature = get_local_feature(feature_id)
+        if feature_id in ELECTION_FEATURES_WITH_PARAMS:
+            self.features[feature_id] = feature(self, feature_params=feature_params)
+        else:
+            self.features[feature_id] = feature(self)
+
+    def get_feature(self, feature_id, feature_params=None):
+        if feature_id not in self.features:
+            self.compute_feature(feature_id, feature_params=feature_params)
+        return self.features[feature_id]
 
 
 def map_the_votes(election, party_id, party_size) -> Election:

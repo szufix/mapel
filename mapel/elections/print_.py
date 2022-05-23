@@ -1470,7 +1470,6 @@ def adjust_the_map_on_three_points(experiment, left, right, down) -> None:
 
 
 def adjust_the_map(experiment) -> None:
-    print("hello")
     if experiment.instance_type == 'ordinal':
 
         # try:

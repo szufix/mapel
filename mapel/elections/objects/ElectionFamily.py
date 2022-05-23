@@ -83,10 +83,10 @@ class ElectionFamily(Family):
                 if path is not None and 'variable' in path:
                     new_params, variable = _get_params_for_paths(self, j)
                     params = {**params, **new_params}
-
-                if params is not None and 'norm-phi' in params:
-                    params['phi'] = mallows.phi_from_relphi(
-                                        self.num_candidates, relphi=params['norm-phi'])
+                #
+                # if params is not None and 'norm-phi' in params:
+                #     params['phi'] = mallows.phi_from_relphi(
+                #                         self.num_candidates, relphi=params['norm-phi'])
 
                 if self.model_id in {'all_votes'}:
                     params['iter_id'] = j

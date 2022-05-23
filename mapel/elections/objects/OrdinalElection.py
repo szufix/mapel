@@ -6,6 +6,7 @@ import math
 
 import numpy as np
 from scipy.stats import gamma
+import random as rand
 
 import mapel.elections.models.mallows as mallows
 from mapel.main._glossary import *
@@ -22,8 +23,6 @@ from mapel.elections.other.winners2 import generate_winners
 from mapel.main._inner_distances import swap_distance_between_potes, spearman_distance_between_potes
 from mapel.elections.features.other import is_condorcet
 
-from sklearn.manifold import MDS
-
 
 class OrdinalElection(Election):
 
@@ -35,7 +34,6 @@ class OrdinalElection(Election):
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
                          model_id=model_id, ballot=ballot, label=label,
                          num_voters=num_voters, num_candidates=num_candidates)
-        print(label)
 
         self.params = params
         self.variable = variable
@@ -101,10 +99,7 @@ class OrdinalElection(Election):
         else:
             params, alpha = update_params_ordinal(params, self.variable, self.model_id,
                                                   self.num_candidates)
-
         self.params = params
-        print(self.params)
-
 
     def get_vectors(self):
         if self.vectors is not None and len(self.vectors) > 0:
@@ -716,6 +711,72 @@ def update_params_ordinal_alpha(params):
         params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
 
 
+def update_params_ordinal_preflib(params, model_id):
+    # list of IDs larger than 10
+    folder = ''
+    if model_id == 'irish':
+        folder = 'irish_s1'
+        # folder = 'irish_f'
+        ids = [1, 3]
+    elif model_id == 'glasgow':
+        folder = 'glasgow_s1'
+        # folder = 'glasgow_f'
+        ids = [2, 3, 4, 5, 6, 7, 8, 9, 11, 13, 16, 19, 21]
+    elif model_id == 'formula':
+        folder = 'formula_s1'
+        # 17 races or more
+        ids = [17, 35, 37, 40, 41, 42, 44, 45, 46, 47, 48]
+    elif model_id == 'skate':
+        folder = 'skate_ic'
+        # 9 judges
+        ids = [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+               25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+               35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 47, 48]
+    elif model_id == 'sushi':
+        folder = 'sushi_ff'
+        ids = [1]
+    elif model_id == 'grenoble':
+        folder = 'grenoble_ff'
+        ids = [1]
+    elif model_id == 'tshirt':
+        folder = 'tshirt_ff'
+        ids = [1]
+    elif model_id == 'cities_survey':
+        folder = 'cities_survey_s1'
+        ids = [1, 2]
+    elif model_id == 'aspen':
+        folder = 'aspen_s1'
+        ids = [1]
+    elif model_id == 'marble':
+        folder = 'marble_ff'
+        ids = [1, 2, 3, 4, 5]
+    elif model_id == 'cycling_tdf':
+        folder = 'cycling_tdf_s1'
+        # ids = [e for e in range(1, 69+1)]
+        selection_method = 'random'
+        ids = [14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26]
+    elif model_id == 'cycling_gdi':
+        folder = 'cycling_gdi_s1'
+        ids = [i for i in range(2, 23 + 1)]
+    elif model_id == 'ers':
+        folder = 'ers_s1'
+        # folder = 'ers_f'
+        # 500 voters or more
+        ids = [3, 9, 23, 31, 32, 33, 36, 38, 40, 68, 77, 79, 80]
+    elif model_id == 'ice_races':
+        folder = 'ice_races_s1'
+        # 80 voters or more
+        ids = [4, 5, 8, 9, 15, 20, 23, 24, 31, 34, 35, 37, 43, 44, 49]
+    else:
+        ids = []
+
+    if 'id' not in params:
+        params['id'] = rand.choices(ids, k=1)[0]
+
+    params['folder'] = folder
+
+
+
 def update_params_ordinal(params, variable, model_id, num_candidates):
 
     if variable is not None:
@@ -733,6 +794,8 @@ def update_params_ordinal(params, variable, model_id, num_candidates):
             update_params_ordinal_urn_model(params)
         elif model_id == 'mallows_matrix_path':
             update_params_ordinal_mallows_matrix_path(params, num_candidates)
+        elif model_id in LIST_OF_PREFLIB_MODELS:
+            update_params_ordinal_preflib(params, model_id)
 
         update_params_ordinal_alpha(params)
 

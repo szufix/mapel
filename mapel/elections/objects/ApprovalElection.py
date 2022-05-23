@@ -10,7 +10,6 @@ from scipy.stats import gamma
 import mapel.elections.models.mallows as mallows
 from mapel.main._glossary import *
 from mapel.main._inner_distances import hamming
-from mapel.elections.objects.Election import Election
 from mapel.elections.models_ import generate_approval_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
 # from mapel.elections.objects.OrdinalElection import update_params
