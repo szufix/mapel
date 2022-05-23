@@ -17,7 +17,6 @@ from mapel.elections.other.winners import compute_sntv_winners, compute_borda_wi
 from mapel.elections.other.winners2 import generate_winners
 from mapel.elections.features_ import get_local_feature
 
-
 from sklearn.manifold import MDS
 
 
@@ -25,27 +24,23 @@ class Election(Instance):
 
     def __init__(self, experiment_id, election_id, votes=None, alpha=None, model_id=None,
                  ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None,
-                 label = None, fast_import=False):
+                 label=None, fast_import=False):
 
         super().__init__(experiment_id, election_id, model_id=model_id, alpha=alpha)
 
         self.election_id = election_id
+        self.model_id = model_id
         self.ballot = ballot
-
         self.label = label
-        self.store = True
-
         self.num_voters = num_voters
         self.num_candidates = num_candidates
+        self.votes = votes
+
+        self.store = True
         self.winners = None
         self.alternative_winners = {}
-
         self.fake = model_id in LIST_OF_FAKE_MODELS
-
-        self.votes = votes
-        self.model_id = model_id
         self.potes = None
-
         self.features = {}
 
         self.distances = None
@@ -61,9 +56,7 @@ class Election(Instance):
         except:
             pass
 
-
     def import_matrix(self) -> np.ndarray:
-
         file_name = f'{self.election_id}.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, 'matrices', file_name)
         matrix = np.zeros([self.num_candidates, self.num_candidates])
@@ -76,7 +69,7 @@ class Election(Instance):
         return matrix
 
     def compute_potes(self):
-        """ Convert votes to positional votes """
+        """ Convert votes to positional votes (called potes) """
         if self.potes is None:
             self.potes = np.array([[list(vote).index(i) for i, _ in enumerate(vote)]
                                    for vote in self.votes])
@@ -111,9 +104,8 @@ class Election(Instance):
         else:
             winners_without_party_id = []
 
-        winners_without_party_id = unmap_the_winners(winners_without_party_id, party_id, num_winners)
-
-        self.alternative_winners[party_id] = winners_without_party_id
+        self.alternative_winners[party_id] = unmap_the_winners(winners_without_party_id, party_id,
+                                                               num_winners)
 
     def print_map(self, show=True, radius=100, name=None, alpha=0.1, s=30, circles=False):
         plt.figure(figsize=(6.4, 6.4))
@@ -211,7 +203,8 @@ class Election(Instance):
         # ADJUST
 
         # find max dist
-        if (not 'identity' in self.model_id.lower()) and (not 'approval_id' in self.model_id.lower()):
+        if (not 'identity' in self.model_id.lower()) \
+                and (not 'approval_id' in self.model_id.lower()):
             dist = np.zeros([len(self.coordinates), len(self.coordinates)])
             for pos_1, pos_2 in itertools.combinations([i for i in range(len(self.coordinates))],
                                                        2):
@@ -237,49 +230,42 @@ class Election(Instance):
                 pass
 
         if self.store:
-            file_name = f'{self.election_id}.csv'
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates",
-                                file_name)
-
-            with open(path, 'w', newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(["vote_id", "x", "y"])
-
-                for vote_id in range(self.num_voters):
-                    x = str(self.coordinates[vote_id][0])
-                    y = str(self.coordinates[vote_id][1])
-                    writer.writerow([vote_id, x, y])
+            self._store_coordinates()
 
         return self.coordinates
 
-    def _store_distances(self):
+    def _store_coordinates(self):
         file_name = f'{self.election_id}.csv'
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates",
                             file_name)
-
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
-            writer.writerow(
-                ["v1", "v2", "distance"])
+            writer.writerow(["vote_id", "x", "y"])
+            for vote_id in range(self.num_voters):
+                x = str(self.coordinates[vote_id][0])
+                y = str(self.coordinates[vote_id][1])
+                writer.writerow([vote_id, x, y])
 
+    def _store_distances(self):
+        file_name = f'{self.election_id}.csv'
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
+        with open(path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+            writer.writerow(["v1", "v2", "distance"])
             for v1 in range(self.num_voters):
                 for v2 in range(self.num_voters):
                     distance = str(self.distances[v1][v2])
                     writer.writerow([v1, v2, distance])
 
     def _import_distances(self):
-
         file_name = f'{self.election_id}.csv'
         path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'distances', file_name)
-
         distances = np.zeros([self.num_voters, self.num_voters])
         with open(path, 'r', newline='') as csv_file:
             reader = csv.DictReader(csv_file, delimiter=';')
-
             for row in reader:
                 distances[int(row['v1'])][int(row['v2'])] = float(row['distance'])
                 distances[int(row['v2'])][int(row['v1'])] = float(row['distance'])
-
         self.distances = distances
 
     def _import_coordinates(self):
@@ -337,7 +323,7 @@ def map_the_votes(election, party_id, party_size) -> Election:
     for i in range(election.num_voters):
         for j in range(election.num_candidates):
             if election.votes[i][j] >= party_id * party_size:
-                new_votes[i].append(election.votes[i][j]-party_size)
+                new_votes[i].append(election.votes[i][j] - party_size)
             else:
                 new_votes[i].append(election.votes[i][j])
     election.votes = new_votes
@@ -348,7 +334,7 @@ def unmap_the_winners(winners, party_id, party_size):
     new_winners = []
     for j in range(len(winners)):
         if winners[j] >= party_id * party_size:
-            new_winners.append(winners[j]+party_size)
+            new_winners.append(winners[j] + party_size)
         else:
             new_winners.append(winners[j])
     return new_winners
@@ -357,7 +343,7 @@ def unmap_the_winners(winners, party_id, party_size):
 def remove_candidate_from_election(election, party_id, party_size) -> Election:
     for vote in election.votes:
         for i in range(party_size):
-            _id = party_id*party_size + i
+            _id = party_id * party_size + i
             vote.remove(_id)
     election.num_candidates -= party_size
     return election

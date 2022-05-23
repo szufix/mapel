@@ -1,9 +1,5 @@
 import ast
-import itertools
 import os
-import csv
-import math
-
 import numpy as np
 from scipy.stats import gamma
 import random as rand
@@ -92,14 +88,8 @@ class OrdinalElection(Election):
         if params is None:
             params = {}
 
-        self.params = params
-
-        if self.model_id == 'all_votes':
-            alpha = 1
-        else:
-            params, alpha = update_params_ordinal(params, self.variable, self.model_id,
-                                                  self.num_candidates)
-        self.params = params
+        self.params, self.alpha = update_params_ordinal(params, self.variable, self.model_id,
+                                                        self.num_candidates)
 
     def get_vectors(self):
         if self.vectors is not None and len(self.vectors) > 0:
@@ -152,7 +142,6 @@ class OrdinalElection(Election):
 
         self.vectors = vectors
         self.matrix = self.vectors.transpose()
-
         return vectors
 
     def votes_to_positionwise_matrix(self):
@@ -161,9 +150,7 @@ class OrdinalElection(Election):
     def votes_to_pairwise_matrix(self) -> np.ndarray:
         """ convert VOTES to pairwise MATRIX """
         matrix = np.zeros([self.num_candidates, self.num_candidates])
-
         if self.fake:
-
             if self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
                 matrix = get_fake_matrix_single(self.model_id, self.num_candidates)
             elif self.model_id in PATHS:
@@ -171,27 +158,21 @@ class OrdinalElection(Election):
                                          self.fake_param, get_fake_matrix_single)
 
         else:
-
             for v in range(self.num_voters):
                 for c1 in range(self.num_candidates):
                     for c2 in range(c1 + 1, self.num_candidates):
                         matrix[int(self.votes[v][c1])][
                             int(self.votes[v][c2])] += 1
-
             for i in range(self.num_candidates):
                 for j in range(i + 1, self.num_candidates):
                     matrix[i][j] /= float(self.num_voters)
                     matrix[j][i] = 1. - matrix[i][j]
-
         return matrix
 
     def votes_to_bordawise_vector(self) -> np.ndarray:
         """ convert VOTES to Borda vector """
-
         borda_vector = np.zeros([self.num_candidates])
-
         if self.fake:
-
             if self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
                 borda_vector = get_fake_borda_vector(self.model_id, self.num_candidates,
                                                      self.num_voters)
@@ -199,7 +180,6 @@ class OrdinalElection(Election):
                 borda_vector = get_fake_convex(self.model_id, self.num_candidates,
                                                self.num_voters, self.params,
                                                get_fake_borda_vector)
-
         else:
             c = self.num_candidates
             v = self.num_voters
@@ -219,8 +199,7 @@ class OrdinalElection(Election):
                 for vote in self.approval_votes:
                     if (c_1 in vote and c_2 not in vote) or (c_1 not in vote and c_2 in vote):
                         matrix[c_1][c_2] += 1
-        matrix = matrix / self.num_voters
-        self.candidatelikeness_original_vectors = matrix
+        self.candidatelikeness_original_vectors = matrix / self.num_voters
 
     def votes_to_positionwise_intervals(self, precision: int = None) -> list:
 
@@ -269,27 +248,6 @@ class OrdinalElection(Election):
 
         return vector, len(vector)
 
-    def votes_to_bordawise_vector_long_empty(self):
-
-        num_possible_scores = 1 + self.num_voters * (self.num_candidates - 1)
-
-        if self.votes[0][0] == -1:
-
-            vector = [0 for _ in range(num_possible_scores)]
-            peak = sum([i for i in range(self.num_candidates)])
-            peak *= float(self.num_voters) / float(self.num_candidates)
-            vector[int(peak)] = self.num_candidates
-
-        else:
-
-            vector = [0 for _ in range(num_possible_scores)]
-            points = get_borda_points(self.votes, self.num_voters,
-                                      self.num_candidates)
-            for i in range(self.num_candidates):
-                vector[points[i]] += 1
-
-        return vector, num_possible_scores
-
     def compute_winners(self, method=None, num_winners=None):
 
         self.borda_points = get_borda_points(self.votes, self.num_voters, self.num_candidates)
@@ -301,16 +259,14 @@ class OrdinalElection(Election):
         if method == 'stv':
             self.winners = compute_stv_winners(election=self, num_winners=num_winners)
         if method in {'approx_cc', 'approx_hb', 'approx_pav'}:
-            self.winners = generate_winners(election=self, num_winners=num_winners, method=method)
+            self.winners = generate_winners(election=self, num_winners=num_winners)
 
     # PREPARE INSTANCE
     def prepare_instance(self, store=None):
-
         self.votes = generate_ordinal_votes(model_id=self.model_id,
                                             num_candidates=self.num_candidates,
                                             num_voters=self.num_voters,
                                             params=self.params)
-
         if store:
             self._store_ordinal_election()
 
@@ -318,26 +274,22 @@ class OrdinalElection(Election):
     def _store_ordinal_election(self):
         """ Store ordinal election in a .soc file """
         if self.model_id in LIST_OF_FAKE_MODELS:
-            path = os.path.join("experiments", str(self.experiment_id),
-                                "elections", (str(self.election_id) + ".soc"))
+            file_name = f'{self.election_id}.soc'
+            path = os.path.join("experiments", str(self.experiment_id), "elections", file_name)
             file_ = open(path, 'w')
             file_.write(f'$ {self.model_id} {self.params} \n')
             file_.write(str(self.num_candidates) + '\n')
             file_.write(str(self.num_voters) + '\n')
             file_.close()
-
         else:
-
-            path = os.path.join("experiments", str(self.experiment_id), "elections",
-                                (str(self.election_id) + ".soc"))
-
+            file_name = f'{self.election_id}.soc'
+            path = os.path.join("experiments", str(self.experiment_id), "elections", file_name)
             store_votes_in_a_file(self, self.model_id, self.num_candidates, self.num_voters,
                                   self.params, path, self.ballot, votes=self.votes)
 
     def compute_distances(self, distance_id='swap'):
-
+        """ Return: distances between votes """
         self.compute_potes()
-
         distances = np.zeros([self.num_voters, self.num_voters])
         for v1 in range(self.num_voters):
             for v2 in range(len(self.potes)):
@@ -347,19 +299,15 @@ class OrdinalElection(Election):
                 elif distance_id == 'spearman':
                     distances[v1][v2] = spearman_distance_between_potes(
                         self.potes[v1], self.potes[v2])
-
         self.distances = distances
-
         if self.store:
             self._store_distances()
-
         return distances
 
     def is_condorcet(self):
         """ Check if election witness Condorcet winner"""
         if self.condorcet is None:
             self.condorcet = is_condorcet(self)
-
         return self.condorcet
 
 
@@ -632,7 +580,6 @@ def import_real_soc_election(experiment_id: str, election_id: str, shift=False,
 
         num_candidates = int(my_file.readline())
 
-
     for _ in range(num_candidates):
         my_file.readline()
 
@@ -641,13 +588,11 @@ def import_real_soc_election(experiment_id: str, election_id: str, shift=False,
     num_options = int(line[2])
     votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
 
-
     ## TMP
     # if fast_import:
     #     my_file.close()
     #     return votes, num_voters, num_candidates, params, model_name
     ## END OF TMP
-
 
     it = 0
     for j in range(num_options):
@@ -693,6 +638,7 @@ def update_params_ordinal_norm_mallows(params, num_candidates):
     if 'weight' not in params:
         params['weight'] = 0.
     params['alpha'] = params['norm-phi']
+
 
 def update_params_ordinal_urn_model(params):
     if params['alpha'] is None:
@@ -776,16 +722,11 @@ def update_params_ordinal_preflib(params, model_id):
     params['folder'] = folder
 
 
-
 def update_params_ordinal(params, variable, model_id, num_candidates):
-
     if variable is not None:
-
         params['alpha'] = params[variable]
         params['variable'] = variable
-
     else:
-
         if model_id == 'mallows':
             update_params_ordinal_mallows(params)
         elif model_id == 'norm_mallows':
@@ -796,24 +737,19 @@ def update_params_ordinal(params, variable, model_id, num_candidates):
             update_params_ordinal_mallows_matrix_path(params, num_candidates)
         elif model_id in LIST_OF_PREFLIB_MODELS:
             update_params_ordinal_preflib(params, model_id)
-
         update_params_ordinal_alpha(params)
-
     return params, params['alpha']
 
 
 # HELPER FUNCTIONS #
 def prepare_parties(model_id=None, params=None):
     parties = []
-
     if model_id == '2d_gaussian_party':
         for i in range(params['num_parties']):
             point = np.random.rand(1, 2)
             parties.append(point)
-
     elif model_id in ['1d_gaussian_party', 'conitzer_party', 'walsh_party']:
         for i in range(params['num_parties']):
             point = np.random.rand(1, 1)
             parties.append(point)
-
     return parties

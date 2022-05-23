@@ -8,19 +8,16 @@ import numpy as np
 from mapel.elections.metrics import lp as lp
 
 
-def generate_winners(election=None, num_winners=1, ballot="ordinal",
-                     type=None, name=None):
+def generate_winners(election=None, num_winners=1, ballot="ordinal", type=None, name=None):
     votes, num_voters, num_candidates = election.votes, election.num_voters, election.num_candidates
-    params = {}
-    params["orders"] = num_winners
-    params["pure"] = True
-    params["elections"] = 1
-    params['candidates'] = num_candidates
-    params['voters'] = num_voters
-    rule = {}
-    rule['type'] = type
-    rule['name'] = name
-    rule['length'] = num_candidates
+    params = {"orders": num_winners,
+              "pure": True,
+              "elections": 1,
+              'candidates': num_candidates,
+              'voters': num_voters}
+    rule = {'type': type,
+            'name': name,
+            'length': num_candidates}
     winners, total_time = get_winners(params, votes, rule, ballot)
     return winners, total_time
 

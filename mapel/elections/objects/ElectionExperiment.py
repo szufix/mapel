@@ -40,13 +40,10 @@ except ImportError as error:
 class ElectionExperiment(Experiment):
 
     def __init__(self, **kwargs):
-
         super().__init__(**kwargs)
-
         self.default_num_candidates = 10
         self.default_num_voters = 100
         self.default_committee_size = 1
-
         self.all_winning_committees = {}
 
     def __getattr__(self, attr):
@@ -113,13 +110,13 @@ class ElectionExperiment(Experiment):
         if num_voters is None:
             num_voters = self.default_num_voters
 
-        return self.add_election_family(model_id=model_id, params=params, size=size, label=label,
+        return self.add_family(model_id=model_id, params=params, size=size, label=label,
                                         color=color, alpha=alpha, show=show, marker=marker,
                                         starting_from=starting_from, family_id=election_id,
                                         num_candidates=num_candidates, num_voters=num_voters,
                                         single=True)
 
-    def add_election_family(self, model_id: str = "none", params: dict = None, size: int = 1,
+    def add_family(self, model_id: str = "none", params: dict = None, size: int = 1,
                             label: str = None, color: str = "black", alpha: float = 1.,
                             show: bool = True, marker: str = 'o', starting_from: int = 0,
                             num_candidates: int = None, num_voters: int = None,
