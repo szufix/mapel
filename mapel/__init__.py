@@ -1,12 +1,10 @@
-
+import mapel.elections.features_ as features
 import mapel.elections.metrics_ as metr
 import mapel.elections.models_ as ele
-import mapel.elections.print_ as pr
 import mapel.elections.other.development as dev
-import mapel.elections.features_ as features
-
-from mapel.elections.objects.OrdinalElection import OrdinalElection
+import mapel.elections.print_ as pr
 from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
+from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 
 try:
@@ -18,7 +16,6 @@ except:
     pass
 
 
-
 def hello():
     print("Hello!")
 
@@ -27,7 +24,6 @@ def prepare_experiment(experiment_id=None, instances=None, distances=None, insta
                        coordinates=None, distance_id='emd-positionwise', _import=True,
                        shift=False, dim=2, store=True, coordinates_names=None,
                        embedding_id='kamada', fast_import=False):
-
     if instance_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
                                          instances=instances, dim=dim, store=store,
@@ -39,13 +35,13 @@ def prepare_experiment(experiment_id=None, instances=None, distances=None, insta
                                          fast_import=fast_import)
     elif instance_type in ['approval', 'rule']:
         return ApprovalElectionExperiment(experiment_id=experiment_id, shift=shift,
-                                         instances=instances, dim=dim, store=store,
-                                         instance_type=instance_type,
-                                         distances=distances, coordinates=coordinates,
-                                         distance_id=distance_id,
-                                         coordinates_names=coordinates_names,
-                                         embedding_id=embedding_id,
-                                         fast_import=fast_import)
+                                          instances=instances, dim=dim, store=store,
+                                          instance_type=instance_type,
+                                          distances=distances, coordinates=coordinates,
+                                          distance_id=distance_id,
+                                          coordinates_names=coordinates_names,
+                                          embedding_id=embedding_id,
+                                          fast_import=fast_import)
     elif instance_type == 'roommates':
         return RoommatesExperiment(experiment_id=experiment_id, _import=_import,
                                    distance_id=distance_id, instance_type=instance_type)

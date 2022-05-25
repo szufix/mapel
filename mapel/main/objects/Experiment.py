@@ -724,5 +724,5 @@ class Experiment:
         # new_image.paste(image2, (image1_size[0], 0))
         # new_image.paste(image3, (0, image1_size[1]))
         # new_image.paste(image4, (image1_size[0], image1_size[1]))
-        new_image.save(f'images/{name}/microscope.png', "PNG", quality=85)
+        new_image.save(f'images/microscope/{name}.png', "PNG", quality=85)
         # new_image.show()

@@ -106,6 +106,7 @@ class ElectionFamily(Family):
 
                 election.prepare_instance(store=store)
 
+
                 election.compute_potes()
 
                 elections[election_id] = election

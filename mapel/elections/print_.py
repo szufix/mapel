@@ -34,11 +34,11 @@ def print_map_2d(experiment,
                  xlabel=None, shading=False, legend_pos=None, title_pos=None,
                  angle=0, reverse=False, update=False, feature_id=None,
                  axis=False, rounding=1, limit=np.infty, individual=False,
-                 ticks=None, textual=None, roads=None, adjust_single=False,
+                 ticks=None, textual=None, roads=None, scale='default',
                  title=None, dim=2, event='none', bbox_inches=None,
                  saveas=None, show=True, ms=20, normalizing_func=None,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
-                 legend=True, adjust=False, feature_labelsize=14,
+                 legend=True, feature_labelsize=14,
                  column_id='value', title_size=16, ticks_pos=None,
                  feature_ids=None, omit=None, textual_size=16) -> None:
 
@@ -84,7 +84,7 @@ def print_map_2d(experiment,
         color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
                              feature_id=feature_id, rounding=rounding,
                              normalizing_func=normalizing_func, ticks_pos=ticks_pos,
-                             marker_func=marker_func, limit=limit,
+                             marker_func=marker_func, limit=limit, scale=scale,
                              xticklabels=xticklabels, ms=ms, cmap=cmap, omit=omit,
                              ticks=ticks, column_id=column_id, feature_labelsize=feature_labelsize)
     elif feature_ids is not None:
@@ -220,7 +220,8 @@ def convert_none_time(value):
 
 
 def import_values_for_feature(experiment, feature_id=None, limit=None, normalizing_func=None,
-                              marker_func=None, dim=2, column_id='value', omit=None):
+                              marker_func=None, dim=2, column_id='value', omit=None,
+                              scale='default'):
     """ Import values for a feature_id """
 
     if isinstance(feature_id, str):
@@ -270,6 +271,11 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
                 my_shade[election_id] = normalizing_func(shade)
             else:
                 my_shade[election_id] = shade
+
+            if scale == 'log':
+                if election_id not in omit and my_shade[election_id] is not None:
+                    my_shade[election_id] = math.log(my_shade[election_id])
+
 
     local_min = min(x for x in my_shade.values() if x is not None)
     local_max = max(x for x in my_shade.values() if x is not None)
@@ -438,11 +444,11 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
 def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, limit=np.infty,
                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
                          cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
-                         feature_labelsize=14, ticks_pos=None, omit=None):
+                         feature_labelsize=14, ticks_pos=None, omit=None, scale='default'):
 
     xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy = import_values_for_feature(
         experiment, feature_id=feature_id, limit=limit, normalizing_func=normalizing_func,
-        marker_func=marker_func, dim=dim, column_id=column_id, omit=omit)
+        marker_func=marker_func, dim=dim, column_id=column_id, omit=omit, scale=scale)
 
     unique_markers = set(markers)
     images = []
@@ -457,15 +463,20 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
         else:
             cmap = custom_div_cmap()
 
+
+    from matplotlib.colors import LogNorm
+
     for um in unique_markers:
         masks = (markers == um)
         if um == '.':
-            images.append(ax.scatter(xx[masks], yy[masks],vmin=0, vmax=1,
+            images.append(ax.scatter(xx[masks], yy[masks],
+                                     vmin=0, vmax=1,
                                      color='grey', alpha=0.6,
                                      marker=um, s=mses[masks]))
 
         elif dim == 2:
-            images.append(ax.scatter(xx[masks], yy[masks], c=shades[masks], vmin=0, vmax=1,
+            images.append(ax.scatter(xx[masks], yy[masks], c=shades[masks],
+                                     vmin=0, vmax=1,
                                      cmap=cmap, marker=um, s=mses[masks]))
         elif dim == 3:
             images.append(ax.scatter(xx[masks], yy[masks], zz[masks], c=shades[masks], vmin=0,
@@ -481,7 +492,10 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
             if rounding == 0:
                 xticklabels = [str(int(lin[i])) for i in range(6)]
             else:
-                xticklabels = [str(np.round(lin[i], rounding)) for i in range(6)]
+                xticklabels = [lin[i] for i in range(6)]
+                if scale == 'log':
+                    xticklabels = [math.e**x for x in xticklabels]
+                xticklabels = [str(np.round(x, rounding)) for x in xticklabels]
             # else:
             #     lin = np.linspace(_min, _max, 6)
             #     if rounding == 0:

@@ -195,7 +195,7 @@ def generate_ordinal_euclidean_votes(model: str = None, num_voters: int = None,
         dim = 2
 
     voters = np.zeros([num_voters, params['dim']])
-    candidates = np.zeros([num_voters, params['dim']])
+    candidates = np.zeros([num_candidates, params['dim']])
     votes = np.zeros([num_voters, num_candidates], dtype=int)
     distances = np.zeros([num_voters, num_candidates], dtype=float)
 

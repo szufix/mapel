@@ -211,7 +211,7 @@ class ApprovalElection(Election):
             store_votes_in_a_file(self, self.model_id, self.num_candidates, self.num_voters,
                                   self.params, path, self.ballot, votes=self.votes)
 
-    def compute_distances(self, distance_id='hamming'):
+    def compute_distances_between_votes(self, distance_id='hamming'):
 
         distances = np.zeros([self.num_voters, self.num_voters])
         for v1 in range(self.num_voters):

@@ -16,7 +16,8 @@ from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
 from mapel.elections.other.winners2 import generate_winners
-from mapel.main._inner_distances import swap_distance_between_potes, spearman_distance_between_potes
+from mapel.main._inner_distances import swap_distance_between_potes, \
+    spearman_distance_between_potes
 from mapel.elections.features.other import is_condorcet
 
 
@@ -287,22 +288,36 @@ class OrdinalElection(Election):
             store_votes_in_a_file(self, self.model_id, self.num_candidates, self.num_voters,
                                   self.params, path, self.ballot, votes=self.votes)
 
-    def compute_distances(self, distance_id='swap'):
+    def compute_distances(self, distance_id='swap', object_type=None):
         """ Return: distances between votes """
-        self.compute_potes()
-        distances = np.zeros([self.num_voters, self.num_voters])
-        for v1 in range(self.num_voters):
-            for v2 in range(len(self.potes)):
-                if distance_id == 'swap':
-                    distances[v1][v2] = swap_distance_between_potes(
-                        self.potes[v1], self.potes[v2])
-                elif distance_id == 'spearman':
-                    distances[v1][v2] = spearman_distance_between_potes(
-                        self.potes[v1], self.potes[v2])
-        self.distances = distances
+        if object_type is None:
+            object_type = self.object_type
+
+        if object_type == 'vote':
+            self.compute_potes()
+            distances = np.zeros([self.num_voters, self.num_voters])
+            for v1 in range(self.num_voters):
+                for v2 in range(self.num_voters):
+                    if distance_id == 'swap':
+                        distances[v1][v2] = swap_distance_between_potes(
+                            self.potes[v1], self.potes[v2])
+                    elif distance_id == 'spearman':
+                        distances[v1][v2] = spearman_distance_between_potes(
+                            self.potes[v1], self.potes[v2])
+        elif object_type == 'candidate':
+            self.compute_potes()
+            distances = np.zeros([self.num_candidates, self.num_candidates])
+            for c1 in range(self.num_candidates):
+                for c2 in range(self.num_candidates):
+                    dist = 0
+                    for pote in self.potes:
+                        dist += abs(pote[c1] - pote[c2])
+                    distances[c1][c2] = dist
+
+        self.distances[object_type] = distances
+
         if self.store:
-            self._store_distances()
-        return distances
+            self._store_distances(object_type=object_type)
 
     def is_condorcet(self):
         """ Check if election witness Condorcet winner"""
