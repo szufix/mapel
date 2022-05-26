@@ -157,19 +157,13 @@ class ElectionExperiment(Experiment):
                                                   starting_from=starting_from,
                                                   num_candidates=num_candidates,
                                                   num_voters=num_voters, path=path,
-                                                  single=single)
+                                                  single=single,
+                                                  instance_type=self.instance_type)
 
         self.num_families = len(self.families)
         self.num_elections = sum([self.families[family_id].size for family_id in self.families])
         self.main_order = [i for i in range(self.num_elections)]
 
-        # params = self.families[family_id].params
-        # model_id = self.families[family_id].model_id
-
-        # elections = _elections.prepare_statistical_culture_family(experiment=self,
-        #                                                           model_id=model_id,
-        #                                                           family_id=family_id,
-        #                                                           params=copy.deepcopy(params))
         new_instances = self.families[family_id].prepare_family(
             store=self.store,
             experiment_id=self.experiment_id)
@@ -180,7 +174,6 @@ class ElectionExperiment(Experiment):
         self.families[family_id].instance_ids = list(new_instances.keys())
 
         return list(new_instances.keys())
-
 
     def prepare_elections(self, printing=False):
         """ Prepare elections for a given experiment """

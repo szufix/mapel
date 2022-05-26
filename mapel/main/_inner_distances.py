@@ -35,6 +35,8 @@ def wl1(vector_1: np.ndarray, vector_2: np.ndarray) -> float:
 
 def l1(vector_1: np.ndarray, vector_2: np.ndarray) -> float:
     """ Return: L1 distance """
+    # vector_1 = np.ndarray(vector_1)
+    # vector_2 = np.ndarray(vector_2)
     return np.linalg.norm(vector_1 - vector_2, ord=1)
 
 

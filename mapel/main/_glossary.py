@@ -1,4 +1,5 @@
-ELECTION_FEATURES_WITH_PARAMS = ['largest_cohesive_group', 'number_of_cohesive_groups',
+ELECTION_FEATURES_WITH_PARAMS = ['largest_cohesive_group',
+                                 'number_of_cohesive_groups',
                                  'number_of_cohesive_groups_brute',
                                  'proportionality_degree_pav',
                                  'proportionality_degree_av',
@@ -164,15 +165,16 @@ PATHS = {'unid', 'stan', 'anid', 'stid', 'anun', 'stun',
 PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
                 'walsh_party', 'conitzer_party', 'mallows_party'}
 
-APPROVAL_MODELS = {'approval_ic', 'approval_resampling', 'approval_id',
-                   'approval_empty', 'approval_full', 'approval_truncated_urn',
-                   'approval_urn', 'approval_euclidean', 'approval_noise_model',
-                   'approval_zeros', 'approval_ones', 'approval_id_0.5', 'approval_ic_0.5',
-                   'approval_half_1', 'approval_half_2', 'approval_disjoint_resampling',
-                   'approval_simplex_shumallows',
-                   'approval_vcr', 'approval_truncated_mallows', 'approval_moving_resampling',
-                   'approval_jaccard', 'approval_skeleton', 'approval_anti_pjr',
-                   'approval_partylist'}
+APPROVAL_MODELS = {'impartial_culture', 'ic', 'resampling', 'id',
+                   'empty', 'full', 'truncated_urn',
+                   'urn', 'euclidean', 'noise_model',
+                   'zeros', 'ones',
+                   'id_0.5', 'ic_0.5',
+                   'half_1', 'half_2', 'disjoint_resampling',
+                   'simplex_shumallows',
+                   'vcr', 'truncated_mallows', 'moving_resampling',
+                   'jaccard', 'skeleton', 'anti_pjr',
+                   'partylist'}
 
 APPROVAL_FAKE_MODELS = {'approval_half_1', 'approval_half_2', 'approval_skeleton'}
 

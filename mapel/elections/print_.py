@@ -677,18 +677,14 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
         if family.show:
             label = family.label
             if dim == 2:
-                # print(family.path)
-                # print('variable' in family.path.keys())
                 if '_path' in label or 'urn' in label or 'Urn' in label\
                         or 'Mallows' in label or 'mallows' in label or\
                         'variable' in family.path or 'varibale' in family.path:
-                    # print("yes", family.path)
                     if 'background' in label:
                         label = '_nolegend_'
 
                     for i in range(family.size):
                         election_id = list(family.instance_ids)[i]
-                        print(experiment.instances[election_id].model_id)
 
                         try:
                             alpha = experiment.instances[election_id].alpha
@@ -698,6 +694,10 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                             except:
                                 alpha = 1
                                 pass
+
+
+                        print(experiment.instances[election_id].model_id, alpha)
+
 
                         if 'A_' in election_id or 'B_' in election_id or 'C_' in election_id:
                             alpha = 1 - alpha

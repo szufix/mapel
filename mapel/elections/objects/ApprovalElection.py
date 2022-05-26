@@ -31,8 +31,6 @@ class ApprovalElection(Election):
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
                          model_id=model_id, ballot=ballot, num_voters=num_voters,
                          num_candidates=num_candidates, label=label)
-        print(label)
-
         self.params = params
         self.variable = variable
 
@@ -62,21 +60,18 @@ class ApprovalElection(Election):
             except:
                 pass
 
-
-        print(self.model_id)
-
     def votes_to_approvalwise_vector(self) -> None:
         """ Convert votes to approvalwise vectors """
 
-        if self.model == 'approval_half_1':
+        if self.model_id == 'approval_half_1':
             self.approvalwise_vector = np.sort(np.array([0.75 for _ in
                                                          range(int(self.num_candidates / 2))] +
                                                         [0.25 for _ in
                                                          range(int(self.num_candidates / 2))]))
-        elif self.model == 'approval_half_2':
+        elif self.model_id == 'approval_half_2':
             self.approvalwise_vector = np.sort(np.array([i / (self.num_candidates - 1) for i in
                                                          range(self.num_candidates)]))
-        elif self.model == 'approval_skeleton':
+        elif self.model_id == 'approval_skeleton':
             self.approvalwise_vector = np.sort(get_skeleton_approvalwise_vector(self))
 
         else:

@@ -12,19 +12,17 @@ def compute_borda_scores(election) -> list:
 
 if __name__ == "__main__":
 
-    election_1 = mapel.generate_election(model_id='impartial_culture',
-                                         num_voters=5, num_candidates=3)
-    election_2 = mapel.generate_election(model_id='impartial_culture',
-                                         num_voters=5, num_candidates=3)
-
-    distances, mapping = mapel.compute_distance(election_1, election_2,
-                                                distance_id='emd-positionwise')
+    election_1 = mapel.generate_ordinal_election(model_id='impartial_culture',
+                                                 num_voters=5, num_candidates=3)
+    election_2 = mapel.generate_ordinal_election(model_id='impartial_culture',
+                                                 num_voters=5, num_candidates=3)
 
     print(f'votes_1 {election_1.votes}')
     print(f'votes_2 {election_2.votes}')
+
+    distances, mapping = mapel.compute_distance(election_1, election_2,
+                                                distance_id='emd-positionwise')
     print(f'distances {distances}')
     print(f'mapping {mapping}')
 
     print(f'Borda scores {compute_borda_scores(election_1)}')
-
-

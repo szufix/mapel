@@ -20,20 +20,22 @@ from mapel.elections.models.preflib import generate_preflib_votes
 def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                             num_voters: int = None, params: dict = None) -> Union[list, np.ndarray]:
 
-    main_models = {'approval_ic': impartial.generate_approval_ic_votes,
-                   'approval_id': impartial.generate_approval_id_votes,
-                   'approval_resampling': mallows.generate_approval_resampling_votes,
-                   'approval_noise_model': mallows.generate_approval_noise_model_votes,
-                   'approval_urn': urn_model.generate_approval_urn_votes,
-                   'approval_euclidean': euclidean.generate_approval_euclidean_votes,
-                   'approval_disjoint_resampling': mallows.generate_approval_disjoint_resamplin_votes,
-                   'approval_vcr': euclidean.generate_approval_vcr_votes,
-                   'approval_truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
-                   'approval_truncated_urn': urn_model.generate_approval_truncated_urn_votes,
-                   'approval_moving_resampling': mallows.generate_approval_moving_resampling_votes,
-                   'approval_simplex_resampling': mallows.generate_approval_simplex_resampling_votes,
-                   'approval_anti_pjr': mallows.approval_anti_pjr_votes,
-                   'approval_partylist': mallows.approval_partylist_votes,
+    main_models = { 'impartial_culture': impartial.generate_approval_ic_votes,
+                    'ic': impartial.generate_approval_ic_votes,
+                   'id': impartial.generate_approval_id_votes,
+                   'resampling': mallows.generate_approval_resampling_votes,
+                   'noise_model': mallows.generate_approval_noise_model_votes,
+                   'urn': urn_model.generate_approval_urn_votes,
+                   'urn_model': urn_model.generate_approval_urn_votes,
+                   'euclidean': euclidean.generate_approval_euclidean_votes,
+                   'disjoint_resampling': mallows.generate_approval_disjoint_resamplin_votes,
+                   'vcr': euclidean.generate_approval_vcr_votes,
+                   'truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
+                   'truncated_urn': urn_model.generate_approval_truncated_urn_votes,
+                   'moving_resampling': mallows.generate_approval_moving_resampling_votes,
+                   'simplex_resampling': mallows.generate_approval_simplex_resampling_votes,
+                   'anti_pjr': mallows.approval_anti_pjr_votes,
+                   'partylist': mallows.approval_partylist_votes,
                    }
 
     if model_id in main_models:
@@ -100,6 +102,7 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
                     }
 
     single_param_models = {'urn_model': urn_model.generate_urn_votes,
+                            'urn': urn_model.generate_urn_votes,
                            'group-separable':
                                group_separable.generate_ordinal_group_separable_votes,
                            'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,

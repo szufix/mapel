@@ -86,11 +86,9 @@ class OrdinalElection(Election):
             except:
                 pass
 
-        if params is None:
-            params = {}
-
-        self.params, self.alpha = update_params_ordinal(params, self.variable, self.model_id,
-                                                        self.num_candidates)
+        if model_id is not None:
+            self.params, self.alpha = update_params_ordinal(self.params, self.variable, self.model_id,
+                                                            self.num_candidates)
 
     def get_vectors(self):
         if self.vectors is not None and len(self.vectors) > 0:
@@ -641,13 +639,13 @@ def convert_ordinal_to_approval(votes):
 def update_params_ordinal_mallows(params):
     if 'phi' in params and type(params['phi']) is list:
         params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
-    elif params['phi'] is None:
+    elif 'phi' not in params:
         params['phi'] = np.random.random()
     params['alpha'] = params['phi']
 
 
 def update_params_ordinal_norm_mallows(params, num_candidates):
-    if params['norm-phi'] is None:
+    if 'norm-phi' not in params:
         params['norm-phi'] = np.random.random()
     params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
     if 'weight' not in params:
@@ -656,7 +654,7 @@ def update_params_ordinal_norm_mallows(params, num_candidates):
 
 
 def update_params_ordinal_urn_model(params):
-    if params['alpha'] is None:
+    if 'alpha' not in params:
         params['alpha'] = gamma.rvs(0.8)
 
 
@@ -742,15 +740,15 @@ def update_params_ordinal(params, variable, model_id, num_candidates):
         params['alpha'] = params[variable]
         params['variable'] = variable
     else:
-        if model_id == 'mallows':
+        if model_id.lower() == 'mallows':
             update_params_ordinal_mallows(params)
-        elif model_id == 'norm_mallows':
+        elif model_id.lower() == 'norm_mallows' or model_id.lower() == 'norm-mallows':
             update_params_ordinal_norm_mallows(params, num_candidates)
-        elif model_id == 'urn_model':
+        elif model_id.lower() == 'urn_model' or model_id.lower() == 'urn':
             update_params_ordinal_urn_model(params)
-        elif model_id == 'mallows_matrix_path':
+        elif model_id.lower() == 'mallows_matrix_path':
             update_params_ordinal_mallows_matrix_path(params, num_candidates)
-        elif model_id in LIST_OF_PREFLIB_MODELS:
+        elif model_id.lower() in LIST_OF_PREFLIB_MODELS:
             update_params_ordinal_preflib(params, model_id)
         update_params_ordinal_alpha(params)
     return params, params['alpha']

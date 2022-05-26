@@ -30,7 +30,7 @@ class ElectionFamily(Family):
                  num_candidates=None,
                  num_voters=None,
                  election_ids=None,
-                 ballot: str = 'ordinal'):
+                 instance_type: str = 'ordinal'):
 
         super().__init__(model_id=model_id,
                          family_id=family_id,
@@ -49,7 +49,7 @@ class ElectionFamily(Family):
 
         self.num_candidates = num_candidates
         self.num_voters = num_voters
-        self.ballot = ballot
+        self.instance_type = instance_type
 
     def __getattr__(self, attr):
         if attr == 'election_ids':
@@ -65,9 +65,8 @@ class ElectionFamily(Family):
 
     def prepare_family(self, experiment_id=None, store=None):
 
-        ballot = get_ballot_from_model(self.model_id)
 
-        if ballot == 'ordinal':
+        if self.instance_type == 'ordinal':
 
             # if model_id in PARTY_MODELS:
             #     params['party'] = prepare_parties(params=params, model_id=model_id)
@@ -100,12 +99,11 @@ class ElectionFamily(Family):
                 election = OrdinalElection(experiment_id, election_id, model_id=self.model_id,
                                              num_voters=self.num_voters, label=self.label,
                                              num_candidates=self.num_candidates,
-                                             params=copy.deepcopy(params), ballot=ballot,
+                                             params=copy.deepcopy(params), ballot=self.instance_type,
                                             variable=variable, _import=False,
                                            )
 
                 election.prepare_instance(store=store)
-
 
                 election.compute_potes()
 
@@ -115,7 +113,7 @@ class ElectionFamily(Family):
 
             self.election_ids = _keys
 
-        elif ballot == 'approval':
+        elif self.instance_type == 'approval':
 
             elections = {}
             _keys = []
@@ -145,12 +143,14 @@ class ElectionFamily(Family):
                 election = ApprovalElection(experiment_id, election_id, model_id=self.model_id,
                                              num_voters=self.num_voters, label=self.label,
                                              num_candidates=self.num_candidates,
-                                             params=copy.deepcopy(params), ballot=ballot,
+                                             params=copy.deepcopy(params), ballot=self.instance_type,
                                             variable=variable, _import=False
                                            )
 
                 election.prepare_instance(store=store, params=params)
                 # election.prepare_instance(store=store)
+
+                election.votes_to_approvalwise_vector()
 
                 elections[election_id] = election
 
@@ -206,12 +206,6 @@ def _get_params_for_paths(family, j, extremes=False):
 
     return params, variable
 
-
-def get_ballot_from_model(model_id: str) -> str:
-    if model_id in APPROVAL_MODELS:
-        return 'approval'
-    else:
-        return 'ordinal'
 
 
 # # # # # # # # # # # # # # # #

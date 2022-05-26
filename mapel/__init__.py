@@ -5,6 +5,7 @@ import mapel.elections.other.development as dev
 import mapel.elections.print_ as pr
 from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.elections.objects.OrdinalElection import OrdinalElection
+from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 
 try:
@@ -74,6 +75,16 @@ def compute_spoilers(**kwargs):
 ### WITHOUT EXPERIMENT ###
 def generate_election(**kwargs):
     election = OrdinalElection("vitrual", "virtual", **kwargs)
+    election.prepare_instance()
+    return election
+
+def generate_ordinal_election(**kwargs):
+    election = OrdinalElection("vitrual", "virtual", **kwargs)
+    election.prepare_instance()
+    return election
+
+def generate_approval_election(**kwargs):
+    election = ApprovalElection("vitrual", "virtual", **kwargs)
     election.prepare_instance()
     return election
 
