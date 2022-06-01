@@ -307,13 +307,18 @@ class OrdinalElection(Election):
                             self.potes[v1], self.potes[v2])
         elif object_type == 'candidate':
             self.compute_potes()
-            distances = np.zeros([self.num_candidates, self.num_candidates])
-            for c1 in range(self.num_candidates):
-                for c2 in range(self.num_candidates):
-                    dist = 0
-                    for pote in self.potes:
-                        dist += abs(pote[c1] - pote[c2])
-                    distances[c1][c2] = dist
+            if distance_id == 'domination':
+                distances = self.votes_to_pairwise_matrix()
+                distances = np.abs(distances - 0.5) * self.num_voters
+                np.fill_diagonal(distances, 0)
+            elif distance_id == 'position':
+                distances = np.zeros([self.num_candidates, self.num_candidates])
+                for c1 in range(self.num_candidates):
+                    for c2 in range(self.num_candidates):
+                        dist = 0
+                        for pote in self.potes:
+                            dist += abs(pote[c1] - pote[c2])
+                        distances[c1][c2] = dist
 
         self.distances[object_type] = distances
 

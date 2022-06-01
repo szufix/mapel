@@ -74,17 +74,17 @@ def compute_spoilers(**kwargs):
 
 ### WITHOUT EXPERIMENT ###
 def generate_election(**kwargs):
-    election = OrdinalElection("vitrual", "virtual", **kwargs)
+    election = OrdinalElection("virtual", "virtual", **kwargs)
     election.prepare_instance()
     return election
 
 def generate_ordinal_election(**kwargs):
-    election = OrdinalElection("vitrual", "virtual", **kwargs)
+    election = OrdinalElection("virtual", "virtual", **kwargs)
     election.prepare_instance()
     return election
 
 def generate_approval_election(**kwargs):
-    election = ApprovalElection("vitrual", "virtual", **kwargs)
+    election = ApprovalElection("virtual", "virtual", **kwargs)
     election.prepare_instance()
     return election
 

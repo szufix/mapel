@@ -8,6 +8,7 @@ import mapel.elections.features.approx as approx
 import mapel.elections.features.banzhaf_cc as banzhaf_cc
 import mapel.elections.features.ranging_cc as ranging_cc
 import mapel.elections.features.vc_diversity as vcd
+import mapel.elections.features.diversity as diversity
 import mapel.elections.features.clustering as clustering
 import mapel.elections.features.distortion as distortion
 import mapel.elections.features.other as other
