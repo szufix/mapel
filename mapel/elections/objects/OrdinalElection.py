@@ -86,6 +86,8 @@ class OrdinalElection(Election):
             except:
                 pass
 
+        self.params = {}
+
         if model_id is not None:
             self.params, self.alpha = update_params_ordinal(self.params, self.variable, self.model_id,
                                                             self.num_candidates)
