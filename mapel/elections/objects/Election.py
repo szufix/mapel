@@ -218,8 +218,9 @@ class Election(Instance):
             self.distances[object_type])
         # ADJUST
         # find max dist
-        if (not ('identity' in self.model_id.lower() and object_type=='vote')) \
-                and (not ('approval_id' in self.model_id.lower() and object_type=='vote')):
+        # if (not ('identity' in self.model_id.lower() and object_type=='vote')) \
+        #         and (not ('approval_id' in self.model_id.lower() and object_type=='vote')):
+        if (not self.all_dist_zeros(object_type)):
             dist = np.zeros([len(self.coordinates[object_type]), len(self.coordinates[object_type])])
             for pos_1, pos_2 in itertools.combinations([i for i in range(len(self.coordinates[object_type]))],
                                                        2):
@@ -245,6 +246,12 @@ class Election(Instance):
 
         if self.store:
             self._store_coordinates(object_type=object_type)
+
+    def all_dist_zeros(self, object_type):
+        if np.abs(self.distances[object_type]).sum():
+            return False
+        else:
+            return True
 
     def _store_distances(self, object_type='vote'):
         file_name = f'{self.election_id}_{object_type}.csv'

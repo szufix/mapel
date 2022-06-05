@@ -8,6 +8,7 @@ import mapel.elections.features.approx as approx
 import mapel.elections.features.banzhaf_cc as banzhaf_cc
 import mapel.elections.features.ranging_cc as ranging_cc
 import mapel.elections.features.vc_diversity as vcd
+import mapel.elections.features.diversity as diversity
 import mapel.elections.features.clustering as clustering
 import mapel.elections.features.distortion as distortion
 import mapel.elections.features.other as other
@@ -32,8 +33,7 @@ def get_local_feature(feature_id):
     if feature_id in MAIN_LOCAL_FEATUERS:
         return get_main_local_feature(feature_id)
 
-    return {'borda_std': other.borda_std,
-            'highest_borda_score': scores.highest_borda_score,
+    return {'highest_borda_score': scores.highest_borda_score,
             'highest_plurality_score': scores.highest_plurality_score,
             'highest_copeland_score': scores.highest_copeland_score,
             'lowest_dodgson_score': scores.lowest_dodgson_score,
@@ -68,6 +68,19 @@ def get_local_feature(feature_id):
             'voterlikeness_sqrt': vcd.voterlikeness_sqrt,
             'voterlikeness_harmonic': vcd.voterlikeness_harmonic,
             'borda_diversity': vcd.borda_diversity,
+            'borda_std': other.borda_std,
+            'borda_range': diversity.borda_range,
+            'borda_gini': diversity.borda_gini,
+            'cand_dom_dist_mean': diversity.cand_dom_dist_mean,
+            'cand_dom_dist_std': diversity.cand_dom_dist_std,
+            'cand_pos_dist_std': diversity.cand_pos_dist_std,
+            'vote_dist_mean': diversity.vote_dist_mean,
+            'vote_dist_max': diversity.vote_dist_max,
+            'vote_dist_med': diversity.vote_dist_med,
+            'vote_dist_gini': diversity.vote_dist_gini,
+            'vote_sqr_dist_mean': diversity.vote_sqr_dist_mean,
+            'vote_sqr_dist_med': diversity.vote_sqr_dist_med,
+            'vote_diversity_Karpov': diversity.vote_diversity_Karpov,
             }.get(feature_id)
 
 # # # # # # # # # # # # # # # #
