@@ -13,6 +13,7 @@ import numpy as np
 from scipy.stats import stats
 
 from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
+from mapel.main.embedding.simulated_annealing.simulated_annealing import SimulatedAnnealing
 
 COLORS = []
 from PIL import Image
@@ -218,6 +219,12 @@ class Experiment:
         elif algorithm.lower() in {'kamada-kawai', 'kamada', 'kawai'}:
             my_pos = KamadaKawai().embed(
                 distances=x, initial_positions=initial_positions,
+                fix_initial_positions=fixed
+            )
+        elif algorithm.lower() in {'simulated-annealing'}:
+            my_pos = SimulatedAnnealing().embed(
+                distances=x,
+                initial_positions=initial_positions,
                 fix_initial_positions=fixed
             )
         elif algorithm.lower() in {'geo'}:
