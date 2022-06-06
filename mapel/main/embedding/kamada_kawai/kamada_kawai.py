@@ -2,7 +2,8 @@ import time
 
 import numpy as np
 
-from mapel.main.embedding.initial_positions import initial_place_on_circumference, initial_place_inside_square
+from mapel.main.embedding.initial_positions import initial_place_on_circumference, initial_place_inside_square, \
+    initial_place_points
 from mapel.main.embedding.kamada_kawai.energy_functions import _close_zero, get_total_energy, get_total_energy_dxy
 from mapel.main.embedding.kamada_kawai.optimization_algorithms import optimize_bb, _get_delta_energy, _optimize_newton, \
     adam, _get_pos_k_l_x_y_for_i
@@ -41,7 +42,7 @@ class KamadaKawai:
             'adam': _get_positions_adam
         }
 
-        positions = self._initial_place_points(distances, initial_positions)
+        positions = initial_place_points(distances, initial_positions, self.initial_positions_algorithm)
 
         start_time = time.time()
         positions = optim_method_to_fun[self.optim_method](distances, k, positions, fixed_positions_indexes)
@@ -59,16 +60,6 @@ class KamadaKawai:
             positions = optim_method_to_fun[self.optim_method](distances, k, positions, fixed_positions_indexes)
             print("Last adjustments:", get_total_energy(positions, k, distances), "TIME:", time.time() - start_time)
 
-        return positions
-
-    def _initial_place_points(self, distances, initial_positions):
-        type_to_algorithm = {
-            'circumference': initial_place_on_circumference,
-            'inside-square': initial_place_inside_square
-        }
-
-        positions = type_to_algorithm[self.initial_positions_algorithm](distances)
-        _apply_initial_positions(positions, initial_positions)
         return positions
 
 
@@ -109,11 +100,11 @@ def _get_positions_bb(distances, k, positions, fixed_positions_indexes):
         get_total_energy_dxy,
         args=(k, distances, fixed_positions_indexes),
         x0=pos_copy,
-        # max_iter=int(1e5),
         max_iter=int(1e4),
         init_step_size=1e-3,
-        # max_iter_without_improvement=500
-        max_iter_without_improvement=100
+        max_iter_without_improvement=500,
+        min_improvement_percentage=0.01,
+        percentage_lookup_history=500
     )
 
     return new_positions
@@ -130,12 +121,6 @@ def _get_positions_adam(distances, k, positions, fixed_positions_indexes):
         maxiter=4000
     )
     return new_positions
-
-
-def _apply_initial_positions(positions, initial_positions):
-    if initial_positions is not None:
-        for pos_index, position in initial_positions.items():
-            positions[pos_index] = position
 
 
 def _calc_k_with_special_value(distances, special_value, indexes=None):

@@ -1,6 +1,23 @@
 import numpy as np
 
 
+def initial_place_points(distances, initial_positions, initial_positions_algorithm):
+    type_to_algorithm = {
+        'circumference': initial_place_on_circumference,
+        'inside-square': initial_place_inside_square
+    }
+
+    positions = type_to_algorithm[initial_positions_algorithm](distances)
+    _apply_initial_positions(positions, initial_positions)
+    return positions
+
+
+def _apply_initial_positions(positions, initial_positions):
+    if initial_positions is not None:
+        for pos_index, position in initial_positions.items():
+            positions[pos_index] = position
+
+
 def initial_place_on_circumference(distances):
     num_vertices = distances.shape[0]
     longest_distance = np.max(distances)

@@ -1,3 +1,5 @@
+import collections
+
 import numpy as np
 
 from mapel.main.embedding.kamada_kawai.energy_functions import get_energy_dx, get_energy_dy, get_energy_dx_dx, \
@@ -5,7 +7,7 @@ from mapel.main.embedding.kamada_kawai.energy_functions import get_energy_dx, ge
 
 
 def optimize_bb(func, grad_func, args, x0, max_iter, init_step_size, stop_energy_val=None,
-                max_iter_without_improvement=8000):
+                max_iter_without_improvement=8000, min_improvement_percentage=1.0, percentage_lookup_history=100):
     if isinstance(init_step_size, float):
         init_step_size = [init_step_size, init_step_size]
 
@@ -20,12 +22,19 @@ def optimize_bb(func, grad_func, args, x0, max_iter, init_step_size, stop_energy
     min_energy_snap = x0.copy()
     min_energy_iter = 0
 
+    energy_history = collections.deque(maxlen=percentage_lookup_history)
+
     for i in range(max_iter):
         if i%100 == 0:
             print(f'{i} iterations')
 
         current_energy = func(x, *args)
         if current_energy < min_energy:
+            if len(energy_history) == percentage_lookup_history:
+                percentage = current_energy / min_energy
+                if 1 - percentage < min_improvement_percentage:
+                    return x.copy()
+
             min_energy = current_energy
             min_energy_snap = x.copy()
             min_energy_iter = i
@@ -51,6 +60,7 @@ def optimize_bb(func, grad_func, args, x0, max_iter, init_step_size, stop_energy
         prev_grad = g
         prev_x = x
         x = x - step_size * g
+        energy_history.add(min_energy)
 
     return min_energy_snap
 
