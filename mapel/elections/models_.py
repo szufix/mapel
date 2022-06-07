@@ -15,13 +15,14 @@ import mapel.elections.models.single_peaked as single_peaked
 import mapel.elections.models.urn_model as urn_model
 from mapel.main._glossary import *
 from mapel.elections.models.preflib import generate_preflib_votes
+import mapel.elections.models.field_experiment as fe
 
 
 def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                             num_voters: int = None, params: dict = None) -> Union[list, np.ndarray]:
 
-    main_models = { 'impartial_culture': impartial.generate_approval_ic_votes,
-                    'ic': impartial.generate_approval_ic_votes,
+    main_models = {'impartial_culture': impartial.generate_approval_ic_votes,
+                   'ic': impartial.generate_approval_ic_votes,
                    'id': impartial.generate_approval_id_votes,
                    'resampling': mallows.generate_approval_resampling_votes,
                    'noise_model': mallows.generate_approval_noise_model_votes,
@@ -36,6 +37,7 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                    'simplex_resampling': mallows.generate_approval_simplex_resampling_votes,
                    'anti_pjr': mallows.approval_anti_pjr_votes,
                    'partylist': mallows.approval_partylist_votes,
+                   'field': fe.generate_approval_field_votes,
                    }
 
     if model_id in main_models:

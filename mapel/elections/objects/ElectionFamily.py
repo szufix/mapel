@@ -65,7 +65,7 @@ class ElectionFamily(Family):
 
     def prepare_family(self, experiment_id=None, store=None):
 
-
+        print(self.instance_type)
         if self.instance_type == 'ordinal':
 
             # if model_id in PARTY_MODELS:

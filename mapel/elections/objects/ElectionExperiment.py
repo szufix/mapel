@@ -381,7 +381,8 @@ class ElectionExperiment(Experiment):
                                                      starting_from=starting_from,
                                                      num_candidates=num_candidates,
                                                      num_voters=num_voters, path=path,
-                                                     single=single)
+                                                     single=single,
+                                                     instance_type=self.instance_type)
                 starting_from += size
 
                 all_num_candidates.append(num_candidates)
