@@ -16,9 +16,11 @@ def _close_zero(number, e=1e-6):
     return e if number <= e else number
 
 
-def calculate_distortion(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0):
+def calculate_distortion(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0,
+                         normalize=True):
     """
 
+    :param normalize: whether to
     :param max_distance_percentage:
     :param experiment
     :param election_ids: list of elections to take into consideration. If none, takes all.
@@ -34,6 +36,9 @@ def calculate_distortion(experiment: Experiment, election_ids: List[str] = None,
     distances = extract_selected_distances(experiment, election_ids)
 
     calculated_distances = np.linalg.norm(coordinates[:, np.newaxis] - coordinates[np.newaxis, :], axis=2)
+    if normalize:
+        calculated_distances /= np.max(calculated_distances)
+        distances /= np.max(distances)
 
     max_distance_matrix = np.max([distances, calculated_distances], axis=0)
     min_distance_matrix = np.min([distances, calculated_distances], axis=0)
@@ -54,11 +59,15 @@ def calculate_distortion(experiment: Experiment, election_ids: List[str] = None,
     }
 
 
-def calculate_distortion_naive(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0):
+def calculate_distortion_naive(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0,
+                               normalize=True):
     coordinates = extract_selected_coordinates_from_experiment(experiment, election_ids)
 
     desired_distances = extract_selected_distances(experiment, election_ids)
     calculated_distances = extract_calculated_distances(coordinates)
+    if normalize:
+        calculated_distances /= np.max(calculated_distances)
+        desired_distances /= np.max(desired_distances)
 
     max_distance = np.max(desired_distances)
     allowed_distance = max_distance * max_distance_percentage
