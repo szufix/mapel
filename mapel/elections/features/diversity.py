@@ -73,6 +73,11 @@ def borda_gini(election):
     all_scores = calculate_borda_scores(election)
     return gini_coef(all_scores)
 
+def borda_meandev(election):
+    all_scores = calculate_borda_scores(election)
+    all_scores = np.abs(all_scores - all_scores.mean())
+    return all_scores.mean()
+
 # def borda_std(election):
 #     if election.fake:
 #         return 'None'
@@ -125,6 +130,13 @@ def cand_pos_dist_std(election):
     distances = calculate_cand_pos_dist(election)
     distances = remove_diag(distances)
     return distances.std()
+
+def cand_pos_dist_gini(election):
+    if election.fake:
+        return 'None'
+    distances = calculate_cand_pos_dist(election)
+    distances = remove_diag(distances)
+    return gini_coef(distances)
 
 def vote_dist_mean(election):
     if election.fake:
@@ -201,10 +213,46 @@ def lexi_diversity(election):
         return 'None'
     return 'None'
 
-def vote_dist_kKemenys_summed(election):
+def greedy_kKemenys_summed(election):
     if election.fake:
         return 'None'
-    return 'None'
+    res = [0] * election.num_voters
+    distances = calculate_vote_swap_dist(election)
+    best = np.argmin(distances.sum(axis=1))
+    best_vec = distances[best]
+    res[0] = best_vec.sum()
+    distances = np.vstack((distances[:best],distances[best+1:]))
+
+    for i in range(1,election.num_voters):
+        relatives = distances - best_vec
+        relatives = relatives*(relatives < 0)
+        best = np.argmin(relatives.sum(axis=1))
+        best_vec = best_vec + relatives[best]
+        res[i] = best_vec.sum()
+        distances = np.vstack((distances[:best],distances[best+1:]))
+
+    return sum(res)
+
+def greedy_kmeans_summed(election):
+    if election.fake:
+        return 'None'
+    res = [0] * election.num_voters
+    distances = calculate_vote_swap_dist(election)
+    distances = distances * distances
+    best = np.argmin(distances.sum(axis=1))
+    best_vec = distances[best]
+    res[0] = best_vec.sum()
+    distances = np.vstack((distances[:best],distances[best+1:]))
+
+    for i in range(1,election.num_voters):
+        relatives = distances - best_vec
+        relatives = relatives*(relatives < 0)
+        best = np.argmin(relatives.sum(axis=1))
+        best_vec = best_vec + relatives[best]
+        res[i] = best_vec.sum()
+        distances = np.vstack((distances[:best],distances[best+1:]))
+
+    return sum(res)
 
 def support_pairs(election):
     if election.fake:

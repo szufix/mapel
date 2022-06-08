@@ -71,9 +71,11 @@ def get_local_feature(feature_id):
             'borda_std': other.borda_std,
             'borda_range': diversity.borda_range,
             'borda_gini': diversity.borda_gini,
+            'borda_meandev': diversity.borda_meandev,
             'cand_dom_dist_mean': diversity.cand_dom_dist_mean,
             'cand_dom_dist_std': diversity.cand_dom_dist_std,
             'cand_pos_dist_std': diversity.cand_pos_dist_std,
+            'cand_pos_dist_gini': diversity.cand_pos_dist_gini,
             'vote_dist_mean': diversity.vote_dist_mean,
             'vote_dist_max': diversity.vote_dist_max,
             'vote_dist_med': diversity.vote_dist_med,
@@ -81,6 +83,8 @@ def get_local_feature(feature_id):
             'vote_sqr_dist_mean': diversity.vote_sqr_dist_mean,
             'vote_sqr_dist_med': diversity.vote_sqr_dist_med,
             'vote_diversity_Karpov': diversity.vote_diversity_Karpov,
+            'greedy_kKemenys_summed': diversity.greedy_kKemenys_summed,
+            'greedy_kmeans_summed': diversity.greedy_kmeans_summed,
             }.get(feature_id)
 
 # # # # # # # # # # # # # # # #
