@@ -258,12 +258,16 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
     my_shade = {}
     for family_id in experiment.families:
         for k in range(experiment.families[family_id].size):
-            # if experiment.families[family_id].size == 1:
-            #     election_id = family_id
-            # else:
-            election_id = family_id + '_' + str(k)
 
-            shade = values[election_id]
+            try:
+                if experiment.families[family_id].size == 1:
+                    election_id = family_id
+                else:
+                    election_id = family_id + '_' + str(k)
+                shade = values[election_id]
+            except:
+                election_id = family_id + '_' + str(k)
+                shade = values[election_id]
 
             if shade is None or election_id in omit:
                 my_shade[election_id] = None
@@ -282,12 +286,17 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
     for family_id in experiment.families:
 
         for k in range(experiment.families[family_id].size):
-            # if experiment.families[family_id].size == 1:
-            #     election_id = family_id
-            # else:
-            election_id = family_id + '_' + str(k)
 
-            shade = my_shade[election_id]
+            try:
+                if experiment.families[family_id].size == 1:
+                    election_id = family_id
+                else:
+                    election_id = family_id + '_' + str(k)
+                shade = values[election_id]
+            except:
+                election_id = family_id + '_' + str(k)
+                shade = values[election_id]
+
             if shade is None:
                 blank_xx.append(experiment.coordinates[election_id][0])
                 blank_yy.append(experiment.coordinates[election_id][1])
