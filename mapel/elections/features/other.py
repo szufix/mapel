@@ -39,7 +39,6 @@ def justified_ratio(election, feature_params) -> float:
     # print(len(covered) / float(election.num_voters))
     # return len(covered) / float(election.num_voters)
 
-
 def abstract(election) -> float:
     n = election.num_voters
     election.votes_to_approvalwise_vector()
@@ -55,10 +54,10 @@ def abstract(election) -> float:
 
 def borda_std(election):
     all_scores = np.zeros(election.num_candidates)
-    vectors = election.votes_to_positionwise_matrix()
+    vectors = election.get_vectors()
     for i in range(election.num_candidates):
         for j in range(election.num_candidates):
-            all_scores[i] += vectors[i][j] * (election.num_candidates - j - 1)
+            all_scores[i] += vectors[i][j] * (election.num_candidates - j - 1) * election.num_voters
     return np.std(all_scores)
 
 

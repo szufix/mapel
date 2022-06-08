@@ -119,7 +119,7 @@ class OrdinalElection(Election):
         elif self.model_id in {'norm-mallows_matrix', 'mallows_matrix_path'}:
             vectors = get_mallows_vectors(self.num_candidates, self.params)
         elif self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-            vectors = get_fake_vectors_single(self.model_id, self.num_candidates, self.num_voters)
+            vectors = get_fake_vectors_single(self.model_id, self.num_candidates)
         elif self.model_id in {'walsh_path', 'conitzer_path'}:
             vectors = get_fake_multiplication(self.num_candidates, self.params,
                                               self.model_id)
@@ -345,7 +345,7 @@ def get_fake_multiplication(num_candidates, params, model):
     return output
 
 
-def get_fake_vectors_single(fake_model_name, num_candidates, num_voters):
+def get_fake_vectors_single(fake_model_name, num_candidates):
     vectors = np.zeros([num_candidates, num_candidates])
 
     if fake_model_name == 'identity':
