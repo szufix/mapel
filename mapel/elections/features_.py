@@ -68,7 +68,7 @@ def get_local_feature(feature_id):
             'voterlikeness_sqrt': vcd.voterlikeness_sqrt,
             'voterlikeness_harmonic': vcd.voterlikeness_harmonic,
             'borda_diversity': vcd.borda_diversity,
-            'borda_std': other.borda_std,
+            'borda_std': diversity.borda_std,
             'borda_range': diversity.borda_range,
             'borda_gini': diversity.borda_gini,
             'borda_meandev': diversity.borda_meandev,
@@ -85,6 +85,14 @@ def get_local_feature(feature_id):
             'vote_diversity_Karpov': diversity.vote_diversity_Karpov,
             'greedy_kKemenys_summed': diversity.greedy_kKemenys_summed,
             'greedy_kmeans_summed': diversity.greedy_kmeans_summed,
+            'support_pairs': diversity.support_pairs,
+            'support_triplets': diversity.support_triplets,
+            'support_votes': diversity.support_votes,
+            'support_diversity_summed': diversity.support_diversity_summed,
+            'support_diversity_normed_summed': diversity.support_diversity_normed_summed,
+            'support_diversity_normed2_summed': diversity.support_diversity_normed2_summed,
+            'dist_to_Borda_mean': diversity.dist_to_Borda_mean,
+            'dist_to_Kemeny_mean': diversity.dist_to_Kemeny_mean,
             }.get(feature_id)
 
 # # # # # # # # # # # # # # # #
