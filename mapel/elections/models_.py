@@ -16,6 +16,7 @@ import mapel.elections.models.urn_model as urn_model
 from mapel.main._glossary import *
 from mapel.elections.models.preflib import generate_preflib_votes
 import mapel.elections.models.field_experiment as fe
+import mapel.elections.models.didi as didi
 
 
 def generate_approval_votes(model_id: str = None, num_candidates: int = None,
@@ -108,7 +109,8 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
                            'group-separable':
                                group_separable.generate_ordinal_group_separable_votes,
                            'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
-                           'weighted_stratification': impartial.generate_weighted_stratification_votes}
+                           'weighted_stratification': impartial.generate_weighted_stratification_votes,
+                           'didi': didi.generate_didi_votes}
 
     double_param_models = {'mallows': mallows.generate_mallows_votes,
                            'norm-mallows': mallows.generate_mallows_votes,

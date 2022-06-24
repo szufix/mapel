@@ -296,7 +296,10 @@ class Election(Instance):
                 writer.writerow([vote_id, x, y])
 
     def _import_coordinates(self, object_type='vote'):
-        file_name = f'{self.election_id}_{object_type}.csv'
+        if object_type == 'vote':
+            file_name = f'{self.election_id}.csv'
+        else:
+            file_name = f'{self.election_id}_{object_type}.csv'
         path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'coordinates',
                             file_name)
         with open(path, 'r', newline='') as csv_file:

@@ -45,8 +45,7 @@ def highest_copeland_score(election) -> Union[int, str]:
     if election.model_id in LIST_OF_FAKE_MODELS:
         return 'None'
 
-    election.get_potes()
-
+    election.compute_potes()
     scores = np.zeros([election.num_candidates])
 
     for i in range(election.num_candidates):
