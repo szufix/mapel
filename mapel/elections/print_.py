@@ -40,7 +40,7 @@ def print_map_2d(experiment,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
                  legend=True, feature_labelsize=14,
                  column_id='value', title_size=16, ticks_pos=None,
-                 feature_ids=None, omit=None, textual_size=16) -> None:
+                 feature_ids=None, omit=None, textual_size=16, figsize=(6.4,6.4)) -> None:
 
     if textual is None:
         textual = []
@@ -68,7 +68,7 @@ def print_map_2d(experiment,
     if experiment.store and update:
         experiment.update()
 
-    fig = plt.figure(figsize=(6.4, 6.4))
+    fig = plt.figure(figsize=figsize)
 
     ax = fig.add_subplot()
 
