@@ -76,6 +76,8 @@ def get_local_feature(feature_id):
             'cand_dom_dist_std': diversity.cand_dom_dist_std,
             'cand_pos_dist_std': diversity.cand_pos_dist_std,
             'cand_pos_dist_gini': diversity.cand_pos_dist_gini,
+            'cand_pos_dist_meandev': diversity.cand_pos_dist_meandev,
+            'med_cands_summed': diversity.med_cands_summed,
             'vote_dist_mean': diversity.vote_dist_mean,
             'vote_dist_max': diversity.vote_dist_max,
             'vote_dist_med': diversity.vote_dist_med,
@@ -91,6 +93,7 @@ def get_local_feature(feature_id):
             'support_diversity_summed': diversity.support_diversity_summed,
             'support_diversity_normed_summed': diversity.support_diversity_normed_summed,
             'support_diversity_normed2_summed': diversity.support_diversity_normed2_summed,
+            'support_diversity_normed3_summed': diversity.support_diversity_normed3_summed,
             'dist_to_Borda_mean': diversity.dist_to_Borda_mean,
             'dist_to_Kemeny_mean': diversity.dist_to_Kemeny_mean,
             }.get(feature_id)

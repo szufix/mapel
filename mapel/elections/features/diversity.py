@@ -157,12 +157,42 @@ def cand_pos_dist_std(election):
     distances = remove_diag(distances)
     return distances.std()
 
+def cand_pos_dist_meandev(election):
+    if election.fake:
+        return 'None'
+    distances = calculate_cand_pos_dist(election)
+    distances = remove_diag(distances)
+    distances = np.abs(distances - distances.mean())
+    return distances.mean()
+
 def cand_pos_dist_gini(election):
     if election.fake:
         return 'None'
     distances = calculate_cand_pos_dist(election)
     distances = remove_diag(distances)
     return gini_coef(distances)
+
+def med_cands_summed(election):
+    if election.fake:
+        return 'None'
+    m = election.num_candidates
+    distances = calculate_cand_pos_dist(election)
+    res = [0] * m
+    for i in range(1,m):
+        best_d = np.inf
+        for comb in itertools.combinations(range(m),i):
+            d_total = 0
+            for c1 in range(m):
+                min_d = np.inf
+                for c2 in comb:
+                    d_cand = distances[c1,c2]
+                    if d_cand < min_d:
+                        min_d = d_cand
+                d_total = d_total + min_d
+            if d_total < best_d:
+                best_d = d_total
+        res[i] = best_d
+    return sum(res)
 
 def vote_dist_mean(election):
     if election.fake:
@@ -342,7 +372,27 @@ def support_diversity_normed2(election, tuple_len):
             if not(trimmed_v in support):
                 support.append(trimmed_v)
         res = res + len(support)
-    return res / count / math.factorial(len(subset))
+    return res / count / math.factorial(tuple_len)
+
+def support_diversity_normed3(election, tuple_len):
+    if election.fake:
+        return 'None'
+    m = election.num_candidates
+    res = 0
+    count = 0
+    for subset in itertools.combinations(range(m), tuple_len):
+        count = count + 1
+        support = []
+        for v in election.votes:
+            trimmed_v = []
+            for c in v:
+                if c in subset:
+                    trimmed_v.append(c)
+            if not(trimmed_v in support):
+                support.append(trimmed_v)
+        res = res + len(support)
+    max_times = min(math.factorial(tuple_len),election.num_voters)
+    return res / count / max_times
 
 def support_pairs(election):
     return support_diversity(election,2)
@@ -381,6 +431,15 @@ def support_diversity_normed2_summed(election):
     res = 0
     for i in range(2,m+1):
         res = res + support_diversity_normed2(election, i)
+    return res
+
+def support_diversity_normed3_summed(election):
+    if election.fake:
+        return 'None'
+    m = election.num_candidates
+    res = 0
+    for i in range(2,m+1):
+        res = res + support_diversity_normed3(election, i)
     return res
 
 def votes_std(election):
