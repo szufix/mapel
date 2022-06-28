@@ -8,6 +8,7 @@ import numpy as np
 import mapel.elections.models.euclidean as euclidean
 import mapel.elections.models.group_separable as group_separable
 import mapel.elections.models.guardians as guardians
+import mapel.elections.models.guardians_plus as guardians_plus
 import mapel.elections.models.impartial as impartial
 import mapel.elections.models.mallows as mallows
 import mapel.elections.models.single_crossing as single_crossing
@@ -16,7 +17,6 @@ import mapel.elections.models.urn_model as urn_model
 from mapel.main._glossary import *
 from mapel.elections.models.preflib import generate_preflib_votes
 import mapel.elections.models.field_experiment as fe
-import mapel.elections.models.didi as didi
 
 
 def generate_approval_votes(model_id: str = None, num_candidates: int = None,
@@ -72,7 +72,8 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
                     'real_identity': guardians.generate_real_identity_votes,
                     'real_uniformity': guardians.generate_real_uniformity_votes,
                     'real_antagonism': guardians.generate_real_antagonism_votes,
-                    'real_stratification': guardians.generate_real_stratification_votes}
+                    'real_stratification': guardians.generate_real_stratification_votes,
+                    'un_from_mtrx': guardians_plus.generate_un_from_matrix_votes}
 
     euclidean_models = {'1d_interval': euclidean.generate_ordinal_euclidean_votes,
                         '1d_gaussian': euclidean.generate_ordinal_euclidean_votes,
@@ -110,7 +111,18 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
                                group_separable.generate_ordinal_group_separable_votes,
                            'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
                            'weighted_stratification': impartial.generate_weighted_stratification_votes,
-                           'didi': didi.generate_didi_votes}
+                           'idan_part': guardians_plus.generate_idan_part_votes,
+                           'idun_part': guardians_plus.generate_idun_part_votes,
+                           'idst_part': guardians_plus.generate_idst_part_votes,
+                           'anun_part': guardians_plus.generate_anun_part_votes,
+                           'anst_part': guardians_plus.generate_anst_part_votes,
+                           'unst_part': guardians_plus.generate_unst_part_votes,
+                           'idan_mallows': guardians_plus.generate_idan_mallows_votes,
+                           'idst_mallows': guardians_plus.generate_idst_mallows_votes,
+                           'anun_mallows': guardians_plus.generate_anun_mallows_votes,
+                           'unst_mallows': guardians_plus.generate_unst_mallows_votes,
+                           'unst_topsize': guardians_plus.generate_unst_topsize_votes,
+                           'idst_blocks': guardians_plus.generate_idst_blocks_votes}
 
     double_param_models = {'mallows': mallows.generate_mallows_votes,
                            'norm-mallows': mallows.generate_mallows_votes,
