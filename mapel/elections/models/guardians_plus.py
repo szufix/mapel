@@ -3,6 +3,7 @@ import mapel.elections.models.mallows as mallows
 import itertools as it
 import copy
 import random
+import sampling.samplemat as smpl
 
 
 # Auxiliary functions
@@ -36,26 +37,7 @@ def distribute_in_block_matrix(n,blocks):
 
 
 def draw_election(matrix):
-    n = sum(matrix[0])
-    curr_matrix = copy.deepcopy(matrix)
-    votes = []
-    perms = list(it.permutations(range(len(matrix))))
-    while sum(curr_matrix[0]) != 0:
-        if sum(curr_matrix[0]) == 5:
-            perms = build_perms(curr_matrix)
-        while True:
-            perm = random.choice(perms)
-            skip_perm = False
-            for i, j in enumerate(perm):
-                if curr_matrix[j][i] == 0:
-                    skip_perm = True
-            if skip_perm:
-                continue
-            votes.append(list(perm))
-            for i, j in enumerate(perm):
-                curr_matrix[j][i] -= 1
-            break
-    return votes
+    return smpl.sample_election_using_permanent(matrix)
 
 
 def build_perms(matrix):
