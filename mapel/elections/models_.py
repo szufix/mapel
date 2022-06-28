@@ -17,6 +17,7 @@ import mapel.elections.models.urn_model as urn_model
 from mapel.main._glossary import *
 from mapel.elections.models.preflib import generate_preflib_votes
 import mapel.elections.models.field_experiment as fe
+import mapel.elections.models.didi as didi
 
 
 def generate_approval_votes(model_id: str = None, num_candidates: int = None,
@@ -122,7 +123,8 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
                            'anun_mallows': guardians_plus.generate_anun_mallows_votes,
                            'unst_mallows': guardians_plus.generate_unst_mallows_votes,
                            'unst_topsize': guardians_plus.generate_unst_topsize_votes,
-                           'idst_blocks': guardians_plus.generate_idst_blocks_votes}
+                           'idst_blocks': guardians_plus.generate_idst_blocks_votes,
+                           'didi': didi.generate_didi_votes}
 
     double_param_models = {'mallows': mallows.generate_mallows_votes,
                            'norm-mallows': mallows.generate_mallows_votes,

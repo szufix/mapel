@@ -23,7 +23,7 @@ def generate_votes(model_id: str = None, num_agents: int = None,
     }
     dependent_models = {
         'euclidean': euclidean.generate_euclidean_votes,
-
+        'reverse_euclidean': euclidean.generate_reverse_euclidean_votes,
     }
 
     if model_id in independent_models:
@@ -31,7 +31,7 @@ def generate_votes(model_id: str = None, num_agents: int = None,
         votes_2 = independent_models.get(model_id)(num_agents=num_agents, params=params)
         return [votes_1, votes_2]
 
-    elif model_id in independent_models:
+    elif model_id in dependent_models:
         return dependent_models.get(model_id)(num_agents=num_agents, params=params)
 
     else:

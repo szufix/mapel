@@ -35,6 +35,7 @@ class MarriagesExperiment(Experiment):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
         self.default_num_agents = 10
 
         self.matchings = {}

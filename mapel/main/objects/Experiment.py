@@ -310,7 +310,7 @@ class Experiment:
             file_name = f'{self.embedding_id}_{self.distance_id}_{dim}d.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                             "coordinates", file_name)
-        print(path)
+        # print(path)
         with open(path, 'r', newline='') as csv_file:
 
             # ORIGINAL

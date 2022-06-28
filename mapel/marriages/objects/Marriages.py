@@ -6,7 +6,7 @@ import ast
 from mapel.main.objects.Instance import Instance
 
 from mapel.marriages.models_main import generate_votes
-from mapel.elections.glossary_ import *
+from mapel.main._glossary import *
 
 
 class Marriages(Instance):
@@ -139,6 +139,7 @@ class Marriages(Instance):
                 # counted_votes = sorted(counted_votes, reverse=True)
 
                 votes = self.votes[s]
+                print(votes)
 
                 file_.write(str(self.num_agents) + ', ' + str(self.num_agents) + ', ' +
                             str(len(votes)) + "\n")

@@ -11,9 +11,15 @@ from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExp
 try:
     from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
     from mapel.roommates.objects.Roommates import Roommates
-    from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
     import mapel.roommates.models_ as rom
 except:
+    print("Failed when importing Roommates")
+    pass
+
+try:
+    from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
+except:
+    print("Failed when importing Marriages")
     pass
 
 
@@ -45,11 +51,13 @@ def prepare_experiment(experiment_id=None, instances=None, distances=None, insta
                                           fast_import=fast_import)
     elif instance_type == 'roommates':
         return RoommatesExperiment(experiment_id=experiment_id, _import=_import,
-                                   distance_id=distance_id, instance_type=instance_type)
+                                   distance_id=distance_id, instance_type=instance_type,
+                                   embedding_id=embedding_id)
 
     elif instance_type == 'marriages':
         return MarriagesExperiment(experiment_id=experiment_id, _import=_import,
-                                   distance_id=distance_id, instance_type=instance_type)
+                                   distance_id=distance_id, instance_type=instance_type,
+                                   embedding_id=embedding_id)
 
 
 def print_approvals_histogram(*args):

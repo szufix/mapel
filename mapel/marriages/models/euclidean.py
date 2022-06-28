@@ -15,26 +15,69 @@ def get_range(params):
 def generate_euclidean_votes(num_agents: int = None, params: dict = None):
 
     name = f'{params["dim"]}d_{params["space"]}'
-    # print(name)
 
-    men = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
-    women = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
+    left = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
+    right = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
 
-    votes = np.zeros([num_agents, num_agents], dtype=int)
+    left_votes = np.zeros([num_agents, num_agents], dtype=int)
+    right_votes = np.zeros([num_agents, num_agents], dtype=int)
     distances = np.zeros([num_agents, num_agents], dtype=float)
-
-    # a_power = np.array([get_range(params) for _ in range(num_agents)])
 
     for v in range(num_agents):
         for c in range(num_agents):
 
-            # if v_range[v] + c_range[c] >= np.linalg.norm(voters[v] - candidates[c]):
-            #     votes[v].add(c)
-            votes[v][c] = c
-            distances[v][c] = np.linalg.norm(agents[v] - agents[c])
-        votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
+            left_votes[v][c] = c
+            distances[v][c] = np.linalg.norm(left[v] - right[c])
+        left_votes[v] = [x for _, x in sorted(zip(distances[v], left_votes[v]))]
 
-    return votes
+    for v in range(num_agents):
+        for c in range(num_agents):
+
+            right_votes[v][c] = c
+            distances[v][c] = np.linalg.norm(right[v] - left[c])
+        right_votes[v] = [x for _, x in sorted(zip(distances[v], right_votes[v]))]
+
+    return [left_votes, right_votes]
+
+
+def generate_reverse_euclidean_votes(num_agents: int = None, params: dict = None):
+
+    name = f'{params["dim"]}d_{params["space"]}'
+
+    left = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
+    right = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
+
+    left_votes = np.zeros([num_agents, num_agents], dtype=int)
+    right_votes = np.zeros([num_agents, num_agents], dtype=int)
+    distances = np.zeros([num_agents, num_agents], dtype=float)
+
+    for v in range(num_agents):
+        for c in range(num_agents):
+            left_votes[v][c] = c
+            distances[v][c] = np.linalg.norm(left[v] - right[c])
+        left_votes[v] = [x for _, x in sorted(zip(distances[v], left_votes[v]))]
+
+    for v in range(num_agents):
+        for c in range(num_agents):
+            right_votes[v][c] = c
+            distances[v][c] = np.linalg.norm(right[v] - left[c])
+        right_votes[v] = [x for _, x in sorted(zip(distances[v], right_votes[v]))]
+
+    if 'proportion' in params:
+        p = params['proportion']
+    else:
+        p = 0.5
+
+    for i in range(int(num_agents * (1.-p))):
+        tmp = list(left_votes[i])
+        tmp.reverse()
+        left_votes[i] = tmp
+
+        tmp = list(right_votes[i])
+        tmp.reverse()
+        right_votes[i] = tmp
+
+    return [left_votes, right_votes]
 
 
 def generate_roommates_radius_votes(num_agents: int = None, params: dict = None):
