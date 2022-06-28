@@ -1,6 +1,25 @@
+import math
+
 import numpy as np
 import itertools
 # AUXILIARY FUNCTIONS
+
+def kemeny_ranking(election):
+    print(election.model_id)
+    m = election.num_candidates
+    wmg = election.votes_to_pairwise_matrix()
+    best_d = np.infty
+    for test_ranking in itertools.permutations(list(range(m))):
+        dist = 0
+        for i in range(m):
+            for j in range(i+1,m):
+                dist = dist + wmg[test_ranking[j],test_ranking[i]]
+            if dist > best_d:
+                break
+        if dist < best_d:
+            best = test_ranking
+            best_d = dist
+    return best, best_d
 
 def gini_coef(x):
     # Mean absolute difference
@@ -34,12 +53,12 @@ def remove_diag(mtrx):
     return res
 
 def calculate_borda_scores(election):
-    all_scores = np.zeros(election.num_candidates)
-    vectors = election.votes_to_positionwise_matrix()
-    for i in range(election.num_candidates):
-        for j in range(election.num_candidates):
-            all_scores[i] += vectors[i][j] * (election.num_candidates - j - 1)
-    return all_scores
+    m = election.num_candidates
+    borda = np.zeros(m, int)
+    for v in election.votes:
+        for i, c in enumerate(v):
+            borda[c] = borda[c] + m - i - 1
+    return borda
 
 def calculate_cand_dom_dist(election):
     distances = election.votes_to_pairwise_matrix()
@@ -70,18 +89,23 @@ def calculate_vote_swap_dist(election):
 # DIVERSITY INDICES
 
 def borda_gini(election):
+    if election.fake:
+        return 'None'
     all_scores = calculate_borda_scores(election)
     return gini_coef(all_scores)
 
 def borda_meandev(election):
+    if election.fake:
+        return 'None'
     all_scores = calculate_borda_scores(election)
     all_scores = np.abs(all_scores - all_scores.mean())
     return all_scores.mean()
 
-# def borda_std(election):
-#     if election.fake:
-#         return 'None'
-#     return 'None'
+def borda_std(election):
+    if election.fake:
+        return 'None'
+    all_scores = calculate_borda_scores(election)
+    return all_scores.std()
 
 # FROM other.py
 # def borda_std(election):
@@ -93,6 +117,8 @@ def borda_meandev(election):
 #     return np.std(all_scores)
 
 def borda_range(election):
+    if election.fake:
+        return 'None'
     all_scores = calculate_borda_scores(election)
     return (np.max(all_scores) - np.min(all_scores))
 
@@ -131,12 +157,42 @@ def cand_pos_dist_std(election):
     distances = remove_diag(distances)
     return distances.std()
 
+def cand_pos_dist_meandev(election):
+    if election.fake:
+        return 'None'
+    distances = calculate_cand_pos_dist(election)
+    distances = remove_diag(distances)
+    distances = np.abs(distances - distances.mean())
+    return distances.mean()
+
 def cand_pos_dist_gini(election):
     if election.fake:
         return 'None'
     distances = calculate_cand_pos_dist(election)
     distances = remove_diag(distances)
     return gini_coef(distances)
+
+def med_cands_summed(election):
+    if election.fake:
+        return 'None'
+    m = election.num_candidates
+    distances = calculate_cand_pos_dist(election)
+    res = [0] * m
+    for i in range(1,m):
+        best_d = np.inf
+        for comb in itertools.combinations(range(m),i):
+            d_total = 0
+            for c1 in range(m):
+                min_d = np.inf
+                for c2 in comb:
+                    d_cand = distances[c1,c2]
+                    if d_cand < min_d:
+                        min_d = d_cand
+                d_total = d_total + min_d
+            if d_total < best_d:
+                best_d = d_total
+        res[i] = best_d
+    return sum(res)
 
 def vote_dist_mean(election):
     if election.fake:
@@ -188,25 +244,34 @@ def vote_diversity_Karpov(election):
     distances = distances + 0.5
     return geom_mean(distances)
 
-def vote_dist_Kemeny_sqr_mean(election):
+def dist_sqr_to_Kemeny_mean(election):
     if election.fake:
         return 'None'
     return 'None'
 
-def vote_dist_Kemeny_mean(election):
+def dist_to_Kemeny_mean(election):
+    if election.fake:
+        return 'None'
+    _, dist = kemeny_ranking(election)
+    return dist / election.num_voters
+
+def dist_to_Kemeny_med(election):
     if election.fake:
         return 'None'
     return 'None'
 
-def vote_dist_Kemeny_med(election):
+def dist_to_Borda_mean(election):
     if election.fake:
         return 'None'
-    return 'None'
-
-def vote_dist_Borda_mean(election):
-    if election.fake:
-        return 'None'
-    return 'None'
+    m = election.num_candidates
+    borda = calculate_borda_scores(election)
+    ranking = np.argsort(-borda)
+    wmg = election.votes_to_pairwise_matrix()
+    dist = 0
+    for i in range(m):
+        for j in range(i + 1, m):
+            dist = dist + wmg[ranking[j], ranking[i]]
+    return dist / election.num_voters
 
 def lexi_diversity(election):
     if election.fake:
@@ -254,30 +319,128 @@ def greedy_kmeans_summed(election):
 
     return sum(res)
 
-def support_pairs(election):
+def support_diversity(election, tuple_len):
     if election.fake:
         return 'None'
-    return 'None'
+    m = election.num_candidates
+    res = 0
+    for subset in itertools.combinations(range(m), tuple_len):
+        support = []
+        for v in election.votes:
+            trimmed_v = []
+            for c in v:
+                if c in subset:
+                    trimmed_v.append(c)
+            if not(trimmed_v in support):
+                support.append(trimmed_v)
+        res = res + len(support)
+    return res
+
+def support_diversity_normed(election, tuple_len):
+    if election.fake:
+        return 'None'
+    m = election.num_candidates
+    res = 0
+    count = 0
+    for subset in itertools.combinations(range(m), tuple_len):
+        count = count + 1
+        support = []
+        for v in election.votes:
+            trimmed_v = []
+            for c in v:
+                if c in subset:
+                    trimmed_v.append(c)
+            if not(trimmed_v in support):
+                support.append(trimmed_v)
+        res = res + len(support)
+    return res / count
+
+def support_diversity_normed2(election, tuple_len):
+    if election.fake:
+        return 'None'
+    m = election.num_candidates
+    res = 0
+    count = 0
+    for subset in itertools.combinations(range(m), tuple_len):
+        count = count + 1
+        support = []
+        for v in election.votes:
+            trimmed_v = []
+            for c in v:
+                if c in subset:
+                    trimmed_v.append(c)
+            if not(trimmed_v in support):
+                support.append(trimmed_v)
+        res = res + len(support)
+    return res / count / math.factorial(tuple_len)
+
+def support_diversity_normed3(election, tuple_len):
+    if election.fake:
+        return 'None'
+    m = election.num_candidates
+    res = 0
+    count = 0
+    for subset in itertools.combinations(range(m), tuple_len):
+        count = count + 1
+        support = []
+        for v in election.votes:
+            trimmed_v = []
+            for c in v:
+                if c in subset:
+                    trimmed_v.append(c)
+            if not(trimmed_v in support):
+                support.append(trimmed_v)
+        res = res + len(support)
+    max_times = min(math.factorial(tuple_len),election.num_voters)
+    return res / count / max_times
+
+def support_pairs(election):
+    return support_diversity(election,2)
 
 def support_triplets(election):
-    if election.fake:
-        return 'None'
-    return 'None'
+    return support_diversity(election,3)
 
 def support_votes(election):
     if election.fake:
         return 'None'
-    return 'None'
+    m = election.num_candidates
+    return support_diversity(election,m)
 
-def support_diversity_mc(election, tuple_len, max_no_tuples):
+def support_diversity_summed(election):
     if election.fake:
         return 'None'
-    return 'None'
+    m = election.num_candidates
+    res = 0
+    for i in range(2,m+1):
+        res = res + support_diversity(election, i)
+    return res
 
-def support_diversity_mc_summed(election, max_no_tuples):
+def support_diversity_normed_summed(election):
     if election.fake:
         return 'None'
-    return 'None'
+    m = election.num_candidates
+    res = 0
+    for i in range(2,m+1):
+        res = res + support_diversity_normed(election, i)
+    return res
+
+def support_diversity_normed2_summed(election):
+    if election.fake:
+        return 'None'
+    m = election.num_candidates
+    res = 0
+    for i in range(2,m+1):
+        res = res + support_diversity_normed2(election, i)
+    return res
+
+def support_diversity_normed3_summed(election):
+    if election.fake:
+        return 'None'
+    m = election.num_candidates
+    res = 0
+    for i in range(2,m+1):
+        res = res + support_diversity_normed3(election, i)
+    return res
 
 def votes_std(election):
     if election.fake:
