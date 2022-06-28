@@ -1,5 +1,8 @@
 .idea/
 
+# vim swap files
+*.swp
+
 # Local files:
 
 mapel/roommates/matching
