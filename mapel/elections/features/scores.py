@@ -56,10 +56,11 @@ def highest_copeland_score(election) -> Union[int, str]:
                     result += 1
             if result > election.num_voters / 2:
                 scores[i] += 1
-                scores[j] -= 1
             elif result < election.num_voters / 2:
-                scores[i] -= 1
                 scores[j] += 1
+            else:
+                scores[i] += 0.5
+                scores[j] += 0.5
 
     return max(scores)
 

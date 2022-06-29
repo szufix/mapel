@@ -100,11 +100,11 @@ def _get_positions_bb(distances, k, positions, fixed_positions_indexes):
         get_total_energy_dxy,
         args=(k, distances, fixed_positions_indexes),
         x0=pos_copy,
-        max_iter=int(1e4),
+        max_iter=int(1e5),
         init_step_size=1e-3,
-        max_iter_without_improvement=500,
-        min_improvement_percentage=0.01,
-        percentage_lookup_history=500
+        max_iter_without_improvement=1000,
+        min_improvement_percentage=0.001,
+        percentage_lookup_history=1000
     )
 
     return new_positions

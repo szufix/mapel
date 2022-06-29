@@ -54,6 +54,8 @@ def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElec
     elif main_distance in metrics_with_inner_distance:
         return metrics_with_inner_distance.get(main_distance)(election_1, election_2,
                                                               inner_distance)
+    else:
+        logging.warning("No such distance!")
 
 
 def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElection,
@@ -84,6 +86,8 @@ def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElectio
     elif main_distance in metrics_with_inner_distance:
         return metrics_with_inner_distance.get(main_distance)(election_1, election_2,
                                                               inner_distance)
+    else:
+        logging.warning("No such distance!")
 
 
 def _extract_distance_id(distance_id: str) -> (Callable, str):

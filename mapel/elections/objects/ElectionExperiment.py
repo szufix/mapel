@@ -413,14 +413,13 @@ class ElectionExperiment(Experiment):
 
             feature = features.get_global_feature(feature_id)
 
-            values = feature(self, electielection_idson_ids=list(self.instances))
+            values = feature(self, election_ids=list(self.instances), feature_params=feature_params)
 
             for instance_id in self.instances:
                 feature_dict['value'][instance_id] = values[instance_id]
                 feature_dict['time'][instance_id] = 0
 
         else:
-
             feature = features.get_local_feature(feature_id)
 
             for instance_id in self.elections:

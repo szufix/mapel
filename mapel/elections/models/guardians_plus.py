@@ -3,7 +3,7 @@ import mapel.elections.models.mallows as mallows
 import itertools as it
 import copy
 import random
-import sampling.samplemat as smpl
+import mapel.elections.models.sampling.samplemat as smpl
 
 
 # Auxiliary functions

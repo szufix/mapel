@@ -12,6 +12,7 @@ import mapel.elections.features.diversity as diversity
 import mapel.elections.features.clustering as clustering
 import mapel.elections.features.distortion as distortion
 import mapel.elections.features.other as other
+import mapel.elections.features.justified_representation as jr
 
 from mapel.main._glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
 from mapel.main._features_main import get_main_local_feature, get_main_global_feature
@@ -25,6 +26,7 @@ def get_global_feature(feature_id):
     return {'clustering': clustering.clustering_v1,
             'clustering_kmeans': clustering.clustering_kmeans,
             'distortion_from_all': distortion.distortion_from_all,
+            'jr': jr.test_jr,
             }.get(feature_id)
 
 

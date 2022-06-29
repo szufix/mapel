@@ -387,23 +387,23 @@ def get_fake_vectors_crate(num_candidates=None, fake_param=None):
 
 def get_fake_convex(fake_model_name, num_candidates, num_voters, params, function_name):
     if fake_model_name == 'unid':
-        base_1 = function_name('uniformity', num_candidates, num_voters)
-        base_2 = function_name('identity', num_candidates, num_voters)
+        base_1 = function_name('uniformity', num_candidates)
+        base_2 = function_name('identity', num_candidates)
     elif fake_model_name == 'anid':
-        base_1 = function_name('antagonism', num_candidates, num_voters)
-        base_2 = function_name('identity', num_candidates, num_voters)
+        base_1 = function_name('antagonism', num_candidates)
+        base_2 = function_name('identity', num_candidates)
     elif fake_model_name == 'stid':
-        base_1 = function_name('stratification', num_candidates, num_voters)
-        base_2 = function_name('identity', num_candidates, num_voters)
+        base_1 = function_name('stratification', num_candidates)
+        base_2 = function_name('identity', num_candidates)
     elif fake_model_name == 'anun':
-        base_1 = function_name('antagonism', num_candidates, num_voters)
-        base_2 = function_name('uniformity', num_candidates, num_voters)
+        base_1 = function_name('antagonism', num_candidates)
+        base_2 = function_name('uniformity', num_candidates)
     elif fake_model_name == 'stun':
-        base_1 = function_name('stratification', num_candidates, num_voters)
-        base_2 = function_name('uniformity', num_candidates, num_voters)
+        base_1 = function_name('stratification', num_candidates)
+        base_2 = function_name('uniformity', num_candidates)
     elif fake_model_name == 'stan':
-        base_1 = function_name('stratification', num_candidates, num_voters)
-        base_2 = function_name('antagonism', num_candidates, num_voters)
+        base_1 = function_name('stratification', num_candidates)
+        base_2 = function_name('antagonism', num_candidates)
     else:
         raise NameError('No such fake vectors/matrix!')
 

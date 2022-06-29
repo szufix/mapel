@@ -60,7 +60,7 @@ def optimize_bb(func, grad_func, args, x0, max_iter, init_step_size, stop_energy
         prev_grad = g
         prev_x = x
         x = x - step_size * g
-        energy_history.add(min_energy)
+        energy_history.append(min_energy)
 
     return min_energy_snap
 

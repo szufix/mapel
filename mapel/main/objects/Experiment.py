@@ -126,9 +126,12 @@ class Experiment:
         else:
             self.coordinates = {}
 
-        for family_id in self.families:
-            for instance_id in self.families[family_id].instance_ids:
-                self.instances[instance_id].label = self.families[family_id].label
+        try:
+            for family_id in self.families:
+                for instance_id in self.families[family_id].instance_ids:
+                    self.instances[instance_id].label = self.families[family_id].label
+        except:
+            pass
 
     @abstractmethod
     def prepare_instances(self):

@@ -18,13 +18,14 @@ ELECTION_FEATURES_WITH_PARAMS = ['largest_cohesive_group',
                                  'removal_approx_pav_score',
                                  'rand_approx_pav_score',
                                  'banzhaf_cc_score',
-                                 'ranging_cc_score']
+                                 'ranging_cc_score',
+                                 ]
 
 MAIN_LOCAL_FEATUERS = []
 
 MAIN_GLOBAL_FEATUERS = ['calculate_distortion', 'calculate_monotonicity']
 
-ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans', 'distortion_from_all'}
+ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans', 'distortion_from_all', 'jr'}
 
 COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
 
@@ -34,19 +35,18 @@ RULE_NAME_MATRIX = {
     "pav": "PAV",
     "slav": "SLAV",
     "cc": "CC",
-    "seqpav": "Seq.PAV",
-    "revseqpav": "Rev.Seq.PAV",
-    "seqslav": "Seq. SLAV",
-    "seqcc": "Seq. CC",
-    "seqphragmen": "Seq. Phrag.",
+    "seqpav": "Gr.PAV",
+    "seqslav": "Gr. SLAV",
+    "seqcc": "Gr. CC",
+    "seqphragmen": "Gr. Phrag.",
     "greedy-monroe": "Gr. Monroe",
+    "monroe": "Monroe",
+    "minimaxav": "Minimax AV",
     "rule-x": "Rule X",
-    "phragmen-enestroem": "Phrag. Ene.",
-    "consensus-rule": "Consensus",
-    "geom2": "Geometric 2",
-    "geom3": "Geometric 3",
-    "geom4": "Geometric 4",
-    "geom5": "Geometric 5",
+    "geom2": "Geo 2",
+    "geom3": "Geo 3",
+    "geom4": "Geo 4",
+    "geom5": "Geo 5",
 }
 
 RULE_NAME_MAP = {
@@ -55,19 +55,18 @@ RULE_NAME_MAP = {
     "pav": "PAV",
     "slav": "SLAV",
     "cc": "CC",
-    "seqpav": "S.PAV",
-    "revseqpav": "R.S.PAV",
-    "seqslav": "S.SLAV",
-    "seqcc": "S.CC",
-    "seqphragmen": "S.Phrag.",
-    "greedy-monroe": "Gr.Monroe",
+    "seqpav": "Gr.PAV",
+    "seqslav": "Gr. SLAV",
+    "seqcc": "Gr. CC",
+    "seqphragmen": "Gr. Phrag.",
+    "greedy-monroe": "Gr. Monroe",
+    "monroe": "Monroe",
+    "minimaxav": "Minimax AV",
     "rule-x": "Rule X",
-    "phragmen-enestroem": "Phrag. Ene.",
-    "consensus-rule": "Cons.",
-    "geom2": "G2",
-    "geom3": "G3",
-    "geom4": "G4",
-    "geom5": "G5",
+    "geom2": "Geo 2",
+    "geom3": "Geo 3",
+    "geom4": "Geo 4",
+    "geom5": "Geo 5",
 }
 
 NICE_NAME = {
