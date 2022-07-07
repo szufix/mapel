@@ -20,7 +20,7 @@ def weighted_l1(a1, a2, w):
     return total
 
 
-def generate_roommates_vectors_votes(num_agents: int = None, params: dict = None):
+def generate_attributes_votes(num_agents: int = None, params: dict = None):
 
     name = f'{params["dim"]}d_{params["space"]}'
 
@@ -91,7 +91,7 @@ def generate_roommates_reverse_euclidean_votes(num_agents: int = None, params: d
     return convert(votes)
 
 
-def generate_roommates_double_votes(num_agents: int = None, params: dict = None):
+def generate_expectation_votes(num_agents: int = None, params: dict = None):
 
     name = f'{params["dim"]}d_{params["space"]}'
 
@@ -111,13 +111,14 @@ def generate_roommates_double_votes(num_agents: int = None, params: dict = None)
         for c in range(num_agents):
 
             votes[v][c] = c
-            distances[v][c] = np.linalg.norm(agents_reality[v] - agents_wishes[c])
+            distances[v][c] = np.linalg.norm(agents_reality[c] - agents_wishes[v])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
     return convert(votes)
 
 
-def generate_roommates_radius_votes(num_agents: int = None, params: dict = None):
+def generate_fame_votes(num_agents: int = None, params: dict = None):
+    # Also known as radius model
 
     name = f'{params["dim"]}d_{params["space"]}'
 

@@ -415,9 +415,12 @@ class ElectionExperiment(Experiment):
 
             values = feature(self, election_ids=list(self.instances), feature_params=feature_params)
 
-            for instance_id in self.instances:
-                feature_dict['value'][instance_id] = values[instance_id]
-                feature_dict['time'][instance_id] = 0
+            if feature_id == 'jr':
+                feature_dict = values
+            else:
+                for instance_id in self.instances:
+                    feature_dict['value'][instance_id] = values[instance_id]
+                    feature_dict['time'][instance_id] = 0
 
         else:
             feature = features.get_local_feature(feature_id)
@@ -467,18 +470,29 @@ class ElectionExperiment(Experiment):
         if feature_id in EMBEDDING_RELATED_FEATURE:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "features", f'{feature_id}_{self.embedding_id}.csv')
+        elif feature_id == 'jr':
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                '../', 'rules_output',
+                                "features", f'{feature_id}.csv')
         else:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "features", f'{feature_id}.csv')
 
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
-            if feature_id in {'partylist'}:
+            if feature_id == 'jr':
+                writer.writerow(["instance_id", "pareto", "jr", "pjr", "ejr"])
+                for key in feature_dict:
+                    writer.writerow([key, feature_dict[key]['pareto'],
+                                     feature_dict[key]['jr'],
+                                     feature_dict[key]['pjr'],
+                                     feature_dict[key]['ejr']])
+            elif feature_id in {'partylist'}:
                 writer.writerow(["election_id", "value", "bound", "num_large_parties"])
                 for key in feature_dict:
                     writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
                                      feature_dict[key][2]])
-            if feature_id in FEATURES_WITH_DISSAT:
+            elif feature_id in FEATURES_WITH_DISSAT:
                 writer.writerow(["election_id", "value", 'time', 'dissat'])
                 for key in feature_dict['value']:
                     writer.writerow(

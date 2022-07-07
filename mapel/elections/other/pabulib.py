@@ -79,6 +79,9 @@ def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pab
         # num_voters = len(votes)
         params = {}
         ballot = 'approval'
-        store_votes_in_a_file(experiment, model, name, num_candidates, num_voters, params, path,
-                              ballot, votes=final_approval_votes_cut)
+
+        election = None
+        model_id = model
+        store_votes_in_a_file(election, model_id, num_candidates, num_voters,
+                          params, path, ballot, votes=final_approval_votes_cut)
 

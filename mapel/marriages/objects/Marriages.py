@@ -115,7 +115,7 @@ class Marriages(Instance):
         """ Store votes in a file """
 
         path = os.path.join("experiments", self.experiment_id, "instances",
-                            f'{self.instance_id}.ri')
+                            f'{self.instance_id}.mi')
 
         with open(path, 'w') as file_:
 
@@ -139,7 +139,7 @@ class Marriages(Instance):
                 # counted_votes = sorted(counted_votes, reverse=True)
 
                 votes = self.votes[s]
-                print(votes)
+                # print(votes)
 
                 file_.write(str(self.num_agents) + ', ' + str(self.num_agents) + ', ' +
                             str(len(votes)) + "\n")
@@ -168,7 +168,7 @@ class Marriages(Instance):
 
         votes = [0, 0]
 
-        file_name = f'{self.instance_id}.ri'
+        file_name = f'{self.instance_id}.mi'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances", file_name)
         with open(path, 'r') as my_file:
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import logging
 from typing import Union
 
 import numpy as np
@@ -20,10 +20,16 @@ def generate_votes(model_id: str = None, num_agents: int = None,
         'symmetric': group_separable.generate_symmetric_votes,
         'norm-mallows': mallows.generate_norm_mallows_votes,
         'urn': urn.generate_urn_votes,
+        'malasym': mallows.generate_mallows_asymmetric_votes,
+        'group_ic': impartial.generate_group_ic_votes,
     }
     dependent_models = {
         'euclidean': euclidean.generate_euclidean_votes,
         'reverse_euclidean': euclidean.generate_reverse_euclidean_votes,
+        'mallows_euclidean': euclidean.generate_mallows_euclidean_votes,
+        'expectation': euclidean.generate_expectation_votes,
+        'attributes': euclidean.generate_attributes_votes,
+        'fame': euclidean.generate_fame_votes,
     }
 
     if model_id in independent_models:
@@ -35,7 +41,7 @@ def generate_votes(model_id: str = None, num_agents: int = None,
         return dependent_models.get(model_id)(num_agents=num_agents, params=params)
 
     else:
-        print("No such election model_id!", model_id)
+        logging.warning(f'No such model id: {model_id}')
         return []
 
 # # # # # # # # # # # # # # # #

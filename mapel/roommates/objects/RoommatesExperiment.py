@@ -4,8 +4,7 @@ import copy
 import csv
 import itertools
 import os
-from threading import Thread
-from multiprocessing import Process, Queue
+from multiprocessing import Process
 from time import sleep
 import time
 
@@ -337,7 +336,7 @@ class RoommatesExperiment(Experiment):
                     usable_matching = self.matchings[instance_id]
                     writer.writerow([instance_id, usable_matching])
 
-    def compute_feature(self, feature_id: str = None, feature_params=None) -> dict:
+    def compute_feature(self, feature_id: str = None, feature_params=None, printing=False) -> dict:
 
         if feature_params is None:
             feature_params = {}
@@ -383,7 +382,8 @@ class RoommatesExperiment(Experiment):
 
             else:
                 for instance_id in self.instances:
-                    print(instance_id)
+                    if printing:
+                        print(instance_id)
                     feature = features.get_local_feature(feature_id)
                     feature = features.get_local_feature(feature_id)
                     instance = self.instances[instance_id]

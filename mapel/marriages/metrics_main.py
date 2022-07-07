@@ -22,10 +22,10 @@ def get_distance(election_1: Marriages, election_2: Marriages,
 
     metrics_with_inner_distance = {
         'retrospective': mrd.compute_retrospective_distance,
-        'positionwise': mrd.compute_positionwise_distance,
-        'pos_swap': mrd.compute_pos_swap_distance,
-        'swap_bf': mrd.compute_swap_bf_distance,
-        'pairwise': mrd.compute_pairwise_distance,
+        # 'positionwise': mrd.compute_positionwise_distance,
+        # 'pos_swap': mrd.compute_pos_swap_distance,
+        # 'swap_bf': mrd.compute_swap_bf_distance,
+        # 'pairwise': mrd.compute_pairwise_distance,
     }
 
     if main_distance in metrics_without_params:

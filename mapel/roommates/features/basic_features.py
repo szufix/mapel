@@ -1,5 +1,9 @@
-import gurobipy as gp
-from gurobipy import GRB
+
+try:
+    import gurobipy as gp
+    from gurobipy import GRB
+except:
+    pass
 
 try:
     from mapel.roommates.matching.games import StableRoommates

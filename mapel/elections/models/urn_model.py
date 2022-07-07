@@ -50,7 +50,9 @@ def generate_approval_truncated_urn_votes(num_voters: int = None, num_candidates
     votes = []
     k = int(params['p'] * num_candidates)
     for v in range(num_voters):
-        votes.append(set(ordinal_votes[v][0:k]))
+        set_ = set(ordinal_votes[v][0:k])
+        set_ = {int(x) for x in set_}
+        votes.append(set_)
 
     return votes
 

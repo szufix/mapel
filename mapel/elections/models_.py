@@ -3,6 +3,7 @@
 from collections import Counter
 from typing import Union
 
+import logging
 import numpy as np
 
 import mapel.elections.models.euclidean as euclidean
@@ -27,7 +28,7 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                    'ic': impartial.generate_approval_ic_votes,
                    'id': impartial.generate_approval_id_votes,
                    'resampling': mallows.generate_approval_resampling_votes,
-                   'noise_model': mallows.generate_approval_noise_model_votes,
+                   'noise': mallows.generate_approval_noise_model_votes,
                    'urn': urn_model.generate_approval_urn_votes,
                    'urn_model': urn_model.generate_approval_urn_votes,
                    'euclidean': euclidean.generate_approval_euclidean_votes,
@@ -54,7 +55,7 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
     elif model_id in APPROVAL_FAKE_MODELS:
         return [model_id, num_candidates, num_voters, params]
     else:
-        print("No such election model_id!", model_id)
+        logging.warning(f'No such model id: {model_id}')
         return []
 
 

@@ -25,7 +25,8 @@ MAIN_LOCAL_FEATUERS = []
 
 MAIN_GLOBAL_FEATUERS = ['calculate_distortion', 'calculate_monotonicity']
 
-ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans', 'distortion_from_all', 'jr'}
+ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans', 'distortion_from_all', 'jr',
+                            'id_vs_un', 'an_vs_st'}
 
 COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
 
@@ -36,10 +37,11 @@ RULE_NAME_MATRIX = {
     "slav": "SLAV",
     "cc": "CC",
     "seqpav": "Gr.PAV",
-    "seqslav": "Gr. SLAV",
-    "seqcc": "Gr. CC",
-    "seqphragmen": "Gr. Phrag.",
-    "greedy-monroe": "Gr. Monroe",
+    "revseqpav": "Rev.Gr.PAV",
+    "seqslav": "Gr.SLAV",
+    "seqcc": "Gr.CC",
+    "seqphragmen": "Gr.Phrag.",
+    "greedy-monroe": "Gr.Monroe",
     "monroe": "Monroe",
     "minimaxav": "Minimax AV",
     "rule-x": "Rule X",
@@ -56,10 +58,11 @@ RULE_NAME_MAP = {
     "slav": "SLAV",
     "cc": "CC",
     "seqpav": "Gr.PAV",
-    "seqslav": "Gr. SLAV",
-    "seqcc": "Gr. CC",
-    "seqphragmen": "Gr. Phrag.",
-    "greedy-monroe": "Gr. Monroe",
+    "revseqpav": "Rev.Gr.PAV",
+    "seqslav": "Gr.SLAV",
+    "seqcc": "Gr.CC",
+    "seqphragmen": "Gr.Phrag.",
+    "greedy-monroe": "Gr.Monroe",
     "monroe": "Monroe",
     "minimaxav": "Minimax AV",
     "rule-x": "Rule X",
@@ -170,7 +173,7 @@ APPROVAL_MODELS = {'impartial_culture', 'ic', 'resampling', 'id',
                    'zeros', 'ones',
                    'id_0.5', 'ic_0.5',
                    'half_1', 'half_2', 'disjoint_resampling',
-                   'simplex_shumallows',
+                   'simplex_resampling',
                    'vcr', 'truncated_mallows', 'moving_resampling',
                    'jaccard', 'skeleton', 'anti_pjr',
                    'partylist'}

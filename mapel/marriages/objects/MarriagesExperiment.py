@@ -368,7 +368,7 @@ class MarriagesExperiment(Experiment):
             with open(path, 'w') as file_csv:
                 file_csv.write(
                     "size;num_agents;model_id;params;color;alpha;family_id;label;marker;show\n")
-                file_csv.write("10;20;roommates_ic;{};black;1;IC;IC;o;t\n")
+                file_csv.write("10;16;ic;{};black;1;IC;IC;o;t\n")
         except FileExistsError:
             print("Experiment already exists!")
 

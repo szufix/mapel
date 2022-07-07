@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 from mapel.main.objects.Family import Family
 from mapel.marriages.objects.Marriages import Marriages
 import copy
@@ -80,7 +79,6 @@ class MarriagesFamily(Family):
         _keys = []
         for j in range(self.size):
 
-            variable = None
             path = self.path
             if path is not None and 'variable' in path:
                 new_params, variable = self._get_params_for_paths(j)
@@ -97,7 +95,7 @@ class MarriagesFamily(Family):
 
             instance = Marriages(experiment_id, instance_id, _import=False,
                                  model_id=self.model_id, num_agents=self.num_agents)
-            print(instance.model_id)
+
             instance.prepare_instance(store=store, params=params)
 
             instances[instance_id] = instance

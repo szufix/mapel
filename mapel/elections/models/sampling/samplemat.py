@@ -1,5 +1,8 @@
 import numpy as np
-from permanent import permanent
+try:
+  from permanent import permanent
+except:
+  pass
 import random
 import math
 

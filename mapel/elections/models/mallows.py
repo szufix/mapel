@@ -220,7 +220,6 @@ def generate_approval_resampling_votes(num_voters=None, num_candidates=None, par
     # for c in range(num_candidates):
     #     if rand.np() <= params['p']:
     #         central_vote.add(c)
-    print(params)
 
     k = int(params['p'] * num_candidates)
     # print(k)
@@ -365,17 +364,19 @@ def generate_approval_simplex_resampling_votes(num_voters=None, num_candidates=N
         if 'max_range' not in params:
             params['max_range'] = 1.
 
-        # k = int(params['p'] * num_candidates)
-
-        # while True:
-
-        sizes_c = runif_in_simplex(num_groups)
+        sizes_c = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+        # sizes_c = runif_in_simplex(num_groups)
         sizes_c = np.concatenate(([0], sizes_c))
         sizes_c = np.cumsum(sizes_c)
+        print(sizes_c)
 
-        sizes_v = runif_in_simplex(num_groups)
+        sum = 71 + 5*8
+
+        sizes_v = [71/sum, 8/sum, 8/sum, 8/sum, 8/sum, 8/sum]
+        # sizes_v = runif_in_simplex(num_groups)
         sizes_v = np.concatenate(([0], sizes_v))
         sizes_v = np.cumsum(sizes_v)
+        print(sizes_v)
 
         votes = [set() for _ in range(num_voters)]
 
@@ -611,3 +612,41 @@ def generate_norm_mallows_with_walls_votes(num_voters, num_candidates, params):
         v = np.concatenate([upper_half_votes[i], lower_half_votes[i]])
         votes.append(v)
     return votes
+
+
+# AUXILIARY (alphas)
+
+def get_vector(type, num_candidates):
+    if type == "uniform":
+        return [1.] * num_candidates
+    elif type == "linear":
+        return [(num_candidates - x) for x in range(num_candidates)]
+    elif type == "linear_low":
+        return [(float(num_candidates) - float(x)) / float(num_candidates) for x in range(num_candidates)]
+    elif type == "square":
+        return [(float(num_candidates) - float(x)) ** 2 / float(num_candidates) ** 2 for x in
+                range(num_candidates)]
+    elif type == "square_low":
+        return [(num_candidates - x) ** 2 for x in range(num_candidates)]
+    elif type == "cube":
+        return [(float(num_candidates) - float(x)) ** 3 / float(num_candidates) ** 3 for x in
+                range(num_candidates)]
+    elif type == "cube_low":
+        return [(num_candidates - x) ** 3 for x in range(num_candidates)]
+    elif type == "split_2":
+        values = [1.] * num_candidates
+        for i in range(num_candidates / 2):
+            values[i] = 10.
+        return values
+    elif type == "split_4":
+        size = num_candidates / 4
+        values = [1.] * num_candidates
+        for i in range(size):
+            values[i] = 1000.
+        for i in range(size, 2 * size):
+            values[i] = 100.
+        for i in range(2 * size, 3 * size):
+            values[i] = 10.
+        return values
+    else:
+        return type

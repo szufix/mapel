@@ -20,10 +20,13 @@ def generate_votes(model_id: str = None, num_agents: int = None,
         'roommates_euclidean': euclidean.generate_roommates_euclidean_votes,
         'roommates_reverse_euclidean': euclidean.generate_roommates_reverse_euclidean_votes,
         'roommates_gs': group_separable.generate_roommates_gs_votes,
-        'roommates_radius': euclidean.generate_roommates_radius_votes,
-        'roommates_double': euclidean.generate_roommates_double_votes,
+        'roommates_radius': euclidean.generate_fame_votes,  # deprecated
+        'fame': euclidean.generate_fame_votes,
+        'roommates_double': euclidean.generate_expectation_votes,  # deprecated
+        'expectation': euclidean.generate_expectation_votes,
         'roommates_mallows_euclidean': euclidean.generate_roommates_mallows_euclidean_votes,
-        'roommates_vectors': euclidean.generate_roommates_vectors_votes,
+        'roommates_vectors': euclidean.generate_attributes_votes,  # deprecated
+        'attributes': euclidean.generate_attributes_votes,
         'roommates_malasym': mallows.generate_roommates_malasym_votes,
         'roommates_group_ic': impartial.generate_roommates_group_ic_votes,
     }

@@ -12,8 +12,12 @@ except ImportError:
 
 def test_jr(experiment, election_ids, feature_params):
 
+    values = {}
+
     for rule in feature_params['rules']:
         print(rule)
+
+        all_results = {'pareto': 0, 'jr': 0, 'pjr': 0, 'ejr': 0}
 
         for election_id in election_ids:
 
@@ -25,6 +29,12 @@ def test_jr(experiment, election_ids, feature_params):
 
             results = properties.full_analysis(profile, committee)
 
-            # print(results.values())
-            if False in results.values():
-                print(results)
+            if results['pareto'] == False:
+                print(election_id, results)
+
+            for name in results:
+                if results[name] == False:
+                    all_results[name] += 1
+        print(all_results)
+        values[rule] = all_results
+    return values

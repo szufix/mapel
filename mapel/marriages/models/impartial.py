@@ -17,6 +17,27 @@ def generate_asymmetric_votes(num_agents: int = None, params=None):
     return [rotate(vote, shift) for shift, vote in enumerate(votes)]
 
 
+def generate_group_ic_votes(num_agents: int = None, params: dict = None):
+    """ Impartial Culture with two groups """
+
+    if 'proportion' not in params:
+        params['proportion'] = 0.5
+
+    size_1 = int(params['proportion'] * num_agents)
+    size_2 = int(num_agents - size_1)
+
+    votes_1 = [list(np.random.permutation(size_1)) +
+               list(np.random.permutation([j for j in range(size_1, num_agents)]))
+               for _ in range(size_1)]
+
+    votes_2 = [list(np.random.permutation([j for j in range(size_1, num_agents)])) +
+               list(np.random.permutation(size_1))
+               for _ in range(size_2)]
+
+    votes = votes_1 + votes_2
+
+    return votes
+
 # def generate_ic__id_votes(num_agents: int = None, params=None):
 #
 #     votes_1 = [list(np.random.permutation(num_agents)) for _ in range(num_agents)]

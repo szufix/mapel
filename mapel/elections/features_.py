@@ -27,6 +27,8 @@ def get_global_feature(feature_id):
             'clustering_kmeans': clustering.clustering_kmeans,
             'distortion_from_all': distortion.distortion_from_all,
             'jr': jr.test_jr,
+            'id_vs_un': clustering.id_vs_un,
+            'an_vs_st': clustering.an_vs_st,
             }.get(feature_id)
 
 

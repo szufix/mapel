@@ -4,6 +4,7 @@ import math
 
 from itertools import combinations, product
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 from PIL import Image
 
@@ -52,12 +53,6 @@ def print_map_2d(experiment,
         omit = []
 
     experiment.compute_coordinates_by_families()
-    #
-    # if adjust_single:
-    #     adjust_the_map_on_one_point(experiment)
-    #
-    # if adjust:
-    #     adjust_the_map(experiment)
 
     if angle != 0:
         experiment.rotate(angle)
@@ -77,16 +72,17 @@ def print_map_2d(experiment,
     if not axis:
         plt.axis('off')
 
-    add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size)
-
     # COLORING
     if feature_id is not None:
-        color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
+        shades_dict, cmap = color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
                              feature_id=feature_id, rounding=rounding,
                              normalizing_func=normalizing_func, ticks_pos=ticks_pos,
                              marker_func=marker_func, limit=limit, scale=scale,
                              xticklabels=xticklabels, ms=ms, cmap=cmap, omit=omit,
                              ticks=ticks, column_id=column_id, feature_labelsize=feature_labelsize)
+        add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size,
+                    shades_dict=shades_dict, cmap=cmap, column_id=column_id)
+
     elif feature_ids is not None:
         color_map_by_features(experiment=experiment, fig=fig, ax=ax,
                              feature_ids=feature_ids, rounding=rounding,
@@ -94,8 +90,11 @@ def print_map_2d(experiment,
                              marker_func=marker_func, limit=limit,
                              xticklabels=xticklabels, ms=ms, cmap=cmap,
                              ticks=ticks, column_id=column_id, feature_labelsize=feature_labelsize)
+        add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size)
 
     else:
+
+        add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size)
 
         if event in {'textual'}:
             skeleton_coloring(experiment=experiment, ax=ax, ms=ms, dim=dim)
@@ -244,7 +243,6 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
     _min = min(x for x in values.values() if x is not None)
     _max = max(x for x in values.values() if x is not None)
 
-
     shades = []
     xx = []
     yy = []
@@ -278,11 +276,15 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
 
             if scale == 'log':
                 if election_id not in omit and my_shade[election_id] is not None:
-                    my_shade[election_id] = math.log(my_shade[election_id])
+                    my_shade[election_id] = math.log(my_shade[election_id]+1)
 
     local_min = min(x for x in my_shade.values() if x is not None)
     local_max = max(x for x in my_shade.values() if x is not None)
 
+    if feature_id == 'jr':
+        local_min = 0.75
+
+    names = []
     for family_id in experiment.families:
 
         for k in range(experiment.families[family_id].size):
@@ -302,8 +304,12 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
                 blank_yy.append(experiment.coordinates[election_id][1])
                 continue
 
+            if normalizing_func is not None:
+                shade = normalizing_func(shade)
+
             shade = (shade - local_min) / (local_max - local_min)
             shades.append(shade)
+            names.append(election_id)
 
             marker = experiment.families[family_id].marker
             if marker_func is not None:
@@ -328,7 +334,7 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
         mses = np.asarray([1.+20.*(b/(v+1)) for b,v in zip(bounds.values(), values.values())])
     else:
         mses = None
-    return xx, yy, zz, shades, markers, mses, local_min, local_max, blank_xx, blank_yy
+    return xx, yy, zz, shades, markers, mses, local_min, local_max, blank_xx, blank_yy, names
 
 
 def import_values_for_features(experiment, feature_ids=None, limit=None, normalizing_func=None,
@@ -454,9 +460,11 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
                          cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
                          feature_labelsize=14, ticks_pos=None, omit=None, scale='default'):
 
-    xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy = import_values_for_feature(
+    xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy, names = \
+        import_values_for_feature(
         experiment, feature_id=feature_id, limit=limit, normalizing_func=normalizing_func,
         marker_func=marker_func, dim=dim, column_id=column_id, omit=omit, scale=scale)
+
 
     unique_markers = set(markers)
     images = []
@@ -466,7 +474,7 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
 
     if cmap is None:
         if rounding == 0:
-            num_colors = min(_max - _min + 1, 101)
+            num_colors = int(min(_max - _min + 1, 101))
             cmap = custom_div_cmap(num_colors=num_colors)
         else:
             cmap = custom_div_cmap()
@@ -510,6 +518,9 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
             #         xticklabels = [int(_min), '', 'log', 'scale', '', str(int(_max))]
             #     else:
             #         xticklabels = [_min, '', 'log', 'scale', '', str(_max)]
+            #
+            # if scale_to_interval:
+            #     xticklabels = [str(float(x)/_max) for x in xticklabels]
 
     if limit < np.infty:
         xticklabels[-1] += '+'
@@ -527,6 +538,12 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
 
     if xticklabels is not None:
         cb.ax.set_xticklabels(xticklabels)
+
+    shades_dict = {}
+    for i, name in enumerate(names):
+        shades_dict[name] = shades[i]
+
+    return shades_dict, cmap
 
 
 def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, limit=np.infty,
@@ -703,31 +720,34 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                                 alpha = 1
                                 pass
 
+                        color = family.color
 
-                        print(experiment.instances[election_id].model_id, alpha)
+                        if 'Urn' in label:
 
+                            color, alpha = get_color_alpha_for_urn(color, alpha)
 
-                        if 'A_' in election_id or 'B_' in election_id or 'C_' in election_id:
-                            alpha = 1 - alpha
+                        else:
 
-                        if alpha is None or alpha > 1:
-                            alpha = 1
+                            if 'A_' in election_id or 'B_' in election_id or 'C_' in election_id:
+                                alpha = 1 - alpha
 
-                        if '1D _path' in label:
-                            alpha *= 4
-                        elif '2D _path' in label:
-                            alpha *= 2
-                        elif 'scale' in family.path:
-                            alpha *= 1./family.path['scale']
+                            if alpha is None or alpha > 1:
+                                alpha = 1
 
-                        # if alpha > 1:
-                        #     alpha = 1.
-                        alpha *= family.alpha
-                        alpha = (alpha + 0.2) / 1.2
+                            if '1D _path' in label:
+                                alpha *= 4
+                            elif '2D _path' in label:
+                                alpha *= 2
+                            elif 'scale' in family.path:
+                                alpha *= 1./family.path['scale']
+
+                            alpha *= family.alpha
+                            alpha = (alpha + 0.2) / 1.2
+
                         if i == family.size - 1:
                             ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
                                        experiment.coordinates_by_families[family.family_id][1][i],
-                                       color=family.color,
+                                       color=color,
                                        label=label,
                                        alpha=alpha,
                                        s=family.ms,
@@ -735,7 +755,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                         else:
                             ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
                                        experiment.coordinates_by_families[family.family_id][1][i],
-                                       color=family.color,
+                                       color=color,
                                        alpha=alpha,
                                        s=family.ms,
                                        marker=family.marker)
@@ -1033,14 +1053,16 @@ def name_from_label(experiment, name):
     return 'None'
 
 
-def add_textual(experiment=None, textual=None, ax=None, size=16):
+def add_textual(experiment=None, textual=None, ax=None, size=16,
+                shades_dict=None, cmap=None, column_id=None):
     """ Add textual """
 
-    def my_text(x1, y1, text, color="black", alpha=1., size=size):
+    def my_text(x1, y1, text, color="black", alpha=1., size=size, b_color='black',
+                boxstyle="round"):
         ax.text(x1, y1, text, size=size, rotation=0., ha="center",
                 va="center",
                 color=color, alpha=alpha, zorder=100,
-                bbox=dict(boxstyle="round", ec="black", fc="white"))
+                bbox=dict(boxstyle=boxstyle, ec=b_color, fc="white"))
 
     for name in textual:
         name_id = name_from_label(experiment, name)
@@ -1050,10 +1072,33 @@ def add_textual(experiment=None, textual=None, ax=None, size=16):
         if name in RULE_NAME_MAP:
             name = RULE_NAME_MAP[name]
 
-        if name in ['trivial', 'rsd', 'random']:
-            my_text(x, y, name, color='red')
+        if shades_dict is None:
+            my_text(x, y, name, color='black')
         else:
-            my_text(x, y, name)
+            if column_id == 'ejr':
+                if name_id in ['rule-x', 'pav']:
+                    rgba = cmap(shades_dict[name_id])
+                    my_text(x, y, name, color='black', b_color='black', boxstyle='sawtooth')
+                else:
+                    if shades_dict[name_id] == 1:
+                        rgba = cmap(shades_dict[name_id])
+                        my_text(x, y, name, color=rgba, b_color=rgba, boxstyle='sawtooth')
+                    else:
+                        rgba = cmap(shades_dict[name_id])
+                        my_text(x, y, name, color=rgba, b_color=rgba)
+            else:
+                # rgba = cmap(shades_dict[name_id])
+                # my_text(x, y, name, color=rgba, b_color=rgba)
+                my_text(x, y, name, color='black', b_color='black')
+            # if shades_dict[name_id] == 0:
+            #     rgba = cmap(shades_dict[name_id])
+            #     my_text(x, y, name, color='green', b_color='green')
+            #     print(name_id)
+            #
+            # else:
+            #     rgba = cmap(shades_dict[name_id])
+            #     my_text(x, y, name, color=rgba, b_color=rgba)
+
 
 
 def add_roads(experiment=None, roads=None, ax=None):
@@ -1531,13 +1576,13 @@ def adjust_the_map(experiment) -> None:
         try:
             left = 'cc'
             right = 'av'
-            down = 'greedy-monroe'
+            down = 'minimaxav'
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
             try:
                 left = 'seqcc'
                 right = 'av'
-                down = 'greedy-monroe'
+                down = 'minimaxav'
                 adjust_the_map_on_three_points(experiment, left, right, down)
             except Exception:
                 pass
@@ -1584,6 +1629,19 @@ def adjust_the_map_on_one_point(experiment) -> None:
 
     except:
         print('Cannot adjust!')
+
+
+def get_color_alpha_for_urn(color, alpha):
+    # return 'red', min(alpha, 1)
+
+    if alpha > 1.07:
+        return 'red', 0.9
+    elif alpha > 0.53:
+        return 'orangered', 0.9
+    elif alpha > 0.22:
+        return 'orange', 0.9
+    else:
+        return 'gold', 0.9
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

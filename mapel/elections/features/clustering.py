@@ -78,3 +78,34 @@ def clustering_kmeans(experiment, num_clusters=20):
         clusters[name] = y_km[i]
     return {'value': clusters}
 
+
+def id_vs_un(experiment, election_ids, feature_params=None):
+    results = {}
+    experiment.distances['ID']['ID'] = 0
+    experiment.distances['UN']['UN'] = 0
+    for election_id in election_ids:
+        distance_to_id = experiment.distances['ID'][election_id]
+        distance_to_un = experiment.distances['UN'][election_id]
+        if distance_to_id > distance_to_un:
+            results[election_id] = 1
+        elif distance_to_id < distance_to_un:
+            results[election_id] = 0
+        else:
+            results[election_id] = 0.5
+    return results
+
+
+def an_vs_st(experiment, election_ids, feature_params=None):
+    results = {}
+    experiment.distances['AN']['AN'] = 0
+    experiment.distances['ST']['ST'] = 0
+    for election_id in election_ids:
+        distance_to_an = experiment.distances['AN'][election_id]
+        distance_to_st = experiment.distances['ST'][election_id]
+        if distance_to_an > distance_to_st:
+            results[election_id] = 1
+        elif distance_to_an < distance_to_st:
+            results[election_id] = 0
+        else:
+            results[election_id] = 0.5
+    return results
