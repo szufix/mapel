@@ -75,7 +75,7 @@ def rank_matching(instance,best,summed):
             m.setObjective(opt, GRB.MINIMIZE)
     else:
         for i in range(num_agents):
-            m.addConstr(gp.quicksum(instance[0][j].index(i) * x[i, j] for j in range(num_agents))<=opt)
+            m.addConstr(gp.quicksum(instance[0][j].index(i) * x[j, i] for j in range(num_agents))<=opt)
             m.addConstr(gp.quicksum(instance[1][j].index(i) * x[i, j] for j in range(num_agents))<= opt)
         m.setObjective(opt, GRB.MINIMIZE)
     m.optimize()
