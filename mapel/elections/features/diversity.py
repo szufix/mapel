@@ -298,6 +298,27 @@ def greedy_kKemenys_summed(election):
 
     return sum(res)
 
+def greedy_kKemenys_divk_summed(election):
+    if election.fake:
+        return 'None'
+    res = [0] * election.num_voters
+    distances = calculate_vote_swap_dist(election)
+    best = np.argmin(distances.sum(axis=1))
+    best_vec = distances[best]
+    # res[0] = best_vec.sum()
+    distances = np.vstack((distances[:best],distances[best+1:]))
+
+    for i in range(1,election.num_voters):
+        relatives = distances - best_vec
+        relatives = relatives*(relatives < 0)
+        best = np.argmin(relatives.sum(axis=1))
+        best_vec = best_vec + relatives[best]
+        res[i] = best_vec.sum() / (i + 1)
+        distances = np.vstack((distances[:best],distances[best+1:]))
+
+    res[0] = 0
+    return sum(res)
+
 def greedy_kmeans_summed(election):
     if election.fake:
         return 'None'
