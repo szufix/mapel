@@ -89,11 +89,11 @@ def generate_un_from_matrix_votes(num_voters=None, num_candidates=None):
 
 def generate_idan_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate real elections between (ID) and (AN) """
-    if params is None or not ('part_size' in params):
+    if params is None or not ('part_share' in params):
         print("IDAN_part generation : params None : random param generated")
         part_size = np.random.choice(range(num_voters + 1))
     else:
-        part_size = params['part_size']
+        part_size = params['part_share'] * (num_voters + 1)
     part_size = int(round(part_size))
     id_share = num_voters - (part_size // 2)
     op_share = part_size // 2
@@ -103,11 +103,11 @@ def generate_idan_part_votes(num_voters=None, num_candidates=None, params=None):
 
 def generate_idun_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (ID) and (UN) """
-    if params is None or not ('part_size' in params):
+    if params is None or not ('part_share' in params):
         print("IDUN_part generation : params None : random param generated")
         part_size = np.random.choice(range(num_voters + 1))
     else:
-        part_size = params['part_size']
+        part_size = params['part_share'] * (num_voters + 1)
     part_size = int(round(part_size))
     id_share = num_voters - part_size
     un_share = part_size
@@ -117,11 +117,11 @@ def generate_idun_part_votes(num_voters=None, num_candidates=None, params=None):
 
 def generate_idst_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (ID) and (ST) """
-    if params is None or not ('part_size' in params):
+    if params is None or not ('part_share' in params):
         print("IDST_part generation : params None : random param generated")
         part_size = np.random.choice(range(num_voters + 1))
     else:
-        part_size = params['part_size']
+        part_size = params['part_share'] * (num_voters + 1)
     part_size = int(round(part_size))
     id_share = num_voters - part_size
     st_share = part_size
@@ -133,11 +133,11 @@ def generate_idst_part_votes(num_voters=None, num_candidates=None, params=None):
 
 def generate_anun_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (AN) and (UN) """
-    if params is None or not ('part_size' in params):
+    if params is None or not ('part_share' in params):
         print("ANUN_part generation : params None : random param generated")
         part_size = np.random.choice(range(num_voters + 1))
     else:
-        part_size = params['part_size']
+        part_size = params['part_share'] * (num_voters + 1)
     part_size = int(round(part_size))
     id_share = (num_voters - part_size) // 2
     op_share = num_voters - part_size - id_share
@@ -149,11 +149,11 @@ def generate_anun_part_votes(num_voters=None, num_candidates=None, params=None):
 
 def generate_anst_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (AN) and (ST) """
-    if params is None or not ('part_size' in params):
+    if params is None or not ('part_share' in params):
         print("ANST_part generation : params None : random param generated")
         part_size = np.random.choice(range(num_voters + 1))
     else:
-        part_size = params['part_size']
+        part_size = params['part_share'] * (num_voters + 1)
     part_size = int(round(part_size))
     id_share = (num_voters - part_size) // 2
     op_share = num_voters - part_size - id_share
@@ -167,11 +167,11 @@ def generate_anst_part_votes(num_voters=None, num_candidates=None, params=None):
 
 def generate_unst_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (UN) and (ST) """
-    if params is None or not ('part_size' in params):
+    if params is None or not ('part_share' in params):
         print("UNST_part generation : params None : random param generated")
         part_size = np.random.choice(range(num_voters + 1))
     else:
-        part_size = params['part_size']
+        part_size = params['part_share'] * (num_voters + 1)
     part_size = int(round(part_size))
     un_share = num_voters - part_size
     st_share = part_size
@@ -242,14 +242,14 @@ def generate_unst_mallows_votes(num_voters=None, num_candidates=None, params=Non
 
 def generate_unst_topsize_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate kind of real elections between (ID) and (UN) """
-    if params is None or not ('topsize' in params):
+    if params is None or not ('top_share' in params):
         print("UNST_topsize generation : params None : random param generated")
-        topsize = np.random.choice(range(num_voters + 1))
+        top_size = np.random.choice(range(num_candidates + 1))
     else:
-        topsize = params['topsize']
-    topsize = int(round(topsize))
-    better = topsize
-    worse = num_candidates - topsize
+        top_size = params['top_share'] * num_candidates
+    top_size = int(round(top_size))
+    better = top_size
+    worse = num_candidates - top_size
     matrix = distribute_in_block_matrix(num_voters,[better,worse])
     return draw_election(matrix)
 
@@ -257,7 +257,7 @@ def generate_idst_blocks_votes(num_voters=None, num_candidates=None, params=None
     """ Generate kind of real elections between (ID) and (UN) """
     if params is None or not ('no_blocks' in params):
         print("IDST_blocks generation : params None : random param generated")
-        no_blocks = np.random.choice(range(num_voters + 1))
+        no_blocks = np.random.choice(range(num_candidates + 1))
     else:
         no_blocks = params['no_blocks']
     no_blocks = int(round(no_blocks))
