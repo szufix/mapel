@@ -75,7 +75,7 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
                     'real_uniformity': guardians.generate_real_uniformity_votes,
                     'real_antagonism': guardians.generate_real_antagonism_votes,
                     'real_stratification': guardians.generate_real_stratification_votes,
-                    'un_from_mtrx': guardians_plus.generate_un_from_matrix_votes}
+                    'un_from_matrix': guardians_plus.generate_un_from_matrix_votes}
 
     euclidean_models = {'1d_interval': euclidean.generate_ordinal_euclidean_votes,
                         '1d_gaussian': euclidean.generate_ordinal_euclidean_votes,
