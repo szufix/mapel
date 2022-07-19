@@ -523,7 +523,7 @@ def approval_anti_pjr_votes(num_voters=None, num_candidates=None, params=None):
     return votes
 
 
-def approval_partylist_votes(num_voters=None, num_candidates=None, params=None):
+def approval_partylist_votes_old(num_voters=None, num_candidates=None, params=None):
 
     if 'g' not in params:
         num_groups = 2

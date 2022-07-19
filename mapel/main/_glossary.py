@@ -19,6 +19,7 @@ ELECTION_FEATURES_WITH_PARAMS = ['largest_cohesive_group',
                                  'rand_approx_pav_score',
                                  'banzhaf_cc_score',
                                  'ranging_cc_score',
+                                 'priceability',
                                  ]
 
 MAIN_LOCAL_FEATUERS = []
@@ -26,7 +27,7 @@ MAIN_LOCAL_FEATUERS = []
 MAIN_GLOBAL_FEATUERS = ['calculate_distortion', 'calculate_monotonicity']
 
 ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans', 'distortion_from_all', 'jr',
-                            'id_vs_un', 'an_vs_st'}
+                            'id_vs_un', 'an_vs_st', 'core'}
 
 COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
 

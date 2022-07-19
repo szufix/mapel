@@ -81,7 +81,7 @@ def print_map_2d(experiment,
                              xticklabels=xticklabels, ms=ms, cmap=cmap, omit=omit,
                              ticks=ticks, column_id=column_id, feature_labelsize=feature_labelsize)
         add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size,
-                    shades_dict=shades_dict, cmap=cmap, column_id=column_id)
+                    shades_dict=shades_dict, cmap=cmap, column_id=column_id, feature_id=feature_id)
 
     elif feature_ids is not None:
         color_map_by_features(experiment=experiment, fig=fig, ax=ax,
@@ -167,16 +167,18 @@ def print_map_3d(experiment,
         plt.show()
 
 
-def get_values_from_csv_file(experiment, feature_id=None, limit=np.infty,
+def get_values_from_csv_file(experiment, feature_id, feature_long_id=None, limit=np.infty,
                              column_id='value') -> dict:
     """Import values for a feature_id from a .csv file """
+    if feature_long_id is None:
+        feature_long_id = feature_id
 
     if feature_id in EMBEDDING_RELATED_FEATURE:
         path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-                            "features", f'{feature_id}__{experiment.distance_id}.csv')
+                            "features", f'{feature_long_id}__{experiment.distance_id}.csv')
     else:
         path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-                            "features", f'{feature_id}.csv')
+                            "features", f'{feature_long_id}.csv')
 
     values = {}
     with open(path, 'r', newline='') as csv_file:
@@ -233,9 +235,11 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
 
         else:
             values = get_values_from_csv_file(experiment, feature_id=feature_id,
+                                              feature_long_id=feature_id,
                                               limit=limit, column_id=column_id)
             if feature_id == 'partylist' and column_id == 'value':
                 bounds = get_values_from_csv_file(experiment, feature_id=feature_id,
+                                              feature_long_id=feature_id,
                                               limit=limit, column_id='bound')
     else:
         values = feature_id
@@ -980,6 +984,8 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
                 c = str(c)
                 if c[0] == '0':
                     c = c[1:]
+                if c[-1] == '0' and c[-2] == '.':
+                    c = c[:-1]
                 # print(c)
                 ax.text(j, i, str(c), va='center', ha='center', color=color, size=ms)
 
@@ -1026,6 +1032,7 @@ def custom_div_cmap(num_colors=101, name='custom_div_cmap', colors=None):
     if colors is None:
         # colors = ["lightgreen", "yellow", "orange", "red", "purple", "black"]
         colors = ["green", "yellowgreen", "orange", "red", "purple", "blue", "black"]
+        # colors = ["black", "blue", "purple", "red", "orange", "yellowgreen", "green"]
     from matplotlib.colors import LinearSegmentedColormap
     return LinearSegmentedColormap.from_list(name=name, colors=colors, N=num_colors)
 
@@ -1054,7 +1061,7 @@ def name_from_label(experiment, name):
 
 
 def add_textual(experiment=None, textual=None, ax=None, size=16,
-                shades_dict=None, cmap=None, column_id=None):
+                shades_dict=None, cmap=None, column_id=None, feature_id=None):
     """ Add textual """
 
     def my_text(x1, y1, text, color="black", alpha=1., size=size, b_color='black',
@@ -1086,6 +1093,27 @@ def add_textual(experiment=None, textual=None, ax=None, size=16,
                     else:
                         rgba = cmap(shades_dict[name_id])
                         my_text(x, y, name, color=rgba, b_color=rgba)
+
+            elif feature_id in ['priceability']:
+                if name_id in ['rule-x', 'seqphragmen']:
+                    rgba = cmap(shades_dict[name_id])
+                    my_text(x, y, name, color='black', b_color='black', boxstyle='sawtooth')
+                else:
+                    if shades_dict[name_id] == 1:
+                        rgba = cmap(shades_dict[name_id])
+                        my_text(x, y, name, color=rgba, b_color=rgba, boxstyle='sawtooth')
+                    else:
+                        rgba = cmap(shades_dict[name_id])
+                        my_text(x, y, name, color=rgba, b_color=rgba)
+            elif feature_id in ['core']:
+                if name_id == 'cc':
+                    my_text(x, y, name, color='grey', b_color='grey')
+                elif shades_dict[name_id] == 1:
+                    rgba = cmap(shades_dict[name_id])
+                    my_text(x, y, name, color=rgba, b_color=rgba, boxstyle='sawtooth')
+                else:
+                    rgba = cmap(shades_dict[name_id])
+                    my_text(x, y, name, color=rgba, b_color=rgba)
             else:
                 # rgba = cmap(shades_dict[name_id])
                 # my_text(x, y, name, color=rgba, b_color=rgba)

@@ -95,10 +95,10 @@ class Marriages(Instance):
         if params is None:
             params = {}
 
-        if self.model_id == 'norm-mallows' and 'norm-phi' not in params:
-            params['norm-phi'] = np.random.rand()
-        elif self.model_id == 'urn' and 'alpha' not in params:
-            params['alpha'] = np.random.rand()
+        # if self.model_id == 'norm-mallows' and 'norm-phi' not in params:
+        #     params['norm-phi'] = np.random.rand()
+        # elif self.model_id == 'urn' and 'alpha' not in params:
+        #     params['alpha'] = np.random.rand()
         if 'norm-phi' in params:
             params['alpha'] = params['norm-phi']
         else:

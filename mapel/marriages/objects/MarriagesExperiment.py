@@ -4,7 +4,7 @@ import copy
 import csv
 import itertools
 import os
-from threading import Thread
+from multiprocessing import Process
 from time import sleep
 
 from mapel.main.objects.Experiment import Experiment
@@ -14,6 +14,7 @@ import mapel.marriages.models_main as models_main
 import mapel.marriages.metrics_main as metr
 import mapel.marriages.features.basic_features as basic
 import mapel.marriages.features_main as features
+from mapel.elections.print_ import get_values_from_csv_file
 
 try:
     from sklearn.manifold import MDS
@@ -83,10 +84,10 @@ class MarriagesExperiment(Experiment):
 
         return instances
 
-
-    def compute_distances(self, distance_id: str = 'emd-positionwise', num_threads: int = 1,
+    def compute_distances(self, distance_id: str = 'emd-positionwise', num_processes: int = 1,
                           self_distances: bool = False, vector_type: str = 'A',
                           printing: bool = False) -> None:
+        """ Compute distances between elections (using processes) """
 
         self.distance_id = distance_id
 
@@ -94,57 +95,78 @@ class MarriagesExperiment(Experiment):
             for instance in self.instances.values():
                 instance.votes_to_pairwise_matrix()
 
-        matchings = {instance_id: {} for instance_id in self.instances}
-        distances = {instance_id: {} for instance_id in self.instances}
-        times = {instance_id: {} for instance_id in self.instances}
-
-        threads = [{} for _ in range(num_threads)]
+        matchings = {election_id: {} for election_id in self.instances}
+        distances = {election_id: {} for election_id in self.instances}
+        times = {election_id: {} for election_id in self.instances}
 
         ids = []
-        for i,instance_1 in enumerate(self.instances):
-            for j, instance_2 in enumerate(self.instances):
+        for i, election_1 in enumerate(self.instances):
+            for j, election_2 in enumerate(self.instances):
                 if i == j:
                     if self_distances:
-                        ids.append((instance_1, instance_2))
+                        ids.append((election_1, election_2))
                 elif i < j:
-                    ids.append((instance_1, instance_2))
+                    ids.append((election_1, election_2))
 
         num_distances = len(ids)
 
-        for t in range(num_threads):
-            print(f'Starting thread: {t}')
-            sleep(0.1)
-            start = int(t * num_distances / num_threads)
-            stop = int((t + 1) * num_distances / num_threads)
-            thread_ids = ids[start:stop]
+        if self.experiment_id == 'virtual' or num_processes == 1:
+            metr.run_single_process(self, ids, distances, times, matchings, printing)
 
-            threads[t] = Thread(target=metr.run_single_thread, args=(self, thread_ids,
-                                                                     distances, times, matchings,
-                                                                     printing))
-            threads[t].start()
+        else:
+            processes = []
+            for t in range(num_processes):
+                print(f'Starting thread: {t}')
+                sleep(0.1)
+                start = int(t * num_distances / num_processes)
+                stop = int((t + 1) * num_distances / num_processes)
+                instances_ids = ids[start:stop]
 
-        for t in range(num_threads):
-            threads[t].join()
+                process = Process(target=metr.run_multiple_processes, args=(self, instances_ids,
+                                                                            distances, times,
+                                                                            matchings,
+                                                                            printing, t))
+                process.start()
+                processes.append(process)
+
+            for process in processes:
+                process.join()
+
+            distances = {instance_id: {} for instance_id in self.instances}
+            times = {instance_id: {} for instance_id in self.instances}
+            for t in range(num_processes):
+
+                file_name = f'{distance_id}_p{t}.csv'
+                path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
+                                    file_name)
+
+                with open(path, 'r', newline='') as csv_file:
+                    reader = csv.DictReader(csv_file, delimiter=';')
+
+                    for row in reader:
+                        distances[row['instance_id_1']][row['instance_id_2']] = float(
+                            row['distance'])
+                        times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
         if self.store:
-
-            file_name = f'{distance_id}.csv'
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
-                                file_name)
-
-            with open(path, 'w', newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(
-                    ["instance_id_1", "instance_id_2", "distance", "time"])
-
-                for election_1, election_2 in itertools.combinations(self.instances, 2):
-                    distance = str(distances[election_1][election_2])
-                    time = str(times[election_1][election_2])
-                    writer.writerow([election_1, election_2, distance, time])
+            self._store_distances_to_file(distance_id, distances, times)
 
         self.distances = distances
         self.times = times
         self.matchings = matchings
+
+    def _store_distances_to_file(self, distance_id, distances, times):
+        file_name = f'{distance_id}.csv'
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
+
+        with open(path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+            writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
+
+            for election_1, election_2 in itertools.combinations(self.instances, 2):
+                distance = str(distances[election_1][election_2])
+                time_ = str(times[election_1][election_2])
+                writer.writerow([election_1, election_2, distance, time_])
 
     def import_controllers(self):
         """ Import controllers from a file """
@@ -275,45 +297,59 @@ class MarriagesExperiment(Experiment):
 
         # print(self.matchings)
 
-        for instance_id in self.instances:
-            print(instance_id)
-            feature = features.get_feature(feature_id)
-            instance = self.instances[instance_id]
-            # if feature_id in ['summed_rank_minimal_matching'] \
-            #         and self.matchings[instance_id] is None:
-            #     value = 'None'
-            # else:
-            value = feature(instance.votes)
+        if feature_id == 'summed_rank_difference':
+            minimal = get_values_from_csv_file(self, feature_id='summed_rank_minimal_matching')
+            maximal = get_values_from_csv_file(self, feature_id='summed_rank_maximal_matching')
 
-            #
-            # elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
-            #                     'number_of_cohesive_groups_brute',
-            #                     'proportionality_degree_pav',
-            #                     'proportionality_degree_av',
-            #                     'proportionality_degree_cc',
-            #                     'justified_ratio',
-            #                     'cohesiveness',
-            #                     'partylist',
-            #                     'highest_cc_score',
-            #                     'highest_hb_score']:
-            #     value = feature(election, feature_params)
-            #
-            # elif feature_id in {'avg_distortion_from_guardians',
-            #                     'worst_distortion_from_guardians',
-            #                     'distortion_from_all',
-            #                     'distortion_from_top_100'}:
-            #     value = feature(self, election_id)
-            # else:
-            #     value = feature(election)
-
-            if feature_id in features_with_time:
-                feature_dict['value'][instance_id] = value[0]
-                feature_dict['time'][instance_id] = value[1]
-            elif feature_id in features_with_std:
-                feature_dict['value'][instance_id] = value[0]
-                feature_dict['std'][instance_id] = value[1]
-            else:
+            for instance_id in self.instances:
+                if minimal[instance_id] is None:
+                    value = 'None'
+                else:
+                    value = abs(maximal[instance_id] - minimal[instance_id])
                 feature_dict['value'][instance_id] = value
+                feature_dict['time'][instance_id] = 0
+
+        else:
+
+            for instance_id in self.instances:
+                print(instance_id)
+                feature = features.get_feature(feature_id)
+                instance = self.instances[instance_id]
+                # if feature_id in ['summed_rank_minimal_matching'] \
+                #         and self.matchings[instance_id] is None:
+                #     value = 'None'
+                # else:
+                value = feature(instance.votes)
+                print(value)
+                #
+                # elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
+                #                     'number_of_cohesive_groups_brute',
+                #                     'proportionality_degree_pav',
+                #                     'proportionality_degree_av',
+                #                     'proportionality_degree_cc',
+                #                     'justified_ratio',
+                #                     'cohesiveness',
+                #                     'partylist',
+                #                     'highest_cc_score',
+                #                     'highest_hb_score']:
+                #     value = feature(election, feature_params)
+                #
+                # elif feature_id in {'avg_distortion_from_guardians',
+                #                     'worst_distortion_from_guardians',
+                #                     'distortion_from_all',
+                #                     'distortion_from_top_100'}:
+                #     value = feature(self, election_id)
+                # else:
+                #     value = feature(election)
+
+                if feature_id in features_with_time:
+                    feature_dict['value'][instance_id] = value[0]
+                    feature_dict['time'][instance_id] = value[1]
+                elif feature_id in features_with_std:
+                    feature_dict['value'][instance_id] = value[0]
+                    feature_dict['std'][instance_id] = value[1]
+                else:
+                    feature_dict['value'][instance_id] = value
 
         if self.store:
 

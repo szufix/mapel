@@ -169,6 +169,9 @@ class Experiment:
         for i, instance_id_1 in enumerate(self.distances):
             for j, instance_id_2 in enumerate(self.distances):
                 if i < j:
+
+                    print(instance_id_1,instance_id_2)
+                    print(self.distances[instance_id_1][instance_id_2])
                     self.distances[instance_id_1][instance_id_2] *= factor
                     if self.distances[instance_id_1][instance_id_2] == 0.:
                         self.distances[instance_id_1][instance_id_2] = zero_distance
@@ -548,8 +551,13 @@ class Experiment:
 
         return self.features[feature_id]
 
-    def import_feature(self, feature_id):
-        return pr.get_values_from_csv_file(self, feature_id=feature_id)
+    def import_feature(self, feature_id, rule=None):
+        if rule is None:
+            feature_long_id = feature_id
+        else:
+            feature_long_id = f'{feature_id}_{rule}'
+        return pr.get_values_from_csv_file(self, feature_id=feature_id,
+                                           feature_long_id=feature_long_id)
 
     def normalize_feature_by_feature(self, nom=None, denom=None, saveas=None):
 
@@ -597,7 +605,6 @@ class Experiment:
                         instance_id_2 = row['instance_id_2']
                     except:
                         pass
-
                 if instance_id_1 not in self.instances or instance_id_2 not in self.instances:
                     continue
 
@@ -617,6 +624,118 @@ class Experiment:
         return distances
 
     def print_correlation(self, distance_id_1='spearman', distance_id_2='l1-mutual_attraction',
+                          title=None, all=False, my_list=None):
+
+        all_distances = {}
+
+        all_distances[distance_id_1] = self.import_distances(distance_id=distance_id_1)
+        all_distances[distance_id_2] = self.import_distances(distance_id=distance_id_2)
+
+        names = list(all_distances.keys())
+
+        def nice(name):
+            return {
+                'spearman': 'Spearman',
+                'l1-mutual_attraction': '$\ell_1$ Mutual Attraction',
+                'emd-positionwise': 'EMD-Positionwise',
+                'hamming': "Hamming",
+                "jaccard": "Jaccard",
+                'discrete': 'Discrete'
+            }.get(name)
+
+        def normalize(name):
+            return {
+                'spearman': 1.,
+                'l1-mutual_attraction': 1.,
+                'emd-positionwise': 1.,
+            }.get(name)
+
+
+
+        for name_1, name_2 in itertools.combinations(names, 2):
+            # for target in ['double', 'radius', '2g-IC', 'IC_', '1d_', 'maleuc', 'malasym', 'vec']:
+            #         ['MD', 'MA', 'CH', 'ID', '2d_rev', 'Mallows']:
+            # for target in ['MD']:
+
+            if all:
+
+                values_x = []
+                values_y = []
+                for e1, e2 in itertools.combinations(my_list, 2):
+                    for q in range(940):
+                        f1 = f'{e1}_{q}'
+                        f2 = f'{e2}_{q}'
+                        values_x.append(all_distances[name_1][f1][f2])
+                        values_y.append(all_distances[name_2][f1][f2])
+
+            else:
+                values_x = []
+                values_y = []
+                # empty_x = []
+                # empty_y = []
+                for e1, e2 in itertools.combinations(all_distances[name_1], 2):
+                    # if e1 in ['IC'] or e2 in ['IC']:
+                    # if target in e1 or target in e2:
+                    #     empty_x.append(all_distances[name_1][e1][e2])
+                    #     empty_y.append(all_distances[name_2][e1][e2])
+                    # else:
+                    values_x.append(all_distances[name_1][e1][e2])
+                    values_y.append(all_distances[name_2][e1][e2])
+                    # values_x.append(all_distances[name_1][e1][e2] * normalize(name_1))
+                    # values_y.append(all_distances[name_2][e1][e2] * normalize(name_2))
+
+            fig = plt.figure()
+            ax = fig.add_subplot()
+            # a = []
+            # b = []
+            # for x, y in zip(values_x, values_y):
+            #     a.append(x / y)
+            #     b.append(y / x)
+            # print("avg", sum(b) / len(b))
+            # print("avg", sum(a) / len(a))
+            # print(max(a), min(a))
+            # print(max(b), min(b))
+            # limit_1 = 1.48
+            # b_approx = [x for x in b if x > limit_1]
+            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
+            #
+            # limit_2 = 0.82
+            # b_approx = [x for x in b if x < limit_2]
+            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
+            #
+            # b_approx = [x for x in b if (x < limit_2 or x > limit_1)]
+            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
+            #
+            # empty_x = np.linspace(0, 500, 100)
+            # empty_y = [limit_1 * x for x in empty_x]
+
+            ax.scatter(values_x, values_y, s=12, alpha=0.25, color='purple')
+            # ax.scatter(values_x, values_y, s=4, alpha=0.005, color='purple')
+
+
+            # ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
+
+            pear = round(stats.pearsonr(values_x, values_y)[0], 3)
+            pear_text = f'PCC = {pear}'
+            print('pear', pear)
+            # plt.text(0.7, 0.1, pear_text, transform=ax.transAxes, size=14)
+
+            if title is None:
+                title = f'{nice(name_1)} vs {nice(name_2)}'
+            # title=f'{target}'
+
+            plt.xlim(left=0)
+            plt.ylim(bottom=0)
+
+            plt.xlabel(nice(name_1), size=20)
+            plt.ylabel(nice(name_2), size=20)
+            # plt.title(title, size=24)
+            # saveas = f'images/correlation/corr_{name_1}_{name_2}_{target}'
+            saveas = f'images/correlation/corr_{name_1}_{name_2}'
+            plt.savefig(saveas, bbox_inches='tight')
+            plt.show()
+
+    def print_correlation_old(self, distance_id_1='spearman', distance_id_2='l1-mutual_attraction',
                           title=None):
 
         all_distances = {}
@@ -648,45 +767,47 @@ class Experiment:
 
             values_x = []
             values_y = []
-            empty_x = []
-            empty_y = []
+            # empty_x = []
+            # empty_y = []
             for e1, e2 in itertools.combinations(all_distances[name_1], 2):
                 # if e1 in ['IC'] or e2 in ['IC']:
                 # if target in e1 or target in e2:
                 #     empty_x.append(all_distances[name_1][e1][e2])
                 #     empty_y.append(all_distances[name_2][e1][e2])
                 # else:
-                values_x.append(all_distances[name_1][e1][e2] * normalize(name_1))
-                values_y.append(all_distances[name_2][e1][e2] * normalize(name_2))
+                values_x.append(all_distances[name_1][e1][e2])
+                values_y.append(all_distances[name_2][e1][e2])
+                # values_x.append(all_distances[name_1][e1][e2] * normalize(name_1))
+                # values_y.append(all_distances[name_2][e1][e2] * normalize(name_2))
 
             fig = plt.figure()
             ax = fig.add_subplot()
 
-            a = []
-            b = []
-            for x, y in zip(values_x, values_y):
-                a.append(x / y)
-                b.append(y / x)
-            print("avg", sum(b) / len(b))
-            print("avg", sum(a) / len(a))
-            print(max(a), min(a))
-            print(max(b), min(b))
-            limit_1 = 1.48
-            b_approx = [x for x in b if x > limit_1]
-            print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-
-            limit_2 = 0.82
-            b_approx = [x for x in b if x < limit_2]
-            print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-
-            b_approx = [x for x in b if (x < limit_2 or x > limit_1)]
-            print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-
-            empty_x = np.linspace(0, 500, 100)
-            empty_y = [limit_1 * x for x in empty_x]
+            # a = []
+            # b = []
+            # for x, y in zip(values_x, values_y):
+            #     a.append(x / y)
+            #     b.append(y / x)
+            # print("avg", sum(b) / len(b))
+            # print("avg", sum(a) / len(a))
+            # print(max(a), min(a))
+            # print(max(b), min(b))
+            # limit_1 = 1.48
+            # b_approx = [x for x in b if x > limit_1]
+            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
+            #
+            # limit_2 = 0.82
+            # b_approx = [x for x in b if x < limit_2]
+            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
+            #
+            # b_approx = [x for x in b if (x < limit_2 or x > limit_1)]
+            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
+            #
+            # empty_x = np.linspace(0, 500, 100)
+            # empty_y = [limit_1 * x for x in empty_x]
 
             ax.scatter(values_x, values_y, s=4, alpha=0.01, color='purple')
-            ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
+            # ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
 
             pear = round(stats.pearsonr(values_x, values_y)[0], 3)
             pear_text = f'PCC = {pear}'

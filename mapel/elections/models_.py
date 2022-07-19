@@ -15,6 +15,7 @@ import mapel.elections.models.mallows as mallows
 import mapel.elections.models.single_crossing as single_crossing
 import mapel.elections.models.single_peaked as single_peaked
 import mapel.elections.models.urn_model as urn_model
+import mapel.elections.models.partylist as partylist
 from mapel.main._glossary import *
 from mapel.elections.models.preflib import generate_preflib_votes
 import mapel.elections.models.field_experiment as fe
@@ -39,7 +40,7 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                    'moving_resampling': mallows.generate_approval_moving_resampling_votes,
                    'simplex_resampling': mallows.generate_approval_simplex_resampling_votes,
                    'anti_pjr': mallows.approval_anti_pjr_votes,
-                   'partylist': mallows.approval_partylist_votes,
+                   'partylist': partylist.generate_approval_partylist_votes,
                    'field': fe.generate_approval_field_votes,
                    }
 

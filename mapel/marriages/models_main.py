@@ -8,7 +8,6 @@ import mapel.marriages.models.euclidean as euclidean
 import mapel.marriages.models.impartial as impartial
 import mapel.marriages.models.mallows as mallows
 import mapel.marriages.models.urn as urn
-import mapel.marriages.models.group_separable as group_separable
 
 
 def generate_votes(model_id: str = None, num_agents: int = None,
@@ -16,14 +15,14 @@ def generate_votes(model_id: str = None, num_agents: int = None,
     independent_models = {
         'ic': impartial.generate_ic_votes,
         'id': impartial.generate_id_votes,
-        'asymmetric': impartial.generate_asymmetric_votes,
-        'symmetric': group_separable.generate_symmetric_votes,
+        'symmetric': impartial.generate_symmetric_votes,
         'norm-mallows': mallows.generate_norm_mallows_votes,
         'urn': urn.generate_urn_votes,
-        'malasym': mallows.generate_mallows_asymmetric_votes,
         'group_ic': impartial.generate_group_ic_votes,
     }
     dependent_models = {
+        'malasym': mallows.generate_mallows_asymmetric_votes,
+        'asymmetric': impartial.generate_asymmetric_votes,
         'euclidean': euclidean.generate_euclidean_votes,
         'reverse_euclidean': euclidean.generate_reverse_euclidean_votes,
         'mallows_euclidean': euclidean.generate_mallows_euclidean_votes,

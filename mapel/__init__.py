@@ -16,11 +16,11 @@ except:
     print("Failed when importing Roommates")
     pass
 
-try:
-    from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
-except:
-    print("Failed when importing Marriages")
-    pass
+# try:
+from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
+# except:
+#     print("Failed when importing Marriages")
+#     pass
 
 
 def hello():

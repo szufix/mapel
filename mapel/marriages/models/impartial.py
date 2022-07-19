@@ -13,8 +13,10 @@ def generate_id_votes(num_agents: int = None, params=None):
 
 def generate_asymmetric_votes(num_agents: int = None, params=None):
     votes = [list(range(num_agents)) for _ in range(num_agents)]
-
-    return [rotate(vote, shift) for shift, vote in enumerate(votes)]
+    votes_left = [rotate(vote, shift+1) for shift, vote in enumerate(votes)]
+    votes = [list(range(num_agents)) for _ in range(num_agents)]
+    votes_right = [rotate(vote, shift) for shift, vote in enumerate(votes)]
+    return [votes_left, votes_right]
 
 
 def generate_group_ic_votes(num_agents: int = None, params: dict = None):
@@ -54,6 +56,42 @@ def generate_group_ic_votes(num_agents: int = None, params: dict = None):
 #
 #     return [votes_1, votes_2]
 
+
+def generate_symmetric_votes(num_agents: int = None, params=None):
+
+    num_rounds = num_agents - 1
+
+    def next(agents):
+        first = agents[0]
+        last = agents[-1]
+        middle = agents[1:-1]
+        new_agents = [first, last]
+        new_agents.extend(middle)
+        return new_agents
+
+    agents = [i for i in range(num_agents)]
+    rounds = []
+
+    for _ in range(num_rounds):
+        pairs = []
+        for i in range(num_agents // 2):
+            agent_1 = agents[i]
+            agent_2 = agents[num_agents - 1 - i]
+            pairs.append([agent_1, agent_2])
+        rounds.append(pairs)
+        agents = next(agents)
+
+    votes = np.zeros([num_agents, num_agents], dtype=int)
+
+    for pos, partition in enumerate(rounds):
+        for x, y in partition:
+            votes[x][pos+1] = y
+            votes[y][pos+1] = x
+
+    for i in range(num_agents):
+        votes[i][0] = i
+
+    return votes
 
 # HELPER
 def rotate(vector, shift):

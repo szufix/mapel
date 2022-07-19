@@ -46,6 +46,7 @@ def generate_euclidean_votes(num_agents: int = None, params: dict = None):
 
 
 def generate_mallows_euclidean_votes(num_agents: int = None, params: dict = None):
+    print(params)
 
     name = f'{params["dim"]}d_{params["space"]}'
 

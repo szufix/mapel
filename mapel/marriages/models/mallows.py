@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 from mapel.roommates.models._utils import convert
 from mapel.main._utils import *
+from mapel.marriages.models.impartial import generate_asymmetric_votes
 
 # Given the number m of candidates and a phi\in [0,1] function computes the expected number of swaps
 # in a vote sampled from Mallows model_id
@@ -171,17 +172,12 @@ def generate_norm_mallows_votes(num_agents=None, params=None):
 def generate_mallows_asymmetric_votes(num_agents: int = None, params=None):
     """ Mallows on top of Asymmetric instance """
 
-    votes = [list(range(num_agents)) for _ in range(num_agents)]
+    votes_left, votes_right = generate_asymmetric_votes(num_agents=num_agents)
 
-    votes = [rotate(vote, shift) for shift, vote in enumerate(votes)]
+    votes_left = mallows_votes(votes_left, params['phi'])
+    votes_right = mallows_votes(votes_right, params['phi'])
 
-    if 'norm-phi' not in params:
-        params['norm-phi'] = np.random.rand()
-
-    params['phi'] = phi_from_relphi(num_agents, relphi=params['norm-phi'])
-    votes = mallows_votes(votes, params['phi'])
-
-    return votes
+    return [votes_left, votes_right]
 
 # def generate_norm_mallows__id_votes(num_agents=None, params=None):
 #
@@ -202,11 +198,10 @@ def mallows_vote(vote, phi):
     num_candidates = len(vote)
     params = {'weight': 0, 'phi': phi}
     raw_vote = generate_mallows_votes(1, num_candidates, params)[0]
-
+    new_vote = [0] * len(vote)
     for i in range(num_candidates):
-        vote[i] = raw_vote[vote[i]]
-
-    return vote
+        new_vote[raw_vote[i]] = vote[i]
+    return new_vote
 
 
 def mallows_votes(votes, phi):

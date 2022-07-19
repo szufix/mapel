@@ -13,6 +13,9 @@ import mapel.elections.features.clustering as clustering
 import mapel.elections.features.distortion as distortion
 import mapel.elections.features.other as other
 import mapel.elections.features.justified_representation as jr
+import mapel.elections.features.from_abcvoting as from_abc
+import mapel.elections.features.dimensionality as dimensionality
+
 
 from mapel.main._glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
 from mapel.main._features_main import get_main_local_feature, get_main_global_feature
@@ -29,11 +32,13 @@ def get_global_feature(feature_id):
             'jr': jr.test_jr,
             'id_vs_un': clustering.id_vs_un,
             'an_vs_st': clustering.an_vs_st,
+            'core': from_abc.test_core,
             }.get(feature_id)
 
 
 def get_local_feature(feature_id):
     """ Local feature depends only on a single instance """
+
     if feature_id in MAIN_LOCAL_FEATUERS:
         return get_main_local_feature(feature_id)
 
@@ -101,6 +106,8 @@ def get_local_feature(feature_id):
             'support_diversity_normed3_summed': diversity.support_diversity_normed3_summed,
             'dist_to_Borda_mean': diversity.dist_to_Borda_mean,
             'dist_to_Kemeny_mean': diversity.dist_to_Kemeny_mean,
+            'priceability': from_abc.test_priceability,
+            'min_dim': dimensionality.min_dim,
             }.get(feature_id)
 
 # # # # # # # # # # # # # # # #

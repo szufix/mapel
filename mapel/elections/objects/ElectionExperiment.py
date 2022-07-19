@@ -403,6 +403,11 @@ class ElectionExperiment(Experiment):
         if feature_params is None:
             feature_params = {}
 
+        if feature_id == 'priceability':
+            feature_long_id = f'priceability_{feature_params["rule"]}'
+        else:
+            feature_long_id = feature_id
+
         num_iterations = 1
         if 'num_interations' in feature_params:
             num_iterations = feature_params['num_interations']
@@ -415,7 +420,7 @@ class ElectionExperiment(Experiment):
 
             values = feature(self, election_ids=list(self.instances), feature_params=feature_params)
 
-            if feature_id == 'jr':
+            if feature_id in ['jr', 'core']:
                 feature_dict = values
             else:
                 for instance_id in self.instances:
@@ -438,7 +443,8 @@ class ElectionExperiment(Experiment):
                         value = feature(self, instance)
 
                     elif feature_id in ELECTION_FEATURES_WITH_PARAMS:
-                        value = instance.get_feature(feature_id, feature_params=feature_params)
+                        value = instance.get_feature(feature_id, feature_long_id,
+                                                     feature_params=feature_params)
 
                     elif feature_id in {'avg_distortion_from_guardians',
                                         'worst_distortion_from_guardians',
@@ -446,7 +452,7 @@ class ElectionExperiment(Experiment):
                                         'distortion_from_top_100'}:
                         value = feature(self, instance_id)
                     else:
-                        value = instance.get_feature(feature_id)
+                        value = instance.get_feature(feature_id, feature_long_id)
 
                 total_time = time.time() - start
                 total_time /= num_iterations
@@ -460,23 +466,23 @@ class ElectionExperiment(Experiment):
                     feature_dict['time'][instance_id] = total_time
 
         if self.store:
-            self._store_election_feature(feature_id, feature_dict)
+            self._store_election_feature(feature_id, feature_long_id, feature_dict)
 
-        self.features[feature_id] = feature_dict
+        self.features[feature_long_id] = feature_dict
         return feature_dict
 
-    def _store_election_feature(self, feature_id, feature_dict):
+    def _store_election_feature(self, feature_id, feature_long_id, feature_dict):
 
         if feature_id in EMBEDDING_RELATED_FEATURE:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "features", f'{feature_id}_{self.embedding_id}.csv')
-        elif feature_id == 'jr':
+        elif feature_id in ['jr', 'core']:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 '../', 'rules_output',
                                 "features", f'{feature_id}.csv')
         else:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "features", f'{feature_id}.csv')
+                                "features", f'{feature_long_id}.csv')
 
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
@@ -487,6 +493,10 @@ class ElectionExperiment(Experiment):
                                      feature_dict[key]['jr'],
                                      feature_dict[key]['pjr'],
                                      feature_dict[key]['ejr']])
+            elif feature_id in ['core']:
+                writer.writerow(["instance_id", "value"])
+                for key in feature_dict:
+                    writer.writerow([key, feature_dict[key]['value']])
             elif feature_id in {'partylist'}:
                 writer.writerow(["election_id", "value", "bound", "num_large_parties"])
                 for key in feature_dict:

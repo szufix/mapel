@@ -71,7 +71,7 @@ class MarriagesFamily(Family):
 
     def prepare_family(self, experiment_id=None, store=None):
 
-
+        print(self.num_agents)
         params = copy.deepcopy(self.params)
 
         instances = {}

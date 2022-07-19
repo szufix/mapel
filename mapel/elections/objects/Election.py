@@ -8,6 +8,9 @@ from abc import ABCMeta, abstractmethod
 import math
 
 import numpy as np
+import numpy.linalg as la
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
 from mapel.main._glossary import *
@@ -214,8 +217,10 @@ class Election(Instance):
         # self.coordinates = KamadaKawai().embed(
         #     distances=self.distances,
         # )
-        self.coordinates[object_type] = MDS(n_components=2, dissimilarity='precomputed').fit_transform(
-            self.distances[object_type])
+        MDS_object = MDS(n_components=2, dissimilarity='precomputed')
+        self.coordinates[object_type] = MDS_object.fit_transform(self.distances[object_type])
+
+
         # ADJUST
         # find max dist
         # if (not ('identity' in self.model_id.lower() and object_type=='vote')) \
@@ -332,17 +337,17 @@ class Election(Instance):
                 self.rotate_point(0.5, 0.5, angle, self.coordinates[object_type][instance_id][0],
                                   self.coordinates[object_type][instance_id][1])
 
-    def compute_feature(self, feature_id, feature_params=None):
+    def compute_feature(self, feature_id, feature_long_id, feature_params=None):
         feature = get_local_feature(feature_id)
         if feature_id in ELECTION_FEATURES_WITH_PARAMS:
-            self.features[feature_id] = feature(self, feature_params=feature_params)
+            self.features[feature_long_id] = feature(self, feature_params=feature_params)
         else:
-            self.features[feature_id] = feature(self)
+            self.features[feature_long_id] = feature(self)
 
-    def get_feature(self, feature_id, feature_params=None):
+    def get_feature(self, feature_id, feature_long_id, feature_params=None):
         if feature_id not in self.features:
-            self.compute_feature(feature_id, feature_params=feature_params)
-        return self.features[feature_id]
+            self.compute_feature(feature_id, feature_long_id, feature_params=feature_params)
+        return self.features[feature_long_id]
 
 
 def map_the_votes(election, party_id, party_size) -> Election:

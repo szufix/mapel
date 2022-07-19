@@ -160,7 +160,8 @@ class ApprovalElection(Election):
         reverse_approvals = [set() for _ in range(self.num_candidates)]
         for i, vote in enumerate(self.votes):
             for c in vote:
-                reverse_approvals[c].add({i})
+                # print(reverse_approvals[int(c)])
+                reverse_approvals[int(c)].add(i)
 
         self.reverse_approvals = reverse_approvals
 
@@ -224,8 +225,6 @@ class ApprovalElection(Election):
 def import_real_app_election(experiment_id: str, election_id: str, shift=False):
     """ Import real approval election from .app file """
 
-    # print("model", model_id)
-    print("model")
 
     file_name = f'{election_id}.app'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)

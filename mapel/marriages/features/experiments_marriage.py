@@ -97,24 +97,33 @@ def rank_matching(instance,best,summed):
 
 
 def summed_rank_maximal_matching(instance):
-    val,matching= rank_matching(instance,True,True)
-    if number_blockingPairs(instance,matching)>0:
-        print('ERROR IN summed_rank_maximal_matching')
-        exit(0)
+    try:
+        val,matching= rank_matching(instance,True,True)
+    except:
+        return 'None'
+    # if number_blockingPairs(instance,matching)>0:
+    #     print('ERROR IN summed_rank_maximal_matching')
+    #     exit(0)
     return val
 
 def summed_rank_minimal_matching(instance):
-    val,matching= rank_matching(instance,False,True)
-    if number_blockingPairs(instance,matching)>0:
-        print('ERROR IN summed_rank_minimal_matching')
-        exit(0)
+    try:
+        val,matching= rank_matching(instance,False,True)
+    except:
+        return 'None'
+    # if number_blockingPairs(instance,matching)>0:
+    #     print('ERROR IN summed_rank_minimal_matching')
+    #     exit(0)
     return val
 
 def minimal_rank_maximizing_matching(instance):
-    val,matching=rank_matching(instance,True,False)
-    if number_blockingPairs(instance,matching)>0:
-        print('ERROR IN minimal_rank_maximizing_matching')
-        exit(0)
+    try:
+        val,matching=rank_matching(instance,True,False)
+    except:
+        return 'None'
+    # if number_blockingPairs(instance,matching)>0:
+    #     print('ERROR IN minimal_rank_maximizing_matching')
+    #     exit(0)
     return val
 
 def avg_number_of_bps_for_random_matching(instance,iterations=100):
