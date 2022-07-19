@@ -52,6 +52,8 @@ def rank_matching(instance,best,summed):
     m.setParam('OutputFlag', False)
     x = m.addVars(num_agents, num_agents, lb=0, ub=1, vtype=GRB.BINARY)
     opt = m.addVar(vtype=GRB.INTEGER, lb=0, ub=num_agents*num_agents)
+    opt1 = m.addVar(vtype=GRB.INTEGER, lb=0, ub=num_agents * num_agents)
+    opt2 = m.addVar(vtype=GRB.INTEGER, lb=0, ub=num_agents * num_agents)
     for i in range(num_agents):
         m.addConstr(gp.quicksum(x[i, j] for j in range(num_agents)) <= 1)
         m.addConstr(gp.quicksum(x[j, i] for j in range(num_agents)) <= 1)
@@ -68,7 +70,11 @@ def rank_matching(instance,best,summed):
             m.addConstr(gp.quicksum(x[a[0], a[1]] for a in better_pairs) >= 1)
     if summed:
         #print(instance[0])
-        m.addConstr(gp.quicksum(instance[k][i].index(j)* x[i, j]  for i in range(num_agents) for j in range(num_agents) for k in [0,1]) == opt)
+        m.addConstr(gp.quicksum(
+            instance[0][i].index(j) * x[i, j] for i in range(num_agents) for j in range(num_agents)) == opt1)
+        m.addConstr(gp.quicksum(
+            instance[1][i].index(j) * x[j, i] for i in range(num_agents) for j in range(num_agents)) == opt2)
+        m.addConstr(opt1 + opt2 == opt)
         if best:
             m.setObjective(opt, GRB.MAXIMIZE)
         else:
