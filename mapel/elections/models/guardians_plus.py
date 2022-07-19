@@ -105,9 +105,9 @@ def generate_idun_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (ID) and (UN) """
     if params is None or not ('part_share' in params):
         print("IDUN_part generation : params None : random param generated")
-        part_size = np.random.choice(range(num_voters + 1))
+        part_size = np.random.choice(range(num_voters))
     else:
-        part_size = params['part_share'] * (num_voters + 1)
+        part_size = params['part_share'] * (num_voters)
     part_size = int(round(part_size))
     id_share = num_voters - part_size
     un_share = part_size
@@ -119,9 +119,9 @@ def generate_idst_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (ID) and (ST) """
     if params is None or not ('part_share' in params):
         print("IDST_part generation : params None : random param generated")
-        part_size = np.random.choice(range(num_voters + 1))
+        part_size = np.random.choice(range(num_voters))
     else:
-        part_size = params['part_share'] * (num_voters + 1)
+        part_size = params['part_share'] * (num_voters)
     part_size = int(round(part_size))
     id_share = num_voters - part_size
     st_share = part_size
@@ -135,9 +135,9 @@ def generate_anun_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (AN) and (UN) """
     if params is None or not ('part_share' in params):
         print("ANUN_part generation : params None : random param generated")
-        part_size = np.random.choice(range(num_voters + 1))
+        part_size = np.random.choice(range(num_voters))
     else:
-        part_size = params['part_share'] * (num_voters + 1)
+        part_size = params['part_share'] * (num_voters)
     part_size = int(round(part_size))
     id_share = (num_voters - part_size) // 2
     op_share = num_voters - part_size - id_share
@@ -151,9 +151,9 @@ def generate_anst_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (AN) and (ST) """
     if params is None or not ('part_share' in params):
         print("ANST_part generation : params None : random param generated")
-        part_size = np.random.choice(range(num_voters + 1))
+        part_size = np.random.choice(range(num_voters))
     else:
-        part_size = params['part_share'] * (num_voters + 1)
+        part_size = params['part_share'] * (num_voters)
     part_size = int(round(part_size))
     id_share = (num_voters - part_size) // 2
     op_share = num_voters - part_size - id_share
@@ -169,9 +169,9 @@ def generate_unst_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (UN) and (ST) """
     if params is None or not ('part_share' in params):
         print("UNST_part generation : params None : random param generated")
-        part_size = np.random.choice(range(num_voters + 1))
+        part_size = np.random.choice(range(num_voters))
     else:
-        part_size = params['part_share'] * (num_voters + 1)
+        part_size = params['part_share'] * (num_voters)
     part_size = int(round(part_size))
     un_share = num_voters - part_size
     st_share = part_size
@@ -182,17 +182,24 @@ def generate_unst_part_votes(num_voters=None, num_candidates=None, params=None):
     return votes
 
 def generate_idan_mallows_votes(num_voters=None, num_candidates=None, params=None):
-    if params is None or not ('phi' in params):
+    if params is None or not ('scaled-phi' in params):
         print("IDAN_mallows generation : params None : random param generated")
-        phi = mallows.phi_from_relphi(num_candidates, relphi=np.random.uniform()) * 2
+        is_reversed = np.random.choice([True,False])
+        phi = mallows.phi_from_relphi(num_candidates, relphi=np.random.uniform())
     else:
-        phi = params['phi'] * 2
-    print(params['phi'])
-    print(phi)
+        if params['scaled-phi'] > 0.5:
+            is_reversed = True
+            phi = mallows.phi_from_relphi(num_candidates, (1-params['scaled-phi'])*2)
+        else:
+            is_reversed = False
+            phi = mallows.phi_from_relphi(num_candidates, params['scaled-phi']*2)
     id_share = num_voters // 2
     op_share = num_voters - id_share
     votes_id = [[j for j in range(num_candidates)] for _ in range(id_share)]
     votes_op = mallows.generate_mallows_votes(op_share,num_candidates,{'phi' : phi})
+    if is_reversed:
+        for v in votes_op:
+            v.reverse()
     return votes_id + votes_op
 
 def generate_idst_mallows_votes(num_voters=None, num_candidates=None, params=None):
