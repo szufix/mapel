@@ -30,6 +30,37 @@ def print_approvals_histogram(election):
     plt.show()
 
 
+# New 1d map printing
+def print_map_1d(experiment, saveas=None):
+
+    experiment.compute_coordinates_by_families()
+    # print(experiment.coordinates_by_families)
+
+    all_values = [0]
+    for family in experiment.families.values():
+        x = float(experiment.coordinates_by_families[family.family_id][0][0])
+        all_values.append(x)
+    min_ = min(all_values)
+    max_ = max(all_values)
+
+    fig, ax = plt.subplots(figsize=(3,8))
+    for family in experiment.families.values():
+
+            x = float(experiment.coordinates_by_families[family.family_id][0][0])
+            x = (x-min_) / (max_-min_)
+            # x = x**0.5
+            x = 1-x
+
+            # ax.scatter(x, 0)
+            # ax.annotate(family.family_id, (x,0), rotation=90,)
+            ax.scatter(0, x)
+            ax.annotate(family.family_id, (0, x), rotation=0, size=10)
+    ax.get_xaxis().set_visible(False)
+    # plt.axis("off")
+    if saveas:
+        plt.savefig(saveas)
+    plt.show()
+
 # Main functions
 def print_map_2d(experiment,
                  xlabel=None, shading=False, legend_pos=None, title_pos=None,

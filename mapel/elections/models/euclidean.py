@@ -18,29 +18,13 @@ def get_range(params):
 
 def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = None,
                                 params: dict = None) -> list:
-    # v_a = 1.05  # params['v_a']
-    # v_b = 10  # params['v_b']
-    # c_a = 1.05  # params['c_a']
-    # c_b = 10  # params['c_b']
-
-    # max_range = params['max_range']
-
-    dim = params['dim']
 
     votes = [set() for _ in range(num_voters)]
 
-    # voters = np.random.rand(num_voters, dim)
-    # candidates = np.random.rand(num_candidates, dim)
-
-    name = f'{dim}d_{params["space"]}'
-    print(name)
+    name = f'{params["dim"]}d_{params["space"]}'
 
     voters = np.array([get_rand(name) for _ in range(num_voters)])
     candidates = np.array([get_rand(name) for _ in range(num_candidates)])
-
-    # v_range = [np.random.beta(v_a, v_b) for _ in range(num_voters)]
-    # c_range = [np.random.beta(c_a, c_b) for _ in range(num_candidates)]
-    # [np.random.uniform(low=0.05, high=max_range) ...
 
     v_range = np.array([get_range(params) for _ in range(num_voters)])
     c_range = np.array([get_range(params) for _ in range(num_candidates)])
@@ -55,55 +39,19 @@ def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = No
 
 def generate_approval_euclidean_votes(num_voters: int = None, num_candidates: int = None,
                                       params: dict = None) -> list:
-    # 'p' should be lower than 0.5
+    votes = [set() for _ in range(num_voters)]
 
-    alpha = 4
-    beta = alpha / (params['p']) - alpha
+    name = f'{params["dim"]}d_{params["space"]}'
 
-    dim = params['dim']
-
-    rankings = np.zeros([num_voters, num_candidates], dtype=int)
-    distances = np.zeros([num_voters, num_candidates])
-    votes = []
-
-    if 'shift' in params:
-        shift = np.array([params['shift'] ** 2 for _ in range(dim)])
-        voters = np.random.rand(num_voters, dim) + shift
-        candidates = np.random.rand(num_candidates, dim)
-    elif 'gauss' in params:
-        voters = np.random.rand(num_voters, dim)
-        params['gauss'] /= 2
-        num_candidates_in_group_a = int(params['gauss'] * num_candidates)
-        num_candidates_in_group_b = num_voters - num_candidates_in_group_a
-        scale_group_a = params['gauss']
-        scale_group_b = 1 - params['gauss']
-        loc_a = [1. / 3 for _ in range(dim)]
-        loc_b = [2. / 3 for _ in range(dim)]
-        candidates_group_a = np.random.normal(loc=loc_a, scale=scale_group_a,
-                                              size=(num_candidates_in_group_a, dim))
-        candidates_group_b = np.random.normal(loc=loc_b, scale=scale_group_b,
-                                              size=(num_candidates_in_group_b, dim))
-        candidates = np.concatenate((candidates_group_a, candidates_group_b), axis=0)
-    elif 'model_id' in params:
-        model = params['model_id']
-        voters = np.array([get_rand(model) for _ in range(num_voters)])
-        candidates = np.array([get_rand(model) for _ in range(num_candidates)])
-    else:
-        voters = np.random.rand(num_voters, dim)
-        candidates = np.random.rand(num_candidates, dim)
+    voters = np.array([get_rand(name) for _ in range(num_voters)])
+    candidates = np.array([get_rand(name) for _ in range(num_candidates)])
 
     for v in range(num_voters):
         for c in range(num_candidates):
-            rankings[v][c] = c
-            distances[v][c] = np.linalg.norm(voters[v] - candidates[c])
-        rankings[v] = [x for _, x in sorted(zip(distances[v], rankings[v]))]
-
-    for v in range(num_voters):
-        k = int(np.random.beta(alpha, beta) * num_candidates)
-        votes.append(set(rankings[v][0:k]))
+            if params['radius'] >= np.linalg.norm(voters[v] - candidates[c]):
+                votes[v].add(c)
 
     return votes
-
 
 ####################################################################################################
 # Party Euclidean Election Models
@@ -363,6 +311,12 @@ def get_rand(model: str, cat: str = "voters") -> list:
     elif model == "5d_sphere":
         dim = 5
         point = list(random_sphere(dim)[0])
+    elif model == 'overlapping_squares':
+
+        pass
+    elif model == 'asymmetric_gaussians':
+
+        pass
     else:
         print('unknown model_id', model)
         point = [0, 0]

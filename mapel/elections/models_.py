@@ -41,6 +41,8 @@ def generate_approval_votes(model_id: str = None, num_candidates: int = None,
                    'simplex_resampling': mallows.generate_approval_simplex_resampling_votes,
                    'anti_pjr': mallows.approval_anti_pjr_votes,
                    'partylist': partylist.generate_approval_partylist_votes,
+                   'urn_partylist': partylist.generate_approval_urn_partylist_votes,
+                   'exp_partylist': partylist.generate_approval_exp_partylist_votes,
                    'field': fe.generate_approval_field_votes,
                    }
 

@@ -262,28 +262,34 @@ class Experiment:
             with open(path, 'w', newline='') as csvfile:
 
                 writer = csv.writer(csvfile, delimiter=';')
-                if dim == 2:
+                if dim == 1:
+                    writer.writerow(["instance_id", "x"])
+                elif dim == 2:
                     writer.writerow(["instance_id", "x", "y"])
-                    print(["instance_id", "x", "y"])
                 elif dim == 3:
                     writer.writerow(["instance_id", "x", "y", "z"])
 
                 ctr = 0
                 for instance_id in self.instances:
                     x = round(self.coordinates[instance_id][0], 5)
-                    y = round(self.coordinates[instance_id][1], 5)
-                    if dim == 2:
-                        writer.writerow([instance_id, x, y])
-                    elif dim == 3:
-                        z = round(my_pos[ctr][2], 5)
-                        writer.writerow([instance_id, x, y, z])
+                    if dim == 1:
+                        writer.writerow([instance_id, x])
+                    else:
+                        y = round(self.coordinates[instance_id][1], 5)
+                        if dim == 2:
+                            writer.writerow([instance_id, x, y])
+                        else:
+                            z = round(my_pos[ctr][2], 5)
+                            writer.writerow([instance_id, x, y, z])
                     ctr += 1
 
         # self.coordinates = coordinates
 
     def print_map(self, dim: int = 2, **kwargs) -> None:
         """ Print the two-dimensional embedding of multi-dimensional map of the instances """
-        if dim == 2:
+        if dim == 1:
+            pr.print_map_1d(self, **kwargs)
+        elif dim == 2:
             pr.print_map_2d(self, **kwargs)
         elif dim == 3:
             pr.print_map_3d(self, **kwargs)
@@ -333,7 +339,9 @@ class Experiment:
                     except:
                         pass
 
-                if dim == 2:
+                if dim == 1:
+                    coordinates[instance_id] = [float(row['x'])]
+                elif dim == 2:
                     coordinates[instance_id] = [float(row['x']), float(row['y'])]
                 elif dim == 3:
                     coordinates[instance_id] = [float(row['x']), float(row['y']), float(row['z'])]
@@ -352,7 +360,7 @@ class Experiment:
 
         return coordinates
 
-    def compute_coordinates_by_families(self) -> None:
+    def compute_coordinates_by_families(self, dim=2) -> None:
         """ Group all points by their families """
 
         coordinates_by_families = {}
@@ -375,9 +383,13 @@ class Experiment:
 
             for family_id in self.families:
 
-                coordinates_by_families[family_id] = [[] for _ in range(3)]
+                coordinates_by_families[family_id] = [[] for _ in range(dim)]
                 coordinates_by_families[family_id][0].append(self.coordinates[family_id][0])
-                coordinates_by_families[family_id][1].append(self.coordinates[family_id][1])
+                try:
+                    coordinates_by_families[family_id][1].append(self.coordinates[family_id][1])
+                except Exception:
+                    pass
+
                 try:
                     coordinates_by_families[family_id][2].append(self.coordinates[family_id][2])
                 except Exception:
@@ -392,8 +404,11 @@ class Experiment:
                     for instance_id in self.families[family_id].instance_ids:
                         coordinates_by_families[family_id][0].append(
                             self.coordinates[instance_id][0])
-                        coordinates_by_families[family_id][1].append(
-                            self.coordinates[instance_id][1])
+                        try:
+                            coordinates_by_families[family_id][1].append(
+                                self.coordinates[instance_id][1])
+                        except Exception:
+                            pass
                         try:
                             coordinates_by_families[family_id][2].append(
                                 self.coordinates[instance_id][2])
@@ -403,8 +418,11 @@ class Experiment:
                     for instance_id in self.families[family_id].instance_ids:
                         coordinates_by_families[family_id][0].append(
                             self.coordinates[instance_id][0])
-                        coordinates_by_families[family_id][1].append(
-                            self.coordinates[instance_id][1])
+                        try:
+                            coordinates_by_families[family_id][1].append(
+                                self.coordinates[instance_id][1])
+                        except Exception:
+                            pass
                         try:
                             coordinates_by_families[family_id][2].append(
                                 self.coordinates[instance_id][2])

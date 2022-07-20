@@ -1,13 +1,15 @@
 
 import numpy as np
+from mapel.main._utils import get_vector
 
 
 def generate_approval_partylist_votes(num_voters=None, num_candidates=None, params=None):
 
-    if params is None or 'g' not in params:
-        num_groups = 5
-    else:
-        num_groups = params['g']
+    if params is None:
+        params = {}
+
+    num_groups = params.get('g', 5)
+
     alphas = get_vector('linear', num_groups)
 
     # for i in range(len(alphas)):
@@ -37,40 +39,52 @@ def generate_approval_partylist_votes(num_voters=None, num_candidates=None, para
     return votes
 
 
+def generate_approval_urn_partylist_votes(num_voters=None, num_candidates=None, params=None):
 
-# AUXILIARY (alphas)
+    if params is None:
+        params = {}
 
-def get_vector(type, num_candidates):
-    if type == "uniform":
-        return [1.] * num_candidates
-    elif type == "linear":
-        return [(num_candidates - x) for x in range(num_candidates)]
-    elif type == "linear_low":
-        return [(float(num_candidates) - float(x)) / float(num_candidates) for x in range(num_candidates)]
-    elif type == "square":
-        return [(float(num_candidates) - float(x)) ** 2 / float(num_candidates) ** 2 for x in
-                range(num_candidates)]
-    elif type == "square_low":
-        return [(num_candidates - x) ** 2 for x in range(num_candidates)]
-    elif type == "cube":
-        return [(float(num_candidates) - float(x)) ** 3 / float(num_candidates) ** 3 for x in
-                range(num_candidates)]
-    elif type == "cube_low":
-        return [(num_candidates - x) ** 3 for x in range(num_candidates)]
-    elif type == "split_2":
-        values = [1.] * num_candidates
-        for i in range(num_candidates / 2):
-            values[i] = 10.
-        return values
-    elif type == "split_4":
-        size = num_candidates / 4
-        values = [1.] * num_candidates
-        for i in range(size):
-            values[i] = 1000.
-        for i in range(size, 2 * size):
-            values[i] = 100.
-        for i in range(2 * size, 3 * size):
-            values[i] = 10.
-        return values
-    else:
-        return type
+    num_groups = params.get('g', 5)
+
+    party_votes = np.zeros([num_voters])
+    urn_size = 1.
+    for j in range(num_voters):
+        rho = np.random.uniform(0, urn_size)
+        if rho <= 1.:
+            party_votes[j] = np.random.randint(0, num_groups)
+        else:
+            party_votes[j] = party_votes[np.random.randint(0, j)]
+        urn_size += params['alpha']
+
+    party_size = int(num_candidates/num_groups)
+    votes = []
+
+    for i in range(num_voters):
+        shift = party_votes[i]*party_size
+        vote = set([int(c+shift) for c in range(party_size)])
+        votes.append(vote)
+
+    return votes
+
+
+def generate_approval_exp_partylist_votes(num_voters=None, num_candidates=None, params=None):
+
+    if params is None:
+        params = {}
+
+    num_groups = params.get('g', 5)
+    exp = params.get('exp', 2.)
+
+    sizes = np.array([1./exp**(i+1) for i in range(num_groups)])
+    sizes = sizes / np.sum(sizes)
+    party_votes = np.random.choice([i for i in range(num_groups)], num_voters, p=sizes)
+
+    party_size = int(num_candidates/num_groups)
+    votes = []
+
+    for i in range(num_voters):
+        shift = party_votes[i]*party_size
+        vote = set([int(c+shift) for c in range(party_size)])
+        votes.append(vote)
+
+    return votes

@@ -20,8 +20,6 @@ from mapel.elections.other.winners2 import generate_winners
 from mapel.main._inner_distances import hamming
 
 
-
-
 class ApprovalElection(Election):
 
     def __init__(self, experiment_id, election_id, votes=None, alpha=1, model_id=None,
