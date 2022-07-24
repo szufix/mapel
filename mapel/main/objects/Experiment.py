@@ -569,12 +569,13 @@ class Experiment:
 
         return self.features[feature_id]
 
-    def import_feature(self, feature_id, rule=None):
+    def import_feature(self, feature_id, column_id='value', rule=None):
         if rule is None:
             feature_long_id = feature_id
         else:
             feature_long_id = f'{feature_id}_{rule}'
         return pr.get_values_from_csv_file(self, feature_id=feature_id,
+                                           column_id=column_id,
                                            feature_long_id=feature_long_id)
 
     def normalize_feature_by_feature(self, nom=None, denom=None, saveas=None):

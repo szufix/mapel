@@ -403,8 +403,8 @@ class ElectionExperiment(Experiment):
         if feature_params is None:
             feature_params = {}
 
-        if feature_id == 'priceability':
-            feature_long_id = f'priceability_{feature_params["rule"]}'
+        if feature_id in ['priceability', 'core', 'ejr']:
+            feature_long_id = f'{feature_id}_{feature_params["rule"]}'
         else:
             feature_long_id = feature_id
 
@@ -412,7 +412,10 @@ class ElectionExperiment(Experiment):
         if 'num_interations' in feature_params:
             num_iterations = feature_params['num_interations']
 
-        feature_dict = {'value': {}, 'time': {}}
+        if feature_id == 'ejr':
+            feature_dict = {'value': {}, 'time': {}, 'ejr': {}, 'pjr': {}, 'jr': {}, 'pareto': {}}
+        else:
+            feature_dict = {'value': {}, 'time': {}}
 
         if feature_id in MAIN_GLOBAL_FEATUERS or feature_id in ELECTION_GLOBAL_FEATURES:
 
@@ -420,12 +423,9 @@ class ElectionExperiment(Experiment):
 
             values = feature(self, election_ids=list(self.instances), feature_params=feature_params)
 
-            if feature_id in ['jr', 'core']:
-                feature_dict = values
-            else:
-                for instance_id in self.instances:
-                    feature_dict['value'][instance_id] = values[instance_id]
-                    feature_dict['time'][instance_id] = 0
+            for instance_id in self.instances:
+                feature_dict['value'][instance_id] = values[instance_id]
+                feature_dict['time'][instance_id] = 0
 
         else:
             feature = features.get_local_feature(feature_id)
@@ -456,8 +456,16 @@ class ElectionExperiment(Experiment):
 
                 total_time = time.time() - start
                 total_time /= num_iterations
+                # print(value)
 
-                if feature_id in FEATURES_WITH_DISSAT:
+                if feature_id == 'ejr':
+                    feature_dict['ejr'][instance_id] = int(value['ejr'])
+                    feature_dict['pjr'][instance_id] = int(value['pjr'])
+                    feature_dict['jr'][instance_id] = int(value['jr'])
+                    feature_dict['pareto'][instance_id] = int(value['pareto'])
+                    feature_dict['time'][instance_id] = total_time
+
+                elif feature_id in FEATURES_WITH_DISSAT:
                     feature_dict['value'][instance_id] = value[0]
                     feature_dict['time'][instance_id] = total_time
                     feature_dict['dissat'][instance_id] = value[1]
@@ -476,40 +484,33 @@ class ElectionExperiment(Experiment):
         if feature_id in EMBEDDING_RELATED_FEATURE:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "features", f'{feature_id}_{self.embedding_id}.csv')
-        elif feature_id in ['jr', 'core']:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                '../', 'rules_output',
-                                "features", f'{feature_id}.csv')
         else:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                 "features", f'{feature_long_id}.csv')
 
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
-            if feature_id == 'jr':
-                writer.writerow(["instance_id", "pareto", "jr", "pjr", "ejr"])
-                for key in feature_dict:
-                    writer.writerow([key, feature_dict[key]['pareto'],
-                                     feature_dict[key]['jr'],
-                                     feature_dict[key]['pjr'],
-                                     feature_dict[key]['ejr']])
-            elif feature_id in ['core']:
-                writer.writerow(["instance_id", "value"])
-                for key in feature_dict:
-                    writer.writerow([key, feature_dict[key]['value']])
+            if feature_id == 'ejr':
+                writer.writerow(["instance_id", "ejr", "pjr", "jr", "pareto", "time"])
+                for key in feature_dict['ejr']:
+                    writer.writerow([key, feature_dict['ejr'][key],
+                                     feature_dict['pjr'][key],
+                                     feature_dict['jr'][key],
+                                     feature_dict['pareto'][key],
+                                     feature_dict['time'][key]])
             elif feature_id in {'partylist'}:
-                writer.writerow(["election_id", "value", "bound", "num_large_parties"])
+                writer.writerow(["instance_id", "value", "bound", "num_large_parties"])
                 for key in feature_dict:
                     writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
                                      feature_dict[key][2]])
             elif feature_id in FEATURES_WITH_DISSAT:
-                writer.writerow(["election_id", "value", 'time', 'dissat'])
+                writer.writerow(["instance_id", "value", 'time', 'dissat'])
                 for key in feature_dict['value']:
                     writer.writerow(
                         [key, feature_dict['value'][key], feature_dict['time'][key],
                          feature_dict['dissat'][key]])
             else:
-                writer.writerow(["election_id", "value", "time"])
+                writer.writerow(["instance_id", "value", "time"])
                 for key in feature_dict['value']:
                     writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
 

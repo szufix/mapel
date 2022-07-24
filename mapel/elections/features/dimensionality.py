@@ -1,7 +1,10 @@
 
 import numpy as np
 import numpy.linalg as la
-import pandas as pd
+try:
+    import pandas as pd
+except:
+    pass
 
 
 def min_dim(election):

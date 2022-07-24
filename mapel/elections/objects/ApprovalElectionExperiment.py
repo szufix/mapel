@@ -90,14 +90,18 @@ class ApprovalElectionExperiment(ElectionExperiment):
                                                 cand_dist[k1][k2] = 1 - len(
                                                     ac1.intersection(ac2)) / len(ac1.union(ac2))
                                 distance, _ = solve_matching_vectors(cand_dist)
+                                print(distance)
                                 distance /= committee_size
-
                             all_distance.append(distance)
+
 
                         mean = sum(all_distance) / self.num_elections
                         writer.writerow([r1, r2, mean, 0.])
 
-    def compute_rule_featues(self, feature_id=None, list_of_rules=None, printing=False):
+    def compute_rule_featues(self, feature_id=None, list_of_rules=None, printing=False,
+                             feature_params=None):
+        if feature_params is None:
+            feature_params = {}
 
         self.import_committees(list_of_rules=list_of_rules)
 
@@ -112,13 +116,15 @@ class ApprovalElectionExperiment(ElectionExperiment):
         for rule in list_of_rules:
             if printing:
                 print(rule)
-            self.compute_feature(feature_id=feature_id, feature_params={'rule': rule})
+            feature_params['rule'] = rule
+            self.compute_feature(feature_id=feature_id, feature_params=feature_params)
 
-    def print_latex_table(self, feature_id=None, list_of_rules=None, list_of_models=None):
+    def print_latex_table(self, feature_id=None, column_id='value',
+                          list_of_rules=None, list_of_models=None):
 
         features = {}
         for rule in list_of_rules:
-            features[rule] = self.import_feature(feature_id, rule=rule)
+            features[rule] = self.import_feature(feature_id, column_id=column_id, rule=rule)
 
         results = {}
         for model in list_of_models:
@@ -139,16 +145,57 @@ class ApprovalElectionExperiment(ElectionExperiment):
         for model in list_of_models:
             # print(f'& {nice_model[model]}', end=" ")
             print(f'& {model}', end=" ")
-        print("")
-        # print("\\\\ \\midrule")
+        # print("")
+        print("\\\\ \\midrule")
 
         for rule in list_of_rules:
             print(rule, end=" ")
             for model in list_of_models:
                 print(f'& {results[model][rule]}', end=" ")
-            print("")
-            # print("\\\\ \\midrule")
+            # print("")
+            print("\\\\ \\midrule")
 
+
+    def print_latex_multitable(self, features_id=None, columns_id=None,
+                          list_of_rules=None, list_of_models=None):
+
+        all_results = {}
+        for feature_id, column_id in zip(features_id, columns_id):
+            features = {}
+            for rule in list_of_rules:
+                features[rule] = self.import_feature(feature_id, column_id=column_id, rule=rule)
+
+            results = {}
+            for model in list_of_models:
+                results[model] = {}
+                for rule in list_of_rules:
+                    feature = features[rule]
+                    total_value = 0
+                    ctr = 0
+                    for instance in feature:
+                        if model in instance:
+                            total_value += feature[instance]
+                            ctr += 1
+                    avg_value = round(total_value / ctr, 2)
+                    results[model][rule] = avg_value
+            all_results[f'{feature_id}_{column_id}'] = results
+
+        # print("\\toprule")
+        # print("rule", end=" ")
+        # for model in list_of_models:
+        #     # print(f'& {nice_model[model]}', end=" ")
+        #     print(f'& {model}', end=" ")
+        # # print("")
+        # print("\\\\ \\midrule")
+
+        for rule in list_of_rules:
+            print(rule, end=" ")
+            for model in list_of_models:
+                print(f'&', end=" ")
+                for feature_id, column_id in zip(features_id, columns_id):
+                    print(f'{all_results[f"{feature_id}_{column_id}"][model][rule]}', end=" \ ")
+            # print("")
+            print("\\\\ \\midrule")
 
     # def add_elections_to_experiment(self) -> dict:
     #     """ Return: elections imported from files """

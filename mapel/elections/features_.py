@@ -29,10 +29,8 @@ def get_global_feature(feature_id):
     return {'clustering': clustering.clustering_v1,
             'clustering_kmeans': clustering.clustering_kmeans,
             'distortion_from_all': distortion.distortion_from_all,
-            'jr': jr.test_jr,
             'id_vs_un': clustering.id_vs_un,
             'an_vs_st': clustering.an_vs_st,
-            'core': from_abc.test_core,
             }.get(feature_id)
 
 
@@ -107,6 +105,8 @@ def get_local_feature(feature_id):
             'dist_to_Borda_mean': diversity.dist_to_Borda_mean,
             'dist_to_Kemeny_mean': diversity.dist_to_Kemeny_mean,
             'priceability': from_abc.test_priceability,
+            'core': from_abc.test_core,
+            'ejr': jr.test_ejr,
             'min_dim': dimensionality.min_dim,
             }.get(feature_id)
 

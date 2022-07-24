@@ -181,6 +181,11 @@ class ApprovalElection(Election):
         self.votes = generate_approval_votes(model_id=self.model_id,
                                              num_candidates=self.num_candidates,
                                              num_voters=self.num_voters, params=params)
+        avg = 0
+        for vote in self.votes:
+            avg += len(vote)
+        print(avg)
+
         self.params = params
         if store:
             self.store_approval_election()

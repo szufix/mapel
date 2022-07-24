@@ -268,6 +268,9 @@ def get_rand(model: str, cat: str = "voters") -> list:
         x = 1. * math.cos(alpha)
         y = 1. * math.sin(alpha)
         point = [x, y]
+    elif model == "2d_ball":
+        dim = 2
+        point = list(random_ball(dim, radius=0.5)[0])
     elif model in ["2d_gaussian", "2d_range_gaussian"]:
         point = [np.random.normal(0.5, 0.15), np.random.normal(0.5, 0.15)]
         while np.linalg.norm(point - np.array([0.5, 0.5])) > 0.5:
@@ -311,12 +314,16 @@ def get_rand(model: str, cat: str = "voters") -> list:
     elif model == "5d_sphere":
         dim = 5
         point = list(random_sphere(dim)[0])
-    elif model == 'overlapping_squares':
-
-        pass
-    elif model == 'asymmetric_gaussians':
-
-        pass
+    elif model == '2d_overlapping_squares':
+        if cat == 'voters':
+            return [np.random.uniform([0, 0.75]), np.random.uniform([0., 0.75])]
+        elif cat == 'candidates':
+            return [np.random.uniform([0.25, 1]), np.random.uniform([0.25, 1])]
+    elif model == '2d_asymmetric_gaussians':
+        if np.random.rand() < 0.3:
+            return np.random.normal(loc=0.25, scale=0.15, size=2)
+        else:
+            return np.random.normal(loc=0.75, scale=0.15, size=2)
     else:
         print('unknown model_id', model)
         point = [0, 0]

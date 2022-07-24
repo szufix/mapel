@@ -10,31 +10,14 @@ except ImportError:
     pass
 
 
-def test_jr(experiment, election_ids, feature_params):
+def test_ejr(election, feature_params):
 
-    values = {}
+    rule = feature_params['rule']
+    print(election.election_id, rule)
 
-    for rule in feature_params['rules']:
-        print(rule)
+    profile = Profile(election.num_candidates)
+    profile.add_voters(election.votes)
+    committee = election.winning_committee[rule]
 
-        all_results = {'pareto': 0, 'jr': 0, 'pjr': 0, 'ejr': 0}
+    return properties.full_analysis(profile, committee)
 
-        for election_id in election_ids:
-
-            election = experiment.elections[election_id]
-
-            profile = Profile(election.num_candidates)
-            profile.add_voters(election.votes)
-            committee = election.winning_committee[rule]
-
-            results = properties.full_analysis(profile, committee)
-
-            if results['pareto'] == False:
-                print(election_id, results)
-
-            for name in results:
-                if results[name] == False:
-                    all_results[name] += 1
-        print(all_results)
-        values[rule] = all_results
-    return values
