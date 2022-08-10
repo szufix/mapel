@@ -171,11 +171,11 @@ class ApprovalElection(Election):
 
         self.params = params
 
-        if self.model_id == 'all_votes':
-            alpha = 1
-        else:
-            params, alpha = update_params(params, self.variable, self.model_id,
-                                          self.num_candidates)
+        # if self.model_id == 'all_votes':
+        #     alpha = 1
+        # else:
+        #     params, alpha = update_params(params, self.variable, self.model_id,
+        #                                   self.num_candidates)
 
         self.params = params
         self.votes = generate_approval_votes(model_id=self.model_id,

@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
-from mapel.voting.elections.group_separable import get_gs_caterpillar_vectors
-from mapel.voting.elections.single_peaked import get_walsh_vectors, \
+from mapel.elections.models.group_separable import get_gs_caterpillar_vectors
+from mapel.elections.models.single_peaked import get_walsh_vectors, \
     get_conitzer_vectors
-from mapel.voting.elections.single_crossing import get_single_crossing_vectors
+from mapel.elections.models.single_crossing import get_single_crossing_vectors
 
-import mapel.voting.models_main as el
+import mapel.elections.models_ as el
 
-from mapel.voting.objects.Election import Election
-from mapel.voting.objects.Experiment import Experiment
+from mapel.elections.objects.Election import Election
+from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
+
+from mapel.elections.models.mallows import get_mallows_matrix
 
 import os
 import csv
@@ -17,7 +19,7 @@ import csv
 def prepare_matrices(experiment_id):
     """ compute positionwise matrices and
     store them in the /matrices folder """
-    experiment = Experiment(experiment_id)
+    experiment = OrdinalElectionExperiment(experiment_id)
 
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "matrices")
     for file_name in os.listdir(path):
@@ -38,30 +40,19 @@ def prepare_matrices(experiment_id):
                 writer.writerow(row)
 
 
-def generate_positionwise_matrix(model=None, num_candidates=None,
+def generate_positionwise_matrix(model_id=None, num_candidates=None,
                                  num_voters=100, params=None):
 
-    if model == 'conitzer_matrix':
+    if model_id == 'conitzer_matrix':
         vectors = get_conitzer_vectors(num_candidates)
-    elif model == 'walsh_matrix':
+    elif model_id == 'walsh_matrix':
         vectors = get_walsh_vectors(num_candidates)
-    elif model == 'single-crossing_matrix':
+    elif model_id == 'single-crossing_matrix':
         vectors = get_single_crossing_vectors(num_candidates)
-    elif model == 'gs_caterpillar_matrix':
+    elif model_id == 'gs_caterpillar_matrix':
         vectors = get_gs_caterpillar_vectors(num_candidates)
-    # elif model in {'identity', 'uniformity',
-    #                         'antagonism', 'stratification'}:
-    #     vectors = get_fake_vectors_single(model,
-    #                                       num_candidates, num_voters)
-    # elif model in {'unid', 'anid', 'stid', 'anun', 'stun', 'stan'}:
-    #     vectors = get_fake_convex(model, num_candidates,
-    #                               num_voters, params, get_fake_vectors_single)
-    else:
-        votes = el.generate_votes(model=model,
-                                  num_candidates=num_candidates,
-                                  num_voters=num_voters,
-                                  params=params)
-        return get_positionwise_matrix(votes)
+    elif model_id == 'norm-mallows_matrix':
+        return get_mallows_matrix(num_candidates, params)
 
     return vectors.transpose()
 

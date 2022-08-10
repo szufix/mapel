@@ -62,6 +62,26 @@ class ElectionExperiment(Experiment):
         else:
             self.__dict__[name] = value
 
+    def prepare_matrices(self):
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices")
+        print(path)
+        for file_name in os.listdir(path):
+            os.remove(os.path.join(path, file_name))
+
+        for election_id in self.elections:
+            matrix = self.elections[election_id].votes_to_positionwise_matrix()
+            file_name = election_id + ".csv"
+            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                "matrices", file_name)
+
+            with open(path, 'w', newline='') as csv_file:
+
+                writer = csv.writer(csv_file, delimiter=';')
+                header = [str(i) for i in range(self.elections[election_id].num_candidates)]
+                writer.writerow(header)
+                for row in matrix:
+                    writer.writerow(row)
+
     def add_instances_to_experiment(self):
         instances = {}
 

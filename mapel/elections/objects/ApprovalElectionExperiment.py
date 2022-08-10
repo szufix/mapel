@@ -59,7 +59,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
             for i, r1 in enumerate(list_of_rules):
                 for j, r2 in enumerate(list_of_rules):
                     if i < j:
-
+                        print(r1, r2)
                         all_distance = []
                         for election_id in self.elections:
                             com1 = self.all_winning_committees[r1][
@@ -90,15 +90,13 @@ class ApprovalElectionExperiment(ElectionExperiment):
                                                 cand_dist[k1][k2] = 1 - len(
                                                     ac1.intersection(ac2)) / len(ac1.union(ac2))
                                 distance, _ = solve_matching_vectors(cand_dist)
-                                print(distance)
+                                # print(distance)
                                 distance /= committee_size
                             all_distance.append(distance)
-
-
                         mean = sum(all_distance) / self.num_elections
                         writer.writerow([r1, r2, mean, 0.])
 
-    def compute_rule_featues(self, feature_id=None, list_of_rules=None, printing=False,
+    def compute_rule_features(self, feature_id=None, list_of_rules=None, printing=False,
                              feature_params=None):
         if feature_params is None:
             feature_params = {}

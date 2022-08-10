@@ -137,7 +137,7 @@ def print_map_2d(experiment,
             elif individual:
                 basic_coloring_with_individual(experiment=experiment, ax=ax, individual=individual)
             else:
-                basic_coloring(experiment=experiment, ax=ax, dim=dim, textual=textual)
+                basic_coloring(experiment=experiment, ax=ax, dim=dim, textual=textual, ms=ms)
 
     # BACKGROUND
     basic_background(ax=ax, values=feature_id, legend=legend,
@@ -205,8 +205,10 @@ def get_values_from_csv_file(experiment, feature_id, feature_long_id=None, limit
         feature_long_id = feature_id
 
     if feature_id in EMBEDDING_RELATED_FEATURE:
+        # path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
+        #                     "features", f'{feature_long_id}__{experiment.distance_id}.csv')
         path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-                            "features", f'{feature_long_id}__{experiment.distance_id}.csv')
+                            "features", f'{feature_long_id}.csv')
     else:
         path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
                             "features", f'{feature_long_id}.csv')
@@ -510,6 +512,8 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
     if cmap is None:
         if rounding == 0:
             num_colors = int(min(_max - _min + 1, 101))
+            xticklabels = [str(q) for q in range(num_colors)]
+            ticks_pos = [(2 * q + 1) / num_colors / 2 for q in range(num_colors)]
             cmap = custom_div_cmap(num_colors=num_colors)
         else:
             cmap = custom_div_cmap()
@@ -686,7 +690,7 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
 
 
 # COLORING
-def basic_coloring(experiment=None, ax=None, dim=2, textual=None):
+def basic_coloring(experiment=None, ax=None, dim=2, textual=None, ms=20):
     if textual is None:
         textual = []
     for family in experiment.families.values():
@@ -703,7 +707,8 @@ def basic_coloring(experiment=None, ax=None, dim=2, textual=None):
                            color=family.color,
                            label=label,
                            alpha=family.alpha,
-                           s=family.ms,
+                           # s=family.ms,
+                           s=ms,
                            marker=family.marker)
             elif dim == 3:
                 ax.scatter(experiment.coordinates_by_families[family.family_id][0],
@@ -712,7 +717,8 @@ def basic_coloring(experiment=None, ax=None, dim=2, textual=None):
                            color=family.color,
                            label=family.label,
                            alpha=family.alpha,
-                           s=family.ms,
+                           # s=family.ms,
+                           s=ms,
                            marker=family.marker)
 
 
@@ -888,7 +894,7 @@ def saveas_tex(saveas=None):
 
 # MAIN FUNCTIONS
 def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
-                 saveas="matrix", show=True, ms=8, title=None, omit=None,
+                 saveas=None, show=True, ms=8, title=None, omit=None,
                  self_distances=False, yticks='left', with_std=False, time=False, dpi=100):
     """Print the matrix with average distances between each pair of experiments """
 
@@ -1050,7 +1056,7 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
     if title:
         plt.title(title)
 
-    if experiment.store:
+    if saveas and experiment.store:
         file_name = os.path.join(os.getcwd(), "images", str(saveas) + ".png")
         plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
 
@@ -1100,7 +1106,8 @@ def add_textual(experiment=None, textual=None, ax=None, size=16,
         ax.text(x1, y1, text, size=size, rotation=0., ha="center",
                 va="center",
                 color=color, alpha=alpha, zorder=100,
-                bbox=dict(boxstyle=boxstyle, ec=b_color, fc="white"))
+                bbox=dict(boxstyle=boxstyle, ec=b_color, fc="white")
+                )
 
     for name in textual:
         name_id = name_from_label(experiment, name)

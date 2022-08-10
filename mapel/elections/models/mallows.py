@@ -47,8 +47,6 @@ def phi_from_relphi(num_candidates, relphi=None):
 def phi_from_norm_phi(num_candidates=10, norm_phi=None):
     return phi_from_relphi(num_candidates, relphi=norm_phi)
 
-
-
 def computeInsertionProbas(i, phi):
     probas = (i + 1) * [0]
     for j in range(i + 1):
@@ -169,12 +167,10 @@ def get_mallows_matrix(num_candidates, params, normalize=True):
     try:
         path = os.path.join(os.getcwd(), 'mapel', 'elections', 'models', 'mallows_positionmatrices',
                             str(num_candidates) + "_matrix.txt")
-        # print(path)
-        with open(path, "rb") as file:
+        with open(path, "r") as file:
             pos = pickle.load(file)
     except FileNotFoundError:
         print("Mallows matrix only supported for up to 30 candidates")
-    # print(pos)
     mat1 = mallowsMatrix(num_candidates, lphi, pos, normalize)
     mat2 = mallowsMatrix(num_candidates, lphi_2, pos, normalize)
     res = np.zeros([num_candidates, num_candidates])
