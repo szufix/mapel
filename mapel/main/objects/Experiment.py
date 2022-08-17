@@ -18,7 +18,7 @@ from mapel.main.embedding.simulated_annealing.simulated_annealing import Simulat
 COLORS = []
 from PIL import Image
 from mapel.main.objects.Family import Family
-import mapel.elections.print_ as pr
+import mapel.main._print as pr
 
 try:
     from sklearn.manifold import MDS
@@ -148,11 +148,12 @@ class Experiment:
     def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
               dim: int = 2, num_neighbors: int = None, method: str = 'standard',
               zero_distance: float = 0.1, factor: float = 1., saveas: str = None,
-              init_pos: dict = None, fixed=True) -> None:
+              init_pos: dict = None, fixed=True, attraction_factor=None) -> None:
 
-        attraction_factor = 1
-        if algorithm == 'spring':
-            attraction_factor = 2
+        if attraction_factor is None:
+            attraction_factor = 1
+            if algorithm == 'spring':
+                attraction_factor = 2
 
         num_elections = len(self.distances)
 
@@ -170,8 +171,8 @@ class Experiment:
             for j, instance_id_2 in enumerate(self.distances):
                 if i < j:
 
-                    print(instance_id_1,instance_id_2)
-                    print(self.distances[instance_id_1][instance_id_2])
+                    # print(instance_id_1,instance_id_2)
+                    # print(self.distances[instance_id_1][instance_id_2])
                     self.distances[instance_id_1][instance_id_2] *= factor
                     if self.distances[instance_id_1][instance_id_2] == 0.:
                         self.distances[instance_id_1][instance_id_2] = zero_distance

@@ -9,14 +9,8 @@ from scipy.stats import gamma
 
 import mapel.elections.models.mallows as mallows
 from mapel.main._glossary import *
-from mapel.main._inner_distances import hamming
 from mapel.elections.models_ import generate_approval_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
-# from mapel.elections.objects.OrdinalElection import update_params
-from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
-    compute_stv_winners
-from mapel.elections.other.winners2 import generate_winners
-
 from mapel.main._inner_distances import hamming
 
 
@@ -57,6 +51,13 @@ class ApprovalElection(Election):
                         pass
             except:
                 pass
+
+        if self.params is None:
+            self.params = {}
+
+        if model_id is not None:
+            self.params, self.alpha = update_params_approval(self.params, self.variable, self.model_id,
+                                                            self.num_candidates)
 
     def votes_to_approvalwise_vector(self) -> None:
         """ Convert votes to approvalwise vectors """
@@ -148,7 +149,7 @@ class ApprovalElection(Election):
                 set_b = self.votes[j]
                 if vector_type == 'hamming':
                     vectors[i][j] = hamming(set_a, set_b)
-                elif vector_type == 'martin':
+                elif vector_type == 'to_be_deleted':
                     vectors[i][j] = len(set_a.intersection(set_b)) - len(set_a)
             vectors[i] = sorted(vectors[i])
 
@@ -248,7 +249,6 @@ def import_real_app_election(experiment_id: str, election_id: str, shift=False):
 
         num_candidates = int(my_file.readline())
 
-
     for _ in range(num_candidates):
         my_file.readline()
 
@@ -324,59 +324,61 @@ def get_skeleton_approvalwise_vector(election):
     return np.array(vector)
 
 
-def update_params(params, variable, model_id, num_candidates):
+# HELPER FUNCTIONS
+def update_params_approval_alpha(params):
+    if 'alpha' not in params:
+        params['alpha'] = 1
+    elif type(params['alpha']) is list:
+        params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
+
+
+def update_params_approval_p(params):
+    if 'p' not in params:
+        params['p'] = np.random.rand()
+    elif type(params['p']) is list:
+        params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+
+
+def update_params_approval_resampling(params):
+    if 'phi' in params and type(params['phi']) is list:
+        params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
+    elif 'phi' not in params:
+        params['phi'] = np.random.random()
+    params['alpha'] = params['phi']
+
+    if 'p' in params and type(params['p']) is list:
+        params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+    elif 'p' not in params:
+        params['p'] = np.random.random()
+
+
+def update_params_approval_disjoint(params):
+    if 'phi' in params and type(params['phi']) is list:
+        params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
+    elif 'phi' not in params:
+        params['phi'] = np.random.random()
+    params['alpha'] = params['phi']
+
+    if 'p' in params and type(params['p']) is list:
+        params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+    elif 'p' not in params:
+        params['p'] = np.random.random() / params['g']
+
+
+def update_params_approval(params, variable, model_id, num_candidates):
 
     if variable is not None:
-
         if model_id in APPROVAL_MODELS:
-            if 'p' not in params:
-                params['p'] = np.random.rand()
-            elif type(params['p']) is list:
-                params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
-
+            update_params_approval_p(params)
         params['alpha'] = params[variable]
         params['variable'] = variable
-
     else:
-        if model_id in ['approval_partylist']:
-            return params, 1
-
         if model_id in APPROVAL_MODELS:
-            if 'p' not in params:
-                params['p'] = np.random.rand()
-            elif type(params['p']) is list:
-                params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
-
-        if 'phi' in params and type(params['phi']) is list:
-            params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
-
-        if model_id == 'mallows' and params['phi'] is None:
-            params['phi'] = np.random.random()
-        elif model_id == 'norm-mallows' and 'norm-phi' not in params:
-            params['norm-phi'] = np.random.random()
-        elif model_id in ['urn_model', 'approval_urn'] and 'alpha' not in params:
-            params['alpha'] = gamma.rvs(0.8)
-
-        if model_id == 'norm-mallows':
-            params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
-            if 'weight' not in params:
-                params['weight'] = 0.
-
-        if model_id == 'mallows_matrix_path':
-            params['norm-phi'] = params['alpha']
-            params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
-
-        if model_id == 'erdos_renyi_graph' and params['p'] is None:
-            params['p'] = np.random.random()
-
-        if 'alpha' not in params:
-            if 'norm-phi' in params:
-                params['alpha'] = params['norm-phi']
-            elif 'phi' in params:
-                params['alpha'] = params['phi']
-            else:
-                params['alpha'] = np.random.rand()
-        elif type(params['alpha']) is list:
-            params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
+            update_params_approval_p(params)
+        elif model_id.lower() == 'resampling':
+            update_params_approval_resampling(params)
+        elif model_id.lower() == 'disjoint':
+            update_params_approval_disjoint(params)
+        update_params_approval_alpha(params)
 
     return params, params['alpha']

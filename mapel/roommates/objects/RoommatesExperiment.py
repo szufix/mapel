@@ -17,7 +17,7 @@ import mapel.roommates.features.basic_features as basic
 import mapel.roommates.features_ as features
 from mapel.main._utils import *
 from mapel.main._glossary import *
-from mapel.elections.print_ import get_values_from_csv_file
+from mapel.main._print import get_values_from_csv_file
 
 try:
     from sklearn.manifold import MDS
@@ -127,8 +127,7 @@ class RoommatesExperiment(Experiment):
 
 
     def compute_distances(self, distance_id: str = 'emd-positionwise', num_threads: int = 1,
-                          self_distances: bool = False, vector_type: str = 'A',
-                          printing: bool = False) -> None:
+                          self_distances: bool = False, printing: bool = False) -> None:
 
         self.distance_id = distance_id
 
@@ -139,8 +138,6 @@ class RoommatesExperiment(Experiment):
         matchings = {instance_id: {} for instance_id in self.instances}
         distances = {instance_id: {} for instance_id in self.instances}
         times = {instance_id: {} for instance_id in self.instances}
-
-        threads = [{} for _ in range(num_threads)]
 
         ids = []
         for i,instance_1 in enumerate(self.instances):
@@ -153,7 +150,6 @@ class RoommatesExperiment(Experiment):
 
         num_distances = len(ids)
 
-        threads = []
         processes =[]
 
         for t in range(num_threads):
@@ -163,20 +159,13 @@ class RoommatesExperiment(Experiment):
             stop = int((t + 1) * num_distances / num_threads)
             thread_ids = ids[start:stop]
 
-            # thread = Thread(target=metr.run_single_thread, args=(self, thread_ids,
-            #                                                          distances, times, matchings,
-            #                                                          printing, t))
             process = Process(target=metr.run_single_thread, args=(self, thread_ids,
                                                                      distances, times, matchings,
                                                                      printing, t ))
 
-            # thread.start()
-            # threads.append(thread)
             process.start()
             processes.append(process)
 
-        # for thread in threads:
-        #     thread.join()
         for process in processes:
             process.join()
 

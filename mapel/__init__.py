@@ -2,7 +2,7 @@ import mapel.elections.features_ as features
 import mapel.elections.metrics_ as metr
 import mapel.elections.models_ as ele
 import mapel.elections.other.development as dev
-import mapel.elections.print_ as pr
+import mapel.main._print as pr
 from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
@@ -30,7 +30,7 @@ def hello():
 def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
                        coordinates=None, distance_id='emd-positionwise', _import=True,
                        shift=False, dim=2, store=True, coordinates_names=None,
-                       embedding_id='kamada', fast_import=False):
+                       embedding_id='spring', fast_import=False):
     if instance_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
                                          instances=instances, dim=dim, store=store,
@@ -94,6 +94,13 @@ def generate_ordinal_election(**kwargs):
 def generate_approval_election(**kwargs):
     election = ApprovalElection("virtual", "virtual", **kwargs)
     election.prepare_instance()
+    return election
+
+def generate_election_from_votes(votes=None):
+    election = OrdinalElection("virtual", "virtual")
+    election.num_candidates = len(votes[0])
+    election.num_voters = len(votes)
+    election.votes = votes
     return election
 
 

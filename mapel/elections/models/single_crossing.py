@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from random import *
-from timeit import default_timer as timer
 
 import numpy as np
 
@@ -10,10 +9,11 @@ def generate_ordinal_single_crossing_votes(num_voters: int = None,
                                            num_candidates: int = None,
                                            params: dict = None) -> np.ndarray:
     """ helper function: generate simple single-crossing elections"""
-    if 'domain_id' in params:
-        domain_id = params['domain_id']
-    else:
-        domain_id = 'naive'
+
+    if params is None:
+        params = {}
+
+    domain_id = params.get('domain_id', 'naive')
 
     votes = np.zeros([num_voters, num_candidates])
 

@@ -2,9 +2,7 @@ import csv
 import os
 import math
 
-from itertools import combinations, product
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import numpy as np
 from PIL import Image
 
@@ -14,7 +12,6 @@ except ImportError:
     tikzplotlib = None
 
 from mapel.main._glossary import *
-import copy
 
 
 def print_approvals_histogram(election):
@@ -25,17 +22,14 @@ def print_approvals_histogram(election):
     # x_axis = np.arange(0, 100, 0.01)
     # plt.plot(x_axis, norm.pdf(x_axis, 50, 2)*2000)
     plt.ylim([0, election.num_voters])
-    plt.xlim([-1, election.num_candidates+1])
+    plt.xlim([-1, election.num_candidates + 1])
     plt.savefig("images/histograms/" + election.election_id + ".png")
     plt.show()
 
 
 # New 1d map printing
 def print_map_1d(experiment, saveas=None):
-
     experiment.compute_coordinates_by_families()
-    # print(experiment.coordinates_by_families)
-
     all_values = [0]
     for family in experiment.families.values():
         x = float(experiment.coordinates_by_families[family.family_id][0][0])
@@ -43,23 +37,23 @@ def print_map_1d(experiment, saveas=None):
     min_ = min(all_values)
     max_ = max(all_values)
 
-    fig, ax = plt.subplots(figsize=(3,8))
+    fig, ax = plt.subplots(figsize=(3, 8))
     for family in experiment.families.values():
+        x = float(experiment.coordinates_by_families[family.family_id][0][0])
+        x = (x - min_) / (max_ - min_)
+        # x = x**0.5
+        x = 1 - x
 
-            x = float(experiment.coordinates_by_families[family.family_id][0][0])
-            x = (x-min_) / (max_-min_)
-            # x = x**0.5
-            x = 1-x
-
-            # ax.scatter(x, 0)
-            # ax.annotate(family.family_id, (x,0), rotation=90,)
-            ax.scatter(0, x)
-            ax.annotate(family.family_id, (0, x), rotation=0, size=10)
+        # ax.scatter(x, 0)
+        # ax.annotate(family.family_id, (x,0), rotation=90,)
+        ax.scatter(0, x)
+        ax.annotate(family.family_id, (0, x), rotation=0, size=10)
     ax.get_xaxis().set_visible(False)
     # plt.axis("off")
     if saveas:
         plt.savefig(saveas)
     plt.show()
+
 
 # Main functions
 def print_map_2d(experiment,
@@ -70,10 +64,9 @@ def print_map_2d(experiment,
                  title=None, dim=2, event='none', bbox_inches=None,
                  saveas=None, show=True, ms=20, normalizing_func=None,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
-                 legend=True, feature_labelsize=14,
+                 legend=True, feature_labelsize=14, dpi=250,
                  column_id='value', title_size=16, ticks_pos=None,
-                 feature_ids=None, omit=None, textual_size=16, figsize=(6.4,6.4)) -> None:
-
+                 feature_ids=None, omit=None, textual_size=16, figsize=(6.4, 6.4)) -> None:
     if textual is None:
         textual = []
 
@@ -105,22 +98,27 @@ def print_map_2d(experiment,
 
     # COLORING
     if feature_id is not None:
+        legend = False
         shades_dict, cmap = color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
-                             feature_id=feature_id, rounding=rounding,
-                             normalizing_func=normalizing_func, ticks_pos=ticks_pos,
-                             marker_func=marker_func, limit=limit, scale=scale,
-                             xticklabels=xticklabels, ms=ms, cmap=cmap, omit=omit,
-                             ticks=ticks, column_id=column_id, feature_labelsize=feature_labelsize)
+                                                 feature_id=feature_id, rounding=rounding,
+                                                 normalizing_func=normalizing_func,
+                                                 ticks_pos=ticks_pos,
+                                                 marker_func=marker_func, limit=limit, scale=scale,
+                                                 xticklabels=xticklabels, ms=ms, cmap=cmap,
+                                                 omit=omit,
+                                                 ticks=ticks, column_id=column_id,
+                                                 feature_labelsize=feature_labelsize)
         add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size,
                     shades_dict=shades_dict, cmap=cmap, column_id=column_id, feature_id=feature_id)
 
     elif feature_ids is not None:
+        legend = False
         color_map_by_features(experiment=experiment, fig=fig, ax=ax,
-                             feature_ids=feature_ids, rounding=rounding,
-                             normalizing_func=normalizing_func, ticks_pos=ticks_pos,
-                             marker_func=marker_func, limit=limit,
-                             xticklabels=xticklabels, ms=ms, cmap=cmap,
-                             ticks=ticks, column_id=column_id, feature_labelsize=feature_labelsize)
+                              feature_ids=feature_ids, rounding=rounding,
+                              normalizing_func=normalizing_func, ticks_pos=ticks_pos,
+                              marker_func=marker_func, limit=limit,
+                              xticklabels=xticklabels, ms=ms, cmap=cmap,
+                              ticks=ticks, column_id=column_id, feature_labelsize=feature_labelsize)
         add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size)
 
     else:
@@ -143,7 +141,7 @@ def print_map_2d(experiment,
     basic_background(ax=ax, values=feature_id, legend=legend,
                      saveas=saveas, xlabel=xlabel, bbox_inches=bbox_inches,
                      title=title, legend_pos=legend_pos, title_size=title_size,
-                     title_pos=title_pos)
+                     title_pos=title_pos, dpi=dpi)
 
     if tex:
         saveas_tex(saveas=saveas)
@@ -212,7 +210,6 @@ def get_values_from_csv_file(experiment, feature_id, feature_long_id=None, limit
     else:
         path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
                             "features", f'{feature_long_id}.csv')
-
     values = {}
     with open(path, 'r', newline='') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=';')
@@ -265,15 +262,14 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
                 values = {k: convert_none_time(v) for k, v in values.items()}
             else:
                 values = {k: convert_none(v) for k, v in values.items()}
-
         else:
             values = get_values_from_csv_file(experiment, feature_id=feature_id,
                                               feature_long_id=feature_id,
                                               limit=limit, column_id=column_id)
             if feature_id == 'partylist' and column_id == 'value':
                 bounds = get_values_from_csv_file(experiment, feature_id=feature_id,
-                                              feature_long_id=feature_id,
-                                              limit=limit, column_id='bound')
+                                                  feature_long_id=feature_id,
+                                                  limit=limit, column_id='bound')
     else:
         values = feature_id
 
@@ -288,7 +284,6 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
     blank_xx, blank_yy = [], []
 
     ctr = 0
-
 
     my_shade = {}
     for family_id in experiment.families:
@@ -313,7 +308,7 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
 
             if scale == 'log':
                 if election_id not in omit and my_shade[election_id] is not None:
-                    my_shade[election_id] = math.log(my_shade[election_id]+1)
+                    my_shade[election_id] = math.log(my_shade[election_id] + 1)
 
     local_min = min(x for x in my_shade.values() if x is not None)
     local_max = max(x for x in my_shade.values() if x is not None)
@@ -367,22 +362,23 @@ def import_values_for_feature(experiment, feature_id=None, limit=None, normalizi
 
     shades = np.asarray(shades)
     markers = np.asarray(markers)
-    if feature_id =='partylist' and column_id=='value':
-        mses = np.asarray([1.+20.*(b/(v+1)) for b,v in zip(bounds.values(), values.values())])
+    if feature_id == 'partylist' and column_id == 'value':
+        mses = np.asarray(
+            [1. + 20. * (b / (v + 1)) for b, v in zip(bounds.values(), values.values())])
     else:
         mses = None
     return xx, yy, zz, shades, markers, mses, local_min, local_max, blank_xx, blank_yy, names
 
 
 def import_values_for_features(experiment, feature_ids=None, limit=None, normalizing_func=None,
-                              marker_func=None, dim=2, column_id='value'):
+                               marker_func=None, dim=2, column_id='value'):
     """ Import values for a feature_id """
 
     values_1 = get_values_from_csv_file(experiment, feature_id=feature_ids[0],
-                                              limit=limit, column_id=column_id)
+                                        limit=limit, column_id=column_id)
 
     values_2 = get_values_from_csv_file(experiment, feature_id=feature_ids[1],
-                                              limit=limit, column_id=column_id)
+                                        limit=limit, column_id=column_id)
 
     xx = []
     yy = []
@@ -445,7 +441,6 @@ def import_values_for_features(experiment, feature_ids=None, limit=None, normali
 
 
 def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func):
-
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
                         str(values) + ".txt")
     _min = 0
@@ -496,12 +491,10 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
                          cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
                          feature_labelsize=14, ticks_pos=None, omit=None, scale='default'):
-
     xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy, names = \
         import_values_for_feature(
-        experiment, feature_id=feature_id, limit=limit, normalizing_func=normalizing_func,
-        marker_func=marker_func, dim=dim, column_id=column_id, omit=omit, scale=scale)
-
+            experiment, feature_id=feature_id, limit=limit, normalizing_func=normalizing_func,
+            marker_func=marker_func, dim=dim, column_id=column_id, omit=omit, scale=scale)
 
     unique_markers = set(markers)
     images = []
@@ -512,12 +505,12 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
     if cmap is None:
         if rounding == 0:
             num_colors = int(min(_max - _min + 1, 101))
-            xticklabels = [str(q) for q in range(num_colors)]
-            ticks_pos = [(2 * q + 1) / num_colors / 2 for q in range(num_colors)]
+            if num_colors < 10:
+                xticklabels = [str(q) for q in range(num_colors)]
+                ticks_pos = [(2 * q + 1) / num_colors / 2 for q in range(num_colors)]
             cmap = custom_div_cmap(num_colors=num_colors)
         else:
             cmap = custom_div_cmap()
-
 
     from matplotlib.colors import LogNorm
 
@@ -549,7 +542,7 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
             else:
                 xticklabels = [lin[i] for i in range(6)]
                 if scale == 'log':
-                    xticklabels = [math.e**x for x in xticklabels]
+                    xticklabels = [math.e ** x for x in xticklabels]
                 xticklabels = [str(np.round(x, rounding)) for x in xticklabels]
             # else:
             #     lin = np.linspace(_min, _max, 6)
@@ -565,7 +558,7 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
         xticklabels[-1] += '+'
 
     cb = fig.colorbar(images[0], orientation="horizontal", pad=0.1, shrink=0.55,
-                       ticks=ticks)
+                      ticks=ticks)
 
     cb.ax.locator_params(nbins=len(xticklabels), tight=True)
     cb.ax.tick_params(labelsize=feature_labelsize)
@@ -586,10 +579,9 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None, li
 
 
 def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, limit=np.infty,
-                         normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
-                         cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
-                         feature_labelsize=14, ticks_pos=None):
-
+                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
+                          cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
+                          feature_labelsize=14, ticks_pos=None):
     xx, yy, zz, shades_1, shades_2, markers_1, mses_1, _min, _max, blank_xx_1, blank_yy_1 = import_values_for_features(
         experiment, feature_ids=feature_ids, limit=limit, normalizing_func=normalizing_func,
         marker_func=marker_func, dim=dim, column_id=column_id)
@@ -614,10 +606,9 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
     if mses_1 is None:
         mses = np.asarray([ms for _ in range(len(shades_1))])
 
-    cmap_1 = custom_div_cmap(colors=[(1,0.9,0.9), 'red'])
-    cmap_2 = custom_div_cmap(colors=[(0.9,1,0.9), 'green'])
-    cmap_3 = custom_div_cmap(colors=[(0.9,0.9,1), 'blue'])
-
+    cmap_1 = custom_div_cmap(colors=[(1, 0.9, 0.9), 'red'])
+    cmap_2 = custom_div_cmap(colors=[(0.9, 1, 0.9), 'green'])
+    cmap_3 = custom_div_cmap(colors=[(0.9, 0.9, 1), 'blue'])
 
     images.append(ax.scatter(xx[mask_1], yy[mask_1], c=shades_1[mask_1], vmin=0, vmax=1,
                              cmap=cmap_1, s=mses[mask_1]))
@@ -648,7 +639,7 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
             ticks_pos = [0, 0.2, 0.4, 0.6, 0.8, 1]
 
         cb_0 = fig.colorbar(images[0], orientation="horizontal", pad=-0.1, shrink=0.55,
-                           ticks=ticks)
+                            ticks=ticks)
         cb_0.ax.locator_params(nbins=len(xticklabels), tight=True)
         cb_0.ax.tick_params(labelsize=feature_labelsize)
         cb_0.ax.xaxis.set_ticks(ticks_pos)
@@ -656,7 +647,7 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
         # cb_0.ax..set_ticks([])
 
         cb_1 = fig.colorbar(images[1], orientation="horizontal", pad=-0.1, shrink=0.55,
-                           ticks=ticks)
+                            ticks=ticks)
         # cb.ax.locator_params(nbins=len(xticklabels), tight=True)
         # cb.ax.tick_params(labelsize=feature_labelsize)
 
@@ -665,7 +656,7 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
         cb_1.ax.set_xticklabels([])
 
         cb_2 = fig.colorbar(images[2], orientation="horizontal", pad=0, shrink=0.55,
-                           ticks=ticks)
+                            ticks=ticks)
         # cb.ax.locator_params(nbins=len(xticklabels), tight=True)
         # cb.ax.tick_params(labelsize=feature_labelsize)
         cb_2.ax.xaxis.set_ticks(ticks_pos)
@@ -723,7 +714,6 @@ def basic_coloring(experiment=None, ax=None, dim=2, textual=None, ms=20):
 
 
 def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
-
     for family_id in experiment.families:
         if experiment.families[family_id].show:
 
@@ -743,8 +733,8 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
         if family.show:
             label = family.label
             if dim == 2:
-                if '_path' in label or 'urn' in label or 'Urn' in label\
-                        or 'Mallows' in label or 'mallows' in label or\
+                if '_path' in label or 'urn' in label or 'Urn' in label \
+                        or 'Mallows' in label or 'mallows' in label or \
                         'variable' in family.path or 'varibale' in family.path:
                     if 'background' in label:
                         label = '_nolegend_'
@@ -780,7 +770,7 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
                             elif '2D _path' in label:
                                 alpha *= 2
                             elif 'scale' in family.path:
-                                alpha *= 1./family.path['scale']
+                                alpha *= 1. / family.path['scale']
 
                             alpha *= family.alpha
                             alpha = (alpha + 0.2) / 1.2
@@ -846,7 +836,7 @@ def mask_background(fig=None, ax=None, black=None, saveas=None, tex=None):
 
 
 def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None, title=None,
-                     legend_pos=None, bbox_inches=None, title_size=16, title_pos=None):
+                     legend_pos=None, bbox_inches=None, title_size=16, title_pos=None, dpi=250):
     file_name = os.path.join(os.getcwd(), "images", str(saveas))
     # print(file_name)
 
@@ -857,7 +847,6 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
             plt.suptitle(title, fontsize=title_size, y=title_pos)
         else:
             plt.suptitle(title, fontsize=title_size)
-
 
     if legend:
         if legend_pos is not None:
@@ -873,12 +862,9 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
             pass
 
         if bbox_inches is None:
-            plt.savefig(file_name, bbox_inches='tight', dpi=250)
+            plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
         else:
-            plt.savefig(file_name, bbox_inches=bbox_inches, dpi=250)
-
-
-
+            plt.savefig(file_name, bbox_inches=bbox_inches, dpi=dpi)
 
 
 # TEX
@@ -1043,15 +1029,15 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
     if yticks != 'none':
         ax.set_yticks(y_axis)
         if yticks == 'left':
-            ax.set_yticklabels(y_values, rotation=25, size=ms+2)
+            ax.set_yticklabels(y_values, rotation=25, size=ms + 2)
         if yticks == 'right':
-            ax.set_yticklabels(y_values, rotation=-25, size=ms+2)
+            ax.set_yticklabels(y_values, rotation=-25, size=ms + 2)
             ax.yaxis.tick_right()
     else:
         ax.set_yticks([])
 
     ax.set_xticks(x_axis)
-    ax.set_xticklabels(x_values, rotation=80, size=ms+2)
+    ax.set_xticklabels(x_values, rotation=80, size=ms + 2)
 
     if title:
         plt.title(title)
@@ -1164,7 +1150,6 @@ def add_textual(experiment=None, textual=None, ax=None, size=16,
             # else:
             #     rgba = cmap(shades_dict[name_id])
             #     my_text(x, y, name, color=rgba, b_color=rgba)
-
 
 
 def add_roads(experiment=None, roads=None, ax=None):
@@ -1587,7 +1572,6 @@ def get_values_from_file_old(experiment, experiment_id, values,
 
 
 def adjust_the_map_on_three_points(experiment, left, right, down) -> None:
-
     try:
         d_x = experiment.coordinates[right][0] - experiment.coordinates[left][0]
         d_y = experiment.coordinates[right][1] - experiment.coordinates[left][1]
@@ -1612,14 +1596,14 @@ def adjust_the_map(experiment) -> None:
             down = experiment.get_election_id_from_model_name('stratification')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
-                # try:
-                #     left = experiment.get_election_id_from_model_name('real_uniformity')
-                #     right = experiment.get_election_id_from_model_name('real_identity')
-                #     down = experiment.get_election_id_from_model_name('real_stratification')
-                #     adjust_the_map_on_three_points(experiment, left, right, down)
-                # except Exception:
-                #     pass
-                pass
+            # try:
+            #     left = experiment.get_election_id_from_model_name('real_uniformity')
+            #     right = experiment.get_election_id_from_model_name('real_identity')
+            #     down = experiment.get_election_id_from_model_name('real_stratification')
+            #     adjust_the_map_on_three_points(experiment, left, right, down)
+            # except Exception:
+            #     pass
+            pass
 
     elif experiment.instance_type == 'approval':
         try:
@@ -1676,14 +1660,15 @@ def adjust_the_map(experiment) -> None:
         except Exception:
             pass
 
+
 def centeroid(arr):
     length = arr.shape[0]
     sum_x = np.sum(arr[:, 0])
     sum_y = np.sum(arr[:, 1])
-    return sum_x/length, sum_y/length
+    return sum_x / length, sum_y / length
+
 
 def adjust_the_map_on_one_point(experiment) -> None:
-
     xc, yc = centeroid(np.array(list(experiment.coordinates.values())))
     d_x = experiment.coordinates['all_0'][0] - xc
     d_y = experiment.coordinates['all_0'][1] - yc

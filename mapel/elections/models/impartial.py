@@ -102,10 +102,8 @@ def generate_weighted_stratification_votes(num_voters: int = None, num_candidate
                                            params=None):
     if params is None:
         params = {}
-    if 'w' in params:
-        w = params['w']
-    else:
-        w = 0.5
+
+    w = params.get('w', 0.5)
 
     return [list(np.random.permutation(int(w*num_candidates))) +
              list(np.random.permutation([j for j in range(int(w*num_candidates), num_candidates)]))

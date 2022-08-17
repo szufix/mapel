@@ -14,7 +14,7 @@ import mapel.marriages.models_main as models_main
 import mapel.marriages.metrics_main as metr
 import mapel.marriages.features.basic_features as basic
 import mapel.marriages.features_main as features
-from mapel.elections.print_ import get_values_from_csv_file
+from mapel.main._print import get_values_from_csv_file
 
 try:
     from sklearn.manifold import MDS

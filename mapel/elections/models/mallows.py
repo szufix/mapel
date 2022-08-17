@@ -5,6 +5,7 @@ import random
 
 import numpy as np
 import scipy.special
+import logging
 
 
 # Given the number m of candidates and a phi\in [0,1] function computes the expected number of swaps
@@ -24,6 +25,10 @@ def phi_from_relphi(num_candidates, relphi=None):
         relphi = np.random.random()
     if relphi == 1:
         return 1
+    if relphi > 2 or relphi < 0:
+        logging.warning("Incorrect norm-phi value")
+    if relphi > 1:
+        return 2-relphi
     exp_abs = relphi * (num_candidates * (num_candidates - 1)) / 4
     low = 0
     high = 1
@@ -609,40 +614,3 @@ def generate_norm_mallows_with_walls_votes(num_voters, num_candidates, params):
         votes.append(v)
     return votes
 
-
-# AUXILIARY (alphas)
-
-def get_vector(type, num_candidates):
-    if type == "uniform":
-        return [1.] * num_candidates
-    elif type == "linear":
-        return [(num_candidates - x) for x in range(num_candidates)]
-    elif type == "linear_low":
-        return [(float(num_candidates) - float(x)) / float(num_candidates) for x in range(num_candidates)]
-    elif type == "square":
-        return [(float(num_candidates) - float(x)) ** 2 / float(num_candidates) ** 2 for x in
-                range(num_candidates)]
-    elif type == "square_low":
-        return [(num_candidates - x) ** 2 for x in range(num_candidates)]
-    elif type == "cube":
-        return [(float(num_candidates) - float(x)) ** 3 / float(num_candidates) ** 3 for x in
-                range(num_candidates)]
-    elif type == "cube_low":
-        return [(num_candidates - x) ** 3 for x in range(num_candidates)]
-    elif type == "split_2":
-        values = [1.] * num_candidates
-        for i in range(num_candidates / 2):
-            values[i] = 10.
-        return values
-    elif type == "split_4":
-        size = num_candidates / 4
-        values = [1.] * num_candidates
-        for i in range(size):
-            values[i] = 1000.
-        for i in range(size, 2 * size):
-            values[i] = 100.
-        for i in range(2 * size, 3 * size):
-            values[i] = 10.
-        return values
-    else:
-        return type

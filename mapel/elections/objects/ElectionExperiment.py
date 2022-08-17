@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import copy
 import csv
 import itertools
 import os
@@ -14,11 +13,10 @@ from mapel.elections.objects.ElectionFamily import ElectionFamily
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 import mapel.elections.metrics_ as metr
-import mapel.elections.models_ as _elections
 import mapel.elections.other.rules as rules
 import mapel.elections.features_ as features
 from mapel.main.objects.Experiment import Experiment
-import mapel.elections.print_ as pr
+import mapel.main._print as pr
 from mapel.main._utils import *
 from mapel.main._glossary import *
 

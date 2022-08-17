@@ -33,7 +33,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
                  instance_type='approval', dim=2, store=True,
                                          coordinates_names=None,
-                                         embedding_id='kamada',
+                                         embedding_id='spring',
                                          fast_import=False):
         self.shift = shift
         super().__init__(instances=instances, distances=distances,
@@ -90,7 +90,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
                                                 cand_dist[k1][k2] = 1 - len(
                                                     ac1.intersection(ac2)) / len(ac1.union(ac2))
                                 distance, _ = solve_matching_vectors(cand_dist)
-                                # print(distance)
+                                print(distance)
                                 distance /= committee_size
                             all_distance.append(distance)
                         mean = sum(all_distance) / self.num_elections

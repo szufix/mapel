@@ -112,8 +112,7 @@ def generate_ordinal_votes(model_id: str = None, num_candidates: int = None, num
 
     single_param_models = {'urn_model': urn_model.generate_urn_votes,
                             'urn': urn_model.generate_urn_votes,
-                           'group-separable':
-                               group_separable.generate_ordinal_group_separable_votes,
+                           'group-separable': group_separable.generate_ordinal_group_separable_votes,
                            'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
                            'weighted_stratification': impartial.generate_weighted_stratification_votes,
                            'idan_part': guardians_plus.generate_idan_part_votes,
