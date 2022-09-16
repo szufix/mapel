@@ -9,7 +9,7 @@ from typing import Callable
 
 import numpy as np
 
-from mapel.main._inner_distances import map_str_to_func
+from mapel.main.inner_distances import map_str_to_func
 from mapel.main.objects.Experiment import Experiment
 from mapel.roommates.metrics import main_distances as mrd
 from mapel.roommates.objects.Roommates import Roommates

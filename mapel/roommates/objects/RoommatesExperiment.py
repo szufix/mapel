@@ -15,9 +15,9 @@ import mapel.roommates.models_ as models_main
 import mapel.roommates.metrics_ as metr
 import mapel.roommates.features.basic_features as basic
 import mapel.roommates.features_ as features
-from mapel.main._utils import *
-from mapel.main._glossary import *
-from mapel.main._print import get_values_from_csv_file
+from mapel.main.utils import *
+from mapel.main.glossary import *
+from mapel.main.printing import get_values_from_csv_file
 
 try:
     from sklearn.manifold import MDS
@@ -235,8 +235,8 @@ class RoommatesExperiment(Experiment):
             family_id = None
             show = True
 
-            if 'model_id' in row.keys():
-                model_id = str(row['model_id']).strip()
+            if 'culture_id' in row.keys():
+                model_id = str(row['culture_id']).strip()
 
             if 'color' in row.keys():
                 color = str(row['color']).strip()
@@ -474,7 +474,7 @@ class RoommatesExperiment(Experiment):
 
             with open(path, 'w') as file_csv:
                 file_csv.write(
-                    "size;num_agents;model_id;params;color;alpha;family_id;label;marker;show\n")
+                    "size;num_agents;culture_id;params;color;alpha;family_id;label;marker;show\n")
                 file_csv.write("10;20;roommates_ic;{};black;1;IC;IC;o;t\n")
         except FileExistsError:
             print("Experiment already exists!")

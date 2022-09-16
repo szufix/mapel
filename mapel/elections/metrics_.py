@@ -10,7 +10,7 @@ import numpy as np
 
 from mapel.elections.metrics import main_approval_distances as mad
 from mapel.elections.metrics import main_ordinal_distances as mod
-from mapel.main._inner_distances import map_str_to_func
+from mapel.main.inner_distances import map_str_to_func
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.Election import Election
 from mapel.elections.objects.OrdinalElection import OrdinalElection
@@ -104,7 +104,7 @@ def _extract_distance_id(distance_id: str) -> (Callable, str):
 def run_single_process(exp: Experiment, instances_ids: list,
                       distances: dict, times: dict, matchings: dict,
                       printing: bool) -> None:
-    """ Single thread for computing distances """
+    """ Single process for computing distances """
 
     for instance_id_1, instance_id_2 in instances_ids:
         if printing:
@@ -127,7 +127,7 @@ def run_single_process(exp: Experiment, instances_ids: list,
 def run_multiple_processes(exp: Experiment, instances_ids: list,
                       distances: dict, times: dict, matchings: dict,
                       printing: bool, t) -> None:
-    """ Single thread for computing distances """
+    """ Single process for computing distances """
 
     for instance_id_1, instance_id_2 in instances_ids:
         if t == 0 and printing:
@@ -164,5 +164,5 @@ def _store_distances(exp, instances_ids, distances, times, t):
 
 
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 16.05.2022 #
+# LAST CLEANUP ON: 17.08.2022 #
 # # # # # # # # # # # # # # # #

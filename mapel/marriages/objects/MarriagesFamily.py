@@ -4,7 +4,7 @@ from mapel.main.objects.Family import Family
 from mapel.marriages.objects.Marriages import Marriages
 import copy
 
-import mapel.marriages.models.mallows as mallows
+import mapel.marriages.cultures.mallows as mallows
 
 
 class MarriagesFamily(Family):

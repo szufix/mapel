@@ -4,10 +4,10 @@ from collections import Counter
 import copy
 import ast
 from mapel.main.objects.Instance import Instance
-from mapel.roommates.models._utils import convert
+from mapel.roommates.cultures._utils import convert
 
 from mapel.roommates.models_ import generate_votes
-from mapel.main._glossary import *
+from mapel.main.glossary import *
 #
 
 class Roommates(Instance):

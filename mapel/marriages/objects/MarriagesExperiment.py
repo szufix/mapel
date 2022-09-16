@@ -14,7 +14,7 @@ import mapel.marriages.models_main as models_main
 import mapel.marriages.metrics_main as metr
 import mapel.marriages.features.basic_features as basic
 import mapel.marriages.features_main as features
-from mapel.main._print import get_values_from_csv_file
+from mapel.main.printing import get_values_from_csv_file
 
 try:
     from sklearn.manifold import MDS
@@ -194,8 +194,8 @@ class MarriagesExperiment(Experiment):
             show = True
 
 
-            if 'model_id' in row.keys():
-                model_id = str(row['model_id']).strip()
+            if 'culture_id' in row.keys():
+                model_id = str(row['culture_id']).strip()
 
             if 'color' in row.keys():
                 color = str(row['color']).strip()
@@ -403,7 +403,7 @@ class MarriagesExperiment(Experiment):
 
             with open(path, 'w') as file_csv:
                 file_csv.write(
-                    "size;num_agents;model_id;params;color;alpha;family_id;label;marker;show\n")
+                    "size;num_agents;culture_id;params;color;alpha;family_id;label;marker;show\n")
                 file_csv.write("10;16;ic;{};black;1;IC;IC;o;t\n")
         except FileExistsError:
             print("Experiment already exists!")
@@ -411,5 +411,5 @@ class MarriagesExperiment(Experiment):
 
     def get_election_id_from_model_name(self, model_id: str) -> str:
         for family_id in self.families:
-            if self.families[family_id].model_id == model_id:
+            if self.families[family_id].culture_id == model_id:
                 return family_id

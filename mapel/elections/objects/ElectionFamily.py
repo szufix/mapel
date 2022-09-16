@@ -4,16 +4,15 @@ import copy
 from mapel.main.objects.Family import Family
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
-from mapel.main._glossary import *
-from mapel.main._utils import *
-import mapel.elections.models.mallows as mallows
+from mapel.main.utils import *
+import mapel.elections.cultures.mallows as mallows
 
 
 class ElectionFamily(Family):
-    """ Family of elections: a set of elections from the same election model_id """
+    """ Family of elections: a set of elections from the same election culture_id """
 
     def __init__(self,
-                 model_id: str = None,
+                 culture_id: str = None,
                  family_id='none',
                  params: dict = None,
                  size: int = 1,
@@ -32,7 +31,7 @@ class ElectionFamily(Family):
                  election_ids=None,
                  instance_type: str = 'ordinal'):
 
-        super().__init__(model_id=model_id,
+        super().__init__(culture_id=culture_id,
                          family_id=family_id,
                          params=params,
                          size=size,
@@ -68,8 +67,8 @@ class ElectionFamily(Family):
         # print(self.instance_type)
         if self.instance_type == 'ordinal':
 
-            # if model_id in PARTY_MODELS:
-            #     params['party'] = prepare_parties(params=params, model_id=model_id)
+            # if culture_id in PARTY_MODELS:
+            #     params['party'] = prepare_parties(params=params, culture_id=culture_id)
 
             elections = {}
             _keys = []
@@ -85,22 +84,22 @@ class ElectionFamily(Family):
 
                 if params is not None and 'norm-phi' in params:
                     params['phi'] = mallows.phi_from_relphi(
-                                        self.num_candidates, relphi=params['norm-phi'])
+                        self.num_candidates, relphi=params['norm-phi'])
 
-                if self.model_id in {'all_votes'}:
+                if self.culture_id in {'all_votes'}:
                     params['iter_id'] = j
 
-                if self.model_id in {'crate'}:
+                if self.culture_id in {'crate'}:
                     new_params = _get_params_for_crate(j)
                     params = {**params, **new_params}
 
                 election_id = get_instance_id(self.single, self.family_id, j)
 
-                election = OrdinalElection(experiment_id, election_id, model_id=self.model_id,
-                                             num_voters=self.num_voters, label=self.label,
-                                             num_candidates=self.num_candidates,
-                                             params=copy.deepcopy(params), ballot=self.instance_type,
-                                            variable=variable, _import=False,
+                election = OrdinalElection(experiment_id, election_id, culture_id=self.culture_id,
+                                           num_voters=self.num_voters, label=self.label,
+                                           num_candidates=self.num_candidates,
+                                           params=copy.deepcopy(params), ballot=self.instance_type,
+                                           variable=variable, _import=False,
                                            )
 
                 election.prepare_instance(store=store)
@@ -131,24 +130,23 @@ class ElectionFamily(Family):
                     params['phi'] = mallows.phi_from_relphi(
                         self.num_candidates, relphi=params['norm-phi'])
 
-                if self.model_id in {'all_votes'}:
+                if self.culture_id in {'all_votes'}:
                     params['iter_id'] = j
 
-                if self.model_id in {'crate'}:
+                if self.culture_id in {'crate'}:
                     new_params = _get_params_for_crate(j)
                     params = {**params, **new_params}
 
                 election_id = get_instance_id(self.single, self.family_id, j)
 
-                election = ApprovalElection(experiment_id, election_id, model_id=self.model_id,
-                                             num_voters=self.num_voters, label=self.label,
-                                             num_candidates=self.num_candidates,
-                                             params=copy.deepcopy(params), ballot=self.instance_type,
+                election = ApprovalElection(experiment_id, election_id, culture_id=self.culture_id,
+                                            num_voters=self.num_voters, label=self.label,
+                                            num_candidates=self.num_candidates,
+                                            params=copy.deepcopy(params), ballot=self.instance_type,
                                             variable=variable, _import=False
-                                           )
+                                            )
 
                 election.prepare_instance(store=store, params=params)
-                # election.prepare_instance(store=store)
 
                 election.votes_to_approvalwise_vector()
 
@@ -205,8 +203,6 @@ def _get_params_for_paths(family, j, extremes=False):
         params[variable] = path['start'] + j * path['step']
 
     return params, variable
-
-
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

@@ -7,21 +7,21 @@ import numpy as np
 
 from scipy.stats import gamma
 
-import mapel.elections.models.mallows as mallows
-from mapel.main._glossary import *
-from mapel.elections.models_ import generate_approval_votes, store_votes_in_a_file
+import mapel.elections.cultures.mallows as mallows
+from mapel.main.glossary import *
+from mapel.elections.cultures_ import generate_approval_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
-from mapel.main._inner_distances import hamming
+from mapel.main.inner_distances import hamming
 
 
 class ApprovalElection(Election):
 
-    def __init__(self, experiment_id, election_id, votes=None, alpha=1, model_id=None,
+    def __init__(self, experiment_id, election_id, votes=None, alpha=1, culture_id=None,
                  ballot='approval', num_voters=None, num_candidates=None, _import=False,
                  shift: bool = False, params=None, variable=None, label=None):
 
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
-                         model_id=model_id, ballot=ballot, num_voters=num_voters,
+                         culture_id=culture_id, ballot=ballot, num_voters=num_voters,
                          num_candidates=num_candidates, label=label)
         self.params = params
         self.variable = variable
@@ -39,11 +39,11 @@ class ApprovalElection(Election):
             try:
                 fake = check_if_fake(experiment_id, election_id)
                 if fake:
-                    self.model_id, self.params, self.num_voters, self.num_candidates = \
+                    self.culture_id, self.params, self.num_voters, self.num_candidates = \
                         import_fake_app_election(experiment_id, election_id)
                 else:
                     self.votes, self.num_voters, self.num_candidates, self.params, \
-                    self.model_id = import_real_app_election(experiment_id, election_id, shift)
+                    self.culture_id = import_real_app_election(experiment_id, election_id, shift)
                     try:
                         self.alpha = self.params['alpha']
                     except:
@@ -55,22 +55,22 @@ class ApprovalElection(Election):
         if self.params is None:
             self.params = {}
 
-        if model_id is not None:
-            self.params, self.alpha = update_params_approval(self.params, self.variable, self.model_id,
+        if culture_id is not None:
+            self.params, self.alpha = update_params_approval(self.params, self.variable, self.culture_id,
                                                             self.num_candidates)
 
     def votes_to_approvalwise_vector(self) -> None:
         """ Convert votes to approvalwise vectors """
 
-        if self.model_id == 'approval_half_1':
+        if self.culture_id == 'approval_half_1':
             self.approvalwise_vector = np.sort(np.array([0.75 for _ in
                                                          range(int(self.num_candidates / 2))] +
                                                         [0.25 for _ in
                                                          range(int(self.num_candidates / 2))]))
-        elif self.model_id == 'approval_half_2':
+        elif self.culture_id == 'approval_half_2':
             self.approvalwise_vector = np.sort(np.array([i / (self.num_candidates - 1) for i in
                                                          range(self.num_candidates)]))
-        elif self.model_id == 'approval_skeleton':
+        elif self.culture_id == 'approval_skeleton':
             self.approvalwise_vector = np.sort(get_skeleton_approvalwise_vector(self))
 
         else:
@@ -159,7 +159,6 @@ class ApprovalElection(Election):
         reverse_approvals = [set() for _ in range(self.num_candidates)]
         for i, vote in enumerate(self.votes):
             for c in vote:
-                # print(reverse_approvals[int(c)])
                 reverse_approvals[int(c)].add(i)
 
         self.reverse_approvals = reverse_approvals
@@ -172,20 +171,19 @@ class ApprovalElection(Election):
 
         self.params = params
 
-        # if self.model_id == 'all_votes':
+        # if self.culture_id == 'all_votes':
         #     alpha = 1
         # else:
-        #     params, alpha = update_params(params, self.variable, self.model_id,
+        #     params, alpha = update_params(params, self.variable, self.culture_id,
         #                                   self.num_candidates)
 
         self.params = params
-        self.votes = generate_approval_votes(model_id=self.model_id,
+        self.votes = generate_approval_votes(culture_id=self.culture_id,
                                              num_candidates=self.num_candidates,
                                              num_voters=self.num_voters, params=params)
         avg = 0
         for vote in self.votes:
             avg += len(vote)
-        print(avg)
 
         self.params = params
         if store:
@@ -195,11 +193,11 @@ class ApprovalElection(Election):
     def store_approval_election(self):
         """ Store approval election in an .app file """
 
-        if self.model_id in APPROVAL_FAKE_MODELS:
+        if self.culture_id in APPROVAL_FAKE_MODELS:
             path = os.path.join("experiments", str(self.experiment_id),
                                 "elections", (str(self.election_id) + ".app"))
             file_ = open(path, 'w')
-            file_.write(f'$ {self.model_id} {self.params} \n')
+            file_.write(f'$ {self.culture_id} {self.params} \n')
             file_.write(str(self.num_candidates) + '\n')
             file_.write(str(self.num_voters) + '\n')
             file_.close()
@@ -208,7 +206,7 @@ class ApprovalElection(Election):
             path = os.path.join("experiments", str(self.experiment_id), "elections",
                                 (str(self.election_id) + ".app"))
 
-            store_votes_in_a_file(self, self.model_id, self.num_candidates, self.num_voters,
+            store_votes_in_a_file(self, self.culture_id, self.num_candidates, self.num_voters,
                                   self.params, path, self.ballot, votes=self.votes)
 
     def compute_distances_between_votes(self, distance_id='hamming'):
@@ -237,11 +235,11 @@ def import_real_app_election(experiment_id: str, election_id: str, shift=False):
     params = 0
     first_line = my_file.readline()
     if first_line[0] != '#':
-        model_id = 'empty'
+        culture_id = 'empty'
         num_candidates = int(first_line)
     else:
         first_line = first_line.strip().split()
-        model_id = first_line[1]
+        culture_id = first_line[1]
         if len(first_line) <= 2:
             params = {}
         else:
@@ -268,9 +266,9 @@ def import_real_app_election(experiment_id: str, election_id: str, shift=False):
                     votes[it].add(int(line[el + 1]))
                 it += 1
 
-    if model_id in NICE_NAME.values():
+    if culture_id in NICE_NAME.values():
         rev_dict = dict(zip(NICE_NAME.values(), NICE_NAME.keys()))
-        model_id = rev_dict[model_id]
+        culture_id = rev_dict[culture_id]
 
     if shift:
         for i, vote in enumerate(votes):
@@ -280,7 +278,7 @@ def import_real_app_election(experiment_id: str, election_id: str, shift=False):
             votes[i] = new_vote
     my_file.close()
 
-    return votes, num_voters, num_candidates, params, model_id
+    return votes, num_voters, num_candidates, params, culture_id
 
 
 def import_fake_app_election(experiment_id: str, name: str):
@@ -365,19 +363,19 @@ def update_params_approval_disjoint(params):
         params['p'] = np.random.random() / params['g']
 
 
-def update_params_approval(params, variable, model_id, num_candidates):
+def update_params_approval(params, variable, culture_id, num_candidates):
 
     if variable is not None:
-        if model_id in APPROVAL_MODELS:
+        if culture_id in APPROVAL_MODELS:
             update_params_approval_p(params)
         params['alpha'] = params[variable]
         params['variable'] = variable
     else:
-        if model_id in APPROVAL_MODELS:
+        if culture_id in APPROVAL_MODELS:
             update_params_approval_p(params)
-        elif model_id.lower() == 'resampling':
+        elif culture_id.lower() == 'resampling':
             update_params_approval_resampling(params)
-        elif model_id.lower() == 'disjoint':
+        elif culture_id.lower() == 'disjoint':
             update_params_approval_disjoint(params)
         update_params_approval_alpha(params)
 

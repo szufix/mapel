@@ -79,7 +79,7 @@ def compute_subelection_by_groups(
         for i in range(experiment.families[family_id].size):
             election_id = family_id + '_' + str(i)
             election_models[election_id] = \
-                experiment.families[family_id].model_id
+                experiment.families[family_id].culture_id
             params[election_id] = experiment.families[family_id].params
 
     ids = []
@@ -172,12 +172,3 @@ def compute_subelection_by_groups(
                             txtfile.write(str(i) + ' ' + str(j) + ' ' + str(p) + ' ' +
                                           str(all_pairs[election_1][election_2][p]) + '\n')
                             ctr += 1
-
-
-# def _reverse(vector):
-#     if vector is None:
-#         return None
-#     new_vector = [0 for _ in range(len(vector))]
-#     for i in range(len(vector)):
-#         new_vector[vector[i]] = i
-#     return new_vector

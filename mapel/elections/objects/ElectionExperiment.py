@@ -16,9 +16,9 @@ import mapel.elections.metrics_ as metr
 import mapel.elections.other.rules as rules
 import mapel.elections.features_ as features
 from mapel.main.objects.Experiment import Experiment
-import mapel.main._print as pr
-from mapel.main._utils import *
-from mapel.main._glossary import *
+import mapel.main.printing as pr
+from mapel.main.utils import *
+from mapel.main.glossary import *
 
 try:
     from sklearn.manifold import MDS
@@ -62,7 +62,6 @@ class ElectionExperiment(Experiment):
 
     def prepare_matrices(self):
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices")
-        print(path)
         for file_name in os.listdir(path):
             os.remove(os.path.join(path, file_name))
 
@@ -117,7 +116,7 @@ class ElectionExperiment(Experiment):
         """ Set default size of the committee """
         self.default_committee_size = committee_size
 
-    def add_election(self, model_id="none", params=None, label=None,
+    def add_election(self, culture_id="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
                      num_candidates=None, num_voters=None, election_id=None):
         """ Add election to the experiment """
@@ -128,19 +127,19 @@ class ElectionExperiment(Experiment):
         if num_voters is None:
             num_voters = self.default_num_voters
 
-        return self.add_family(model_id=model_id, params=params, size=size, label=label,
-                                        color=color, alpha=alpha, show=show, marker=marker,
-                                        starting_from=starting_from, family_id=election_id,
-                                        num_candidates=num_candidates, num_voters=num_voters,
-                                        single=True)
+        return self.add_family(culture_id=culture_id, params=params, size=size, label=label,
+                               color=color, alpha=alpha, show=show, marker=marker,
+                               starting_from=starting_from, family_id=election_id,
+                               num_candidates=num_candidates, num_voters=num_voters,
+                               single=True)
 
-    def add_family(self, model_id: str = "none", params: dict = None, size: int = 1,
-                            label: str = None, color: str = "black", alpha: float = 1.,
-                            show: bool = True, marker: str = 'o', starting_from: int = 0,
-                            num_candidates: int = None, num_voters: int = None,
-                            family_id: str = None, single: bool = False,
-                            path: dict = None,
-                            election_id: str = None) -> list:
+    def add_family(self, culture_id: str = "none", params: dict = None, size: int = 1,
+                   label: str = None, color: str = "black", alpha: float = 1.,
+                   show: bool = True, marker: str = 'o', starting_from: int = 0,
+                   num_candidates: int = None, num_voters: int = None,
+                   family_id: str = None, single: bool = False,
+                   path: dict = None,
+                   election_id: str = None) -> list:
         """ Add family of elections to the experiment """
 
         if election_id is not None:
@@ -156,19 +155,19 @@ class ElectionExperiment(Experiment):
             self.families = {}
 
         if family_id is None:
-            family_id = model_id + '_' + str(num_candidates) + '_' + str(num_voters)
-            if model_id in {'urn_model'} and params['alpha'] is not None:
+            family_id = culture_id + '_' + str(num_candidates) + '_' + str(num_voters)
+            if culture_id in {'urn_model'} and params['alpha'] is not None:
                 family_id += '_' + str(float(params['alpha']))
-            elif model_id in {'mallows'} and params['phi'] is not None:
+            elif culture_id in {'mallows'} and params['phi'] is not None:
                 family_id += '_' + str(float(params['phi']))
-            elif model_id in {'norm-mallows', 'norm-mallows_matrix'} \
+            elif culture_id in {'norm-mallows', 'norm-mallows_matrix'} \
                     and params['norm-phi'] is not None:
                 family_id += '_' + str(float(params['norm-phi']))
 
         elif label is None:
             label = family_id
 
-        self.families[family_id] = ElectionFamily(model_id=model_id, family_id=family_id,
+        self.families[family_id] = ElectionFamily(culture_id=culture_id, family_id=family_id,
                                                   params=params, label=label, color=color,
                                                   alpha=alpha,
                                                   show=show, size=size, marker=marker,
@@ -192,6 +191,9 @@ class ElectionExperiment(Experiment):
         self.families[family_id].instance_ids = list(new_instances.keys())
 
         return list(new_instances.keys())
+
+    def add_culture(self):
+        pass
 
     def prepare_elections(self, printing=False):
         """ Prepare elections for a given experiment """
@@ -250,10 +252,7 @@ class ElectionExperiment(Experiment):
         ids = []
         for i, election_1 in enumerate(self.elections):
             for j, election_2 in enumerate(self.elections):
-                if i == j:
-                    if self_distances:
-                        ids.append((election_1, election_2))
-                elif i < j:
+                if i < j or (i == j and self_distances):
                     ids.append((election_1, election_2))
 
         num_distances = len(ids)
@@ -297,13 +296,13 @@ class ElectionExperiment(Experiment):
                         times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
         if self.store:
-            self._store_distances_to_file(distance_id, distances, times)
+            self._store_distances_to_file(distance_id, distances, times, self_distances)
 
         self.distances = distances
         self.times = times
         self.matchings = matchings
 
-    def _store_distances_to_file(self, distance_id, distances, times):
+    def _store_distances_to_file(self, distance_id, distances, times, self_distances):
         file_name = f'{distance_id}.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
 
@@ -311,14 +310,18 @@ class ElectionExperiment(Experiment):
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
 
-            for election_1, election_2 in itertools.combinations(self.elections, 2):
-                distance = str(distances[election_1][election_2])
-                time_ = str(times[election_1][election_2])
-                writer.writerow([election_1, election_2, distance, time_])
+            for i, election_1 in enumerate(self.elections):
+                for j, election_2 in enumerate(self.elections):
+                    if i < j or (i == j and self_distances):
+                        distance = str(distances[election_1][election_2])
+                        time_ = str(times[election_1][election_2])
+                        writer.writerow([election_1, election_2, distance, time_])
 
-    def get_election_id_from_model_name(self, model_id: str) -> str:
+
+
+    def get_election_id_from_model_name(self, culture_id: str) -> str:
         for family_id in self.families:
-            if self.families[family_id].model_id == model_id:
+            if self.families[family_id].culture_id == culture_id:
                 return family_id
 
     def print_matrix(self, **kwargs):
@@ -341,7 +344,7 @@ class ElectionExperiment(Experiment):
             starting_from = 0
             for row in reader:
 
-                model_id = None
+                culture_id = None
                 color = None
                 label = None
                 params = None
@@ -353,8 +356,8 @@ class ElectionExperiment(Experiment):
                 family_id = None
                 show = True
 
-                if 'model_id' in row.keys():
-                    model_id = str(row['model_id']).strip()
+                if 'culture_id' in row.keys():
+                    culture_id = str(row['culture_id']).strip()
 
                 if 'color' in row.keys():
                     color = str(row['color']).strip()
@@ -391,7 +394,7 @@ class ElectionExperiment(Experiment):
 
                 single = size == 1
 
-                families[family_id] = ElectionFamily(model_id=model_id,
+                families[family_id] = ElectionFamily(culture_id=culture_id,
                                                      family_id=family_id,
                                                      params=params, label=label,
                                                      color=color, alpha=alpha, show=show,
@@ -474,7 +477,6 @@ class ElectionExperiment(Experiment):
 
                 total_time = time.time() - start
                 total_time /= num_iterations
-                # print(value)
 
                 if feature_id == 'ejr':
                     feature_dict['ejr'][instance_id] = int(value['ejr'])

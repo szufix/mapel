@@ -4,19 +4,19 @@ import numpy as np
 from scipy.stats import gamma
 import random as rand
 
-import mapel.elections.models.mallows as mallows
-from mapel.main._glossary import *
-from mapel.elections.models.group_separable import get_gs_caterpillar_vectors
-from mapel.elections.models.mallows import get_mallows_vectors
-from mapel.elections.models.preflib import get_sushi_vectors
-from mapel.elections.models.single_crossing import get_single_crossing_vectors
-from mapel.elections.models.single_peaked import get_walsh_vectors, get_conitzer_vectors
-from mapel.elections.models_ import generate_ordinal_votes, store_votes_in_a_file
+import mapel.elections.cultures.mallows as mallows
+from mapel.main.glossary import *
+from mapel.elections.cultures.group_separable import get_gs_caterpillar_vectors
+from mapel.elections.cultures.mallows import get_mallows_vectors
+from mapel.elections.cultures.preflib import get_sushi_vectors
+from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
+from mapel.elections.cultures.single_peaked import get_walsh_vectors, get_conitzer_vectors
+from mapel.elections.cultures_ import generate_ordinal_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
 from mapel.elections.other.winners2 import generate_winners
-from mapel.main._inner_distances import swap_distance_between_potes, \
+from mapel.main.inner_distances import swap_distance_between_potes, \
     spearman_distance_between_potes
 from mapel.elections.features.other import is_condorcet
 
@@ -24,12 +24,12 @@ from mapel.elections.features.other import is_condorcet
 class OrdinalElection(Election):
 
     def __init__(self, experiment_id, election_id, votes=None, with_matrix=False, alpha=None,
-                 model_id=None, params=None, label=None,
+                 culture_id=None, params=None, label=None,
                  ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None,
                  _import: bool = False, shift: bool = False, variable=None, fast_import=False):
 
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
-                         model_id=model_id, ballot=ballot, label=label,
+                         culture_id=culture_id, ballot=ballot, label=label,
                          num_voters=num_voters, num_candidates=num_candidates)
 
         self.params = params
@@ -44,7 +44,7 @@ class OrdinalElection(Election):
         if _import and experiment_id != 'virtual':
             try:
                 if votes is not None:
-                    self.model_id = model_id
+                    self.culture_id = culture_id
                     if str(votes[0]) in LIST_OF_FAKE_MODELS:
                         self.fake = True
                         self.votes = votes[0]
@@ -59,12 +59,12 @@ class OrdinalElection(Election):
 
                     self.fake = check_if_fake(experiment_id, election_id)
                     if self.fake:
-                        self.model_id, self.params, self.num_voters, \
+                        self.culture_id, self.params, self.num_voters, \
                         self.num_candidates = import_fake_soc_election(experiment_id, election_id)
                     else:
                         self.votes, self.num_voters, self.num_candidates, self.params, \
-                        self.model_id = import_real_soc_election(experiment_id, election_id,
-                                                                 shift, fast_import)
+                        self.culture_id = import_real_soc_election(experiment_id, election_id,
+                                                                   shift, fast_import)
                         try:
                             self.alpha = 1
                             if self.params and 'alpha' in self.params:
@@ -89,8 +89,8 @@ class OrdinalElection(Election):
         if self.params is None:
             self.params = {}
 
-        if model_id is not None:
-            self.params, self.alpha = update_params_ordinal(self.params, self.variable, self.model_id,
+        if culture_id is not None:
+            self.params, self.alpha = update_params_ordinal(self.params, self.variable, self.culture_id,
                                                             self.num_candidates)
 
     def get_vectors(self):
@@ -106,27 +106,27 @@ class OrdinalElection(Election):
     def votes_to_positionwise_vectors(self):
         vectors = np.zeros([self.num_candidates, self.num_candidates])
 
-        if self.model_id == 'conitzer_matrix':
+        if self.culture_id == 'conitzer_matrix':
             vectors = get_conitzer_vectors(self.num_candidates)
-        elif self.model_id == 'walsh_matrix':
+        elif self.culture_id == 'walsh_matrix':
             vectors = get_walsh_vectors(self.num_candidates)
-        elif self.model_id == 'single-crossing_matrix':
+        elif self.culture_id == 'single-crossing_matrix':
             vectors = get_single_crossing_vectors(self.num_candidates)
-        elif self.model_id == 'gs_caterpillar_matrix':
+        elif self.culture_id == 'gs_caterpillar_matrix':
             vectors = get_gs_caterpillar_vectors(self.num_candidates)
-        elif self.model_id == 'sushi_matrix':
+        elif self.culture_id == 'sushi_matrix':
             vectors = get_sushi_vectors()
-        elif self.model_id in {'norm-mallows_matrix', 'mallows_matrix_path'}:
+        elif self.culture_id in {'norm-mallows_matrix', 'mallows_matrix_path'}:
             vectors = get_mallows_vectors(self.num_candidates, self.params)
-        elif self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-            vectors = get_fake_vectors_single(self.model_id, self.num_candidates)
-        elif self.model_id in {'walsh_path', 'conitzer_path'}:
+        elif self.culture_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+            vectors = get_fake_vectors_single(self.culture_id, self.num_candidates)
+        elif self.culture_id in {'walsh_path', 'conitzer_path'}:
             vectors = get_fake_multiplication(self.num_candidates, self.params,
-                                              self.model_id)
-        elif self.model_id in PATHS:
-            vectors = get_fake_convex(self.model_id, self.num_candidates, self.num_voters,
+                                              self.culture_id)
+        elif self.culture_id in PATHS:
+            vectors = get_fake_convex(self.culture_id, self.num_candidates, self.num_voters,
                                       self.params, get_fake_vectors_single)
-        elif self.model_id == 'crate':
+        elif self.culture_id == 'crate':
             vectors = get_fake_vectors_crate(num_candidates=self.num_candidates,
                                              fake_param=self.params)
         else:
@@ -153,10 +153,10 @@ class OrdinalElection(Election):
         """ convert VOTES to pairwise MATRIX """
         matrix = np.zeros([self.num_candidates, self.num_candidates])
         if self.fake:
-            if self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-                matrix = get_fake_matrix_single(self.model_id, self.num_candidates)
-            elif self.model_id in PATHS:
-                matrix = get_fake_convex(self.model_id, self.num_candidates, self.num_voters,
+            if self.culture_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+                matrix = get_fake_matrix_single(self.culture_id, self.num_candidates)
+            elif self.culture_id in PATHS:
+                matrix = get_fake_convex(self.culture_id, self.num_candidates, self.num_voters,
                                          self.fake_param, get_fake_matrix_single)
 
         else:
@@ -175,11 +175,11 @@ class OrdinalElection(Election):
         """ convert VOTES to Borda vector """
         borda_vector = np.zeros([self.num_candidates])
         if self.fake:
-            if self.model_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
-                borda_vector = get_fake_borda_vector(self.model_id, self.num_candidates,
+            if self.culture_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
+                borda_vector = get_fake_borda_vector(self.culture_id, self.num_candidates,
                                                      self.num_voters)
-            elif self.model_id in PATHS:
-                borda_vector = get_fake_convex(self.model_id, self.num_candidates,
+            elif self.culture_id in PATHS:
+                borda_vector = get_fake_convex(self.culture_id, self.num_candidates,
                                                self.num_voters, self.params,
                                                get_fake_borda_vector)
         else:
@@ -265,7 +265,7 @@ class OrdinalElection(Election):
 
     # PREPARE INSTANCE
     def prepare_instance(self, store=None):
-        self.votes = generate_ordinal_votes(model_id=self.model_id,
+        self.votes = generate_ordinal_votes(culture_id=self.culture_id,
                                             num_candidates=self.num_candidates,
                                             num_voters=self.num_voters,
                                             params=self.params)
@@ -275,18 +275,18 @@ class OrdinalElection(Election):
     # STORE
     def _store_ordinal_election(self):
         """ Store ordinal election in a .soc file """
-        if self.model_id in LIST_OF_FAKE_MODELS:
+        if self.culture_id in LIST_OF_FAKE_MODELS:
             file_name = f'{self.election_id}.soc'
             path = os.path.join("experiments", str(self.experiment_id), "elections", file_name)
             file_ = open(path, 'w')
-            file_.write(f'$ {self.model_id} {self.params} \n')
+            file_.write(f'$ {self.culture_id} {self.params} \n')
             file_.write(str(self.num_candidates) + '\n')
             file_.write(str(self.num_voters) + '\n')
             file_.close()
         else:
             file_name = f'{self.election_id}.soc'
             path = os.path.join("experiments", str(self.experiment_id), "elections", file_name)
-            store_votes_in_a_file(self, self.model_id, self.num_candidates, self.num_voters,
+            store_votes_in_a_file(self, self.culture_id, self.num_candidates, self.num_voters,
                                   self.params, path, self.ballot, votes=self.votes)
 
     def compute_distances(self, distance_id='swap', object_type=None):
@@ -743,33 +743,33 @@ def update_params_ordinal_preflib(params, model_id):
     params['folder'] = folder
 
 
-def update_params_ordinal(params, variable, model_id, num_candidates):
+def update_params_ordinal(params, variable, culture_id, num_candidates):
     if variable is not None:
         params['alpha'] = params[variable]
         params['variable'] = variable
     else:
-        if model_id.lower() == 'mallows':
+        if culture_id.lower() == 'mallows':
             update_params_ordinal_mallows(params)
-        elif model_id.lower() == 'norm_mallows' or model_id.lower() == 'norm-mallows':
+        elif culture_id.lower() == 'norm_mallows' or culture_id.lower() == 'norm-mallows':
             update_params_ordinal_norm_mallows(params, num_candidates)
-        elif model_id.lower() == 'urn_model' or model_id.lower() == 'urn':
+        elif culture_id.lower() == 'urn_model' or culture_id.lower() == 'urn':
             update_params_ordinal_urn_model(params)
-        elif model_id.lower() == 'mallows_matrix_path':
+        elif culture_id.lower() == 'mallows_matrix_path':
             update_params_ordinal_mallows_matrix_path(params, num_candidates)
-        elif model_id.lower() in LIST_OF_PREFLIB_MODELS:
-            update_params_ordinal_preflib(params, model_id)
+        elif culture_id.lower() in LIST_OF_PREFLIB_MODELS:
+            update_params_ordinal_preflib(params, culture_id)
         update_params_ordinal_alpha(params)
     return params, params['alpha']
 
 
 # HELPER FUNCTIONS #
-def prepare_parties(model_id=None, params=None):
+def prepare_parties(culture_id=None, params=None):
     parties = []
-    if model_id == '2d_gaussian_party':
+    if culture_id == '2d_gaussian_party':
         for i in range(params['num_parties']):
             point = np.random.rand(1, 2)
             parties.append(point)
-    elif model_id in ['1d_gaussian_party', 'conitzer_party', 'walsh_party']:
+    elif culture_id in ['1d_gaussian_party', 'conitzer_party', 'walsh_party']:
         for i in range(params['num_parties']):
             point = np.random.rand(1, 1)
             parties.append(point)

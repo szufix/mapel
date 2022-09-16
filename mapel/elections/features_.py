@@ -17,8 +17,8 @@ import mapel.elections.features.from_abcvoting as from_abc
 import mapel.elections.features.dimensionality as dimensionality
 
 
-from mapel.main._glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
-from mapel.main._features_main import get_main_local_feature, get_main_global_feature
+from mapel.main.glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
+from mapel.main.features_main import get_main_local_feature, get_main_global_feature
 
 
 def get_global_feature(feature_id):

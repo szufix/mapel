@@ -180,8 +180,8 @@ if __name__ == "__main__":
                                    path={'variable': 'alpha'})
     experiment.add_election_family(model_id='stun', size=stun, color='gray', marker=".", election_id='stun',
                                    path={'variable': 'alpha'})
-    #    experiment.add_family(model_id='unid', size=unid, color='gray', param_1=4)
-    #    experiment.add_family(model_id='stan', size=stan, color='gray', param_1=4)
+    #    experiment.add_family(culture_id='unid', size=unid, color='gray', param_1=4)
+    #    experiment.add_family(culture_id='stan', size=stan, color='gray', param_1=4)
 
     # Single-Peaked
     experiment.add_election(model_id="conitzer_matrix", election_id="CON", color="blue")
@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
     experiment.add_election(model_id="sushi_matrix", election_id="SHI", color="green")
     experiment.add_election(model_id="2d_grid", election_id="SHI", color="magenta")
-    #    experiment.add_election(model_id="single-crossing_matrix", election_id="SCR", color="gray")
+    #    experiment.add_election(culture_id="single-crossing_matrix", election_id="SCR", color="gray")
 
     # Mallows
     MAL_COUNT = 10

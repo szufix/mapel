@@ -245,7 +245,7 @@ def compute_approx(experiment_id, method='hb', algorithm='greedy', num_winners=1
                 rule = {}
                 rule['election_id'] = 'hb'
                 rule['length'] = num_winners
-                rule['type'] = 'borda_owa'
+                rule['type_id'] = 'borda_owa'
                 winners_1 = win.get_winners(params, copy.deepcopy(model.elections[Z].votes), rule)
 
 
@@ -312,7 +312,7 @@ def prepare_elections_extended(experiment_id):
 
     id_ = 800
     for i in range(30, model.num_families):
-        elections_type = model.families[i].model_id
+        elections_type = model.families[i].culture_id
         special_1 = model.families[i].special_1
         special_2 = model.families[i].special_2
         num_elections = 1
@@ -350,10 +350,10 @@ def prepare_elections_unid(experiment_id):
     model = obj.Experiment(experiment_id)
 
     id_ = 900
-    #for i in range(35, model_id.num_families):
+    #for i in range(35, culture_id.num_families):
     #id_ = 0
     for i in range(model.num_families):
-        elections_type = model.families[i].model_id
+        elections_type = model.families[i].culture_id
         special_1 = model.families[i].special_1
         special_2 = model.families[i].special_2
         num_elections = 1
@@ -541,7 +541,7 @@ def compute_canonical_winners(experiment_id, method="approx_cc", num_winners=800
 
     generate_votes_from_distances(experiment_id)
 
-    rule = {'type': method,
+    rule = {'type_id': method,
             'election_id': 0,
             'length': 0,
             'special': 0,
@@ -554,7 +554,7 @@ def compute_canonical_winners(experiment_id, method="approx_cc", num_winners=800
 
 def compute_time(experiment_id):
 
-    rule = {'type': 'borda_owa',
+    rule = {'type_id': 'borda_owa',
              'election_id': 0,
              'length': 0,
              'special': 0,
@@ -639,7 +639,7 @@ def save_to_soc(experiment_id, winners):
 def compute_canonical_order(experiment_id, method, num_winners):
 
     """
-    rule = {'type': method,
+    rule = {'type_id': method,
             'election_id': 0,
             'length': num_winners,
             'special': 0,
@@ -682,14 +682,14 @@ def get_num_voters(experiment_id, short_id, folder):
 # def rearrange_time_format(experiment_id):
 #
 #     experiment_id = "final"
-#     type = "hb"
+#     type_id = "hb"
 #
 #     num_elections = 860
 #     time_table = []
 #
 #     for i in range(num_elections):
 #         file_name = "experiments/" + experiment_id + "/controllers/orders" + \
-#                     "/core_" + str(i) + "_" + str(type) + ".txt"
+#                     "/core_" + str(i) + "_" + str(type_id) + ".txt"
 #         file_ = open(file_name, 'r')
 #         spam_line_1 = int(file_.readline())
 #         spam_line_2 = int(file_.readline())
@@ -697,7 +697,7 @@ def get_num_voters(experiment_id, short_id, folder):
 #         time_table.append(time)
 #         file_.close()
 #
-#     file_name = "experiments/" + experiment_id + "/controllers/times/" + experiment_id + "_" + str(type) + ".txt"
+#     file_name = "experiments/" + experiment_id + "/controllers/times/" + experiment_id + "_" + str(type_id) + ".txt"
 #     file_ = open(file_name, 'w')
 #     file_.write(str(num_elections) + "\n")
 #
@@ -850,7 +850,7 @@ def compute_canonical_order_op():
 
     print("B")
 
-    rule = {'type': "borda_owa",
+    rule = {'type_id': "borda_owa",
             'election_id': 0,
             'length': 0,
             'special': 0,
@@ -1056,7 +1056,7 @@ def save_selected_approx(experiment_id, core):
     # Import controllers: basic
     print("# Import controllers: basic")
 
-    file_controllers = open("experiments/" + experiment_id + "/controllers/models/basic.txt", 'r')
+    file_controllers = open("experiments/" + experiment_id + "/controllers/cultures/basic.txt", 'r')
     num_basic_families = int(file_controllers.readline())
     basic_family_name = [0 for _ in range(num_basic_families)]
     basic_family_special = [0 for _ in range(num_basic_families)]
@@ -1087,7 +1087,7 @@ def save_selected_approx(experiment_id, core):
     # Import controllers: core
     print("# Import controllers: core")
 
-    file_controllers = open("experiments/" + experiment_id + "/controllers/models/" + core + ".txt", 'r')
+    file_controllers = open("experiments/" + experiment_id + "/controllers/cultures/" + core + ".txt", 'r')
     num_core_families = int(file_controllers.readline())
     core_family_name = [0 for _ in range(num_core_families)]
     core_family_special = [0 for _ in range(num_core_families)]
@@ -1159,7 +1159,7 @@ def save_selected_distances():
     # Import controllers: basic
     print("# Import controllers: basic")
 
-    file_controllers = open("experiments/" + experiment_id + "/controllers/models/basic.txt", 'r')
+    file_controllers = open("experiments/" + experiment_id + "/controllers/cultures/basic.txt", 'r')
     num_basic_families = int(file_controllers.readline())
     basic_family_name = [0 for _ in range(num_basic_families)]
     basic_family_special = [0 for _ in range(num_basic_families)]
@@ -1190,7 +1190,7 @@ def save_selected_distances():
     # Import controllers: core
     print("# Import controllers: core")
 
-    file_controllers = open("experiments/" + experiment_id + "/controllers/models/" + core + ".txt", 'r')
+    file_controllers = open("experiments/" + experiment_id + "/controllers/cultures/" + core + ".txt", 'r')
     num_core_families = int(file_controllers.readline())
     core_family_name = [0 for _ in range(num_core_families)]
     core_family_special = [0 for _ in range(num_core_families)]
@@ -1269,7 +1269,7 @@ def save_selected_time():
     # Import controllers: basic
     print("# Import controllers: basic")
 
-    file_controllers = open("experiments/" + experiment_id + "/controllers/models/basic.txt", 'r')
+    file_controllers = open("experiments/" + experiment_id + "/controllers/cultures/basic.txt", 'r')
     num_basic_families = int(file_controllers.readline())
     basic_family_name = [0 for _ in range(num_basic_families)]
     basic_family_special = [0 for _ in range(num_basic_families)]
@@ -1300,7 +1300,7 @@ def save_selected_time():
     # Import controllers: core
     print("# Import controllers: core")
 
-    file_controllers = open("experiments/" + experiment_id + "/controllers/models/" + core + ".txt", 'r')
+    file_controllers = open("experiments/" + experiment_id + "/controllers/cultures/" + core + ".txt", 'r')
     num_core_families = int(file_controllers.readline())
     core_family_name = [0 for _ in range(num_core_families)]
     core_family_special = [0 for _ in range(num_core_families)]

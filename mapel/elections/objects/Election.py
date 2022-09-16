@@ -13,7 +13,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mapel.main._glossary import *
+from mapel.main.inner_distances import l2
+
+from mapel.main.glossary import *
 from mapel.main.objects.Instance import Instance
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
@@ -27,14 +29,14 @@ OBJECT_TYPES = ['vote', 'candidate']
 
 class Election(Instance):
 
-    def __init__(self, experiment_id, election_id, votes=None, alpha=None, model_id=None,
+    def __init__(self, experiment_id, election_id, votes=None, alpha=None, culture_id=None,
                  ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None,
                  label=None, fast_import=False):
 
-        super().__init__(experiment_id, election_id, model_id=model_id, alpha=alpha)
+        super().__init__(experiment_id, election_id, culture_id=culture_id, alpha=alpha)
 
         self.election_id = election_id
-        self.model_id = model_id
+        self.culture_id = culture_id
         self.ballot = ballot
         self.label = label
         self.num_voters = num_voters
@@ -44,7 +46,7 @@ class Election(Instance):
         self.store = True
         self.winners = None
         self.alternative_winners = {}
-        self.fake = model_id in LIST_OF_FAKE_MODELS
+        self.fake = culture_id in LIST_OF_FAKE_MODELS
         self.potes = None
         self.features = {}
         self.object_type = 'vote'
@@ -118,7 +120,7 @@ class Election(Instance):
         self.alternative_winners[party_id] = unmap_the_winners(winners_without_party_id, party_id,
                                                                num_winners)
 
-    def print_map(self, show=True, radius=100, name=None, alpha=0.1, s=30, circles=False,
+    def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
                   object_type=None):
 
         if object_type is None:
@@ -129,35 +131,35 @@ class Election(Instance):
         X = []
         Y = []
         for elem in self.coordinates[object_type]:
-            X.append(round(elem[0], 0))
-            Y.append(round(elem[1], 0))
-
-        plt.scatter(X, Y, color='blue', s=s, alpha=alpha)
+            X.append(elem[0])
+            Y.append(elem[1])
 
         if circles:
             weighted_points = {}
             Xs = {}
             Ys = {}
-            for elem in self.coordinates[object_type]:
-                elem[0] = round(elem[0], 0)
-                elem[1] = round(elem[1], 0)
-                str_elem = str(elem)
+            for i in range(self.num_voters):
+                str_elem = str(self.votes[i])
                 if str_elem in weighted_points:
                     weighted_points[str_elem] += 1
                 else:
-                    weighted_points[str_elem] = 0
-                    Xs[str_elem] = elem[0]
-                    Ys[str_elem] = elem[1]
+                    weighted_points[str_elem] = 1
+                    Xs[str_elem] = X[i]
+                    Ys[str_elem] = Y[i]
+
 
             for str_elem in weighted_points:
-                if weighted_points[str_elem] > 10:
+                if weighted_points[str_elem] > 30:
                     plt.scatter(Xs[str_elem], Ys[str_elem],
                                 color='purple',
                                 s=10 * weighted_points[str_elem],
                                 alpha=0.2)
 
-        plt.xlim([-radius, radius])
-        plt.ylim([-radius, radius])
+        plt.scatter(X, Y, color='blue', s=s, alpha=alpha)
+
+        if radius:
+            plt.xlim([-radius, radius])
+            plt.ylim([-radius, radius])
         plt.title(self.label, size=38)
         plt.axis('off')
 
@@ -219,34 +221,59 @@ class Election(Instance):
         # )
         MDS_object = MDS(n_components=2, dissimilarity='precomputed')
         self.coordinates[object_type] = MDS_object.fit_transform(self.distances[object_type])
-
+        print(self.coordinates)
 
         # ADJUST
         # find max dist
-        # if (not ('identity' in self.model_id.lower() and object_type=='vote')) \
-        #         and (not ('approval_id' in self.model_id.lower() and object_type=='vote')):
-        if (not self.all_dist_zeros(object_type)):
+        # if (not ('identity' in self.culture_id.lower() and object_type=='vote')) \
+        #         and (not ('approval_id' in self.culture_id.lower() and object_type=='vote')):
+        if not self.all_dist_zeros(object_type):
             dist = np.zeros([len(self.coordinates[object_type]), len(self.coordinates[object_type])])
             for pos_1, pos_2 in itertools.combinations([i for i in range(len(self.coordinates[object_type]))],
                                                        2):
-                # print(pos_1, pos_2)
-                dist[pos_1][pos_2] = np.linalg.norm(self.coordinates[object_type][pos_1] - self.coordinates[object_type][pos_2])
+                dist[pos_1][pos_2] = l2(self.coordinates[object_type][pos_1], self.coordinates[object_type][pos_2])
 
             result = np.where(dist == np.amax(dist))
             id_1 = result[0][0]
             id_2 = result[1][0]
 
             # rotate
-            left = id_1
-            right = id_2
+            a = id_1
+            b = id_2
 
             try:
-                d_x = self.coordinates[object_type][right][0] - self.coordinates[object_type][left][0]
-                d_y = self.coordinates[object_type][right][1] - self.coordinates[object_type][left][1]
+                d_x = self.coordinates[object_type][a][0] - self.coordinates[object_type][b][0]
+                d_y = self.coordinates[object_type][a][1] - self.coordinates[object_type][b][1]
                 alpha = math.atan(d_x / d_y)
                 self.rotate(alpha - math.pi / 2., object_type)
                 self.rotate(math.pi / 4., object_type)
             except Exception:
+                print("e1")
+                pass
+
+            # PUT heavier corner in the left lower part
+            if self.coordinates[object_type][a][0] < self.coordinates[object_type][b][0]:
+                left = a
+                right = b
+            else:
+                left = b
+                right = a
+            try:
+                left_ctr = 0
+                right_ctr = 0
+                for v in range(self.num_voters):
+                    d_left = l2(self.coordinates[object_type][left], self.coordinates[object_type][v])
+                    d_right = l2(self.coordinates[object_type][right], self.coordinates[object_type][v])
+                    if d_left < d_right:
+                        left_ctr += 1
+                    else:
+                        right_ctr += 1
+
+                if left_ctr < right_ctr:
+                    self.rotate(math.pi, object_type)
+
+            except Exception:
+                print("e2")
                 pass
 
         if self.store:
@@ -264,8 +291,8 @@ class Election(Instance):
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(["v1", "v2", "distance"])
-            for v1 in range(len(self.distances[object_type])):
-                for v2 in range(len(self.distances[object_type])):
+            for v1 in range(self.num_voters):
+                for v2 in range(self.num_voters):
                     distance = str(self.distances[object_type][v1][v2])
                     writer.writerow([v1, v2, distance])
 
@@ -295,16 +322,13 @@ class Election(Instance):
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(["vote_id", "x", "y"])
-            for vote_id in range(len(self.coordinates[object_type])):
+            for vote_id in range(self.num_voters):
                 x = str(self.coordinates[object_type][vote_id][0])
                 y = str(self.coordinates[object_type][vote_id][1])
                 writer.writerow([vote_id, x, y])
 
     def _import_coordinates(self, object_type='vote'):
-        if object_type == 'vote':
-            file_name = f'{self.election_id}.csv'
-        else:
-            file_name = f'{self.election_id}_{object_type}.csv'
+        file_name = f'{self.election_id}_{object_type}.csv'
         path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'coordinates',
                             file_name)
         with open(path, 'r', newline='') as csv_file:

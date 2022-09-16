@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 
-from mapel.main._inner_distances import map_str_to_func
+from mapel.main.inner_distances import map_str_to_func
 
 
 # MAIN GRAPH DISTANCES

@@ -29,7 +29,6 @@ def compute_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, pr
         try:
             winning_committees = abcrules.compute(rule_name, profile, committee_size,
                                                   algorithm="gurobi", resolute=resolute)
-            # print(winning_committees)
         except Exception:
             try:
                 winning_committees = abcrules.compute(rule_name, profile, committee_size,
@@ -40,8 +39,6 @@ def compute_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, pr
         clean_winning_committees = []
         for committee in winning_committees:
             clean_winning_committees.append(set(committee))
-            # clean_winning_committees.append(committee)
-
         all_winning_committees[election.election_id] = clean_winning_committees
     store_committees_to_file(experiment.experiment_id, rule_name, all_winning_committees)
 

@@ -62,7 +62,7 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
             with open(path, 'w') as file_csv:
                 file_csv.write(
-                    "size;num_candidates;num_voters;model_id;params;color;alpha;family_id;marker;show\n")
+                    "size;num_candidates;num_voters;culture_id;params;color;alpha;family_id;marker;show\n")
                 file_csv.write("3;10;100;impartial_culture;{};black;1;Impartial Culture;o;t\n")
                 file_csv.write("3;10;100;iac;{};black;0.7;IAC;o;t\n")
                 file_csv.write("3;10;100;conitzer;{};limegreen;1;SP by Conitzer;o;t\n")
@@ -75,10 +75,10 @@ class OrdinalElectionExperiment(ElectionExperiment):
                 file_csv.write("3;10;100;3d_cube;{'dim': 3};ForestGreen;0.7;3D Cube;o;t\n")
                 file_csv.write("3;10;100;2d_sphere;{'dim': 2};black;0.2;2D Sphere;o;t\n")
                 file_csv.write("3;10;100;3d_sphere;{'dim': 3};black;0.4;3D Sphere;o;t\n")
-                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn model_id 0.1;o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn culture_id 0.1;o;t\n")
                 file_csv.write(
                     "3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;Norm-Mallows 0.5;o;t\n")
-                file_csv.write("3;10;100;urn_model;{'alpha':0};orange;1;Urn model_id (gamma);o;t\n")
+                file_csv.write("3;10;100;urn_model;{'alpha':0};orange;1;Urn culture_id (gamma);o;t\n")
                 file_csv.write(
                     "3;10;100;norm-mallows;{'norm-phi':0};cyan;1;Norm-Mallows (uniform);o;t\n")
                 file_csv.write("1;10;100;identity;{};blue;1;Identity;x;t\n")

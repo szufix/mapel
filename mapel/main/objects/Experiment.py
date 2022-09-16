@@ -6,7 +6,10 @@ import math
 import os
 import warnings
 from abc import ABCMeta, abstractmethod
-
+from PIL import Image
+from mapel.main.objects.Family import Family
+import mapel.main.printing as pr
+import time
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -16,9 +19,7 @@ from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 from mapel.main.embedding.simulated_annealing.simulated_annealing import SimulatedAnnealing
 
 COLORS = []
-from PIL import Image
-from mapel.main.objects.Family import Family
-import mapel.main._print as pr
+
 
 try:
     from sklearn.manifold import MDS
@@ -134,6 +135,10 @@ class Experiment:
             pass
 
     @abstractmethod
+    def add_culture(self):
+        pass
+
+    @abstractmethod
     def prepare_instances(self):
         pass
 
@@ -171,8 +176,6 @@ class Experiment:
             for j, instance_id_2 in enumerate(self.distances):
                 if i < j:
 
-                    # print(instance_id_1,instance_id_2)
-                    # print(self.distances[instance_id_1][instance_id_2])
                     self.distances[instance_id_1][instance_id_2] *= factor
                     if self.distances[instance_id_1][instance_id_2] == 0.:
                         self.distances[instance_id_1][instance_id_2] = zero_distance
@@ -314,6 +317,31 @@ class Experiment:
     def import_controllers(self):
         pass
 
+    def compute_feature_from_function(self, function, feature_id='my_feature', printing=False):
+        feature_dict = {'value': {}, 'time': {}}
+        for instance_id in self.instances:
+            if printing:
+                print(instance_id)
+            start = time.time()
+            instance = self.instances[instance_id]
+            value = function(instance)
+            total_time = time.time() - start
+            feature_dict['value'][instance_id] = value
+            feature_dict['time'][instance_id] = total_time
+        if self.store:
+            self._store_instance_feature(feature_id, feature_dict)
+        self.features[feature_id] = feature_dict
+        return feature_dict
+
+    def _store_instance_feature(self, feature_id, feature_dict):
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                            "features", f'{feature_id}_{self.embedding_id}.csv')
+        with open(path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+            writer.writerow(["instance_id", "value", "time"])
+            for key in feature_dict['value']:
+                writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
+
     def add_coordinates_to_experiment(self, dim=2, file_name=None) -> dict:
         """ Import from a file precomputed coordinates of all the points --
         each point refer to one instance """
@@ -334,10 +362,10 @@ class Experiment:
             for row in reader:
                 try:
                     instance_id = row['instance_id']
-                except:
+                except KeyError:
                     try:
                         instance_id = row['election_id']
-                    except:
+                    except KeyError:
                         pass
 
                 if dim == 1:
@@ -370,7 +398,7 @@ class Experiment:
             self.families = {}
             for i, instance_id in enumerate(self.instances):
                 ele = self.instances[instance_id]
-                model = ele.model_id
+                model = ele.culture_id
                 family_id = model
                 label = instance_id
                 color = COLORS[int(i % len(COLORS))]
@@ -378,7 +406,7 @@ class Experiment:
                 alpha = 1.
 
                 self.families[instance_id] = Family(
-                    model_id=model, family_id=family_id,
+                    culture_id=model, family_id=family_id,
                     label=label, alpha=alpha,
                     color=color)
 
@@ -643,8 +671,12 @@ class Experiment:
 
         return distances
 
-    def print_correlation(self, distance_id_1='spearman', distance_id_2='l1-mutual_attraction',
-                          title=None, all=False, my_list=None):
+    def print_correlation_between_distances(self,
+                                            distance_id_1='spearman',
+                                            distance_id_2='l1-mutual_attraction',
+                                            title=None, all=False, my_list=None,
+                                            s=12, alpha=0.25, color='purple',
+                                            title_size=24, label_size=20, ticks_size=10):
 
         all_distances = {}
 
@@ -660,7 +692,8 @@ class Experiment:
                 'emd-positionwise': 'EMD-Positionwise',
                 'hamming': "Hamming",
                 "jaccard": "Jaccard",
-                'discrete': 'Discrete'
+                'discrete': 'Discrete',
+                'swap': 'Swap',
             }.get(name)
 
         def normalize(name):
@@ -669,8 +702,6 @@ class Experiment:
                 'l1-mutual_attraction': 1.,
                 'emd-positionwise': 1.,
             }.get(name)
-
-
 
         for name_1, name_2 in itertools.combinations(names, 2):
             # for target in ['double', 'radius', '2g-IC', 'IC_', '1d_', 'maleuc', 'malasym', 'vec']:
@@ -729,34 +760,48 @@ class Experiment:
             # empty_x = np.linspace(0, 500, 100)
             # empty_y = [limit_1 * x for x in empty_x]
 
-            ax.scatter(values_x, values_y, s=12, alpha=0.25, color='purple')
+            ax.scatter(values_x, values_y, s=s, alpha=alpha, color=color)
             # ax.scatter(values_x, values_y, s=4, alpha=0.005, color='purple')
-
 
             # ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
 
-            pear = round(stats.pearsonr(values_x, values_y)[0], 3)
-            pear_text = f'PCC = {pear}'
-            print('pear', pear)
+            PCC = round(stats.pearsonr(values_x, values_y)[0], 3)
+            print('PCC', PCC)
+            pear_text = f'PCC = {PCC}'
             # plt.text(0.7, 0.1, pear_text, transform=ax.transAxes, size=14)
 
-            if title is None:
-                title = f'{nice(name_1)} vs {nice(name_2)}'
+            SCC = round(stats.spearmanr(values_x, values_y)[0], 3)
+            print('SCC', SCC)
+
+            # if title is None:
+            #     title = f'{nice(name_1)} vs {nice(name_2)}'
             # title=f'{target}'
 
             plt.xlim(left=0)
             plt.ylim(bottom=0)
 
-            plt.xlabel(nice(name_1), size=20)
-            plt.ylabel(nice(name_2), size=20)
-            # plt.title(title, size=24)
+            plt.xticks(fontsize=ticks_size)
+            plt.yticks(fontsize=ticks_size)
+
+            plt.xlabel(nice(name_1), size=label_size)
+            plt.ylabel(nice(name_2), size=label_size)
+
+            if title:
+                plt.title(title, size=title_size)
             # saveas = f'images/correlation/corr_{name_1}_{name_2}_{target}'
+
+            path = f'images/correlation'
+            is_exist = os.path.exists(path)
+
+            if not is_exist:
+                os.makedirs(path)
+
             saveas = f'images/correlation/corr_{name_1}_{name_2}'
             plt.savefig(saveas, bbox_inches='tight')
             plt.show()
 
     def print_correlation_old(self, distance_id_1='spearman', distance_id_2='l1-mutual_attraction',
-                          title=None):
+                              title=None):
 
         all_distances = {}
 
@@ -846,7 +891,7 @@ class Experiment:
             plt.savefig(saveas, bbox_inches='tight')
             # plt.show()
 
-    def merge_election_images(self, size=250, name=None):
+    def merge_election_images(self, size=250, name=None, show=False, ncol=1, nrow=1):
 
         images = []
         for election in self.instances.values():
@@ -857,17 +902,18 @@ class Experiment:
         # image1 = image1.resize((426, 240))
         image1_size = images[0].size
 
-        new_image = Image.new('RGB', (5 * image1_size[0], 6 * image1_size[1]), (size, size, size))
+        new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]), (size, size, size))
         # new_image = Image.new('RGB', (5 * image1_size[0], 2 * image1_size[1]), (250, 250, 250))
 
         print(len(images))
-        for i in range(5):
-            new_image.paste(images[i], (image1_size[0] * i, 0))
-            new_image.paste(images[i + 5], (image1_size[0] * i, image1_size[1]))
-            new_image.paste(images[i + 10], (image1_size[0] * i, image1_size[1] * 2))
-            new_image.paste(images[i + 15], (image1_size[0] * i, image1_size[1] * 3))
-            new_image.paste(images[i + 20], (image1_size[0] * i, image1_size[1] * 4))
-            new_image.paste(images[i + 25], (image1_size[0] * i, image1_size[1] * 5))
+        for i in range(ncol):
+            for j in range(nrow):
+                # new_image.paste(images[i], (image1_size[0] * i, 0))
+                # new_image.paste(images[i + 5], (image1_size[0] * i, image1_size[1]))
+                new_image.paste(images[i + j*ncol], (image1_size[0] * i, image1_size[1] * j))
+                # new_image.paste(images[i + 15], (image1_size[0] * i, image1_size[1] * 3))
+                # new_image.paste(images[i + 20], (image1_size[0] * i, image1_size[1] * 4))
+                # new_image.paste(images[i + 25], (image1_size[0] * i, image1_size[1] * 5))
             # new_image.paste(images[i + 30], (image1_size[0] * i, image1_size[1] * 6))
             # new_image.paste(images[i + 35], (image1_size[0] * i, image1_size[1] * 7))
 
@@ -876,4 +922,5 @@ class Experiment:
         # new_image.paste(image3, (0, image1_size[1]))
         # new_image.paste(image4, (image1_size[0], image1_size[1]))
         new_image.save(f'images/microscope/{name}.png', "PNG", quality=85)
-        # new_image.show()
+        if show:
+            new_image.show()

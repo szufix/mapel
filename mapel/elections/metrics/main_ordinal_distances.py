@@ -1,9 +1,9 @@
 from typing import Callable, List
 from itertools import combinations, permutations
 
-from mapel.main._matchings import *
+from mapel.main.matchings import *
 from mapel.elections.objects.OrdinalElection import OrdinalElection
-from mapel.main._inner_distances import swap_distance
+from mapel.main.inner_distances import swap_distance
 
 
 # MAIN DISTANCES

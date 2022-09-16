@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-from mapel.elections.models.group_separable import get_gs_caterpillar_vectors
-from mapel.elections.models.single_peaked import get_walsh_vectors, \
+from mapel.elections.cultures.group_separable import get_gs_caterpillar_vectors
+from mapel.elections.cultures.single_peaked import get_walsh_vectors, \
     get_conitzer_vectors
-from mapel.elections.models.single_crossing import get_single_crossing_vectors
+from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
 
 import mapel.elections.models_ as el
 
 from mapel.elections.objects.Election import Election
 from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 
-from mapel.elections.models.mallows import get_mallows_matrix
+from mapel.elections.cultures.mallows import get_mallows_matrix
 
 import os
 import csv

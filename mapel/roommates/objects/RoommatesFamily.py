@@ -4,9 +4,9 @@ import copy
 
 from mapel.main.objects.Family import Family
 from mapel.roommates.objects.Roommates import Roommates
-from mapel.main._utils import *
+from mapel.main.utils import *
 
-import mapel.roommates.models.mallows as mallows
+import mapel.roommates.cultures.mallows as mallows
 
 
 class RoommatesFamily(Family):

@@ -60,7 +60,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
     for k in experiment.families:
         if experiment.families[k].show:
 
-            if experiment.families[k].model_id in {'identity',
+            if experiment.families[k].culture_id in {'identity',
                                                          'uniformity',
                                                          'antagonism',
                                                          'stratification',
@@ -68,7 +68,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                                                          'stid', 'anun',
                                                          'stun', 'stan'}:
                 zorder = 0
-                if experiment.families[k].model_id == 'unid':
+                if experiment.families[k].culture_id == 'unid':
                     zorder = 1
 
                 t_ms = ms
@@ -82,7 +82,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                            marker='o', linewidth=0)
                 ctr += experiment.families[k].size
 
-            elif experiment.families[k].model_id in {'real_identity',
+            elif experiment.families[k].culture_id in {'real_identity',
                                                            'real_uniformity',
                                                            'real_antagonism',
                                                            'real_stratification'}:
@@ -95,7 +95,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                 ctr += experiment.families[k].size
 
             elif experiment.families[
-                k].model_id in LIST_OF_PREFLIB_ELECTIONS:
+                k].culture_id in LIST_OF_PREFLIB_ELECTIONS:
                 ax.scatter(experiment.coordinates_by_families[k][0],
                            experiment.coordinates_by_families[k][1], zorder=2,
                            color=experiment.families[k].color,
@@ -104,7 +104,7 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                            marker=experiment.families[k].marker)
                 ctr += experiment.families[k].size
 
-            elif experiment.families[k].model_id in {'norm_mallows',
+            elif experiment.families[k].culture_id in {'norm_mallows',
                                                            'mallows',
                                                            'urn_experiment'}:
                 for i in range(experiment.families[k].size):
@@ -112,13 +112,13 @@ def ijcai_2021_coloring_2(ax=None, experiment=None, ms=None, tmp=None,
                     if param > 1:
                         param = 1
 
-                    if experiment.families[k].model_id in {
+                    if experiment.families[k].culture_id in {
                         'norm_mallows', 'mallows'}:
                         my_cmap = custom_div_cmap(num_colors=11,
                                                   colors=["cyan", "blue"],
                                                   name='my_custom_m')
                         # print(params)
-                    elif experiment.families[k].model_id in {
+                    elif experiment.families[k].culture_id in {
                         'urn_experiment'}:
                         my_cmap = custom_div_cmap(num_colors=11,
                                                   colors=["gold", "orange",
@@ -306,7 +306,7 @@ def compute_winners(experiment_id, method='hb', algorithm='exact',
             if method in {'pav', 'hb'}:
                 if algorithm == 'exact':
                     rule = {'election_id': method, 'length': num_winners,
-                            'type': 'borda_owa'}
+                            'type_id': 'borda_owa'}
                     winners = win.get_winners(params, copy.deepcopy(experiment.elections[Z].votes), rule)
 
                 elif algorithm == 'greedy':
@@ -489,7 +489,7 @@ def compute_highest_borda1m_map(experiment_id):
 def compute_levels(experiment_id, election_model='identity'):
     model = obj.Experiment(experiment_id)
 
-    # model_id = 'identity'
+    # culture_id = 'identity'
     num_voters = 100
     num_candidates = 10
     x = 'x'
@@ -1090,7 +1090,7 @@ def import_approval_elections(experiment_id, elections_id, params):
     return elections, params
 
 #
-# if model_id == 'crate':
+# if culture_id == 'crate':
                 #     my_size = 9
                 #     # with_edge
                 #     for p in range(my_size):

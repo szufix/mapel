@@ -5,7 +5,7 @@ import itertools
 # AUXILIARY FUNCTIONS
 
 def kemeny_ranking(election):
-    print(election.model_id)
+    print(election.culture_id)
     m = election.num_candidates
     wmg = election.votes_to_pairwise_matrix()
     best_d = np.infty
@@ -145,7 +145,7 @@ def cand_dom_dist_std(election):
 #             for pote in election.potes:
 #                 dist += abs(pote[c1] - pote[c2])
 #             distances[c1][c2] = dist
-#     print(election.model_id)
+#     print(election.culture_id)
 #     print(distances)
 #     return distances.sum() / (election.num_candidates - 1) / election.num_candidates
 # NO SENSE – ALWAYS CONSTANT

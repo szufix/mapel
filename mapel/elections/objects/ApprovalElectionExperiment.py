@@ -4,12 +4,12 @@ import os
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
 from mapel.elections.other import pabulib
-from mapel.main._glossary import *
-from mapel.main._utils import *
+from mapel.main.glossary import *
+from mapel.main.utils import *
 import numpy as np
 import csv
 
-from mapel.main._matchings import solve_matching_vectors
+from mapel.main.matchings import solve_matching_vectors
 
 try:
     from sklearn.manifold import MDS
@@ -32,9 +32,9 @@ class ApprovalElectionExperiment(ElectionExperiment):
     def __init__(self, instances=None, distances=None, _import=True, shift=False,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
                  instance_type='approval', dim=2, store=True,
-                                         coordinates_names=None,
-                                         embedding_id='spring',
-                                         fast_import=False):
+                 coordinates_names=None,
+                 embedding_id='spring',
+                 fast_import=False):
         self.shift = shift
         super().__init__(instances=instances, distances=distances,
                          coordinates=coordinates, distance_id=distance_id,
@@ -44,7 +44,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
                          embedding_id=embedding_id,
                          fast_import=fast_import)
 
-    def compute_distance_between_rules(self, list_of_rules=None,
+    def compute_distance_between_rules(self, list_of_rules=None, printing=False,
                                        distance_id=None, committee_size=10):
 
         self.import_committees(list_of_rules=list_of_rules)
@@ -59,14 +59,14 @@ class ApprovalElectionExperiment(ElectionExperiment):
             for i, r1 in enumerate(list_of_rules):
                 for j, r2 in enumerate(list_of_rules):
                     if i < j:
-                        print(r1, r2)
+                        if printing:
+                            print(r1, r2)
                         all_distance = []
                         for election_id in self.elections:
                             com1 = self.all_winning_committees[r1][
                                 election_id][0]
                             com2 = self.all_winning_committees[r2][
                                 election_id][0]
-                            # election = self.experiment.elections[election_id]
 
                             if distance_id == 'discrete':
                                 distance = len(com1.symmetric_difference(com2))
@@ -90,14 +90,15 @@ class ApprovalElectionExperiment(ElectionExperiment):
                                                 cand_dist[k1][k2] = 1 - len(
                                                     ac1.intersection(ac2)) / len(ac1.union(ac2))
                                 distance, _ = solve_matching_vectors(cand_dist)
-                                print(distance)
                                 distance /= committee_size
+                                if printing:
+                                    print(distance)
                             all_distance.append(distance)
                         mean = sum(all_distance) / self.num_elections
                         writer.writerow([r1, r2, mean, 0.])
 
     def compute_rule_features(self, feature_id=None, list_of_rules=None, printing=False,
-                             feature_params=None):
+                              feature_params=None):
         if feature_params is None:
             feature_params = {}
 
@@ -153,9 +154,8 @@ class ApprovalElectionExperiment(ElectionExperiment):
             # print("")
             print("\\\\ \\midrule")
 
-
     def print_latex_multitable(self, features_id=None, columns_id=None,
-                          list_of_rules=None, list_of_models=None):
+                               list_of_rules=None, list_of_models=None):
 
         all_results = {}
         for feature_id, column_id in zip(features_id, columns_id):
@@ -195,45 +195,6 @@ class ApprovalElectionExperiment(ElectionExperiment):
             # print("")
             print("\\\\ \\midrule")
 
-    # def add_elections_to_experiment(self) -> dict:
-    #     """ Return: elections imported from files """
-    #
-    #     elections = {}
-    #
-    #     for family_id in self.families:
-    #         print(family_id)
-    #         ids = []
-    #
-    #         single = self.families[family_id].single_election
-    #
-    #         if self.families[family_id].model_id in APPROVAL_MODELS or \
-    #                 self.families[family_id].model_id in APPROVAL_FAKE_MODELS or \
-    #                 self.families[family_id].model_id in ['pabulib']:
-    #
-    #             for j in range(self.families[family_id].size):
-    #                 election_id = get_instance_id(single, family_id, j)
-    #                 election = ApprovalElection(self.experiment_id, election_id,
-    #                                             _import=self._import)
-    #                 elections[election_id] = election
-    #                 ids.append(str(election_id))
-    #         else:
-    #
-    #             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-    #                                 "elections", self.families[family_id].model_id)
-    #             for i, name in enumerate(os.listdir(path)):
-    #                 if i >= self.families[family_id].size:
-    #                     break
-    #                 name = os.path.splitext(name)[0]
-    #                 name = f'{self.families[family_id].model_id}/{name}'
-    #                 election = ApprovalElection(self.experiment_id, name,
-    #                                             _import=self._import, shift=self.shift)
-    #                 elections[name] = election
-    #                 ids.append(str(name))
-    #
-    #         self.families[family_id].election_ids = ids
-    #
-    #     return elections
-
     def create_structure(self) -> None:
 
         # PREPARE STRUCTURE
@@ -260,7 +221,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
 
             with open(path, 'w') as file_csv:
-                file_csv.write("size;num_candidates;num_voters;model_id;params;color;alpha;"
+                file_csv.write("size;num_candidates;num_voters;culture_id;params;color;alpha;"
                                "label;marker;show;path")
                 file_csv.write("1;50;200;approval_id;{'p': 0.5};brown;0.75;ID 0.5;*;t;{}")
                 file_csv.write("1;50;200;approval_ic;{'p': 0.5};black;0.75;IC 0.5;*;t;{}")

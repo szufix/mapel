@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 class Family:
-    """ Family of elections: a set of elections from the same election model_id """
+    """ Family of elections: a set of elections from the same election culture_id """
 
     def __init__(self,
-                 model_id: str = None,
+                 culture_id: str = None,
                  family_id='none',
                  params: dict = None,
                  size: int = 1,
@@ -20,7 +20,7 @@ class Family:
                  path: dict = None):
 
         self.family_id = family_id
-        self.model_id = model_id
+        self.culture_id = culture_id
         self.params = params
         self.size = size
         self.label = label

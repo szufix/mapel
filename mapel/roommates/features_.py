@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 import mapel.roommates.features.basic_features as basic
-from mapel.main._glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
-from mapel.main._features_main import get_main_local_feature, get_main_global_feature
+from mapel.main.glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
+from mapel.main.features_main import get_main_local_feature, get_main_global_feature
 import numpy as np
 from itertools import combinations
-from mapel.main._inner_distances import l2
+from mapel.main.inner_distances import l2
 
 
 def get_local_feature(feature_id):

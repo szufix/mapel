@@ -1,8 +1,8 @@
 import mapel.elections.features_ as features
 import mapel.elections.metrics_ as metr
-import mapel.elections.models_ as ele
+import mapel.elections.cultures_ as ele
 import mapel.elections.other.development as dev
-import mapel.main._print as pr
+import mapel.main.printing as pr
 from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
@@ -11,20 +11,34 @@ from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExp
 try:
     from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
     from mapel.roommates.objects.Roommates import Roommates
-    import mapel.roommates.models_ as rom
+    import mapel.roommates.cultures_ as rom
 except:
     print("Failed when importing Roommates")
-    pass
 
-# try:
-from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
-# except:
-#     print("Failed when importing Marriages")
-#     pass
+try:
+    from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
+except:
+    print("Failed when importing Marriages")
 
 
 def hello():
     print("Hello!")
+
+
+def prepare_online_ordinal_experiment(*kwargs):
+    return prepare_experiment(*kwargs, instance_type='ordinal', store=False)
+
+
+def prepare_offline_ordinal_experiment(*kwargs):
+    return prepare_experiment(*kwargs, instance_type='ordinal', store=True)
+
+
+def prepare_online_approval_experiment(*kwargs):
+    return prepare_experiment(*kwargs, instance_type='approval', store=False)
+
+
+def prepare_offline_approval_experiment(*kwargs):
+    return prepare_experiment(*kwargs, instance_type='approval', store=True)
 
 
 def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',

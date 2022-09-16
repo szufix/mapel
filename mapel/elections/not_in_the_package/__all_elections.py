@@ -81,9 +81,9 @@ def generate_all_ordinal_elections(experiment, num_candidates, num_voters):
     # for
     # else:
     #    store the election
-    #     model_id =''
+    #     culture_id =''
     #     election_id = ''
-    #     store_ordinal_election(experiment, model_id, election_id, num_candidates, num_voters,
+    #     store_ordinal_election(experiment, culture_id, election_id, num_candidates, num_voters,
     #                            params, ballot)
 
 

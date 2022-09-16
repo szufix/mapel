@@ -15,7 +15,7 @@ def generate_winners(election=None, num_winners=1, ballot="ordinal", type=None, 
               "elections": 1,
               'candidates': num_candidates,
               'voters': num_voters}
-    rule = {'type': type,
+    rule = {'type_id': type,
             'name': name,
             'length': num_candidates}
     winners, total_time = get_winners(params, votes, rule, ballot)
@@ -30,7 +30,7 @@ def get_winners(params, votes, rule, ballot='ordinal'):
 
 
 def get_approval_winners(params, elections, rule):
-    if rule['type'] == 'app_cc':
+    if rule['type_id'] == 'app_cc':
         all_winners = []
         for i in range(params['elections']):
             winners = get_winners_app_cc(params, elections['votes'][i], elections['candidates'][i])
@@ -40,7 +40,7 @@ def get_approval_winners(params, elections, rule):
 
 # Need update
 def get_ordinal_winners(params, votes, rule):
-    if rule['type'] == 'scoring':
+    if rule['type_id'] == 'scoring':
         scoring = get_rule(rule['name'], rule['length'])
         all_winners = []
         for i in range(params['elections']):
@@ -48,7 +48,7 @@ def get_ordinal_winners(params, votes, rule):
             all_winners += winners
         return all_winners
 
-    elif rule['type'] == 'borda_owa':
+    elif rule['type_id'] == 'borda_owa':
         owa = get_rule(rule['name'], rule['length'])
         all_winners = []
         for i in range(params['elections']):
@@ -57,7 +57,7 @@ def get_ordinal_winners(params, votes, rule):
         # print(obj_vaue)
         return all_winners, total_time
 
-    elif rule['type'] == 'bloc_owa':
+    elif rule['type_id'] == 'bloc_owa':
         owa = get_rule(rule['name'], rule['length'])
         # t_bloc = rule['special']
         t_bloc = params["orders"]
@@ -68,14 +68,14 @@ def get_ordinal_winners(params, votes, rule):
         # print(winners)
         return all_winners, total_time
 
-    elif rule['type'] == 'stv':
+    elif rule['type_id'] == 'stv':
         all_winners = []
         for i in range(params['elections']):
             winners = get_winners_stv(params, votes[i], params['candidates'])
             all_winners += winners
         return all_winners
 
-    elif rule['type'] == 'experiment':
+    elif rule['type_id'] == 'experiment':
         all_winners = []
         for i in range(params['elections']):
             winners = []
@@ -85,19 +85,19 @@ def get_ordinal_winners(params, votes, rule):
             all_winners += winners
         return all_winners
 
-    elif rule['type'] == "approx_cc":
+    elif rule['type_id'] == "approx_cc":
         all_winners = []
         winners = get_winners_approx_cc(votes, params)
         all_winners += winners
         return all_winners
 
-    elif rule['type'] == "approx_hb":
+    elif rule['type_id'] == "approx_hb":
         all_winners = []
         winners = get_winners_approx_hb(votes, params, 'greedy')
         all_winners += winners
         return all_winners
 
-    elif rule['type'] == "approx_pav":
+    elif rule['type_id'] == "approx_pav":
         all_winners = []
         winners = get_winners_approx_pav(votes, params, 'greedy')
         all_winners += winners

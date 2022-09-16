@@ -2,7 +2,7 @@ import csv
 import os
 import numpy as np
 
-from mapel.elections.models_ import store_votes_in_a_file
+from mapel.elections.cultures_ import store_votes_in_a_file
 
 
 def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pabulib'):
