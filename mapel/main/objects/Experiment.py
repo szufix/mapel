@@ -689,11 +689,14 @@ class Experiment:
             return {
                 'spearman': 'Spearman',
                 'l1-mutual_attraction': '$\ell_1$ Mutual Attraction',
-                'emd-positionwise': 'EMD-Positionwise',
                 'hamming': "Hamming",
                 "jaccard": "Jaccard",
                 'discrete': 'Discrete',
                 'swap': 'Swap',
+                'emd-bordawise': "EMD-Bordawise",
+                'emd-positionwise': 'EMD-Positionwise',
+                'l1-positionwise': "$\ell_1$-Positionwise",
+                'l1-pairwise': "$\ell_1$-Pairwise",
             }.get(name)
 
         def normalize(name):
@@ -735,7 +738,9 @@ class Experiment:
                     # values_x.append(all_distances[name_1][e1][e2] * normalize(name_1))
                     # values_y.append(all_distances[name_2][e1][e2] * normalize(name_2))
 
-            fig = plt.figure()
+            fig = plt.figure(figsize=[6.4, 4.8])
+            plt.gcf().subplots_adjust(left=0.2)
+            plt.gcf().subplots_adjust(bottom=0.2)
             ax = fig.add_subplot()
             # a = []
             # b = []
@@ -797,7 +802,8 @@ class Experiment:
                 os.makedirs(path)
 
             saveas = f'images/correlation/corr_{name_1}_{name_2}'
-            plt.savefig(saveas, bbox_inches='tight')
+            plt.savefig(saveas, pad_inches=1)
+            # plt.savefig(saveas, bbox_inches=1)
             plt.show()
 
     def print_correlation_old(self, distance_id_1='spearman', distance_id_2='l1-mutual_attraction',

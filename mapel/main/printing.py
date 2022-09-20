@@ -66,6 +66,7 @@ def print_map_2d(experiment,
                  legend=True, feature_labelsize=14, dpi=250,
                  column_id='value', title_size=16, ticks_pos=None,
                  feature_ids=None, omit=None, textual_size=16, figsize=(6.4, 6.4)) -> None:
+
     if textual is None:
         textual = []
 
@@ -710,7 +711,6 @@ def basic_coloring(experiment=None, ax=None, dim=2, textual=None, ms=20):
                            # s=family.ms,
                            s=ms,
                            marker=family.marker)
-
 
 def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
     for family_id in experiment.families:

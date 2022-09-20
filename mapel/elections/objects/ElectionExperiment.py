@@ -195,8 +195,11 @@ class ElectionExperiment(Experiment):
     def add_culture(self):
         pass
 
-    def prepare_elections(self, printing=False):
+    def prepare_elections(self, printing=False, store_points=False, aggregated=True):
         """ Prepare elections for a given experiment """
+
+        self.store_points = store_points
+        self.aggregated = aggregated
 
         if self.instances is None:
             self.instances = {}
@@ -207,7 +210,9 @@ class ElectionExperiment(Experiment):
 
             new_instances = self.families[family_id].prepare_family(
                 store=self.store,
-                experiment_id=self.experiment_id)
+                experiment_id=self.experiment_id,
+                store_points=store_points,
+                aggregated=aggregated)
 
             for instance_id in new_instances:
                 self.instances[instance_id] = new_instances[instance_id]
@@ -356,8 +361,12 @@ class ElectionExperiment(Experiment):
                 family_id = None
                 show = True
 
-                if 'culture_id' in row.keys():
-                    culture_id = str(row['culture_id']).strip()
+                try:
+                    if 'culture_id' in row.keys():
+                        culture_id = str(row['culture_id']).strip()
+                except:
+                    if 'model_id' in row.keys():
+                        culture_id = str(row['model_id']).strip()
 
                 if 'color' in row.keys():
                     color = str(row['color']).strip()

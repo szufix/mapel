@@ -62,7 +62,8 @@ class ElectionFamily(Family):
         else:
             self.__dict__[name] = value
 
-    def prepare_family(self, experiment_id=None, store=None):
+    def prepare_family(self, experiment_id=None, store=None,
+                       store_points=False, aggregated=True):
 
         # print(self.instance_type)
         if self.instance_type == 'ordinal':
@@ -102,7 +103,14 @@ class ElectionFamily(Family):
                                            variable=variable, _import=False,
                                            )
 
-                election.prepare_instance(store=store)
+                election.prepare_instance(store=store, aggregated=aggregated)
+
+                if store_points:
+                    try:
+                        election.points['voters'] = election.import_ideal_points('voters')
+                        election.points['candidates'] = election.import_ideal_points('candidates')
+                    except:
+                        pass
 
                 election.compute_potes()
 

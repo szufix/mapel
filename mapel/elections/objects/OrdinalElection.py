@@ -3,6 +3,7 @@ import os
 import numpy as np
 from scipy.stats import gamma
 import random as rand
+import csv
 
 import mapel.elections.cultures.mallows as mallows
 from mapel.main.glossary import *
@@ -40,6 +41,7 @@ class OrdinalElection(Election):
         self.borda_points = []
         self.potes = None
         self.condorcet = None
+        self.points = {}
 
         if _import and experiment_id != 'virtual':
             try:
@@ -65,6 +67,12 @@ class OrdinalElection(Election):
                         self.votes, self.num_voters, self.num_candidates, self.params, \
                         self.culture_id = import_real_soc_election(experiment_id, election_id,
                                                                    shift, fast_import)
+                        try:
+                            self.points['voters'] = self.import_ideal_points('voters')
+                            self.points['candidates'] = self.import_ideal_points('candidates')
+                        except:
+                            pass
+
                         try:
                             self.alpha = 1
                             if self.params and 'alpha' in self.params:
@@ -264,16 +272,19 @@ class OrdinalElection(Election):
             self.winners = generate_winners(election=self, num_winners=num_winners)
 
     # PREPARE INSTANCE
-    def prepare_instance(self, store=None):
+    def prepare_instance(self, store=None, aggregated=True):
+        self.params['exp_id'] = self.experiment_id
+        self.params['ele_id'] = self.election_id
+        self.params['aggregated'] = aggregated
         self.votes = generate_ordinal_votes(culture_id=self.culture_id,
                                             num_candidates=self.num_candidates,
                                             num_voters=self.num_voters,
                                             params=self.params)
         if store:
-            self._store_ordinal_election()
+            self._store_ordinal_election(aggregated=aggregated)
 
     # STORE
-    def _store_ordinal_election(self):
+    def _store_ordinal_election(self, aggregated=True):
         """ Store ordinal election in a .soc file """
         if self.culture_id in LIST_OF_FAKE_MODELS:
             file_name = f'{self.election_id}.soc'
@@ -287,7 +298,8 @@ class OrdinalElection(Election):
             file_name = f'{self.election_id}.soc'
             path = os.path.join("experiments", str(self.experiment_id), "elections", file_name)
             store_votes_in_a_file(self, self.culture_id, self.num_candidates, self.num_voters,
-                                  self.params, path, self.ballot, votes=self.votes)
+                                  self.params, path, self.ballot, votes=self.votes,
+                                  aggregated=aggregated)
 
     def compute_distances(self, distance_id='swap', object_type=None):
         """ Return: distances between votes """
@@ -331,6 +343,15 @@ class OrdinalElection(Election):
             self.condorcet = is_condorcet(self)
         return self.condorcet
 
+    def import_ideal_points(self, name):
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections",
+                            f'{self.election_id}_{name}.csv')
+        points = []
+        with open(path, 'r', newline='') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=';')
+            for row in reader:
+                points.append([float(row['x']), float(row['y'])])
+        return points
 
 def get_fake_multiplication(num_candidates, params, model):
     params['weight'] = 0.

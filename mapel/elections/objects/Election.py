@@ -50,6 +50,7 @@ class Election(Instance):
         self.potes = None
         self.features = {}
         self.object_type = 'vote'
+        self.points = {}
 
         self.distances = {}
         if not fast_import:
@@ -121,7 +122,7 @@ class Election(Instance):
                                                                num_winners)
 
     def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
-                  object_type=None):
+                  object_type=None, double_gradient=False):
 
         if object_type is None:
             object_type = self.object_type
@@ -147,7 +148,6 @@ class Election(Instance):
                     Xs[str_elem] = X[i]
                     Ys[str_elem] = Y[i]
 
-
             for str_elem in weighted_points:
                 if weighted_points[str_elem] > 30:
                     plt.scatter(Xs[str_elem], Ys[str_elem],
@@ -155,7 +155,13 @@ class Election(Instance):
                                 s=10 * weighted_points[str_elem],
                                 alpha=0.2)
 
-        plt.scatter(X, Y, color='blue', s=s, alpha=alpha)
+        if double_gradient:
+            for i in range(self.num_voters):
+                x = float(self.points['voters'][i][0])
+                y = float(self.points['voters'][i][1])
+                plt.scatter(X[i], Y[i], color=[0,y,x], s=s, alpha=alpha)
+        else:
+            plt.scatter(X, Y, color='blue', s=s, alpha=alpha)
 
         if radius:
             plt.xlim([-radius, radius])

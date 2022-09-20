@@ -1,7 +1,8 @@
 import numpy as np
 import math
 from numpy import linalg
-
+import os
+import csv
 
 ####################################################################################################
 # Approval Euclidean Election Models
@@ -134,6 +135,14 @@ def generate_2d_gaussian_party(num_voters=None, num_candidates=None, params=None
 ####################################################################################################
 # Ordinal Euclidean Election Models
 ####################################################################################################
+def store_ideal_points(points, file_name, experiment_id):
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", f'{file_name}.csv')
+    with open(path, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=';')
+        writer.writerow(["x", "y"])
+        for point in points:
+            writer.writerow([point[0], point[1]])
+
 def generate_ordinal_euclidean_votes(model: str = None, num_voters: int = None,
                                      num_candidates: int = None,
                                      params: dict = None) -> np.ndarray:
@@ -172,6 +181,10 @@ def generate_ordinal_euclidean_votes(model: str = None, num_voters: int = None,
             distances[v][c] = np.linalg.norm(voters[v] - candidates[c])
 
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
+
+    if not params['aggregated']:
+        store_ideal_points(voters, f'{params["ele_id"]}_voters', params['exp_id'])
+        store_ideal_points(candidates, f'{params["ele_id"]}_candidates', params['exp_id'])
 
     return votes
 

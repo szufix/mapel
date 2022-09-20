@@ -176,7 +176,7 @@ def generate_ordinal_votes(culture_id: str = None,
 
 
 def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
-                          params, path, ballot, votes=None):
+                          params, path, ballot, votes=None, aggregated=True):
     """ Store votes in a file """
     if votes is None:
         votes = election.votes
@@ -196,31 +196,56 @@ def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
         for i in range(num_candidates):
             file_.write(str(i) + ', c' + str(i) + "\n")
 
-        c = Counter(map(tuple, votes))
-        counted_votes = [[count, list(row)] for row, count in c.items()]
-        counted_votes = sorted(counted_votes, reverse=True)
 
-        file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
-                    str(len(counted_votes)) + "\n")
+        if aggregated:
 
-        if ballot == 'approval':
-            for i in range(len(counted_votes)):
-                file_.write(str(counted_votes[i][0]) + ', {')
-                for j in range(len(counted_votes[i][1])):
-                    file_.write(str(int(counted_votes[i][1][j])))
-                    if j < len(counted_votes[i][1]) - 1:
-                        file_.write(", ")
-                file_.write("}\n")
+            c = Counter(map(tuple, votes))
+            counted_votes = [[count, list(row)] for row, count in c.items()]
+            counted_votes = sorted(counted_votes, reverse=True)
 
-        elif ballot == 'ordinal':
-            for i in range(len(counted_votes)):
-                file_.write(str(counted_votes[i][0]) + ', ')
-                for j in range(len(counted_votes[i][1])):
-                    file_.write(str(int(counted_votes[i][1][j])))
-                    if j < len(counted_votes[i][1]) - 1:
-                        file_.write(", ")
-                file_.write("\n")
+            file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
+                        str(len(counted_votes)) + "\n")
 
+            if ballot == 'approval':
+                for i in range(len(counted_votes)):
+                    file_.write(str(counted_votes[i][0]) + ', {')
+                    for j in range(len(counted_votes[i][1])):
+                        file_.write(str(int(counted_votes[i][1][j])))
+                        if j < len(counted_votes[i][1]) - 1:
+                            file_.write(", ")
+                    file_.write("}\n")
+
+            elif ballot == 'ordinal':
+                for i in range(len(counted_votes)):
+                    file_.write(str(counted_votes[i][0]) + ', ')
+                    for j in range(len(counted_votes[i][1])):
+                        file_.write(str(int(counted_votes[i][1][j])))
+                        if j < len(counted_votes[i][1]) - 1:
+                            file_.write(", ")
+                    file_.write("\n")
+        else:
+
+            file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
+                        str(num_voters) + "\n")
+
+            if ballot == 'approval':
+                for i in range(len(votes)):
+                    file_.write('1, {')
+                    for j in range(len(votes[i][1])):
+                        file_.write(str(int(votes[i][1][j])))
+                        if j < len(votes[i][1]) - 1:
+                            file_.write(", ")
+                    file_.write("}\n")
+
+            elif ballot == 'ordinal':
+                print(votes)
+                for i in range(len(votes)):
+                    file_.write('1, ')
+                    for j in range(len(votes[i])):
+                        file_.write(str(int(votes[i][j])))
+                        if j < len(votes[i]) - 1:
+                            file_.write(", ")
+                    file_.write("\n")
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 16.05.2022 #
