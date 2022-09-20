@@ -60,6 +60,7 @@ class ElectionExperiment(Experiment):
         else:
             self.__dict__[name] = value
 
+
     def prepare_matrices(self):
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices")
         for file_name in os.listdir(path):

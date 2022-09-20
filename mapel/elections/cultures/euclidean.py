@@ -321,6 +321,7 @@ def get_rand(model: str, cat: str = "voters") -> list:
     elif model == "3d_sphere":
         dim = 3
         point = list(random_sphere(dim)[0])
+        print(point)
     elif model == "4d_sphere":
         dim = 4
         point = list(random_sphere(dim)[0])
