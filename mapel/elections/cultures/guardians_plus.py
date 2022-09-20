@@ -73,9 +73,9 @@ def generate_idan_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate real elections between (ID) and (AN) """
     if params is None or not ('part_share' in params):
         print("IDAN_part generation : params None : random param generated")
-        part_size = np.random.choice(range(num_voters + 1))
+        part_size = np.random.choice(range(num_voters))
     else:
-        part_size = params['part_share'] * (num_voters + 1)
+        part_size = params['part_share'] * (num_voters)
     part_size = int(round(part_size))
     id_share = num_voters - (part_size // 2)
     op_share = part_size // 2
