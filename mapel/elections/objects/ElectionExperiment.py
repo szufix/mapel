@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import csv
-import itertools
 import os
 import warnings
 from abc import abstractmethod
@@ -445,6 +444,8 @@ class ElectionExperiment(Experiment):
 
         if feature_id == 'ejr':
             feature_dict = {'value': {}, 'time': {}, 'ejr': {}, 'pjr': {}, 'jr': {}, 'pareto': {}}
+        elif feature_id in FEATURES_WITH_DISSAT:
+            feature_dict = {'value': {}, 'time': {}, 'dissat': {}}
         else:
             feature_dict = {'value': {}, 'time': {}}
 

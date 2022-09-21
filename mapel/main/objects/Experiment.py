@@ -900,10 +900,11 @@ class Experiment:
     def merge_election_images(self, size=250, name=None, show=False, ncol=1, nrow=1):
 
         images = []
-        for election in self.instances.values():
+        for i, election in enumerate(self.instances.values()):
             print(election.label)
             # Read the two images
-            images.append(Image.open(f'images/{name}/{election.label}.png'))
+            # images.append(Image.open(f'images/{name}/{election.label}.png'))
+            images.append(Image.open(f'images/{name}/euc_{i}.png'))
         # resize, first image
         # image1 = image1.resize((426, 240))
         image1_size = images[0].size

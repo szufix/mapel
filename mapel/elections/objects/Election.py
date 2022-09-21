@@ -2,27 +2,22 @@
 
 import copy
 import csv
-import os
 import itertools
-from abc import ABCMeta, abstractmethod
 import math
+import os
+from abc import abstractmethod
 
-import numpy as np
-import numpy.linalg as la
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.manifold import MDS
 
-from mapel.main.inner_distances import l2
-
-from mapel.main.glossary import *
-from mapel.main.objects.Instance import Instance
+from mapel.elections.features_ import get_local_feature
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
 from mapel.elections.other.winners2 import generate_winners
-from mapel.elections.features_ import get_local_feature
-
-from sklearn.manifold import MDS
+from mapel.main.glossary import *
+from mapel.main.inner_distances import l2
+from mapel.main.objects.Instance import Instance
 
 OBJECT_TYPES = ['vote', 'candidate']
 
@@ -122,8 +117,48 @@ class Election(Instance):
         self.alternative_winners[party_id] = unmap_the_winners(winners_without_party_id, party_id,
                                                                num_winners)
 
+    def print_euclidean_voters_and_candidates_map(self, show=True, radius=None, name=None,
+                                                  alpha=0.5, s=30, circles=False,
+                                                  saveas=None,
+                                                  object_type=None, double_gradient=False):
+
+        plt.figure(figsize=(6.4, 6.4))
+
+        X_voters = []
+        Y_voters = []
+        for i in range(self.num_voters):
+            x = self.points['voters'][i][0]
+            y = self.points['voters'][i][1]
+            plt.scatter(x, y, color=[0, y, x], s=s, alpha=0.3)
+            # X_voters.append(self.points['voters'][i][0])
+            # Y_voters.append(self.points['voters'][i][1])
+        # plt.scatter(X_voters, Y_voters, color='grey', s=s, alpha=0.1)
+
+        X_candidates = []
+        Y_candidates = []
+        for i in range(self.num_candidates):
+            X_candidates.append(self.points['candidates'][i][0])
+            Y_candidates.append(self.points['candidates'][i][1])
+        plt.scatter(X_candidates, Y_candidates, color='red', s=s*2, alpha=0.9)
+
+        if radius:
+            plt.xlim([-radius, radius])
+            plt.ylim([-radius, radius])
+        plt.title(self.label, size=38)
+        plt.axis('off')
+
+        if saveas is None:
+            saveas = f'{self.label}_euc.png'
+
+        file_name = os.path.join(os.getcwd(), "images", name,  f'{saveas}.png')
+        plt.savefig(file_name, bbox_inches='tight', dpi=100)
+        if show:
+            plt.show()
+        else:
+            plt.clf()
+
     def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
-                  object_type=None, double_gradient=False):
+                  object_type=None, double_gradient=False, saveas=None):
 
         if object_type is None:
             object_type = self.object_type
@@ -170,7 +205,10 @@ class Election(Instance):
         plt.title(self.label, size=38)
         plt.axis('off')
 
-        file_name = os.path.join(os.getcwd(), "images", name, f'{self.label}.png')
+        if saveas is None:
+            saveas = f'{self.label}_euc'
+
+        file_name = os.path.join(os.getcwd(), "images", name, f'{saveas}.png')
         plt.savefig(file_name, bbox_inches='tight', dpi=100)
         if show:
             plt.show()
