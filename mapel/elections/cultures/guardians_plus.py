@@ -230,13 +230,13 @@ def generate_unst_mallows_votes(num_voters=None, num_candidates=None, params=Non
     return votes
 
 def generate_unst_topsize_votes(num_voters=None, num_candidates=None, params=None):
-    """ Generate kind of real elections between (ID) and (UN) """
+    """ Generate kind of real elections between (UN) and (ST) """
     if params is None or not ('top_share' in params):
         print("UNST_topsize generation : params None : random param generated")
-        top_size = np.random.choice(range(num_candidates + 1))
+        top_share = np.random.random()
     else:
-        top_size = params['top_share'] * num_candidates
-    top_size = int(round(top_size))
+        top_share = params['top_share']
+    top_size = int(round(top_share * num_candidates))
     better = top_size
     worse = num_candidates - top_size
     matrix = distribute_in_block_matrix(num_voters,[better,worse])
