@@ -652,7 +652,7 @@ def import_real_soc_election(experiment_id: str, election_id: str, shift=False,
                 votes[i][j] -= 1
     my_file.close()
 
-    return votes, num_voters, num_candidates, params, model_name
+    return np.array(votes), num_voters, num_candidates, params, model_name
 
 
 def convert_ordinal_to_approval(votes):
