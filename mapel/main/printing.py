@@ -752,6 +752,11 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
 
                         color = family.color
 
+                        if 'Mallows (triangle)' in label:
+                            tint = experiment.instances[election_id].params['tint']
+                            alpha = 1 - (1 - alpha) * 0.8
+                            color = (0.5, 0.8 - tint, 0.3 + tint)
+
                         if 'Urn' in label:
 
                             color, alpha = get_color_alpha_for_urn(color, alpha)

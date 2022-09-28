@@ -691,6 +691,13 @@ def update_params_ordinal_mallows_matrix_path(params, num_candidates):
     params['norm-phi'] = params['alpha']
     params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
+def update_params_ordinal_mallows_triangle(params, num_candidates):
+    params['norm-phi'] = 1 - np.sqrt(np.random.uniform())
+    params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+    params['weight'] = np.random.uniform(0,0.5)
+    params['alpha'] = params['norm-phi']
+    params['tint'] = params['weight'] # for tint on plots
+
 
 def update_params_ordinal_alpha(params):
     if 'alpha' not in params:
@@ -777,6 +784,8 @@ def update_params_ordinal(params, variable, culture_id, num_candidates):
             update_params_ordinal_urn_model(params)
         elif culture_id.lower() == 'mallows_matrix_path':
             update_params_ordinal_mallows_matrix_path(params, num_candidates)
+        elif culture_id.lower() == 'mallows_triangle':
+            update_params_ordinal_mallows_triangle(params, num_candidates)
         elif culture_id.lower() in LIST_OF_PREFLIB_MODELS:
             update_params_ordinal_preflib(params, culture_id)
         update_params_ordinal_alpha(params)
