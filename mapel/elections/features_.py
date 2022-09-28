@@ -95,7 +95,7 @@ def get_local_feature(feature_id):
             'greedy_kKemenys_summed': diversity.greedy_kKemenys_summed,
             'greedy_2kKemenys_summed': diversity.greedy_2kKemenys_summed,
             'greedy_kKemenys_divk_summed': diversity.greedy_kKemenys_divk_summed,
-            'polarization_1by2Kemeny': diversity.polarization_1by2Kemeny,
+            'polarization_1by2Kemenys': diversity.polarization_1by2Kemenys,
             'greedy_kmeans_summed': diversity.greedy_kmeans_summed,
             'support_pairs': diversity.support_pairs,
             'support_triplets': diversity.support_triplets,
