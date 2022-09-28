@@ -126,7 +126,7 @@ def cand_dom_dist_mean(election):
     if election.fake:
         return 'None'
     distances = calculate_cand_dom_dist(election)
-    return distances.sum() / (election.num_candidates - 1) / election.num_candidates
+    return distances.sum() / (election.num_candidates - 1) / election.num_candidates * 2
 
 def cand_dom_dist_std(election):
     if election.fake:
@@ -242,6 +242,7 @@ def vote_diversity_Karpov(election):
     distances = calculate_vote_swap_dist(election)
     distances = remove_diag(distances)
     distances = distances + 0.5
+    distances[distances == 0.5] = 1
     return geom_mean(distances)
 
 def dist_sqr_to_Kemeny_mean(election):
@@ -305,19 +306,62 @@ def greedy_kKemenys_divk_summed(election):
     distances = calculate_vote_swap_dist(election)
     best = np.argmin(distances.sum(axis=1))
     best_vec = distances[best]
-    # res[0] = best_vec.sum()
-    distances = np.vstack((distances[:best],distances[best+1:]))
+    res[0] = best_vec.sum()
+    distances = np.vstack((distances[:best], distances[best+1:]))
 
-    for i in range(1,election.num_voters):
+    for i in range(1, election.num_voters):
         relatives = distances - best_vec
         relatives = relatives*(relatives < 0)
         best = np.argmin(relatives.sum(axis=1))
         best_vec = best_vec + relatives[best]
         res[i] = best_vec.sum() / (i + 1)
-        distances = np.vstack((distances[:best],distances[best+1:]))
+        distances = np.vstack((distances[:best], distances[best+1:]))
 
-    res[0] = 0
-    return sum(res)
+    # res[0] = 0 # for disregarding one Kemeny (AN = ID)
+    max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
+    return sum(res) / election.num_voters / max_dist
+
+def greedy_2kKemenys_summed(election):
+    if election.fake:
+        return 'None'
+    res = []
+    distances = calculate_vote_swap_dist(election)
+    best = np.argmin(distances.sum(axis=1))
+    best_vec = distances[best]
+    res.append(best_vec.sum())
+    distances = np.vstack((distances[:best], distances[best+1:]))
+
+    k = 2
+    for i in range(1, election.num_voters):
+        relatives = distances - best_vec
+        relatives = relatives*(relatives < 0)
+        best = np.argmin(relatives.sum(axis=1))
+        best_vec = best_vec + relatives[best]
+        if (i + 1) == k:
+            res.append(best_vec.sum())
+            k = k * 2
+        distances = np.vstack((distances[:best], distances[best+1:]))
+
+    # res[0] = 0 # for disregarding one Kemeny (AN = ID)
+    max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
+    return sum(res) / election.num_voters / max_dist
+
+def polarization_1by2Kemeny(election):
+    if election.fake:
+        return 'None'
+    distances = calculate_vote_swap_dist(election)
+    best = np.argmin(distances.sum(axis=1))
+    best_vec = distances[best]
+    first_kemeny = best_vec.sum()
+    distances = np.vstack((distances[:best],distances[best+1:]))
+
+    relatives = distances - best_vec
+    relatives = relatives*(relatives < 0)
+    best = np.argmin(relatives.sum(axis=1))
+    best_vec = best_vec + relatives[best]
+    second_kemeny = best_vec.sum()
+
+    return sum(first_kemeny - second_kemeny)
 
 def greedy_kmeans_summed(election):
     if election.fake:
