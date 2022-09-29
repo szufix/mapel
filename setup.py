@@ -1,11 +1,16 @@
 import os
+import sys
+
+py_dot_version = '.'.join([str(sys.version_info[0]), str(sys.version_info[1])])
+py_version = ''.join([str(sys.version_info[0]), str(sys.version_info[1])])
 
 from setuptools import setup, find_packages
 from distutils.core import Extension
 
 cpp_dist_module = Extension('mapel.elections.metrics.cppdistances', sources =
-['mapel/elections/metrics/cppdistances.cpp'], libraries = ['boost_python38'],
-include_dirs = ['/usr/include/python3.8'], extra_compile_args = ['-std=gnu++17'])
+['mapel/elections/metrics/cppdistances.cpp'], libraries = ['boost_python' + \
+py_version], include_dirs = ['/usr/include/python' + py_dot_version],
+extra_compile_args = ['-std=gnu++17'])
 
 rootDir = os.path.abspath(os.path.dirname(__file__))
 reqPath = os.path.join(rootDir, 'requirements.txt')
