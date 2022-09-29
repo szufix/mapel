@@ -3,9 +3,9 @@ import os
 from setuptools import setup, find_packages
 from distutils.core import Extension
 
-dswapmodule = Extension('mapel.elections.metrics.dswapcpp', sources =
-['mapel/elections/metrics/dswapcpp.cpp'], libraries = ['boost_python38'],
-include_dirs = ['/usr/include/python3.8'])
+cpp_dist_module = Extension('mapel.elections.metrics.cppdistances', sources =
+['mapel/elections/metrics/cppdistances.cpp'], libraries = ['boost_python38'],
+include_dirs = ['/usr/include/python3.8'], extra_compile_args = ['-std=gnu++17'])
 
 rootDir = os.path.abspath(os.path.dirname(__file__))
 reqPath = os.path.join(rootDir, 'requirements.txt')
@@ -39,5 +39,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    ext_modules = [dswapmodule]
+    ext_modules = [cpp_dist_module]
 )

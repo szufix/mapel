@@ -502,7 +502,9 @@ uint8_t* prec_map(int m){
     return swap_lookup;
 }
 
-int computedist(boost::python::list el1, boost::python::list el2){
+
+pair<std::vector<std::vector<int> >,std::vector<std::vector<int> > >
+parse_python_input(boost::python::list & el1, boost::python::list & el2){ 
   std::vector<std::vector<int>> elc1;
   std::vector<std::vector<int>> elc2;
   for (int i = 0; i < boost::python::len(el1); ++i)
@@ -517,20 +519,36 @@ int computedist(boost::python::list el1, boost::python::list el2){
      elc2.push_back(row2);
     }
   pair<std::vector<std::vector<int> >,std::vector<std::vector<int> > > election_pair;
-  election_pair=std::make_pair(elc1,elc2);
+  return election_pair=std::make_pair(elc1,elc2);
+}
+
+int compute_swap(boost::python::list el1, boost::python::list el2){
+  auto election_pair = parse_python_input(el1, el2);
+  auto & [elc1, elc2] = election_pair;
   int mm = elc1[0].size();
   int nn = elc1.size();
-  uint8_t* sswap_look;
-  sswap_look=prec_map(mm);
+  uint8_t* sswap_look=prec_map(mm);
   int ddistance;
   ddistance=swapDistance_election(nn,mm,election_pair,sswap_look);
+  delete sswap_look;
   return ddistance;
 }
 
-BOOST_PYTHON_MODULE(dswapcpp)
+int compute_spear(boost::python::list el1, boost::python::list el2){
+  auto election_pair = parse_python_input(el1, el2);
+  auto & [elc1, elc2] = election_pair;
+  int mm = elc1[0].size();
+  int nn = elc1.size();
+  int ddistance;
+  ddistance=spearDistance_election(nn,mm,election_pair);
+  return ddistance;
+}
+
+BOOST_PYTHON_MODULE(cppdistances)
 {
     // Add regular functions to the module.
-    def("dswapcpp", computedist);
+    def("swapd", compute_swap);
+    def("speard", compute_spear);
 }
 
 
