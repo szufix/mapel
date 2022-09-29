@@ -139,7 +139,8 @@ def generate_ordinal_votes(culture_id: str = None,
                            'norm-mallows_with_walls':  mallows.generate_norm_mallows_with_walls_votes,
                            'norm-mallows_mixture': mallows.generate_norm_mallows_mixture_votes,
                            'walsh_mallows': single_peaked.generate_walsh_mallows_votes,
-                           'conitzer_mallows': single_peaked.generate_conitzer_mallows_votes,}
+                           'conitzer_mallows': single_peaked.generate_conitzer_mallows_votes,
+                           'mallows_triangle': mallows.generate_mallows_votes,}
 
     if culture_id in naked_models:
         votes = naked_models.get(culture_id)(num_voters=num_voters,
@@ -183,7 +184,7 @@ def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
 
     if params is None:
         params = {}
-    print(params, model_id)
+    # print(params, model_id)
 
     with open(path, 'w') as file_:
         if model_id in NICE_NAME:
