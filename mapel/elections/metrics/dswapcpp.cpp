@@ -4,18 +4,14 @@
 **********************************************************************************************************************************/
 
 #include <stdio.h>
-#include <iostream>
 #include <stdlib.h>
 #include <vector>
 #include <string>
-#include <iostream>
-#include <fstream>
 #include <algorithm>
 #include <utility>
 #include <ctime>
 #include <omp.h>
 #include <unistd.h>
-#include <random>
 #include <boost/python.hpp>
 
 using namespace std;
@@ -56,8 +52,12 @@ cost lap(int dim,
 {
   boolean unassignedfound;
   row  i, imin, numfree = 0, prvnumfree, f, i0, k, freerow, *pred, *free;
-  col  j, j1, j2, endofpath, last, low, up, *collist, *matches;
-  cost min, h, umin, usubmin, v2, *d;
+  col  j, j1, endofpath, low, up, *collist, *matches;
+  cost h, umin, usubmin, v2, *d;
+  // avoid "uninitialized" warning
+  cost min = 9999999;
+  col last = -1;
+  col j2 = -1;
 
   free = new row[dim];       // list of unassigned rows.
   collist = new col[dim];    // list of columns to be scanned in various ways.
@@ -137,7 +137,7 @@ cost lap(int dim,
       for (j = 1; j < dim; j++)
       {
         h = assigncost[i][j] - v[j];
-        if (h < usubmin)
+        if (h < usubmin){
           if (h >= umin)
           {
             usubmin = h;
@@ -150,34 +150,40 @@ cost lap(int dim,
             j2 = j1;
             j1 = j;
           }
+        }
       }
 
       i0 = colsol[j1];
-      if (umin < usubmin)
+      if (umin < usubmin){
     //         change the reduction of the minimum column to increase the minimum
     //         reduced cost in the row to the subminimum.
         v[j1] = v[j1] - (usubmin - umin);
-      else                   // minimum and subminimum equal.
+      }
+      else{                   // minimum and subminimum equal.
         if(i0 > -1)  // minimum column j1 is assigned.
         {
     //           swap columns j1 and j2, as j2 may be unassigned.
           j1 = j2;
           i0 = colsol[j2];
         }
+      }
 
     //       (re-)assign i to j1, possibly de-assigning an i0.
       rowsol[i] = j1;
       colsol[j1] = i;
 
-        if(i0 > -1)  // minimum column j1 assigned earlier.
-            if (umin < usubmin)
+        if(i0 > -1){  // minimum column j1 assigned earlier.
+            if (umin < usubmin){
         //           put in current k, and go back to that k.
         //           continue augmenting path i - j1 with i0.
                 free[--k] = i0;
-            else
+            }
+            else{
         //           no further augmenting reduction possible.
         //           store i0 in list of free rows for next phase.
               free[numfree++] = i0;
+            }
+        }
     }
   }
   while (loopcnt < 2);       // repeat once.
@@ -252,7 +258,7 @@ cost lap(int dim,
           if (v2 < d[j])
           {
             pred[j] = i;
-            if (v2 == min)   // new column found at same minimum value
+            if (v2 == min){  // new column found at same minimum value
               if (colsol[j] < 0)
               {
                 // if unassigned, shortest augmenting path is complete.
@@ -266,6 +272,7 @@ cost lap(int dim,
                 collist[k] = collist[up];
                 collist[up++] = j;
               }
+            }
             d[j] = v2;
           }
         }
@@ -311,50 +318,13 @@ cost lap(int dim,
   return lapcost;
 }
 
-std::vector<std::vector<int> > read_electionFromFile(string exp) {
-        //cout<<"HEY"<<endl;
-        string line;
-        std::vector<string> myLines;
-        std::vector<std::vector<int> > election;
-        ifstream myfile(exp);
-         //cout<<exp<<endl;
-        bool start = false;
-        if (myfile.is_open()) {
-            //cout<<"Grrrr"<<endl;
-            while (getline(myfile, line)) {
-                string segment;
-                std::vector<int> vote;
-                size_t pos = 0;
-                std::string token;
-                std::string delimiter = ",";
-                while ((pos = line.find(delimiter)) != std::string::npos) {
-                //cout<< line <<endl;
-                    token = line.substr(0, pos);
-                    vote.push_back(stoi(token));
-                    line.erase(0, pos + delimiter.length());
-                }
-                //cout<< line <<endl;
-                vote.push_back(stoi(line));
-
-
-                election.push_back(vote);
-
-                }
-
-            }
-            myfile.close();
-            //cout<<"HO"<<endl;
-
-    return election;
-}
-
 int getInvCount(int arr[], int arr2[], int n, bool swap)
 {
     int inv_count = 0;
     if(swap) {
         for (int i = 0; i < n - 1; i++)
             for (int j = i + 1; j < n; j++)
-                if (arr[i] > arr[j] != arr2[i] > arr2[j])
+                if ((arr[i] > arr[j]) != (arr2[i] > arr2[j]))
                     inv_count++;
     }
     else{
@@ -424,8 +394,6 @@ int spearDistance_election(int n,int m, pair<std::vector<std::vector<int> >,std:
     delete[] e1mapped_reversed;
     delete[] e2reversed;
     return min_dist;
-
-
 }
 
 uint8_t getIvCount(int* arr, int n)
@@ -458,7 +426,7 @@ int swapDistance_election(int n,int m, pair<std::vector<std::vector<int> >,std::
     int** e2;
     e1mapped_reversed = new int*[n];
     e2 = new int*[n];
-    int votecomb;
+    int votecomb = 0;
     for(int t=0;t<n;t++){
         e1mapped_reversed[t]  =  new int[m];
         e2[t]  =  new int[m];
@@ -516,8 +484,6 @@ int swapDistance_election(int n,int m, pair<std::vector<std::vector<int> >,std::
 
     delete lookup;
     return min_dist;
-
-
 }
 
 uint8_t* prec_map(int m){
@@ -536,19 +502,6 @@ uint8_t* prec_map(int m){
     return swap_lookup;
 }
 
-std::vector<std::vector<int> > random_election(int n, int m,int k){
-    std::vector<std::vector<int> > election;
-    auto rng = std::default_random_engine {};
-    rng.seed(k);
-    for(int i=0; i<n;i++){
-        vector<int> vote;
-        for(int i=0; i<m; i++){vote.push_back(i);}
-        std::shuffle(std::begin(vote), std::end(vote), rng);
-        election.push_back(vote);
-    }
-    return election;
-}
-
 int computedist(boost::python::list el1, boost::python::list el2){
   std::vector<std::vector<int>> elc1;
   std::vector<std::vector<int>> elc2;
@@ -563,69 +516,21 @@ int computedist(boost::python::list el1, boost::python::list el2){
      elc1.push_back(row1);
      elc2.push_back(row2);
     }
- // for (auto &row: elc1){
- //   for (auto &val: row){
- //      cout <<  val;
- //   }
- //   cout << endl;
- // }
- // cout << "---" << endl;
- // for (auto &row: elc2){
- //   for (auto &val: row){
- //      cout <<  val;
- //   }
- //   cout << endl;
- // }
   pair<std::vector<std::vector<int> >,std::vector<std::vector<int> > > election_pair;
   election_pair=std::make_pair(elc1,elc2);
   int mm = elc1[0].size();
   int nn = elc1.size();
-  //cout << nn << " " << mm << endl;
   uint8_t* sswap_look;
   sswap_look=prec_map(mm);
   int ddistance;
-  //cout<<"???"<<endl;
   ddistance=swapDistance_election(nn,mm,election_pair,sswap_look);
   return ddistance;
 }
-
 
 BOOST_PYTHON_MODULE(dswapcpp)
 {
     // Add regular functions to the module.
     def("dswapcpp", computedist);
-}
-
-int main(int argc, char* argv[]) {
-    int mm=strtol(argv[1], nullptr, 0);
-    int nn=strtol(argv[2], nullptr, 0);
-    string p1=argv[3];
-    string p2=argv[4];
-    string p3=argv[5];
-    uint8_t* sswap_look;
-    std::vector<std::vector<int> > election1=read_electionFromFile(p1);
-
-
-    /*for (auto vv : election1){
-    for (auto v : vv){
-    std::cout << v;
-    }
-    std::cout << "\n";
-    }*/
-
-
-    std::vector<std::vector<int> > election2=read_electionFromFile(p2);
-    pair<std::vector<std::vector<int> >,std::vector<std::vector<int> > > election_pair;
-    election_pair=std::make_pair(election1,election2);
-    sswap_look=prec_map(mm);
-    int ddistance;
-    //cout<<"???"<<endl;
-    ddistance=swapDistance_election(nn,mm,election_pair,sswap_look);
-    //cout<<ddistance<<endl;
-    ofstream myfile;
-    myfile.open(p3);
-    myfile << ddistance;
-    myfile.close();
 }
 
 
