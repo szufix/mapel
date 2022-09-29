@@ -1,9 +1,17 @@
+import logging
 from typing import Callable, List
 from itertools import combinations, permutations
 
 from mapel.main.matchings import *
 from mapel.elections.objects.OrdinalElection import OrdinalElection
+import mapel.main.utils as utils
 from mapel.main.inner_distances import swap_distance
+
+try: 
+  import mapel.elections.metrics.dswapcpp as dswapcpp
+except:
+  logging.warning("The quick C++ procedure for computing the swap distance "
+  "unavailable: using the (slow) python one instead")
 
 
 # MAIN DISTANCES
@@ -65,10 +73,17 @@ def compute_swap_bf_distance(election_1: OrdinalElection, election_2: OrdinalEle
         obj_values.append(solve_matching_vectors(cost_table)[0])
     return min(obj_values)
 
+def compute_swap_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+    """ Compute Swap distance between elections (using a C++ procedure) """
+    if not utils.is_module_loaded("mapel.elections.metrics.dswapcpp"):
+      return compute_swap_bf_distance(election_1, election_2)
+    swapd = dswapcpp.dswapcpp(election_1.votes.tolist(),
+    election_2.votes.tolist())
+    return swapd
+
 
 def compute_spearman_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Spearman distance between elections """
-
     votes_1 = election_1.votes
     votes_2 = election_2.votes
     params = {'voters': election_1.num_voters, 'candidates': election_1.num_candidates}
