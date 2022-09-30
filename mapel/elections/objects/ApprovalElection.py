@@ -12,6 +12,7 @@ from mapel.main.glossary import *
 from mapel.elections.cultures_ import generate_approval_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
 from mapel.main.inner_distances import hamming
+from mapel.main.utils import *
 
 
 class ApprovalElection(Election):
@@ -193,21 +194,20 @@ class ApprovalElection(Election):
     def store_approval_election(self):
         """ Store approval election in an .app file """
 
+        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
+        make_folder_if_do_not_exist(path_to_folder)
+        path_to_file = os.path.join(path_to_folder, f'{self.election_id}.app')
+
         if self.culture_id in APPROVAL_FAKE_MODELS:
-            path = os.path.join("experiments", str(self.experiment_id),
-                                "elections", (str(self.election_id) + ".app"))
-            file_ = open(path, 'w')
+            file_ = open(path_to_file, 'w')
             file_.write(f'$ {self.culture_id} {self.params} \n')
             file_.write(str(self.num_candidates) + '\n')
             file_.write(str(self.num_voters) + '\n')
             file_.close()
 
         else:
-            path = os.path.join("experiments", str(self.experiment_id), "elections",
-                                (str(self.election_id) + ".app"))
-
             store_votes_in_a_file(self, self.culture_id, self.num_candidates, self.num_voters,
-                                  self.params, path, self.ballot, votes=self.votes)
+                                  self.params, path_to_file, self.ballot, votes=self.votes)
 
     def compute_distances_between_votes(self, distance_id='hamming'):
 

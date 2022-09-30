@@ -1047,11 +1047,13 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
 
 
 # HELPER FUNCTIONS
-def custom_div_cmap(num_colors=101, name='custom_div_cmap', colors=None):
+def custom_div_cmap(num_colors=101, name='custom_div_cmap', colors=None, reverse=False):
     if colors is None:
         # colors = ["lightgreen", "yellow", "orange", "red", "purple", "black"]
-        colors = ["green", "yellowgreen", "orange", "red", "purple", "blue", "black"]
-        # colors = ["black", "blue", "purple", "red", "orange", "yellowgreen", "green"]
+        if reverse:
+            colors = ["black", "blue", "purple", "red", "orange", "yellowgreen", "green"]
+        else:
+            colors = ["green", "yellowgreen", "orange", "red", "purple", "blue", "black"]
     from matplotlib.colors import LinearSegmentedColormap
     return LinearSegmentedColormap.from_list(name=name, colors=colors, N=num_colors)
 

@@ -15,12 +15,12 @@ import networkx as nx
 import numpy as np
 from scipy.stats import stats
 import time
+from mapel.main.utils import make_folder_if_do_not_exist
 
 from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 from mapel.main.embedding.simulated_annealing.simulated_annealing import SimulatedAnnealing
 
 COLORS = []
-
 
 try:
     from sklearn.manifold import MDS
@@ -100,7 +100,6 @@ class Experiment:
         else:
             self.instances = {}
 
-
         if isinstance(distances, dict):
             self.distances = distances
             print('=== Omitting import! ===')
@@ -112,7 +111,6 @@ class Experiment:
                 print('=== Distances not found! ===')
         else:
             self.distances = {}
-
 
         if isinstance(coordinates, dict):
             self.coordinates = coordinates
@@ -266,9 +264,12 @@ class Experiment:
                 file_name = f'{algorithm}_{self.distance_id}_{str(dim)}d.csv'
             else:
                 file_name = f'{saveas}.csv'
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "coordinates", file_name)
-            with open(path, 'w', newline='') as csvfile:
+            path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                          "coordinates")
+            make_folder_if_do_not_exist(path_to_folder)
+            path_to_file = os.path.join(path_to_folder, file_name)
+
+            with open(path_to_file, 'w', newline='') as csvfile:
 
                 writer = csv.writer(csvfile, delimiter=';')
                 if dim == 1:
@@ -339,9 +340,11 @@ class Experiment:
         return feature_dict
 
     def _store_instance_feature(self, feature_id, feature_dict):
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "features", f'{feature_id}_{self.embedding_id}.csv')
-        with open(path, 'w', newline='') as csv_file:
+        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "features")
+        make_folder_if_do_not_exist(path_to_folder)
+        path_to_file = os.path.join(path_to_folder, f'{feature_id}_{self.embedding_id}.csv')
+
+        with open(path_to_file, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(["instance_id", "value", "time"])
             for key in feature_dict['value']:
@@ -627,10 +630,11 @@ class Experiment:
         self.store_feature(feature_dict=f3, saveas=saveas)
 
     def store_feature(self, feature_dict=None, saveas=None):
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "features", f'{saveas}.csv')
+        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "features")
+        make_folder_if_do_not_exist(path_to_folder)
+        path_to_file = os.path.join(path_to_folder, f'{saveas}.csv')
 
-        with open(path, 'w', newline='') as csv_file:
+        with open(path_to_file, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(["election_id", "value"])
             # writer.writerow(["election_id", "value", "bound", "num_large_parties"])
@@ -914,7 +918,8 @@ class Experiment:
         # image1 = image1.resize((426, 240))
         image1_size = images[0].size
 
-        new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]), (size, size, size))
+        new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]),
+                              (size, size, size))
         # new_image = Image.new('RGB', (5 * image1_size[0], 2 * image1_size[1]), (250, 250, 250))
 
         print(len(images))
@@ -922,7 +927,7 @@ class Experiment:
             for j in range(nrow):
                 # new_image.paste(images[i], (image1_size[0] * i, 0))
                 # new_image.paste(images[i + 5], (image1_size[0] * i, image1_size[1]))
-                new_image.paste(images[i + j*ncol], (image1_size[0] * i, image1_size[1] * j))
+                new_image.paste(images[i + j * ncol], (image1_size[0] * i, image1_size[1] * j))
                 # new_image.paste(images[i + 15], (image1_size[0] * i, image1_size[1] * 3))
                 # new_image.paste(images[i + 20], (image1_size[0] * i, image1_size[1] * 4))
                 # new_image.paste(images[i + 25], (image1_size[0] * i, image1_size[1] * 5))

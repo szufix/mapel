@@ -308,10 +308,11 @@ class ElectionExperiment(Experiment):
         self.matchings = matchings
 
     def _store_distances_to_file(self, distance_id, distances, times, self_distances):
-        file_name = f'{distance_id}.csv'
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances", file_name)
+        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances")
+        make_folder_if_do_not_exist(path_to_folder)
+        path_to_file = os.path.join(path_to_folder, f'{distance_id}.csv')
 
-        with open(path, 'w', newline='') as csv_file:
+        with open(path_to_file, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
 
@@ -511,6 +512,9 @@ class ElectionExperiment(Experiment):
         return feature_dict
 
     def _store_election_feature(self, feature_id, feature_long_id, feature_dict):
+
+        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "feature")
+        make_folder_if_do_not_exist(path_to_folder)
 
         if feature_id in EMBEDDING_RELATED_FEATURE:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id,

@@ -185,11 +185,13 @@ class RoommatesExperiment(Experiment):
                     times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
         if self.store:
-            file_name = f'{distance_id}.csv'
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
-                                file_name)
 
-            with open(path, 'w', newline='') as csv_file:
+            path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                          "distances")
+            make_folder_if_do_not_exist(path_to_folder)
+            path_to_file = os.path.join(path_to_folder, f'{distance_id}.csv')
+
+            with open(path_to_file, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
                 writer.writerow(
                     ["instance_id_1", "instance_id_2", "distance", "time"])
@@ -312,11 +314,12 @@ class RoommatesExperiment(Experiment):
 
         if self.store:
 
-            file_name = f'stable_sr.csv'
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "features",
-                                file_name)
+            path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                          "features")
+            make_folder_if_do_not_exist(path_to_folder)
+            path_to_file = os.path.join(path_to_folder, f'stable_sr.csv')
 
-            with open(path, 'w', newline='') as csv_file:
+            with open(path_to_file, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
                 writer.writerow(
                     ["instance_id", "matching"])
@@ -425,14 +428,12 @@ class RoommatesExperiment(Experiment):
 
         if self.store:
 
-            # if feature_id in EMBEDDING_RELATED_FEATURE:
-            #     path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-            #                         "features", f'{feature_id}__{self.distance_id}.csv')
-            # else:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "features", f'{feature_id}.csv')
+            path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+                                          "features")
+            make_folder_if_do_not_exist(path_to_folder)
+            path_to_file = os.path.join(path_to_folder, f'{feature_id}.csv')
 
-            with open(path, 'w', newline='') as csv_file:
+            with open(path_to_file, 'w', newline='') as csv_file:
                 writer = csv.writer(csv_file, delimiter=';')
 
                 if feature_id in features_with_std:

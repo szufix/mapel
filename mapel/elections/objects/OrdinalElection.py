@@ -21,6 +21,7 @@ from mapel.elections.other.winners2 import generate_winners
 from mapel.main.inner_distances import swap_distance_between_potes, \
     spearman_distance_between_potes
 from mapel.elections.features.other import is_condorcet
+from mapel.main.utils import *
 
 
 class OrdinalElection(Election):
@@ -290,19 +291,20 @@ class OrdinalElection(Election):
     # STORE
     def _store_ordinal_election(self, aggregated=True):
         """ Store ordinal election in a .soc file """
+
+        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
+        make_folder_if_do_not_exist(path_to_folder)
+        path_to_file = os.path.join(path_to_folder,  f'{self.election_id}.soc')
+
         if self.culture_id in LIST_OF_FAKE_MODELS:
-            file_name = f'{self.election_id}.soc'
-            path = os.path.join("experiments", str(self.experiment_id), "elections", file_name)
-            file_ = open(path, 'w')
+            file_ = open(path_to_file, 'w')
             file_.write(f'$ {self.culture_id} {self.params} \n')
             file_.write(str(self.num_candidates) + '\n')
             file_.write(str(self.num_voters) + '\n')
             file_.close()
         else:
-            file_name = f'{self.election_id}.soc'
-            path = os.path.join("experiments", str(self.experiment_id), "elections", file_name)
             store_votes_in_a_file(self, self.culture_id, self.num_candidates, self.num_voters,
-                                  self.params, path, self.ballot, votes=self.votes,
+                                  self.params, path_to_file, self.ballot, votes=self.votes,
                                   aggregated=aggregated)
 
     def compute_distances(self, distance_id='swap', object_type=None):

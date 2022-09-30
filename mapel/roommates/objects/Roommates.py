@@ -8,6 +8,8 @@ from mapel.roommates.cultures._utils import convert
 
 from mapel.roommates.models_ import generate_votes
 from mapel.main.glossary import *
+from mapel.main.utils import *
+
 #
 
 class Roommates(Instance):
@@ -131,10 +133,11 @@ class Roommates(Instance):
     def store_instance_in_a_file(self):
         """ Store votes in a file """
 
-        path = os.path.join("experiments", self.experiment_id, "instances",
-                            f'{self.instance_id}.ri')
+        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances")
+        make_folder_if_do_not_exist(path_to_folder)
+        path_to_file = os.path.join(path_to_folder, f'{self.instance_id}.ri')
 
-        with open(path, 'w') as file_:
+        with open(path_to_file, 'w') as file_:
 
             if self.model_id in NICE_NAME:
                 file_.write("# " + NICE_NAME[self.model_id] + " " + str(self.params) + "\n")

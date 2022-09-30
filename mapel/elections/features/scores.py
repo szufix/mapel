@@ -122,7 +122,7 @@ def lowest_dodgson_score(election):
 
 def highest_cc_score(election, feature_params):
     if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None', 'None'
+        return 'None'
     winners, total_time = win.generate_winners(election=election,
                                              num_winners=feature_params['committee_size'],
                                              ballot="ordinal",
