@@ -513,7 +513,7 @@ class ElectionExperiment(Experiment):
 
     def _store_election_feature(self, feature_id, feature_long_id, feature_dict):
 
-        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "feature")
+        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "features")
         make_folder_if_do_not_exist(path_to_folder)
 
         if feature_id in EMBEDDING_RELATED_FEATURE:
@@ -570,6 +570,9 @@ class ElectionExperiment(Experiment):
         for rule_name in list_of_rules:
             self.all_winning_committees[rule_name] = rules.import_committees_from_file(
                 experiment_id=self.experiment_id, rule_name=rule_name)
+
+    def add_feature(self, name, function):
+        features.add_local_feature(name, function)
 
 
 def check_if_all_equal(values, subject):

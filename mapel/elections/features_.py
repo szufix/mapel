@@ -34,13 +34,7 @@ def get_global_feature(feature_id):
             }.get(feature_id)
 
 
-def get_local_feature(feature_id):
-    """ Local feature depends only on a single instance """
-
-    if feature_id in MAIN_LOCAL_FEATUERS:
-        return get_main_local_feature(feature_id)
-
-    return {'highest_borda_score': scores.highest_borda_score,
+LIST_OF_LOCAL_FEATURES = {'highest_borda_score': scores.highest_borda_score,
             'highest_plurality_score': scores.highest_plurality_score,
             'highest_copeland_score': scores.highest_copeland_score,
             'lowest_dodgson_score': scores.lowest_dodgson_score,
@@ -110,7 +104,21 @@ def get_local_feature(feature_id):
             # 'core': from_abc.test_core,
             'ejr': jr.test_ejr,
             'min_dim': dimensionality.min_dim,
-            }.get(feature_id)
+            }
+
+
+def get_local_feature(feature_id):
+    """ Local feature depends only on a single instance """
+
+    if feature_id in MAIN_LOCAL_FEATUERS:
+        return get_main_local_feature(feature_id)
+
+    return LIST_OF_LOCAL_FEATURES.get(feature_id)
+
+
+def add_local_feature(name, function):
+    LIST_OF_LOCAL_FEATURES[name] = function
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 10.05.2022 #

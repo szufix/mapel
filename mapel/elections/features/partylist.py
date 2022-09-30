@@ -1,8 +1,11 @@
 import sys
 import time
+import os
 
 try:
-    sys.path.append('/Users/szufa/PycharmProjects/abcvoting/')
+    from dotenv import load_dotenv
+    load_dotenv()
+    sys.path.append(os.environ["PATH"])
     from abcvoting import fileio, genprofiles
     import gurobipy as gb
     from abcvoting.preferences import Profile, Voter

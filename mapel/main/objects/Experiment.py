@@ -941,3 +941,7 @@ class Experiment:
         new_image.save(f'images/microscope/{name}.png', "PNG", quality=85)
         if show:
             new_image.show()
+
+    @abstractmethod
+    def add_feature(self, name, function):
+        pass
