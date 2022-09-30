@@ -68,7 +68,7 @@ def highest_copeland_score(election) -> Union[int, str]:
 def lowest_dodgson_score(election):
     """ compute lowest DODGSON score of a given election """
     if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None', 'None'
+        return 'None'
 
     min_score = math.inf
 
@@ -117,7 +117,7 @@ def lowest_dodgson_score(election):
             min_score = score
 
     print(min_score)
-    return min_score, 0
+    return min_score
 
 
 def highest_cc_score(election, feature_params):

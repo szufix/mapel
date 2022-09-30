@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from scipy.stats import stats
+import time
 
 from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 from mapel.main.embedding.simulated_annealing.simulated_annealing import SimulatedAnnealing
@@ -83,6 +84,8 @@ class Experiment:
             self.families = self.import_controllers()
             self.store = store
 
+        t0 = time.time()
+
         if isinstance(instances, dict):
             self.instances = instances
             print('=== Omitting import! ===')
@@ -97,6 +100,7 @@ class Experiment:
         else:
             self.instances = {}
 
+
         if isinstance(distances, dict):
             self.distances = distances
             print('=== Omitting import! ===')
@@ -108,6 +112,7 @@ class Experiment:
                 print('=== Distances not found! ===')
         else:
             self.distances = {}
+
 
         if isinstance(coordinates, dict):
             self.coordinates = coordinates

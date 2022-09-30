@@ -4,6 +4,7 @@ import numpy as np
 from scipy.stats import gamma
 import random as rand
 import csv
+import time
 
 import mapel.elections.cultures.mallows as mallows
 from mapel.main.glossary import *
@@ -80,8 +81,8 @@ class OrdinalElection(Election):
                         except KeyError:
                             print("Error")
                             pass
-
-                        self.compute_potes()
+                        if not fast_import:
+                            self.compute_potes()
 
                 self.candidatelikeness_original_vectors = {}
 
@@ -89,10 +90,13 @@ class OrdinalElection(Election):
                     self.matrix = self.import_matrix()
                     self.vectors = self.matrix.transpose()
                 else:
-                    self.votes_to_positionwise_vectors()
+                    if not fast_import:
+                        self.votes_to_positionwise_vectors()
 
             except:
                 pass
+
+
 
         if self.params is None:
             self.params = {}
