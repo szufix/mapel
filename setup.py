@@ -7,10 +7,10 @@ py_version = ''.join([str(sys.version_info[0]), str(sys.version_info[1])])
 from setuptools import setup, find_packages
 from distutils.core import Extension
 
-cpp_dist_module = Extension('mapel.elections.metrics.cppdistances', sources =
-['mapel/elections/metrics/cppdistances.cpp'], libraries = ['boost_python' + \
-py_version], include_dirs = ['/usr/include/python' + py_dot_version],
-extra_compile_args = ['-std=gnu++17'])
+from pybind11.setup_helpers import Pybind11Extension, build_ext
+
+cpp_dist_module = Pybind11Extension('mapel.elections.metrics.cppdistances',
+['mapel/elections/metrics/cppdistances.cpp'])
 
 rootDir = os.path.abspath(os.path.dirname(__file__))
 reqPath = os.path.join(rootDir, 'requirements.txt')
@@ -44,5 +44,6 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    ext_modules = [cpp_dist_module]
+    ext_modules = [cpp_dist_module],
+    cmdclass={"build_ext": build_ext},
 )

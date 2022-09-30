@@ -6,13 +6,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include <string>
 #include <algorithm>
 #include <utility>
-#include <ctime>
-#include <omp.h>
-#include <unistd.h>
-#include <boost/python.hpp>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 using namespace std;
 
@@ -337,7 +334,8 @@ int getInvCount(int arr[], int arr2[], int n, bool swap)
 
 
 
-int spearDistance_election(int n,int m, pair<std::vector<std::vector<int> >,std::vector<std::vector<int> > > elp){
+int spearDistance_election(int n,int m, const std::vector<std::vector<int>> &
+el1, const std::vector<std::vector<int>> & el2){
     int min_dist=2*m*m*n;
     int* mapping = new int [m];
     col *rowsol;
@@ -365,8 +363,8 @@ int spearDistance_election(int n,int m, pair<std::vector<std::vector<int> >,std:
     do {
         for(int t=0; t<n; t++) {
             for (int j = 0; j < m; j++) {
-                e1mapped_reversed[t][mapping[std::get<0>(elp)[t][j]]] = j;
-                e2reversed[t][std::get<1>(elp)[t][j]] = j;
+                e1mapped_reversed[t][mapping[el1[t][j]]] = j;
+                e2reversed[t][el2[t][j]] = j;
 
             }
         }
@@ -406,7 +404,8 @@ uint8_t getIvCount(int* arr, int n)
     return inv_count;
 }
 
-int swapDistance_election(int n,int m, pair<std::vector<std::vector<int> >,std::vector<std::vector<int> > > elp, uint8_t* lookup){
+int swapDistance_election(int n,int m, const std::vector<std::vector<int>> &el1,
+const std::vector<std::vector<int>> &el2, uint8_t* lookup){
     int min_dist=2*m*m*n;
     int* mapping = new int [m];
     col *rowsol;
@@ -435,12 +434,11 @@ int swapDistance_election(int n,int m, pair<std::vector<std::vector<int> >,std::
     do {
         for(int t=0; t<n; t++) {
             for (int j = 0; j < m; j++) {
-                e1mapped_reversed[t][mapping[std::get<0>(elp)[t][j]]] = j;
-                e2[t][j]=std::get<1>(elp)[t][j];
-
+                e1mapped_reversed[t][mapping[el1[t][j]]] = j;
+                e2[t][j]=el2[t][j];
             }
         }
-
+//
         for(int t=0; t<n; t++){
             for(int j=0; j<n; j++){
                 switch (m) {
@@ -482,7 +480,6 @@ int swapDistance_election(int n,int m, pair<std::vector<std::vector<int> >,std::
     delete[] e1mapped_reversed;
     delete[] e2;
 
-    delete lookup;
     return min_dist;
 }
 
@@ -502,53 +499,28 @@ uint8_t* prec_map(int m){
     return swap_lookup;
 }
 
-
-pair<std::vector<std::vector<int> >,std::vector<std::vector<int> > >
-parse_python_input(boost::python::list & el1, boost::python::list & el2){ 
-  std::vector<std::vector<int>> elc1;
-  std::vector<std::vector<int>> elc2;
-  for (int i = 0; i < boost::python::len(el1); ++i)
-   {
-     std::vector<int> row1;
-     std::vector<int> row2;
-     for (int j = 0; j < boost::python::len(el1[i]); ++j){
-       row1.push_back(boost::python::extract<int>(el1[i][j]));
-       row2.push_back(boost::python::extract<int>(el2[i][j]));
-      }
-     elc1.push_back(row1);
-     elc2.push_back(row2);
-    }
-  pair<std::vector<std::vector<int> >,std::vector<std::vector<int> > > election_pair;
-  return election_pair=std::make_pair(elc1,elc2);
-}
-
-int compute_swap(boost::python::list el1, boost::python::list el2){
-  auto election_pair = parse_python_input(el1, el2);
-  auto & [elc1, elc2] = election_pair;
+int compute_swap(const std::vector<std::vector<int>>  & elc1, const
+std::vector<std::vector<int>> & elc2){
   int mm = elc1[0].size();
   int nn = elc1.size();
   uint8_t* sswap_look=prec_map(mm);
   int ddistance;
-  ddistance=swapDistance_election(nn,mm,election_pair,sswap_look);
+  ddistance=swapDistance_election(nn, mm, elc1, elc2, sswap_look);
   delete sswap_look;
   return ddistance;
 }
 
-int compute_spear(boost::python::list el1, boost::python::list el2){
-  auto election_pair = parse_python_input(el1, el2);
-  auto & [elc1, elc2] = election_pair;
+int compute_spear(const std::vector<std::vector<int>>  & elc1, const
+std::vector<std::vector<int>> & elc2){
   int mm = elc1[0].size();
   int nn = elc1.size();
   int ddistance;
-  ddistance=spearDistance_election(nn,mm,election_pair);
+  ddistance=spearDistance_election(nn, mm,elc1, elc2);
   return ddistance;
 }
 
-BOOST_PYTHON_MODULE(cppdistances)
-{
-    // Add regular functions to the module.
-    def("swapd", compute_swap);
-    def("speard", compute_spear);
+PYBIND11_MODULE(cppdistances, m) {
+    m.doc() = "C++ extension computing the swap and the Spearman distances";
+    m.def("swapd", &compute_swap, "Computes the swap distance between two elections.");
+    m.def("speard", &compute_spear, "Computes the Spearman distance between two elections.");
 }
-
-
