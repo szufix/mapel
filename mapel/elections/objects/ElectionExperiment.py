@@ -227,12 +227,13 @@ class ElectionExperiment(Experiment):
                 self.elections[election_id].compute_alternative_winners(
                     method=method, party_id=party_id, num_winners=num_winners)
 
-    def compute_distances(self, distance_id: str = 'emd-positionwise', num_processes: int = 1,
+    def compute_distances(self, distance_id: str = None, num_processes: int = 1,
                           self_distances: bool = False, vector_type: str = 'A',
                           printing: bool = False) -> None:
         """ Compute distances between elections (using processes) """
 
-        self.distance_id = distance_id
+        if distance_id is None:
+            distance_id = self.distance_id
 
         if '-approvalwise' in distance_id:
             for election in self.elections.values():
@@ -429,7 +430,7 @@ class ElectionExperiment(Experiment):
         return families
 
     def compute_feature(self, feature_id: str = None, feature_params=None,
-                        printing=False) -> dict:
+                        printing=False, **kwargs) -> dict:
 
         if feature_params is None:
             feature_params = {}
@@ -475,17 +476,13 @@ class ElectionExperiment(Experiment):
                     if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
                         value = feature(self, instance)
 
-                    elif feature_id in ELECTION_FEATURES_WITH_PARAMS:
-                        value = instance.get_feature(feature_id, feature_long_id,
-                                                     feature_params=feature_params)
-
                     elif feature_id in {'avg_distortion_from_guardians',
                                         'worst_distortion_from_guardians',
                                         'distortion_from_all',
                                         'distortion_from_top_100'}:
                         value = feature(self, instance_id)
                     else:
-                        value = instance.get_feature(feature_id, feature_long_id)
+                        value = instance.get_feature(feature_id, feature_long_id, **kwargs)
 
                 total_time = time.time() - start
                 total_time /= num_iterations

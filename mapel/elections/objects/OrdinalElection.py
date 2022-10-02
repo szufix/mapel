@@ -45,6 +45,8 @@ class OrdinalElection(Election):
         self.condorcet = None
         self.points = {}
 
+
+
         if _import and experiment_id != 'virtual':
             try:
                 if votes is not None:
@@ -198,8 +200,8 @@ class OrdinalElection(Election):
         else:
             c = self.num_candidates
             v = self.num_voters
-            vectors = self.votes_to_positionwise_matrix()
-            borda_vector = [sum([vectors[j][i] * (c - i - 1) for i in range(c)]) * v for j in
+            vectors = self.votes_to_positionwise_vectors()
+            borda_vector = [sum([vectors[i][j] * (c - j - 1) for j in range(c)]) * v for i in
                             range(self.num_candidates)]
             borda_vector = sorted(borda_vector, reverse=True)
 
@@ -278,13 +280,14 @@ class OrdinalElection(Election):
 
     # PREPARE INSTANCE
     def prepare_instance(self, store=None, aggregated=True):
+        print(self.culture_id)
         self.params['exp_id'] = self.experiment_id
         self.params['ele_id'] = self.election_id
         self.params['aggregated'] = aggregated
         self.votes = generate_ordinal_votes(culture_id=self.culture_id,
-                                            num_candidates=self.num_candidates,
-                                            num_voters=self.num_voters,
-                                            params=self.params)
+                                                num_candidates=self.num_candidates,
+                                                num_voters=self.num_voters,
+                                                params=self.params)
         if store:
             self._store_ordinal_election(aggregated=aggregated)
 

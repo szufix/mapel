@@ -620,6 +620,7 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
     images.append(ax.scatter(blank_xx_1, blank_yy_1, marker='.', alpha=0.1))
 
     if dim == 2:
+        print(rounding)
 
         if xticklabels is None:
             if normalizing_func is None:

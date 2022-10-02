@@ -121,31 +121,31 @@ def lowest_dodgson_score(election):
     return min_score
 
 
-def highest_cc_score(election, feature_params):
-    if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None'
-    winners, total_time = win.generate_winners(election=election,
-                                             num_winners=feature_params['committee_size'],
-                                             ballot="ordinal",
-                                             type='borda_owa', name='cc')
-    return get_cc_score(election, winners)
-
-
-def highest_hb_score(election, feature_params):
+def highest_cc_score(election, committee_size=1):
     if election.culture_id in LIST_OF_FAKE_MODELS:
         return 'None', 'None'
     winners, total_time = win.generate_winners(election=election,
-                                             num_winners=feature_params['committee_size'],
+                                             num_winners=committee_size,
+                                             ballot="ordinal",
+                                             type='borda_owa', name='cc')
+    return get_cc_score(election, winners), get_cc_dissat(election, winners)
+
+
+def highest_hb_score(election, committee_size=1):
+    if election.culture_id in LIST_OF_FAKE_MODELS:
+        return 'None', 'None'
+    winners, total_time = win.generate_winners(election=election,
+                                             num_winners=committee_size,
                                              ballot="ordinal",
                                              type='borda_owa', name='hb')
     return get_hb_score(election, winners), get_hb_dissat(election, winners)
 
 
-def highest_pav_score(election, feature_params):
+def highest_pav_score(election, committee_size=1):
     if election.culture_id in LIST_OF_FAKE_MODELS:
         return 'None', 'None'
     winners, total_time = win.generate_winners(election=election,
-                                             num_winners=feature_params['committee_size'],
+                                             num_winners=committee_size,
                                              ballot="ordinal",
                                              type='bloc_owa', name='hb')
     return get_pav_score(election, winners), get_pav_dissat(election, winners)
@@ -232,6 +232,32 @@ def get_pav_score(election, winners) -> float:
     return score
 
 
+# GET DISSAT
+def get_dissat(election, winners, rule) -> float:
+    if rule == 'cc':
+        return get_cc_dissat(election, winners)
+    elif rule == 'hb':
+        return get_hb_dissat(election, winners)
+    elif rule == 'pav':
+        return get_pav_dissat(election, winners)
+
+
+def get_cc_dissat(election, winners) -> float:
+
+    num_voters = election.num_voters
+    num_candidates = election.num_candidates
+
+    dissat = 0
+
+    for i in range(num_voters):
+        for j in range(num_candidates):
+            if election.votes[i][j] in winners:
+                dissat += j
+                break
+
+    return dissat
+
+
 def get_hb_dissat(election, winners) -> float:
 
     num_voters = election.num_voters
@@ -256,8 +282,8 @@ def get_pav_dissat(election, winners) -> float:
 
     dissat = 0
 
-    vector = [0. for _ in range(100)]
-    for i in range(10,100):
+    vector = [0. for _ in range(num_candidates)]
+    for i in range(len(winners), num_candidates):
         vector[i] = 1.
 
     for i in range(num_voters):

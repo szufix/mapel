@@ -729,7 +729,6 @@ def solve_lp_matching_interval(cost_table, length_1, length_2):
 def solve_lp_file_dodgson_score(election, N=None, e=None, D=None):
 
     cp = cplex.Cplex()
-    # cp.parameters.threads.set(1)
 
     # OBJECTIVE FUNCTION
     cp.objective.set_sense(cp.objective.sense.minimize)

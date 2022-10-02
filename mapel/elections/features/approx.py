@@ -1,14 +1,12 @@
 import numpy as np
 from mapel.elections.metrics.lp import solve_rand_approx_pav
-from mapel.elections.features.scores import get_score
+from mapel.elections.features.scores import get_score, get_dissat
 
 
 # NEW LP
-def get_rand_approx_pav_score(election, feature_params):
+def get_rand_approx_pav_score(election, committee_size=1):
     if election.fake:
         return 'None'
-    committee_size = unpack_committee_size(feature_params)
-
     W = [1 / (i + 1) for i in range(election.num_candidates)]
 
     C = np.zeros([election.num_voters, election.num_candidates])
@@ -21,24 +19,23 @@ def get_rand_approx_pav_score(election, feature_params):
 
 
 # GREEDY
-def get_greedy_approx_cc_score(election, feature_params):
-    return get_greedy_approx_score(election, feature_params, "cc")
+def get_greedy_approx_cc_score(election, committee_size=1):
+    return get_greedy_approx_score(election, 'cc', committee_size=committee_size)
 
 
-def get_greedy_approx_hb_score(election, feature_params):
-    return get_greedy_approx_score(election, feature_params, "hb")
+def get_greedy_approx_hb_score(election, committee_size=1):
+    return get_greedy_approx_score(election, 'hb', committee_size=committee_size)
 
 
-def get_greedy_approx_pav_score(election, feature_params):
-    return get_greedy_approx_score(election, feature_params, "pav")
+def get_greedy_approx_pav_score(election, committee_size=1):
+    return get_greedy_approx_score(election, 'pav', committee_size=committee_size)
 
 
-def get_greedy_approx_score(election, feature_params, rule):
+def get_greedy_approx_score(election, rule, committee_size=1):
     if election.fake:
-        return 'None'
-    committee_size = unpack_committee_size(feature_params)
+        return 'None', 'None'
     winners = get_winners_approx_greedy(election, committee_size, rule)
-    return get_score(election, winners, rule)
+    return get_score(election, winners, rule), get_dissat(election, winners, rule)
 
 
 def get_winners_approx_greedy(election, committee_size, rule):
@@ -111,25 +108,24 @@ def get_winners_approx_greedy(election, committee_size, rule):
 
 
 # REMOVAL
-def get_removal_approx_cc_score(election, feature_params):
-    return get_removal_approx_score(election, feature_params, "cc")
+def get_removal_approx_cc_score(election, committee_size=1):
+    return get_removal_approx_score(election, "cc", committee_size=committee_size)
 
 
-def get_removal_approx_hb_score(election, feature_params):
-    return get_removal_approx_score(election, feature_params, "hb")
+def get_removal_approx_hb_score(election, committee_size=1):
+    return get_removal_approx_score(election, "hb", committee_size=committee_size)
 
 
-def get_removal_approx_pav_score(election, feature_params):
-    return get_removal_approx_score(election, feature_params, "pav")
+def get_removal_approx_pav_score(election, committee_size=1):
+    return get_removal_approx_score(election, "pav", committee_size=committee_size)
 
 
-def get_removal_approx_score(election, feature_params, rule):
+def get_removal_approx_score(election, rule, committee_size=1):
     if election.fake:
-        return 'None'
-    committee_size = unpack_committee_size(feature_params)
+        return 'None', 'None'
     winners = get_winners_approx_removal(election, committee_size, rule)
 
-    return get_score(election, winners, rule)
+    return get_score(election, winners, rule), get_dissat(election, winners, rule)
 
 
 def get_winners_approx_removal(election, committee_size, rule):
@@ -196,10 +192,10 @@ def get_winners_approx_removal(election, committee_size, rule):
 
 
 # OTHER
-def unpack_committee_size(feature_params):
-    if 'committee_size' in feature_params:
-        return feature_params['committee_size']
-    return 10
+# def unpack_committee_size(feature_params):
+#     if 'committee_size' in feature_params:
+#         return feature_params['committee_size']
+#     return 10
 
 
 def get_vectors(election, rule, committee_size):

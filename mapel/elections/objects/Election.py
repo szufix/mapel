@@ -84,6 +84,7 @@ class Election(Instance):
             self.potes = np.array([[list(vote).index(i) for i, _ in enumerate(vote)]
                                    for vote in self.votes])
 
+
     def vector_to_interval(self, vector, precision=None) -> list:
         # discreet version for now
         interval = []
@@ -357,7 +358,6 @@ class Election(Instance):
                 distances[int(row['v1'])][int(row['v2'])] = float(row['distance'])
                 distances[int(row['v2'])][int(row['v1'])] = float(row['distance'])
 
-
         self.distances[object_type] = distances
 
     def _store_coordinates(self, object_type='vote'):
@@ -406,16 +406,17 @@ class Election(Instance):
                 self.rotate_point(0.5, 0.5, angle, self.coordinates[object_type][instance_id][0],
                                   self.coordinates[object_type][instance_id][1])
 
-    def compute_feature(self, feature_id, feature_long_id, feature_params=None):
+    def compute_feature(self, feature_id, feature_long_id, **kwargs):
         feature = get_local_feature(feature_id)
-        if feature_id in ELECTION_FEATURES_WITH_PARAMS:
-            self.features[feature_long_id] = feature(self, feature_params=feature_params)
-        else:
-            self.features[feature_long_id] = feature(self)
+        self.features[feature_long_id] = feature(self, **kwargs)
+        # if feature_id in ELECTION_FEATURES_WITH_PARAMS:
+            # self.features[feature_long_id] = feature(self, feature_params=feature_params)
+        # else:
+        #     self.features[feature_long_id] = feature(self)
 
-    def get_feature(self, feature_id, feature_long_id, feature_params=None):
+    def get_feature(self, feature_id, feature_long_id, **kwargs):
         if feature_id not in self.features:
-            self.compute_feature(feature_id, feature_long_id, feature_params=feature_params)
+            self.compute_feature(feature_id, feature_long_id,  **kwargs)
         return self.features[feature_long_id]
 
 

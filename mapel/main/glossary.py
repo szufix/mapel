@@ -1,29 +1,3 @@
-ELECTION_FEATURES_WITH_PARAMS = ['largest_cohesive_group',
-                                 'number_of_cohesive_groups',
-                                 'number_of_cohesive_groups_brute',
-                                 'proportionality_degree_pav',
-                                 'proportionality_degree_av',
-                                 'proportionality_degree_cc',
-                                 'justified_ratio',
-                                 'cohesiveness',
-                                 'partylist',
-                                 'highest_cc_score',
-                                 'highest_hb_score',
-                                 'highest_pav_score',
-                                 'greedy_approx_cc_score',
-                                 'removal_approx_cc_score',
-                                 'greedy_approx_hb_score',
-                                 'removal_approx_hb_score',
-                                 'greedy_approx_pav_score',
-                                 'removal_approx_pav_score',
-                                 'rand_approx_pav_score',
-                                 'banzhaf_cc_score',
-                                 'ranging_cc_score',
-                                 'priceability',
-                                 'core',
-                                 'ejr',
-                                 ]
-
 MAIN_LOCAL_FEATUERS = []
 
 MAIN_GLOBAL_FEATUERS = ['calculate_distortion', 'calculate_monotonicity']
@@ -218,7 +192,10 @@ EMBEDDING_RELATED_FEATURE = ['monotonicity_triplets', 'distortion_from_all']
 
 ROOMMATES_PROBLEM_MODELS = {'roommates_ic'}
 
-FEATURES_WITH_DISSAT = {'highest_hb_score', 'highest_pav_score'}
+FEATURES_WITH_DISSAT = {'highest_cc_score', 'highest_hb_score', 'highest_pav_score',
+                        'greedy_approx_cc_score', 'removal_approx_cc_score',
+                        'greedy_approx_hb_score', 'removal_approx_hb_score',
+                        'greedy_approx_pav_score', 'removal_approx_pav_score'}
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

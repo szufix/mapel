@@ -93,7 +93,6 @@ class ElectionFamily(Family):
                 if self.culture_id in {'crate'}:
                     new_params = _get_params_for_crate(j)
                     params = {**params, **new_params}
-
                 election_id = get_instance_id(self.single, self.family_id, j)
 
                 election = OrdinalElection(experiment_id, election_id, culture_id=self.culture_id,

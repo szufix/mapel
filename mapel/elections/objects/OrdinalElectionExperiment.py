@@ -2,6 +2,8 @@
 import os
 
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
+from mapel.elections.cultures_ import LIST_OF_ORDINAL_MODELS_WITH_PARAMS, \
+    LIST_OF_ORDINAL_MODELS_WITHOUT_PARAMS
 
 try:
     from sklearn.manifold import MDS
@@ -34,6 +36,11 @@ class OrdinalElectionExperiment(ElectionExperiment):
                          embedding_id=embedding_id,
                          fast_import=fast_import)
 
+    def add_culture_with_params(self, name, func):
+        LIST_OF_ORDINAL_MODELS_WITH_PARAMS[name] = func
+
+    def add_culture_without_params(self, name, func):
+        LIST_OF_ORDINAL_MODELS_WITHOUT_PARAMS[name] = func
 
     def create_structure(self) -> None:
 

@@ -734,16 +734,16 @@ class Experiment:
             else:
                 values_x = []
                 values_y = []
-                # empty_x = []
-                # empty_y = []
+                empty_x = []
+                empty_y = []
                 for e1, e2 in itertools.combinations(all_distances[name_1], 2):
                     # if e1 in ['IC'] or e2 in ['IC']:
-                    # if target in e1 or target in e2:
-                    #     empty_x.append(all_distances[name_1][e1][e2])
-                    #     empty_y.append(all_distances[name_2][e1][e2])
-                    # else:
-                    values_x.append(all_distances[name_1][e1][e2])
-                    values_y.append(all_distances[name_2][e1][e2])
+                    if e1 in ['AN', 'UN', 'ID', 'ST'] or e2 in ['AN', 'UN', 'ID', 'ST']:
+                        empty_x.append(all_distances[name_1][e1][e2])
+                        empty_y.append(all_distances[name_2][e1][e2])
+                    else:
+                        values_x.append(all_distances[name_1][e1][e2])
+                        values_y.append(all_distances[name_2][e1][e2])
                     # values_x.append(all_distances[name_1][e1][e2] * normalize(name_1))
                     # values_y.append(all_distances[name_2][e1][e2] * normalize(name_2))
 
