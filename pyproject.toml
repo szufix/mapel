@@ -18,7 +18,7 @@ classifiers=[
     "Operating System :: OS Independent"
 ]
 readme = "README.md"
-dynamic = ["dependencies"]
+dynamic = ["dependencies", "optional-dependencies"]
 
 
 [project.urls]
@@ -31,4 +31,7 @@ where = ["mapel"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.dynamic.optional-dependencies]
+extras = {file = ["optional_requirements.txt"]}
 
