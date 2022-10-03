@@ -6,26 +6,3 @@ include LICENSE.txt
 
 # Include the requirements file
 include requirements.txt
-
-exclude mapel/elections/not_in_the_package/__all_elections.py
-exclude mapel/elections/not_in_the_package/__embedding.py 
-exclude mapel/elections/not_in_the_package/__init__.py 
-exclude mapel/elections/not_in_the_package/__probably_spam.py 
-exclude mapel/elections/not_in_the_package/__skeleton.py
-exclude mapel/elections/not_in_the_package/__sp.py     
-exclude mapel/elections/not_in_the_package/__swap.py   
-exclude mapel/elections/not_in_the_package/__testing_graphs.py
-exclude mapel/elections/not_in_the_package/__testing_party.py
-exclude mapel/elections/not_in_the_package/__testing_party_print.py 
-exclude mapel/elections/not_in_the_package/graphs/__init__.py
-exclude mapel/elections/not_in_the_package/graphs/metrics_main.py
-exclude mapel/elections/not_in_the_package/graphs/models_main.py 
-exclude mapel/elections/not_in_the_package/graphs/metric/__init__.py
-exclude mapel/elections/not_in_the_package/graphs/metric/main_graph_distances.py
-exclude mapel/elections/not_in_the_package/graphs/objects/Graph.py 
-exclude mapel/elections/not_in_the_package/graphs/objects/__init__.py 
-exclude mapel/elections/not_in_the_package/__canonical.py
-exclude mapel/elections/not_in_the_package/__pabulib.py
-exclude mapel/elections/not_in_the_package/__preflib.py
-exclude mapel/elections/not_in_the_package/__mapel.py
-exclude mapel/elections/not_in_the_package/__tmp.py
