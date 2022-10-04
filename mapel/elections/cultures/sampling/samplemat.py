@@ -3,8 +3,8 @@ import numpy as np
 try:
   from permanent import permanent
 except:
-  logging.warning("The 'permanent' module is not installed. Sampling matrices
-  unavailable.")
+  logging.warning("The 'permanent' module is not installed. Sampling matrices "
+  "unavailable.")
 import random
 import math
 
@@ -66,7 +66,8 @@ def _draw_vote(matrix):
   return vote_matchings
 
 def sample_election_using_permanent(matrix):
-  ''' Samples elections from a given position as follows:
+  """
+      Samples elections from a given position as follows:
       0. Interpret a given matrix as weighted bipartite graph (weights are
       entries)
       1. Sample uniformly at random a possible vote by sampling a perfect
@@ -79,7 +80,7 @@ def sample_election_using_permanent(matrix):
 
       Returns:
         The list of lists representing the votes realizing the given matrix
-  '''
+  """
   if not utils.is_module_loaded("permanent"):
     raise RuntimeError("Module 'permanent' was not loaded. Sampling elections "
     "from matrix impossible.")

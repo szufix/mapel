@@ -2,24 +2,28 @@
 
 Map of elections
 
-
-# Initial Setup
+# Installation
 
 There are three major ways of using mapel:
 1. Copy-paste the sources into your python project and import different `.py`
 files directly;
-2. (Recommended for developers) Install mapel as an editable package, which simulates a full-fledged global
-package installation yet keeping track of all changes to the source code and
-applying the on the fly to the "library";
+2. (Recommended for developers) Install mapel as an editable package, which
+simulates a full-fledged global package installation yet keeping track of all
+changes to the source code and applying the on the fly to the "library";
 3. (Recommended for library users) Install mapel as a normal package.
 
-Currently, the best choice is point 2, which is subsequently described in this
-readme. For a better experience, it is encouraged to use `venv`.
+The first point is considered to be only used temporarily and creates severe
+inconveniences with building the package. We only describe points 2 and 3 in
+subsequent parts. For a better experience, our instructions assume usage of
+`venv`, which is optional, however recommended.
+
+For the full functionality of the package, it is recommended to also install extra
+dependencies. Doing this is covered in parts describing respective installation
+variants.
 
 > :exclamation: Note that this library contains C++ extensions. So using it
 manually (point 1) requires a correct compilation of the `.cpp` files. How to
 do this is beyond the scope of this instruction.
-
 
 ## Editable Package
 
@@ -40,6 +44,9 @@ If successful, your prompt is now preceded with the name of the virtual environm
 `pip install --editable .`  
 This command installs the package, also compiling all necessary C++ extensions
 into python-readable libraries.
+6. Run 
+`pip install --editable .[extras]`  
+to install extra dependencies that make the library more usable.
 
 ## Usual Package
 
@@ -48,9 +55,11 @@ its source code. The instruction includes using `venv`, which is generally a
 good idea.
 
 All steps except from the 5th one are the same as in the Editable Package
-variant. The new step 5 is as follows:
+variant. The new steps 5 and 6 are as follows:
 5. Run  
 `pip install .`  
+6. Run 
+`pip install .[extras]`  
 
 
 # Support
