@@ -19,7 +19,15 @@ subsequent parts. For a better experience, our instructions assume usage of
 
 For the full functionality of the package, it is recommended to also install extra
 dependencies. Doing this is covered in parts describing respective installation
-variants.
+variants. The extra dependencies contain:  
+```
+cplex>=20.1.0.1
+pulp~=2.5.1
+abcvoting~=2.0.0b0
+permanent
+```  
+which unlock approval based committee rules (which require solving I(L)P
+programs) and sampling a matrix using a permanent-based approach.
 
 > :exclamation: Note that this library contains C++ extensions. So using it
 manually (point 1) requires a correct compilation of the `.cpp` files. How to
@@ -31,7 +39,9 @@ This variant is especially recommended for developing purposes and for those
 who would like to make changes in the code and have the changes reflected. The
 instruction includes using `venv`, which is generally a good idea.
 
-1. Install `pip` and `venv`.
+1. Install `pip` and `venv`. Make sure that you are using the newest possible
+`pip`, newer than `22.0.0`. To upgrade you pip run:  
+`pip install --upgrade pip'
 2. Prepare a virtual environment running this command:  
 `python3 -m venv <virtual_envirnonment_name>`
 By default the above command creates a directory `<virtual_environment_name>`,
@@ -39,7 +49,7 @@ where the virtual environment files are stored
 3. Activate the virtual environment:  
 `source <virtual_envirnment_path>/bin/activate`  
 If successful, your prompt is now preceded with the name of the virtual environment.
-4. Clone the repository and go its directory.
+4. Clone the repository and go to its directory.
 5. Run  
 `pip install --editable .`  
 to install the package and the necessary dependencies, also compiling all
@@ -61,6 +71,11 @@ variant. The new steps 5 and 6 are as follows:
 `pip install .`  
 1. Run  
 `pip install .[extras]`  
+
+> :exclamation: If you do not need the code and you want to have a version
+ directly from the repository's `master` branch, then you can simply run: 
+ `pip install -e  git+https://github.com/szufix/mapel#egg=mapel`
+
 
 
 # Support
