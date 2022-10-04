@@ -611,11 +611,11 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
     cmap_3 = custom_div_cmap(colors=[(0.9, 0.9, 1), 'blue'])
 
     images.append(ax.scatter(xx[mask_1], yy[mask_1], c=shades_1[mask_1], vmin=0, vmax=1,
-                             cmap=cmap_1, s=mses[mask_1]))
+                             cmap=cmap_1, s=mses[mask_1], marker='x'))
     images.append(ax.scatter(xx[mask_2], yy[mask_2], c=shades_2[mask_2], vmin=0, vmax=1,
-                             cmap=cmap_2, s=mses[mask_2]))
+                             cmap=cmap_2, s=mses[mask_2], marker='o'))
     images.append(ax.scatter(xx[mask_3], yy[mask_3], c=shades_1[mask_3], vmin=0, vmax=1,
-                             cmap=cmap_3, s=mses[mask_3]))
+                             cmap=cmap_3, s=mses[mask_3], marker='^'))
 
     images.append(ax.scatter(blank_xx_1, blank_yy_1, marker='.', alpha=0.1))
 

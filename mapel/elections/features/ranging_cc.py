@@ -5,9 +5,7 @@ import numpy as np
 from mapel.elections.features.scores import get_cc_score
 
 
-def get_ranging_cc_score(election, feature_params):
-
-    committee_size = feature_params['committee_size']
+def get_ranging_cc_score(election, committee_size=1):
 
     x = election.num_candidates * scipy.special.lambertw(committee_size).real / committee_size
 

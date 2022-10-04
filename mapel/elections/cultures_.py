@@ -172,7 +172,6 @@ def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
 
     if params is None:
         params = {}
-    # print(params, model_id)
 
     with open(path, 'w') as file_:
         if model_id in NICE_NAME:

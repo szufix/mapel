@@ -5,9 +5,7 @@ from mapel.elections.features.scores import get_cc_score
 import time
 
 
-def get_banzhaf_cc_score(election, feature_params):
-
-    committee_size = feature_params['committee_size']
+def get_banzhaf_cc_score(election, committee_size=1):
 
     winners = set()
     BASE = {}

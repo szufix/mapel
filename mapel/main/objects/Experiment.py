@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from scipy.stats import stats
+import ast
 import time
 from mapel.main.utils import make_folder_if_do_not_exist
 
@@ -105,7 +106,7 @@ class Experiment:
             print('=== Omitting import! ===')
         elif _import and self.experiment_id != 'virtual':
             try:
-                self.distances, self.times, self.stds = self.add_distances_to_experiment()
+                self.distances, self.times, self.stds, self.mappings = self.add_distances_to_experiment()
                 print('=== Distances imported successfully! ===')
             except FileNotFoundError:
                 print('=== Distances not found! ===')
@@ -530,6 +531,7 @@ class Experiment:
         distances = {}
         times = {}
         stds = {}
+        mappings = {}
 
         with open(path, 'r', newline='') as csv_file:
 
@@ -556,6 +558,8 @@ class Experiment:
                     times[instance_id_1] = {}
                 if instance_id_1 not in stds:
                     stds[instance_id_1] = {}
+                if instance_id_1 not in mappings:
+                    mappings[instance_id_1] = {}
 
                 if instance_id_2 not in distances:
                     distances[instance_id_2] = {}
@@ -563,6 +567,8 @@ class Experiment:
                     times[instance_id_2] = {}
                 if instance_id_2 not in stds:
                     stds[instance_id_2] = {}
+                if instance_id_2 not in mappings:
+                    mappings[instance_id_2] = {}
 
                 try:
                     distances[instance_id_1][instance_id_2] = float(row['distance'])
@@ -583,26 +589,38 @@ class Experiment:
                 except KeyError:
                     pass
 
+                try:
+                    mappings[instance_id_1][instance_id_2] = ast.literal_eval(str(row['mapping']))
+                    mappings[instance_id_2][instance_id_1] = np.argsort(mappings[instance_id_1][instance_id_2])
+                    # print(mappings[instance_id_1][instance_id_2])
+                    # print(mappings[instance_id_2][instance_id_1])
+                    # tmp = mappings[instance_id_1][instance_id_2]
+                    # mappings[instance_id_2][instance_id_1] = np.array([list(tmp).index(i) for i, _ in enumerate(tmp)])
+                    # print(mappings[instance_id_2][instance_id_1])
+                    # mappings[instance_id_2][instance_id_1] = mappings[instance_id_1][instance_id_2]
+
+                except KeyError:
+                    pass
+
                 if instance_id_1 not in self.instances:
                     warn = True
 
             if warn:
                 text = f'Possibly outdated distances are imported!'
                 warnings.warn(text)
-
-        return distances, times, stds
+        return distances, times, stds, mappings
 
     def clean_elections(self):
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
         for file_name in os.listdir(path):
             os.remove(os.path.join(path, file_name))
 
-    def get_feature(self, feature_id):
+    def get_feature(self, feature_id, column_id='value'):
 
         # if feature_id not in self.features:
         #     self.features[feature_id] = self.import_feature(feature_id)
 
-        self.features[feature_id] = self.import_feature(feature_id)
+        self.features[feature_id] = self.import_feature(feature_id, column_id=column_id)
 
         return self.features[feature_id]
 
@@ -615,10 +633,10 @@ class Experiment:
                                            column_id=column_id,
                                            feature_long_id=feature_long_id)
 
-    def normalize_feature_by_feature(self, nom=None, denom=None, saveas=None):
+    def normalize_feature_by_feature(self, nom=None, denom=None, saveas=None, column_id='value'):
 
-        f1 = self.get_feature(nom)
-        f2 = self.get_feature(denom)
+        f1 = self.get_feature(nom, column_id=column_id)
+        f2 = self.get_feature(denom, column_id=column_id)
         f3 = {}
 
         for election_id in f1:

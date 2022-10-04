@@ -78,12 +78,19 @@ class Election(Instance):
                     matrix[i][j] = row[candidate_id]
         return matrix
 
-    def compute_potes(self):
+    def compute_potes(self, mapping=None):
         """ Convert votes to positional votes (called potes) """
+        # print(not self.fake and self.potes is None)
         if not self.fake and self.potes is None:
-            self.potes = np.array([[list(vote).index(i) for i, _ in enumerate(vote)]
-                                   for vote in self.votes])
-
+            # print("hello")
+            # print(self.votes)
+            if mapping is None:
+                self.potes = np.array([[list(vote).index(i) for i, _ in enumerate(vote)]
+                                       for vote in self.votes])
+            else:
+                self.potes = np.array([[list(vote).index(mapping[i]) for i, _ in enumerate(vote)]
+                                       for vote in self.votes])
+            return self.potes
 
     def vector_to_interval(self, vector, precision=None) -> list:
         # discreet version for now
@@ -257,7 +264,7 @@ class Election(Instance):
     def compute_distances(self):
         pass
 
-    def embed(self, algorithm='MDS', object_type=None):
+    def embed(self, algorithm='MDS', object_type=None, virtual=False):
 
         if object_type is None:
             object_type = self.object_type
@@ -322,7 +329,7 @@ class Election(Instance):
                 print("e2")
                 pass
 
-        if self.store:
+        if self.store and not virtual:
             self._store_coordinates(object_type=object_type)
 
     def all_dist_zeros(self, object_type):

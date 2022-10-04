@@ -84,8 +84,8 @@ class OrdinalElection(Election):
                         except KeyError:
                             print("Error")
                             pass
-                        if not fast_import:
-                            self.compute_potes()
+                        # if not fast_import:
+                        #     self.compute_potes()
 
                 self.candidatelikeness_original_vectors = {}
 
@@ -117,6 +117,12 @@ class OrdinalElection(Election):
         if self.matrix is not None and len(self.matrix) > 0:
             return self.matrix
         return self.votes_to_positionwise_matrix()
+
+    def get_potes(self):
+        if self.potes is not None:
+            return self.potes
+        return self.compute_potes()
+
 
     def votes_to_positionwise_vectors(self):
         vectors = np.zeros([self.num_candidates, self.num_candidates])
@@ -280,10 +286,9 @@ class OrdinalElection(Election):
 
     # PREPARE INSTANCE
     def prepare_instance(self, store=None, aggregated=True):
-        print(self.culture_id)
-        self.params['exp_id'] = self.experiment_id
-        self.params['ele_id'] = self.election_id
-        self.params['aggregated'] = aggregated
+        # self.params['exp_id'] = self.experiment_id
+        # self.params['ele_id'] = self.election_id
+        # self.params['aggregated'] = aggregated
         self.votes = generate_ordinal_votes(culture_id=self.culture_id,
                                                 num_candidates=self.num_candidates,
                                                 num_voters=self.num_voters,

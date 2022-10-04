@@ -35,6 +35,7 @@ def get_greedy_approx_score(election, rule, committee_size=1):
     if election.fake:
         return 'None', 'None'
     winners = get_winners_approx_greedy(election, committee_size, rule)
+    print(winners)
     return get_score(election, winners, rule), get_dissat(election, winners, rule)
 
 
@@ -91,7 +92,8 @@ def get_winners_approx_greedy(election, committee_size, rule):
         winner_value = -1
 
         # Select winner
-        random_order = np.random.permutation(election.num_candidates)
+        # random_order = np.random.permutation(election.num_candidates)
+        random_order = [i for i in range(election.num_candidates)]
         for i in random_order:
             if active[i] and points[i] > winner_value:
                 winner_value = points[i]

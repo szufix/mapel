@@ -143,13 +143,16 @@ def store_ideal_points(points, file_name, experiment_id):
         for point in points:
             writer.writerow([point[0], point[1]])
 
-def generate_ordinal_euclidean_votes(model: str = None, num_voters: int = None,
+def generate_ordinal_euclidean_votes(model: str = 'euclidean', num_voters: int = None,
                                      num_candidates: int = None,
                                      params: dict = None) -> np.ndarray:
+
     if params is None:
         params = {}
 
     dim = params.get('dim', 2)
+
+    params['space'] = params.get('space', 'uniform')
 
     voters = np.zeros([num_voters, dim])
     candidates = np.zeros([num_candidates, dim])
@@ -174,6 +177,7 @@ def generate_ordinal_euclidean_votes(model: str = None, num_voters: int = None,
         for v in range(num_candidates):
             candidates[v] = get_rand(model)
         # candidates = sorted(candidates)
+    print(candidates)
 
     for v in range(num_voters):
         for c in range(num_candidates):
@@ -182,7 +186,7 @@ def generate_ordinal_euclidean_votes(model: str = None, num_voters: int = None,
 
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
-    if not params['aggregated']:
+    if 'aggregated' in params and not params['aggregated']:
         store_ideal_points(voters, f'{params["ele_id"]}_voters', params['exp_id'])
         store_ideal_points(candidates, f'{params["ele_id"]}_candidates', params['exp_id'])
 
