@@ -42,9 +42,9 @@ If successful, your prompt is now preceded with the name of the virtual environm
 4. Clone the repository and go its directory.
 5. Run  
 `pip install --editable .`  
-This command installs the package, also compiling all necessary C++ extensions
-into python-readable libraries.
-6. Run 
+to install the package and the necessary dependencies, also compiling all
+necessary C++ extensions into python-readable libraries.
+6. Run  
 `pip install --editable .[extras]`  
 to install extra dependencies that make the library more usable.
 
@@ -56,9 +56,10 @@ good idea.
 
 All steps except from the 5th one are the same as in the Editable Package
 variant. The new steps 5 and 6 are as follows:
+
 5. Run  
 `pip install .`  
-6. Run 
+1. Run  
 `pip install .[extras]`  
 
 
