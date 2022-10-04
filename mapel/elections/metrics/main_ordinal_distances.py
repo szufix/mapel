@@ -1,10 +1,17 @@
+import logging
 from typing import Callable, List
 from itertools import combinations, permutations
 
 from mapel.main.matchings import *
 from mapel.elections.objects.OrdinalElection import OrdinalElection
+import mapel.main.utils as utils
 from mapel.main.inner_distances import swap_distance
 
+try: 
+  import mapel.elections.metrics.cppdistances as cppd
+except:
+  logging.warning("The quick C++ procedures for computing the swap and "
+  "Spearman distance sunavailable: using the (slow) python one instead")
 
 # MAIN DISTANCES
 def compute_pos_swap_distance(election_1: OrdinalElection, election_2: OrdinalElection,
@@ -56,8 +63,8 @@ def compute_voterlikeness_distance(election_1: OrdinalElection, election_2: Ordi
     matrix_2 = election_2.votes_to_voterlikeness_matrix()
     return solve_matching_matrices(matrix_1, matrix_2, length, inner_distance)
 
-
-def compute_swap_bf_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+# DEPRECATED
+def compute_swap_distance_bf(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Swap distance between elections (using brute force) """
     obj_values = []
     for mapping in permutations(range(election_1.num_candidates)):
@@ -65,10 +72,25 @@ def compute_swap_bf_distance(election_1: OrdinalElection, election_2: OrdinalEle
         obj_values.append(solve_matching_vectors(cost_table)[0])
     return min(obj_values)
 
+def compute_swap_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+    """ Compute Swap distance between elections (using the C++ extension) """
+    if not utils.is_module_loaded("mapel.elections.metrics.cppdistances"):
+      return compute_swap_distance_bf(election_1, election_2)
+    swapd = cppd.swapd(election_1.votes.tolist(),
+    election_2.votes.tolist())
+    return swapd
 
 def compute_spearman_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
-    """ Compute Spearman distance between elections """
+    """ Compute Spearman distance between elections (using the C++ extension) """
+    if not utils.is_module_loaded("mapel.elections.metrics.cppdistances"):
+      return compute_spearman_distance_py(election_1, election_2)
+    speard = cppd.speard(election_1.votes.tolist(),
+    election_2.votes.tolist())
+    return speard
 
+# DEPRECATED
+def compute_spearman_distance_py(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+    """ Compute Spearman distance between elections """
     votes_1 = election_1.votes
     votes_2 = election_2.votes
     params = {'voters': election_1.num_voters, 'candidates': election_1.num_candidates}
@@ -79,7 +101,6 @@ def compute_spearman_distance(election_1: OrdinalElection, election_2: OrdinalEl
     objective_value = lp.solve_ilp_distance(path, votes_1, votes_2, params, 'spearman')
     lp.remove_lp_file(path)
     return objective_value
-
 
 def compute_discrete_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Discrete distance between elections """
