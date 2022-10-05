@@ -413,7 +413,7 @@ class Election(Instance):
                 self.rotate_point(0.5, 0.5, angle, self.coordinates[object_type][instance_id][0],
                                   self.coordinates[object_type][instance_id][1])
 
-    def compute_feature(self, feature_id, feature_long_id = None, **kwargs):
+    def compute_feature(self, feature_id, feature_long_id=None, **kwargs):
         if feature_long_id is None:
             feature_long_id = feature_id
         feature = get_local_feature(feature_id)
@@ -423,7 +423,9 @@ class Election(Instance):
         # else:
         #     self.features[feature_long_id] = feature(self)
 
-    def get_feature(self, feature_id, feature_long_id, **kwargs):
+    def get_feature(self, feature_id, feature_long_id=None, **kwargs):
+        if feature_long_id is None:
+            feature_long_id = feature_id
         if feature_id not in self.features:
             self.compute_feature(feature_id, feature_long_id,  **kwargs)
         return self.features[feature_long_id]
