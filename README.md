@@ -41,7 +41,7 @@ instruction includes using `venv`, which is generally a good idea.
 
 1. Install `pip` and `venv`. Make sure that you are using the newest possible
 `pip`, newer than `22.0.0`. To upgrade you pip run:  
-`pip install --upgrade pip'
+`pip install --upgrade pip`
 2. Prepare a virtual environment running this command:  
 `python3 -m venv <virtual_envirnonment_name>`
 By default the above command creates a directory `<virtual_environment_name>`,
@@ -58,6 +58,10 @@ necessary C++ extensions into python-readable libraries.
 `pip install --editable .[extras]`  
 to install extra dependencies that make the library more usable.
 
+> :exclamation: If you want to have a version
+ directly from the repository's `master` branch, then you can simply run:  
+ `pip install -e git+https://github.com/szufix/mapel#egg=mapel`  
+
 ## Usual Package
 
 This variant is recommended for those, who plan to use mapel without modifying
@@ -72,11 +76,25 @@ variant. The new steps 5 and 6 are as follows:
 1. Run  
 `pip install .[extras]`  
 
-> :exclamation: If you do not need the code and you want to have a version
- directly from the repository's `master` branch, then you can simply run: 
- `pip install -e  git+https://github.com/szufix/mapel#egg=mapel`
+> :exclamation: If you want to have a version
+ directly from the repository's `master` branch, then you can simply run:  
+ `pip install git+https://github.com/szufix/mapel@master`  
+ The code, should you want to see it, is then stored in
+ `<virtual_envirnonment_path>/src`
 
+## Testing Installation
 
+If the instalation was successfull, you should be able to mimic the following:  
+
+```
+(<virtual_envirnonment_name>) $ python
+...
+>>> import mapel.elections.metrics.cppdistances as d
+...
+>>> d.swapd([[0,1,2],[0,1,2]], [[0,1,2],[2,1,0]])
+3
+>>> exit()
+```
 
 # Support
 
