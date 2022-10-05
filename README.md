@@ -58,9 +58,6 @@ necessary C++ extensions into python-readable libraries.
 `pip install --editable .[extras]`  
 to install extra dependencies that make the library more usable.
 
-> :exclamation: If you want to have a version
- directly from the repository's `master` branch, then you can simply run:  
- `pip install -e git+https://github.com/szufix/mapel#egg=mapel`  
 
 ## Usual Package
 
@@ -75,12 +72,6 @@ variant. The new steps 5 and 6 are as follows:
 `pip install .`  
 1. Run  
 `pip install .[extras]`  
-
-> :exclamation: If you want to have a version
- directly from the repository's `master` branch, then you can simply run:  
- `pip install git+https://github.com/szufix/mapel@master`  
- The code, should you want to see it, is then stored in
- `<virtual_envirnonment_path>/src`
 
 ## Testing Installation
 
