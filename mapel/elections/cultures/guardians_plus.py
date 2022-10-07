@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import mapel.elections.cultures.mallows as mallows
 import itertools as it
@@ -62,6 +63,18 @@ def build_perms(matrix):
 
 
 # Models
+
+def generate_un_from_list(num_voters=None, num_candidates=None):
+    id_perm = list(range(num_candidates))
+    m_fac = math.factorial(num_candidates)
+    alls = num_voters // m_fac
+    rest = num_voters - alls * m_fac
+    res = []
+    for _ in range(alls):
+        res = res + [list(v) for v in it.permutations(id_perm)]
+    res = res + [list(v) for v in it.permutations(id_perm)][:rest]
+    return res
+
 
 def generate_un_from_matrix_votes(num_voters=None, num_candidates=None):
     """ Generate real elections that have UN positionwise matrix """
