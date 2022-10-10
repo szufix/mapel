@@ -1,11 +1,12 @@
-import logging
+import mapel.main.logs as logs
+logger = logs.get_logger(__name__)
 import itertools
 import numpy as np
 
 import mapel.main.matchings as matchings
 
 def ideal_distance(left_task, right_task, *args, **kwargs):
-  logging.info("Computing single ideal distance")
+  logger.debug("Computing single ideal distance")
   _validate(left_task, right_task)
 
   optimal_matchings = []
@@ -18,7 +19,6 @@ def ideal_distance(left_task, right_task, *args, **kwargs):
 def _get_resource_mapping_costs(left_task, right_task, agents_mapping):
     """ Return: Cost table """
     cost_table = np.zeros([left_task.resources_count, left_task.resources_count])
-
     for left_res in range(left_task.resources_count):
       for right_res in range(right_task.resources_count):
         ell_one_dist = 0

@@ -1,3 +1,6 @@
+import mapel.main.logs as logs
+logger = logs.get_logger(__name__)
+
 import mapel.elections.features_ as features
 import mapel.elections.metrics_ as metr
 import mapel.elections.cultures_ as ele
@@ -13,12 +16,12 @@ try:
     from mapel.roommates.objects.Roommates import Roommates
     import mapel.roommates.cultures_ as rom
 except:
-    print("Failed when importing Roommates")
+    logger.warning("Failed when importing Roommates")
 
 try:
     from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
 except:
-    print("Failed when importing Marriages")
+    logger.warning("Failed when importing Marriages")
 
 
 def hello():

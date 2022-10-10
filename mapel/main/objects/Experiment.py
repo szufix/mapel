@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+import mapel.main.logs as logs
+logger = logs.get_logger(__name__)
 import csv
 import itertools
-import logging
 import math
 import os
 import warnings
@@ -89,33 +90,33 @@ class Experiment:
 
         if isinstance(instances, dict):
             self.instances = instances
-            print('=== Omitting import! ===')
+            logger.info('=== Omitting import! ===')
         elif _import and self.experiment_id != 'virtual':
             try:
                 self.instances = self.add_instances_to_experiment()
                 self.num_instances = len(self.instances)
-                print('=== Elections imported successfully! ===')
+                logger.info('=== Elections imported successfully! ===')
             except FileNotFoundError:
-                print('=== Elections not found! ===')
+                logger.info('=== Elections not found! ===')
                 self.instances = {}
         else:
             self.instances = {}
 
         if isinstance(distances, dict):
             self.distances = distances
-            print('=== Omitting import! ===')
+            logger.info('=== Omitting import! ===')
         elif _import and self.experiment_id != 'virtual':
             try:
                 self.distances, self.times, self.stds, self.mappings = self.add_distances_to_experiment()
-                print('=== Distances imported successfully! ===')
+                logger.info('=== Distances imported successfully! ===')
             except FileNotFoundError:
-                print('=== Distances not found! ===')
+                logger.info('=== Distances not found! ===')
         else:
             self.distances = {}
 
         if isinstance(coordinates, dict):
             self.coordinates = coordinates
-            print('=== Omitting import! ===')
+            logger.info('=== Omitting import! ===')
         elif _import and self.experiment_id != 'virtual':
             try:
                 if coordinates_names is not None:
@@ -125,9 +126,9 @@ class Experiment:
                     self.coordinates = self.coordinates_lists[coordinates_names[0]]
                 else:
                     self.coordinates = self.add_coordinates_to_experiment(dim=dim)
-                print('=== Coordinates imported successfully! ===')
+                logger.info('=== Coordinates imported successfully! ===')
             except FileNotFoundError:
-                print('=== Coordinates not found! ===')
+                logger.info('=== Coordinates not found! ===')
         else:
             self.coordinates = {}
 

@@ -1,4 +1,5 @@
-import logging
+import mapel.main.logs as logs
+logger = logs.get_logger(__name__)
 
 from mapel.main.objects.Instance import Instance
 from mapel.main.objects.Family import Family
@@ -252,8 +253,7 @@ class AllocationExperiment(Experiment):
           distances[left_task_id][right_task_id] = distance
           matchings[left_task_id][right_task_id] = matching
 
-        logging.debug(f"Computed distances:\n{distances}")
-        logging.debug(f"ABC")
+        logger.debug(f"Computed distances:\n{distances}")
 
         self.distances = distances
         self.times = times
