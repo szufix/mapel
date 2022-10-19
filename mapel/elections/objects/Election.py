@@ -9,6 +9,7 @@ from abc import abstractmethod
 
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.linalg as la
 from sklearn.manifold import MDS
 
 from mapel.elections.features_ import get_local_feature
@@ -272,9 +273,13 @@ class Election(Instance):
         # self.coordinates = KamadaKawai().embed(
         #     distances=self.distances,
         # )
-        MDS_object = MDS(n_components=2, dissimilarity='precomputed')
-        self.coordinates[object_type] = MDS_object.fit_transform(self.distances[object_type])
-        print(self.coordinates)
+        # MDS_object = MDS(n_components=2, dissimilarity='precomputed')
+        # self.coordinates[object_type] = MDS_object.fit_transform(self.distances[object_type])
+        # TW: MDS can sometimes give different coordinates to the same vote!
+        self.coordinates[object_type] = pca(self.distances[object_type])
+        # for i in range(self.num_voters):
+        #     print(str(self.votes[i]) + " - " + str(self.coordinates['vote'][i]))
+        # print(self.coordinates)
 
         # ADJUST
         # find max dist
@@ -460,3 +465,49 @@ def remove_candidate_from_election(election, party_id, party_size) -> Election:
             vote.remove(_id)
     election.num_candidates -= party_size
     return election
+
+def pca(distance_matrix):
+    # print(distance_matrix)
+    # df = pd.read_csv("http://rosetta.reltech.org/TC/v15/Mapping/data/dist-Aus.csv")
+    # A = df.values.T[1:].astype(float)
+    A = distance_matrix
+    # square it
+    A = A ** 2
+    # centering matrix
+    n = A.shape[0]
+    # J_c = 1. / n * (np.eye(n) - 1 + (n - 1) * np.eye(n))
+    J_c = np.eye(n) - 1./n
+
+    # perform double centering
+    B = -0.5 * np.matmul(np.matmul(J_c, A), J_c)
+
+    # find eigenvalues and eigenvectors
+    eigen_val = la.eig(B)[0]
+    eigen_vec = la.eig(B)[1].T
+
+    eigen_vec_real = np.round(np.real(eigen_vec), 5)
+    # eigen_vec_imag = np.round(np.imag(eigen_vec), 5)
+    # if np.abs(eigen_vec_imag).sum() > 1:
+    #     print("Complex eigenvectors!")
+    #     print(np.abs(eigen_vec_imag).sum())
+        # print(eigen_vec_imag)
+        # print(eigen_vec)
+
+    eigen_val_real = np.round(np.real(eigen_val), 5)
+    # eigen_val_imag = np.round(np.imag(eigen_val), 5)
+    # print(eigen_val_real)
+    # print(eigen_val_imag)
+    # if np.abs(eigen_val_imag).sum() > 1:
+    #     print("Complex eigenvalues!")
+        # print(eigen_val_imag)
+        # print(eigen_val)
+    bests = np.argsort(-eigen_val_real)
+    i = bests[0]
+    j = bests[1]
+
+    PC1 = np.sqrt(eigen_val_real[i]) * eigen_vec_real[i]
+    PC2 = np.sqrt(eigen_val_real[j]) * eigen_vec_real[j]
+    res = np.array([[x, y] for x, y in zip(PC1, PC2)])
+    # print(PC1)
+    # print(PC2)
+    return res
