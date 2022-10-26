@@ -128,6 +128,12 @@ def cand_dom_dist_mean(election):
     distances = calculate_cand_dom_dist(election)
     return distances.sum() / (election.num_candidates - 1) / election.num_candidates * 2
 
+def agreement_index(election):
+    if election.fake:
+        return 'None'
+    distances = calculate_cand_dom_dist(election)
+    return distances.sum() / (election.num_candidates - 1) / election.num_candidates * 2
+
 def cand_dom_dist_std(election):
     if election.fake:
         return 'None'
@@ -287,7 +293,7 @@ def greedy_kKemenys_summed(election):
     best = np.argmin(distances.sum(axis=1))
     best_vec = distances[best]
     res[0] = best_vec.sum()
-    distances = np.vstack((distances[:best],distances[best+1:]))
+    distances = np.vstack((distances[:best], distances[best+1:]))
 
     for i in range(1,election.num_voters):
         relatives = distances - best_vec
@@ -295,11 +301,114 @@ def greedy_kKemenys_summed(election):
         best = np.argmin(relatives.sum(axis=1))
         best_vec = best_vec + relatives[best]
         res[i] = best_vec.sum()
-        distances = np.vstack((distances[:best],distances[best+1:]))
+        distances = np.vstack((distances[:best], distances[best+1:]))
 
     return sum(res)
     max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
     return sum(res) / election.num_voters / max_dist
+
+def restore_order(x):
+    for i in range(len(x)):
+        for j in range(len(x) - i, len(x)):
+            if x[j] >= x[-i - 1]:
+                x[j] += 1
+    return x
+def distances_to_rankings(rankings, distances):
+    dists = distances[rankings]
+    return np.sum(dists.min(axis=0))
+
+def find_improvement(distances, d, starting, rest, n, k, l):
+    for cut in itertools.combinations(range(k), l):
+        # print(cut)
+        for paste in itertools.combinations(rest, l):
+            ranks = []
+            j = 0
+            for i in range(k):
+                if i in cut:
+                    ranks.append(paste[j])
+                    j = j + 1
+                else:
+                    ranks.append(starting[i])
+            # check if unique
+            if len(set(ranks)) == len(ranks):
+                # check if better
+                d_new = distances_to_rankings(ranks, distances)
+                if d > d_new:
+                    return ranks, d_new, True
+    return starting, d, False
+
+def local_search_kKemeny_single_k(election, k, l, starting=None):
+    if starting is None:
+        starting = list(range(k))
+    distances = calculate_vote_swap_dist(election)
+
+    n = election.num_voters
+
+    d = distances_to_rankings(starting, distances)
+    iter = 0
+    check = True
+    while(check):
+        # print(iter)
+        # print(starting)
+        # print(d)
+        # print()
+        iter = iter + 1
+        rest = [i for i in range(n) if i not in starting]
+        for j in range(l):
+            starting, d, check = find_improvement(distances, d, starting, rest, n, k, j+1)
+            if check:
+                break
+        # print()
+    return d
+
+def local_search_kKemeny(election, l, starting=None):
+    max_dist = election.num_candidates * (election.num_candidates - 1) / 2
+    res = []
+    for k in range(1, election.num_voters):
+        # print(k)
+        if starting is None:
+            d = local_search_kKemeny_single_k(election, k, l)
+        else:
+            d = local_search_kKemeny_single_k(election, k, l, starting[:k])
+        d = d / max_dist / election.num_voters
+        if d > 0:
+            res.append(d)
+        else:
+            break
+    for k in range(len(res), election.num_voters):
+        res.append(0)
+
+    return res
+
+def diversity_index(election):
+    if election.fake:
+        return 'None'
+    max_dist = election.num_candidates * (election.num_candidates - 1) / 2
+    res = [0] * election.num_voters
+    chosen_votes = []
+    distances = calculate_vote_swap_dist(election)
+    best = np.argmin(distances.sum(axis=1))
+    chosen_votes.append(best)
+    best_vec = distances[best]
+    res[0] = best_vec.sum() / max_dist / election.num_voters
+    distances = np.vstack((distances[:best],distances[best+1:]))
+
+    for i in range(1,election.num_voters):
+        relatives = distances - best_vec
+        relatives = relatives*(relatives < 0)
+        best = np.argmin(relatives.sum(axis=1))
+        chosen_votes.append(best)
+        best_vec = best_vec + relatives[best]
+        res[i] = best_vec.sum() / max_dist / election.num_voters
+        distances = np.vstack((distances[:best], distances[best+1:]))
+
+    chosen_votes = restore_order(chosen_votes)
+
+    res_1 = local_search_kKemeny(election, 1, chosen_votes)
+    res_2 = local_search_kKemeny(election, 1)
+    res = [min(d_1, d_2) for d_1, d_2 in zip(res_1, res_2)]
+
+    return sum([x / (i+1) for i, x in enumerate(res)])
 
 def greedy_kKemenys_divk_summed(election):
     if election.fake:
@@ -365,6 +474,32 @@ def polarization_1by2Kemenys(election):
 
     max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
     return (first_kemeny - second_kemeny) / election.num_voters / max_dist
+
+def polarization_index(election):
+    if election.fake:
+        return 'None'
+    distances = calculate_vote_swap_dist(election)
+    best_1 = np.argmin(distances.sum(axis=1))
+    best_vec = distances[best_1]
+    first_kemeny = best_vec.sum()
+    distances = np.vstack((distances[:best_1], distances[best_1+1:]))
+
+    relatives = distances - best_vec
+    relatives = relatives*(relatives < 0)
+    best_2 = np.argmin(relatives.sum(axis=1))
+
+    if best_1 <= best_2:
+        best_2 = best_2 + 1
+
+    chosen = [best_1, best_2]
+    chosen.sort()
+
+    second_kemeny_1 = local_search_kKemeny_single_k(election, 2, 1, starting=chosen)
+    second_kemeny_2 = local_search_kKemeny_single_k(election, 2, 1)
+    second_kemeny = min(second_kemeny_1, second_kemeny_2)
+
+    max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
+    return 2 * (first_kemeny - second_kemeny) / election.num_voters / max_dist
 
 def greedy_kmeans_summed(election):
     if election.fake:

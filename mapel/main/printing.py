@@ -65,7 +65,8 @@ def print_map_2d(experiment,
                  xticklabels=None, cmap=None, marker_func=None, tex=False,
                  legend=True, feature_labelsize=14, dpi=250,
                  column_id='value', title_size=16, ticks_pos=None,
-                 feature_ids=None, omit=None, textual_size=16, figsize=(6.4, 6.4)) -> None:
+                 feature_ids=None, omit=None, textual_size=16,
+                 figsize=(6.4, 6.4), urn_orangered=True) -> None:
 
     if textual is None:
         textual = []
@@ -131,7 +132,7 @@ def print_map_2d(experiment,
         else:
             if shading:
                 basic_coloring_with_shading(experiment=experiment, ax=ax, dim=dim,
-                                            textual=textual)
+                                            textual=textual, urn_orangered=urn_orangered)
             elif individual:
                 basic_coloring_with_individual(experiment=experiment, ax=ax, individual=individual)
             else:
@@ -728,7 +729,7 @@ def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
                            marker=individual['marker'][election_id])
 
 
-def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
+def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None, urn_orangered=True):
     for family in experiment.families.values():
         if family.show:
             label = family.label
@@ -755,12 +756,17 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None):
 
                         if 'Mallows (triangle)' in label:
                             tint = experiment.instances[election_id].params['tint']
-                            alpha = 1 - (1 - alpha) * 0.8
-                            color = (0.5, 0.8 - tint, 0.3 + tint)
+                            # color = (2 * tint, 0, 1 - tint * 2)
+                            # alpha = alpha
+                            tint = 2 * tint
+                            color = (0.75 - 0.75 * alpha + 0.125 * tint + 0.875 * alpha * tint,
+                                     0.75 - 0.75 * alpha,
+                                     0.75 - 0.75 * alpha + 0.125 * (1 - tint) + 0.875 * alpha * (1- tint))
+                            alpha = 1
 
                         if 'Urn' in label:
 
-                            color, alpha = get_color_alpha_for_urn(color, alpha)
+                            color, alpha = get_color_alpha_for_urn(color, alpha, urn_orangered)
 
                         else:
 
@@ -1097,8 +1103,15 @@ def add_textual(experiment=None, textual=None, ax=None, size=16,
     for name in textual:
         name_id = name_from_label(experiment, name)
 
-        x = experiment.coordinates[name_id][0]
-        y = experiment.coordinates[name_id][1]
+        # x = experiment.coordinates[name_id][0]
+        # y = experiment.coordinates[name_id][1]
+        try:
+            x, y = experiment.coordinates[name_id]
+        except KeyError as err:
+            if name_id in ['ST', 'UN']:
+                x, y = experiment.coordinates[name_id + "_0"]
+        if name in RULE_NAME_MAP:
+            name = RULE_NAME_MAP[name]
         if name in RULE_NAME_MAP:
             name = RULE_NAME_MAP[name]
 
@@ -1677,17 +1690,23 @@ def adjust_the_map_on_one_point(experiment) -> None:
         print('Cannot adjust!')
 
 
-def get_color_alpha_for_urn(color, alpha):
+def get_color_alpha_for_urn(color, alpha, orangered=True):
     # return 'red', min(alpha, 1)
 
-    if alpha > 1.07:
-        return 'red', 0.9
-    elif alpha > 0.53:
-        return 'orangered', 0.9
-    elif alpha > 0.22:
-        return 'orange', 0.9
+    if orangered:
+        if alpha > 1.07:
+            return 'red', 0.9
+        elif alpha > 0.53:
+            return 'orangered', 0.9
+        elif alpha > 0.22:
+            return 'orange', 0.9
+        else:
+            return 'gold', 0.9
     else:
-        return 'gold', 0.9
+        if alpha > 2:
+            return 'orange', 1
+        else:
+            return 'orange', alpha * 0.35 + 0.3
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #
