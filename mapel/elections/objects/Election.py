@@ -275,7 +275,7 @@ class Election(Instance):
         # )
         # MDS_object = MDS(n_components=2, dissimilarity='precomputed')
         # self.coordinates[object_type] = MDS_object.fit_transform(self.distances[object_type])
-        # TW: MDS can sometimes give different coordinates to the same vote!
+        # MDS can sometimes give different coordinates to the same vote!
         self.coordinates[object_type] = pca(self.distances[object_type])
         # for i in range(self.num_voters):
         #     print(str(self.votes[i]) + " - " + str(self.coordinates['vote'][i]))
