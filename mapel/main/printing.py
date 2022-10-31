@@ -1194,8 +1194,13 @@ def add_textual(experiment=None, textual=None, ax=None, size=16,
     for name in textual:
         name_id = name_from_label(experiment, name)
 
-        x = experiment.coordinates[name_id][0]
-        y = experiment.coordinates[name_id][1]
+        try:
+          x, y = experiment.coordinates[name_id]
+        except KeyError as err:
+          if name_id in ['ST', 'UN']:
+            x, y = experiment.coordinates[name_id + "_0"]
+            
+
         if name in RULE_NAME_MAP:
             name = RULE_NAME_MAP[name]
 
