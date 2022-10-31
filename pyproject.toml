@@ -8,6 +8,12 @@ name = "mapel"
 version= "1.3.0"
 authors = [
  {name = "Stanislaw Szufa", email = "s.szufa@gmail.com"}
+ {name = "Niclas Boehmer", email = "niclas.boehmer@tu-berlin.de"}
+ {name = "Piotr Faliszewski", email = "faliszew@agh.edu.pl"}
+ {name = "Łukasz Janeczko", email = "lukij1997@gmail.com"}
+ {name = "Andrzej Kaczmarczyk", email = "andrzej.kaczmarczyk@agh.edu.pl"}
+ {name = "Kasper Sapała", email = "kasper.sapala@gmail.com"}
+ {name = "Tomasz Wąs", email = "was@agh.edu.pl"}
 ]
 description = "Map of Elections"
 requires-python = ">=3.7"
