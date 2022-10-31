@@ -13,7 +13,7 @@ authors = [
  {name = "Łukasz Janeczko", email = "lukij1997@gmail.com"}
  {name = "Andrzej Kaczmarczyk", email = "andrzej.kaczmarczyk@agh.edu.pl"}
  {name = "Kasper Sapała", email = "kasper.sapala@gmail.com"}
- {name = "Tomasz Wąs", email = "was@agh.edu.pl"}
+ {name = "Tomasz Wąs", email = "tomasz.t.was@gmail.com"}
 ]
 description = "Map of Elections"
 requires-python = ">=3.7"
