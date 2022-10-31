@@ -26,7 +26,7 @@ class OrdinalElectionExperiment(ElectionExperiment):
     def __init__(self, instances=None, distances=None, _import=True, shift=False,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
                  instance_type='ordinal', dim=2, store=True, coordinates_names=None,
-                 embedding_id='kamada', fast_import=False):
+                 embedding_id='kamada', fast_import=False, with_matrix=False):
         self.shift = shift
         super().__init__(instances=instances, distances=distances,
                          coordinates=coordinates, distance_id=distance_id,
@@ -34,7 +34,8 @@ class OrdinalElectionExperiment(ElectionExperiment):
                          instance_type=instance_type, _import=_import,
                          coordinates_names=coordinates_names,
                          embedding_id=embedding_id,
-                         fast_import=fast_import)
+                         fast_import=fast_import,
+                         with_matrix=with_matrix)
 
     def add_culture_with_params(self, name, func):
         LIST_OF_ORDINAL_MODELS_WITH_PARAMS[name] = func

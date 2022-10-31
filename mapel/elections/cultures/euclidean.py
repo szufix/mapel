@@ -32,7 +32,8 @@ def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = No
 
     for v in range(num_voters):
         for c in range(num_candidates):
-            if v_range[v] + c_range[c] >= np.linalg.norm(voters[v] - candidates[c]):
+            if v_range[v] + c_range[c] >= np.linalg.norm(voters[v] - candidates[c],
+                                                         ord=params["dim"]):
                 votes[v].add(c)
 
     return votes
@@ -46,7 +47,6 @@ def generate_approval_euclidean_votes(num_voters: int = None, num_candidates: in
 
     voters = np.array([get_rand(name) for _ in range(num_voters)])
     candidates = np.array([get_rand(name) for _ in range(num_candidates)])
-
     for v in range(num_voters):
         for c in range(num_candidates):
             if params['radius'] >= np.linalg.norm(voters[v] - candidates[c]):
@@ -84,7 +84,7 @@ def generate_1d_gaussian_party(num_voters=None, num_candidates=None, params=None
     for j in range(num_voters):
         for k in range(num_candidates):
             votes[j][k] = k
-            distances[j][k] = np.linalg.norm(voters[j] - candidates[k])
+            distances[j][k] = np.linalg.norm(voters[j] - candidates[k], ord=1)
 
         votes[j] = [x for _, x in sorted(zip(distances[j], votes[j]))]
 
@@ -125,7 +125,7 @@ def generate_2d_gaussian_party(num_voters=None, num_candidates=None, params=None
     for j in range(num_voters):
         for k in range(num_candidates):
             votes[j][k] = k
-            distances[j][k] = np.linalg.norm(voters[j] - candidates[k])
+            distances[j][k] = np.linalg.norm(voters[j] - candidates[k], ord=2)
 
         votes[j] = [x for _, x in sorted(zip(distances[j], votes[j]))]
 
@@ -177,12 +177,11 @@ def generate_ordinal_euclidean_votes(model: str = 'euclidean', num_voters: int =
         for v in range(num_candidates):
             candidates[v] = get_rand(model)
         # candidates = sorted(candidates)
-    print(candidates)
 
     for v in range(num_voters):
         for c in range(num_candidates):
             votes[v][c] = c
-            distances[v][c] = np.linalg.norm(voters[v] - candidates[c])
+            distances[v][c] = np.linalg.norm(voters[v] - candidates[c], ord=params['dim'])
 
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
@@ -217,7 +216,7 @@ def generate_elections_2d_grid(num_voters=None, num_candidates=None):
     for j in range(num_voters):
         for k in range(num_candidates):
             votes[j][k] = k
-            distances[j][k] = np.linalg.norm(voters[j] - candidates[k])
+            distances[j][k] = np.linalg.norm(voters[j] - candidates[k], ord=2)
 
         votes[j] = [x for _, x in sorted(zip(distances[j], votes[j]))]
 
@@ -290,7 +289,7 @@ def get_rand(model: str, cat: str = "voters") -> list:
         point = list(random_ball(dim, radius=0.5)[0])
     elif model in ["2d_gaussian", "2d_range_gaussian"]:
         point = [np.random.normal(0.5, 0.15), np.random.normal(0.5, 0.15)]
-        while np.linalg.norm(point - np.array([0.5, 0.5])) > 0.5:
+        while np.linalg.norm(point - np.array([0.5, 0.5]), ord=2) > 0.5:
             point = [np.random.normal(0.5, 0.15), np.random.normal(0.5, 0.15)]
     elif model in ["2d_range_fourgau"]:
         r = np.random.randint(1, 4)

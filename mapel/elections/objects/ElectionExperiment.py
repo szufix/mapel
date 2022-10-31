@@ -88,10 +88,10 @@ class ElectionExperiment(Experiment):
             ids = []
             for j in range(self.families[family_id].size):
                 instance_id = get_instance_id(single, family_id, j)
-
                 if self.instance_type == 'ordinal':
                     instance = OrdinalElection(self.experiment_id, instance_id, _import=True,
-                                               fast_import=self.fast_import)
+                                               fast_import=self.fast_import,
+                                               with_matrix=self.with_matrix)
                 elif self.instance_type == 'approval':
                     instance = ApprovalElection(self.experiment_id, instance_id, _import=True)
                 else:
@@ -437,8 +437,12 @@ class ElectionExperiment(Experiment):
 
         if feature_id in ['priceability', 'core', 'ejr']:
             feature_long_id = f'{feature_id}_{feature_params["rule"]}'
+        elif feature_id in ['distortion', 'monotonicity']:
+            feature_long_id = f'{feature_id}_{self.embedding_id}'
         else:
             feature_long_id = feature_id
+
+
 
         num_iterations = 1
         if 'num_interations' in feature_params:
@@ -455,7 +459,7 @@ class ElectionExperiment(Experiment):
 
             feature = features.get_global_feature(feature_id)
 
-            values = feature(self, election_ids=list(self.instances), feature_params=feature_params)
+            values = feature(self, election_ids=list(self.instances), **kwargs)
 
             for instance_id in self.instances:
                 feature_dict['value'][instance_id] = values[instance_id]
@@ -481,6 +485,9 @@ class ElectionExperiment(Experiment):
                                         'distortion_from_all',
                                         'distortion_from_top_100'}:
                         value = feature(self, instance_id)
+                    elif feature_id in ['ejr', 'core', 'pareto']:
+                        value = instance.get_feature(feature_id, feature_long_id,
+                                                     feature_params=feature_params)
                     else:
                         value = instance.get_feature(feature_id, feature_long_id, **kwargs)
 
@@ -576,6 +583,7 @@ def check_if_all_equal(values, subject):
     if any(x != values[0] for x in values):
         text = f'Not all {subject} values are equal!'
         warnings.warn(text)
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 22.10.2021 #

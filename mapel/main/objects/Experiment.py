@@ -45,12 +45,13 @@ class Experiment:
     def __init__(self, instances=None, distances=None, dim=2, store=True,
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
                  instance_type='ordinal', _import=True, clean=False, coordinates_names=None,
-                 embedding_id='kamada', fast_import=False):
+                 embedding_id='kamada', fast_import=False, with_matrix=False):
 
         self._import = _import
         self.clean = clean
         self.experiment_id = experiment_id
         self.fast_import = fast_import
+        self.with_matrix = with_matrix
 
         if clean:
             self.clean_elections()
@@ -85,8 +86,6 @@ class Experiment:
             self.families = self.import_controllers()
             self.store = store
 
-        t0 = time.time()
-
         if isinstance(instances, dict):
             self.instances = instances
             print('=== Omitting import! ===')
@@ -104,7 +103,7 @@ class Experiment:
         if isinstance(distances, dict):
             self.distances = distances
             print('=== Omitting import! ===')
-        elif _import and self.experiment_id != 'virtual':
+        elif _import and self.experiment_id != 'virtual': # and fast_import==False:
             try:
                 self.distances, self.times, self.stds, self.mappings = self.add_distances_to_experiment()
                 print('=== Distances imported successfully! ===')
@@ -218,9 +217,14 @@ class Experiment:
         if algorithm.lower() == 'spring':
             my_pos = nx.spring_layout(graph, iterations=num_iterations, dim=dim)
         elif algorithm.lower() in {'mds'}:
-            my_pos = MDS(n_components=dim, dissimilarity='precomputed').fit_transform(x)
+            my_pos = MDS(n_components=dim, dissimilarity='precomputed',
+                         max_iter=num_iterations,
+                         # n_init=20,
+                         # eps=1e-4,
+                         ).fit_transform(x)
         elif algorithm.lower() in {'tsne'}:
-            my_pos = TSNE(n_components=dim).fit_transform(x)
+            my_pos = TSNE(n_components=dim,
+                          n_iter=num_iterations).fit_transform(x)
         elif algorithm.lower() in {'se'}:
             my_pos = SpectralEmbedding(n_components=dim).fit_transform(x)
         elif algorithm.lower() in {'isomap'}:
@@ -360,7 +364,6 @@ class Experiment:
             file_name = f'{self.embedding_id}_{self.distance_id}_{dim}d.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                             "coordinates", file_name)
-        # print(path)
         with open(path, 'r', newline='') as csv_file:
 
             # ORIGINAL
@@ -386,10 +389,6 @@ class Experiment:
 
                 if instance_id not in self.instances:
                     warn = True
-
-            # if warn:
-            #     text = f'Possibly outdated coordinates are imported!'
-            #     warnings.warn(text, stacklevel=2)
 
             if warn:
                 text = f'Possibly outdated coordinates are imported!'
@@ -592,13 +591,6 @@ class Experiment:
                 try:
                     mappings[instance_id_1][instance_id_2] = ast.literal_eval(str(row['mapping']))
                     mappings[instance_id_2][instance_id_1] = np.argsort(mappings[instance_id_1][instance_id_2])
-                    # print(mappings[instance_id_1][instance_id_2])
-                    # print(mappings[instance_id_2][instance_id_1])
-                    # tmp = mappings[instance_id_1][instance_id_2]
-                    # mappings[instance_id_2][instance_id_1] = np.array([list(tmp).index(i) for i, _ in enumerate(tmp)])
-                    # print(mappings[instance_id_2][instance_id_1])
-                    # mappings[instance_id_2][instance_id_1] = mappings[instance_id_1][instance_id_2]
-
                 except KeyError:
                     pass
 
@@ -643,7 +635,10 @@ class Experiment:
             if f1[election_id] is None:
                 f3[election_id] = None
             else:
-                f3[election_id] = f1[election_id] / f2[election_id]
+                if f2[election_id] == 0:
+                    f3[election_id] = 1.
+                else:
+                    f3[election_id] = f1[election_id] / f2[election_id]
 
         self.store_feature(feature_dict=f3, saveas=saveas)
 
@@ -929,33 +924,17 @@ class Experiment:
         images = []
         for i, election in enumerate(self.instances.values()):
             print(election.label)
-            # Read the two images
-            # images.append(Image.open(f'images/{name}/{election.label}.png'))
-            images.append(Image.open(f'images/{name}/euc_{i}.png'))
-        # resize, first image
-        # image1 = image1.resize((426, 240))
+            images.append(Image.open(f'images/{name}/{election.label}.png'))
         image1_size = images[0].size
 
         new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]),
                               (size, size, size))
-        # new_image = Image.new('RGB', (5 * image1_size[0], 2 * image1_size[1]), (250, 250, 250))
 
         print(len(images))
         for i in range(ncol):
             for j in range(nrow):
-                # new_image.paste(images[i], (image1_size[0] * i, 0))
-                # new_image.paste(images[i + 5], (image1_size[0] * i, image1_size[1]))
                 new_image.paste(images[i + j * ncol], (image1_size[0] * i, image1_size[1] * j))
-                # new_image.paste(images[i + 15], (image1_size[0] * i, image1_size[1] * 3))
-                # new_image.paste(images[i + 20], (image1_size[0] * i, image1_size[1] * 4))
-                # new_image.paste(images[i + 25], (image1_size[0] * i, image1_size[1] * 5))
-            # new_image.paste(images[i + 30], (image1_size[0] * i, image1_size[1] * 6))
-            # new_image.paste(images[i + 35], (image1_size[0] * i, image1_size[1] * 7))
 
-        # new_image.paste(images[0], (0, 0))
-        # new_image.paste(image2, (image1_size[0], 0))
-        # new_image.paste(image3, (0, image1_size[1]))
-        # new_image.paste(image4, (image1_size[0], image1_size[1]))
         new_image.save(f'images/microscope/{name}.png', "PNG", quality=85)
         if show:
             new_image.show()

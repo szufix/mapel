@@ -104,16 +104,21 @@ def _extract_distance_id(distance_id: str) -> (Callable, str):
 
 def run_single_process(exp: Experiment, instances_ids: list,
                       distances: dict, times: dict, matchings: dict,
-                      printing: bool) -> None:
+                      printing: bool, safe_mode=False) -> None:
     """ Single process for computing distances """
 
     for instance_id_1, instance_id_2 in instances_ids:
         if printing:
             print(instance_id_1, instance_id_2)
         start_time = time()
-        distance = get_distance(copy.deepcopy(exp.instances[instance_id_1]),
-                                copy.deepcopy(exp.instances[instance_id_2]),
-                                distance_id=copy.deepcopy(exp.distance_id))
+        if safe_mode:
+            distance = get_distance(copy.deepcopy(exp.instances[instance_id_1]),
+                                    copy.deepcopy(exp.instances[instance_id_2]),
+                                    distance_id=copy.deepcopy(exp.distance_id))
+        else:
+            distance = get_distance(exp.instances[instance_id_1],
+                                    exp.instances[instance_id_2],
+                                    distance_id=exp.distance_id)
         if type(distance) is tuple:
             distance, matching = distance
             matching = np.array(matching)

@@ -6,12 +6,13 @@ import time
 
 
 def get_banzhaf_cc_score(election, committee_size=1):
+    if election.fake:
+        return 'None'
 
     winners = set()
     BASE = {}
     BINOM = {}
 
-    start = time.time()
     for _ in range(committee_size):
         highest_c = 0
         highest_score = 0
@@ -24,10 +25,6 @@ def get_banzhaf_cc_score(election, committee_size=1):
                 highest_score = candidate_score
                 highest_c = c
         winners.add(highest_c)
-    stop = time.time()
-
-    # print(stop - start)
-    # print(get_cc_score(election, W))
 
     return get_cc_score(election, winners)
 

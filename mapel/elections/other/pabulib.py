@@ -11,8 +11,8 @@ def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pab
 
     for p, name in enumerate(os.listdir(path)):
         print(name)
-
         path = f'experiments/{experiment.experiment_id}/source/{name}'
+
 
         votes = {}
         projects = {}

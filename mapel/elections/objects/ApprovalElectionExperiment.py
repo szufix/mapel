@@ -98,7 +98,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
                         writer.writerow([r1, r2, mean, 0.])
 
     def compute_rule_features(self, feature_id=None, list_of_rules=None, printing=False,
-                              feature_params=None):
+                              feature_params=None, **kwargs):
         if feature_params is None:
             feature_params = {}
 
@@ -116,7 +116,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
             if printing:
                 print(rule)
             feature_params['rule'] = rule
-            self.compute_feature(feature_id=feature_id, feature_params=feature_params)
+            self.compute_feature(feature_id=feature_id, feature_params=feature_params, **kwargs)
 
     def print_latex_table(self, feature_id=None, column_id='value',
                           list_of_rules=None, list_of_models=None):
@@ -171,10 +171,13 @@ class ApprovalElectionExperiment(ElectionExperiment):
                     total_value = 0
                     ctr = 0
                     for instance in feature:
-                        if model in instance:
+                        if model.lower() in instance.lower():
                             total_value += feature[instance]
                             ctr += 1
-                    avg_value = round(total_value / ctr, 2)
+                    if ctr == 0:
+                        avg_value = -1
+                    else:
+                        avg_value = round(total_value / ctr, 2)
                     results[model][rule] = avg_value
             all_results[f'{feature_id}_{column_id}'] = results
 

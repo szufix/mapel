@@ -62,7 +62,6 @@ class Election(Instance):
             except:
                 pass
 
-
     def set_default_object_type(self, object_type):
         self.object_type = object_type
 
@@ -81,7 +80,7 @@ class Election(Instance):
     def compute_potes(self, mapping=None):
         """ Convert votes to positional votes (called potes) """
         # print(not self.fake and self.potes is None)
-        if not self.fake and self.potes is None:
+        if not self.fake and (self.potes is None or mapping is not None):
             # print("hello")
             # print(self.votes)
             if mapping is None:
@@ -179,6 +178,14 @@ class Election(Instance):
             X.append(elem[0])
             Y.append(elem[1])
 
+        start = False
+        if start:
+            plt.scatter(X[0], Y[0],
+                        color='sienna',
+                        s=1000,
+                        alpha=1,
+                        marker='X')
+
         if circles:
             weighted_points = {}
             Xs = {}
@@ -193,11 +200,13 @@ class Election(Instance):
                     Ys[str_elem] = Y[i]
 
             for str_elem in weighted_points:
-                if weighted_points[str_elem] > 30:
+                if weighted_points[str_elem] > 10:
                     plt.scatter(Xs[str_elem], Ys[str_elem],
                                 color='purple',
                                 s=10 * weighted_points[str_elem],
                                 alpha=0.2)
+
+        # print(len(weighted_points))
 
         if double_gradient:
             for i in range(self.num_voters):
@@ -210,11 +219,12 @@ class Election(Instance):
         if radius:
             plt.xlim([-radius, radius])
             plt.ylim([-radius, radius])
-        plt.title(self.label, size=38)
+        # plt.title(self.label, size=38)
+        plt.title(self.label, size=32)
         plt.axis('off')
 
         if saveas is None:
-            saveas = f'{self.label}_euc'
+            saveas = f'{self.label}'
 
         file_name = os.path.join(os.getcwd(), "images", name, f'{saveas}.png')
         plt.savefig(file_name, bbox_inches='tight', dpi=100)
@@ -272,9 +282,13 @@ class Election(Instance):
         # self.coordinates = KamadaKawai().embed(
         #     distances=self.distances,
         # )
-        MDS_object = MDS(n_components=2, dissimilarity='precomputed')
+        MDS_object = MDS(n_components=2, dissimilarity='precomputed',
+            # max_iter=1000,
+            # n_init=20,
+            # eps=1e-4,
+            )
+
         self.coordinates[object_type] = MDS_object.fit_transform(self.distances[object_type])
-        print(self.coordinates)
 
         # ADJUST
         # find max dist

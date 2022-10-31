@@ -246,13 +246,18 @@ def generate_approval_moving_resampling_votes(num_voters=None, num_candidates=No
     # for c in range(num_candidates):
     #     if rand.random() <= params['p']:
     #         central_vote.add(c)
+    num_legs = params['legs']
+    breaks = [int(num_voters/num_legs)*i for i in range(num_legs)]
+    print(breaks)
 
     k = int(params['p'] * num_candidates)
-    # print(k)
     central_vote = {i for i in range(k)}
+    ccc = copy.deepcopy(central_vote)
 
     votes = [set() for _ in range(num_voters)]
-    for v in range(num_voters):
+    votes[0] = copy.deepcopy(central_vote)
+
+    for v in range(1, num_voters):
         vote = set()
         for c in range(num_candidates):
             # if np.random.random() <= params['phi']**3:
@@ -264,6 +269,9 @@ def generate_approval_moving_resampling_votes(num_voters=None, num_candidates=No
                     vote.add(c)
         votes[v] = vote
         central_vote = copy.deepcopy(vote)
+
+        if v in breaks:
+            central_vote = copy.deepcopy(ccc)
 
     return votes
 
@@ -406,7 +414,8 @@ def generate_approval_simplex_resampling_votes(num_voters=None, num_candidates=N
         return votes
 
 
-def generate_approval_disjoint_resamplin_votes(num_voters=None, num_candidates=None, params=None):
+def generate_approval_disjoint_resamplin_votes(num_voters=None, num_candidates=None, params=None,
+                                               equal_sizes=True):
     if 'phi' not in params:
         phi = np.random.random()
     else:
@@ -419,9 +428,14 @@ def generate_approval_disjoint_resamplin_votes(num_voters=None, num_candidates=N
 
     k = int(params['p'] * num_candidates)
 
-    sizes = runif_in_simplex(num_groups)
+    if equal_sizes:
+        sizes = [1./num_groups for _ in range(num_groups)]
+    else:
+        sizes = runif_in_simplex(num_groups)
+    print(sizes)
     sizes = np.concatenate(([0], sizes))
     sizes = np.cumsum(sizes)
+
 
     votes = [set() for _ in range(num_voters)]
 

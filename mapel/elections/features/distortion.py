@@ -158,8 +158,8 @@ def distortion(experiment, election) -> float:
             original_d1 = experiment.distances[e0][e1]
             original_d2 = experiment.distances[e0][e2]
             original_proportion = original_d1 / original_d2
-            embedded_d1 = np.linalg.norm(c0 - experiment.coordinates[e1])
-            embedded_d2 = np.linalg.norm(c0 - experiment.coordinates[e2])
+            embedded_d1 = np.linalg.norm(c0 - experiment.coordinates[e1], ord=2)
+            embedded_d2 = np.linalg.norm(c0 - experiment.coordinates[e2], ord=2)
             embedded_proportion = embedded_d1 / embedded_d2
             _max = max(original_proportion, embedded_proportion)
             _min = min(original_proportion, embedded_proportion)
@@ -177,11 +177,12 @@ def monotonicity_triplets(experiment, election) -> float:
         if e1 != e0 and e2 != e0:
             original_d1 = experiment.distances[e0][e1]
             original_d2 = experiment.distances[e0][e2]
-            embedded_d1 = np.linalg.norm(c0 - experiment.coordinates[e1])
-            embedded_d2 = np.linalg.norm(c0 - experiment.coordinates[e2])
+            embedded_d1 = np.linalg.norm(c0 - experiment.coordinates[e1], ord=2)
+            embedded_d2 = np.linalg.norm(c0 - experiment.coordinates[e2], ord=2)
             if (original_d1 < original_d2 and embedded_d1 > embedded_d2 * (1. + epsilon)) or \
                     (original_d2 < original_d1 and embedded_d2 > embedded_d1 * (1. + epsilon)):
                 distortion += 1.
             ctr += 1.
     distortion /= ctr
+    print(distortion)
     return distortion

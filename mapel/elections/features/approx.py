@@ -193,12 +193,6 @@ def get_winners_approx_removal(election, committee_size, rule):
     return winners
 
 
-# OTHER
-# def unpack_committee_size(feature_params):
-#     if 'committee_size' in feature_params:
-#         return feature_params['committee_size']
-#     return 10
-
 
 def get_vectors(election, rule, committee_size):
 

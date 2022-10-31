@@ -1,6 +1,6 @@
 MAIN_LOCAL_FEATUERS = []
 
-MAIN_GLOBAL_FEATUERS = ['calculate_distortion', 'calculate_monotonicity']
+MAIN_GLOBAL_FEATUERS = ['distortion', 'monotonicity']
 
 ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans', 'distortion_from_all',
                             'id_vs_un', 'an_vs_st', }
@@ -160,7 +160,7 @@ LIST_OF_FAKE_MODELS = {'identity', 'uniformity', 'antagonism',
                        'crate', 'walsh_matrix', 'conitzer_matrix',
                        'single-crossing_matrix', 'gs_caterpillar_matrix',
                        'norm-mallows_matrix', 'sushi_matrix',
-                       'walsh_path', 'conitzer_path'}
+                       'walsh_path', 'conitzer_path', 'from_approval'}
 
 PATHS = {'unid', 'stan', 'anid', 'stid', 'anun', 'stun',
          'mallows_matrix_path', 'walsh_path', 'conitzer_path', }
@@ -170,7 +170,7 @@ PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
 
 APPROVAL_MODELS = {'impartial_culture', 'ic', 'resampling', 'id',
                    'empty', 'full', 'truncated_urn',
-                   'urn', 'euclidean', 'noise_model',
+                   'urn', 'euclidean', 'noise',
                    'zeros', 'ones',
                    'id_0.5', 'ic_0.5',
                    'half_1', 'half_2', 'disjoint_resampling',

@@ -131,7 +131,6 @@ LIST_OF_ORDINAL_MODELS_WITHOUT_PARAMS = {
 }
 
 
-
 def generate_ordinal_votes(culture_id: str = None,
                            num_candidates: int = None,
                            num_voters: int = None,
@@ -164,7 +163,7 @@ def generate_ordinal_votes(culture_id: str = None,
     return np.array(votes)
 
 
-def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
+def store_votes_in_a_file(election, culture_id, num_candidates, num_voters,
                           params, path, ballot, votes=None, aggregated=True):
     """ Store votes in a file """
     if votes is None:
@@ -174,10 +173,10 @@ def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
         params = {}
 
     with open(path, 'w') as file_:
-        if model_id in NICE_NAME:
-            file_.write("# " + NICE_NAME[model_id] + " " + str(params) + "\n")
+        if culture_id in NICE_NAME:
+            file_.write("# " + NICE_NAME[culture_id] + " " + str(params) + "\n")
         else:
-            file_.write("# " + model_id + " " + str(params) + "\n")
+            file_.write("# " + culture_id + " " + str(params) + "\n")
 
         file_.write(str(num_candidates) + "\n")
 
@@ -218,14 +217,13 @@ def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
             if ballot == 'approval':
                 for i in range(len(votes)):
                     file_.write('1, {')
-                    for j in range(len(votes[i][1])):
-                        file_.write(str(int(votes[i][1][j])))
-                        if j < len(votes[i][1]) - 1:
+                    for j in range(len(votes[i])):
+                        file_.write(str(int(list(votes[i])[j])))
+                        if j < len(votes[i]) - 1:
                             file_.write(", ")
                     file_.write("}\n")
 
             elif ballot == 'ordinal':
-                print(votes)
                 for i in range(len(votes)):
                     file_.write('1, ')
                     for j in range(len(votes[i])):
@@ -233,6 +231,40 @@ def store_votes_in_a_file(election, model_id, num_candidates, num_voters,
                         if j < len(votes[i]) - 1:
                             file_.write(", ")
                     file_.write("\n")
+
+
+
+def approval_votes_to_vectors(votes, num_candidates=None, num_voters=None):
+    vectors = np.zeros([num_candidates, num_candidates])
+    for vote in votes:
+        denom_in = len(vote)
+        # print(denom_in)
+        denom_out = num_candidates - denom_in
+        for i in range(num_candidates):
+            if i in vote:
+                for j in range(denom_in):
+                    vectors[i][j] += 1/denom_in/num_voters
+            else:
+                for j in range(denom_out):
+                    vectors[i][denom_in+j] += 1/denom_out/num_voters
+    print(vectors)
+    return vectors
+
+
+
+def from_approval(culture_id=None, num_candidates=None, num_voters=None, params=None):
+    # params['phi'] = np.random.rand()
+    # params['p'] = np.random.rand()
+    # votes = urn_model.generate_approval_urn_votes(num_candidates=num_candidates, num_voters=num_voters,
+    #                                     params=params)
+
+    votes = generate_approval_votes(culture_id=params['culture_id'],
+                                    num_candidates=num_candidates, num_voters=num_voters, params=params)
+
+    return approval_votes_to_vectors(votes, num_candidates=num_candidates, num_voters=num_voters)
+
+
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 16.05.2022 #

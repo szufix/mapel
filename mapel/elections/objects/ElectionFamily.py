@@ -81,6 +81,8 @@ class ElectionFamily(Family):
                 path = self.path
                 if path is not None and 'variable' in path:
                     new_params, variable = _get_params_for_paths(self, j)
+                    if params is None:
+                        params = {}
                     params = {**params, **new_params}
 
                 if params is not None and 'norm-phi' in params:
@@ -153,7 +155,7 @@ class ElectionFamily(Family):
                                             variable=variable, _import=False
                                             )
 
-                election.prepare_instance(store=store, params=params)
+                election.prepare_instance(store=store, aggregated=aggregated)
 
                 election.votes_to_approvalwise_vector()
 
@@ -210,6 +212,7 @@ def _get_params_for_paths(family, j, extremes=False):
         params[variable] = path['start'] + j * path['step']
 
     return params, variable
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

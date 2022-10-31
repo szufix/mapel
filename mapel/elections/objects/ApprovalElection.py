@@ -165,33 +165,21 @@ class ApprovalElection(Election):
         self.reverse_approvals = reverse_approvals
 
     # PREPARE INSTANCE
-    def prepare_instance(self, store=None, params: dict = None):
+    def prepare_instance(self, store=None, aggregated=True):
 
-        if params is None:
-            params = {}
-
-        self.params = params
-
-        # if self.culture_id == 'all_votes':
-        #     alpha = 1
-        # else:
-        #     params, alpha = update_params(params, self.variable, self.culture_id,
-        #                                   self.num_candidates)
-
-        self.params = params
         self.votes = generate_approval_votes(culture_id=self.culture_id,
                                              num_candidates=self.num_candidates,
-                                             num_voters=self.num_voters, params=params)
+                                             num_voters=self.num_voters,
+                                             params=self.params)
         avg = 0
         for vote in self.votes:
             avg += len(vote)
 
-        self.params = params
         if store:
-            self.store_approval_election()
+            self.store_approval_election(aggregated=aggregated)
 
     # STORE
-    def store_approval_election(self):
+    def store_approval_election(self, aggregated=True):
         """ Store approval election in an .app file """
 
         path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
@@ -207,9 +195,10 @@ class ApprovalElection(Election):
 
         else:
             store_votes_in_a_file(self, self.culture_id, self.num_candidates, self.num_voters,
-                                  self.params, path_to_file, self.ballot, votes=self.votes)
+                                  self.params, path_to_file, self.ballot, votes=self.votes,
+                                  aggregated=aggregated)
 
-    def compute_distances_between_votes(self, distance_id='hamming'):
+    def compute_distances_between_votes(self, distance_id='hamming', object_type='vote'):
 
         distances = np.zeros([self.num_voters, self.num_voters])
         for v1 in range(self.num_voters):
@@ -217,7 +206,7 @@ class ApprovalElection(Election):
                 if distance_id == 'hamming':
                     distances[v1][v2] = hamming(self.votes[v1], self.votes[v2])
 
-        self.distances = distances
+        self.distances[object_type] = distances
 
         if self.store:
             self._store_distances()
@@ -331,10 +320,13 @@ def update_params_approval_alpha(params):
 
 
 def update_params_approval_p(params):
+    print("HERE")
     if 'p' not in params:
         params['p'] = np.random.rand()
     elif type(params['p']) is list:
         params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
+        print(params)
+        print("TUTEJ")
 
 
 def update_params_approval_resampling(params):

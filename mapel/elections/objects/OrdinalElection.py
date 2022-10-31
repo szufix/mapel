@@ -13,7 +13,7 @@ from mapel.elections.cultures.mallows import get_mallows_vectors
 from mapel.elections.cultures.preflib import get_sushi_vectors
 from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
 from mapel.elections.cultures.single_peaked import get_walsh_vectors, get_conitzer_vectors
-from mapel.elections.cultures_ import generate_ordinal_votes, store_votes_in_a_file
+from mapel.elections.cultures_ import generate_ordinal_votes, store_votes_in_a_file, from_approval
 from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
@@ -33,7 +33,8 @@ class OrdinalElection(Election):
 
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
                          culture_id=culture_id, ballot=ballot, label=label,
-                         num_voters=num_voters, num_candidates=num_candidates)
+                         num_voters=num_voters, num_candidates=num_candidates,
+                         fast_import=fast_import)
 
         self.params = params
         self.variable = variable
@@ -44,8 +45,6 @@ class OrdinalElection(Election):
         self.potes = None
         self.condorcet = None
         self.points = {}
-
-
 
         if _import and experiment_id != 'virtual':
             try:
@@ -62,7 +61,6 @@ class OrdinalElection(Election):
                         self.num_voters = len(votes)
                         self.compute_potes()
                 else:
-
                     self.fake = check_if_fake(experiment_id, election_id)
                     if self.fake:
                         self.culture_id, self.params, self.num_voters, \
@@ -96,9 +94,9 @@ class OrdinalElection(Election):
                     if not fast_import:
                         self.votes_to_positionwise_vectors()
 
+
             except:
                 pass
-
 
 
         if self.params is None:
@@ -122,7 +120,6 @@ class OrdinalElection(Election):
         if self.potes is not None:
             return self.potes
         return self.compute_potes()
-
 
     def votes_to_positionwise_vectors(self):
         vectors = np.zeros([self.num_candidates, self.num_candidates])
@@ -150,6 +147,11 @@ class OrdinalElection(Election):
         elif self.culture_id == 'crate':
             vectors = get_fake_vectors_crate(num_candidates=self.num_candidates,
                                              fake_param=self.params)
+        elif self.culture_id in ['from_approval']:
+            # print(self.culture_id)
+            vectors = from_approval(num_candidates=self.num_candidates,
+                                                num_voters=self.num_voters,
+                                                params=self.params)
         else:
             for i in range(self.num_voters):
                 pos = 0

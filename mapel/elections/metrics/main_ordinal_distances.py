@@ -133,6 +133,7 @@ def get_matching_cost_pos_swap(election_1: OrdinalElection, election_2: OrdinalE
 def get_matching_cost_positionwise(election_1: OrdinalElection, election_2: OrdinalElection,
                                    inner_distance: Callable) -> List[list]:
     """ Return: Cost table """
+
     vectors_1 = election_1.get_vectors()
     vectors_2 = election_2.get_vectors()
     size = election_1.num_candidates
