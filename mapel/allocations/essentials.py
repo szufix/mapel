@@ -7,9 +7,35 @@ from mapel.main.objects.Experiment import Experiment
 import mapel.allocations.metrics.surveying as surveying
 
 class AllocationTask(Instance):
+  """
+  Represents a single allocation task; in other words, one instance of
+  an allocation problem.
+  """
 
   @classmethod
   def from_matrix(cls, utility_matrix, instance_id):
+    """
+      Constructs an instance from a utility matrix, which is a list of agent
+      evaluation functions over all of the resources. Each evaluation function
+      is a list of integers.
+    """
+    return AllocationTask(utility_matrix, None, instance_id)
+
+  @classmethod
+  def from_splidditfile(cls, fname, instance_id):
+    utility_matrix = []
+    with open(fname, 'r') as ffile:
+      linecnt = 0
+      for line in ffile:
+        linecnt += 1
+        if linecnt == 1:
+          agnt_cnt, res_cnt = (int(val) for val in line.strip().split(" "))
+          continue
+        if linecnt == 2:
+          continue
+        if (linecnt > 2) and (linecnt <= 2 + agnt_cnt):
+          utility_matrix.append([int(val) for val in line.strip().split()])
+        continue
     return AllocationTask(utility_matrix, None, instance_id)
 
   def __init__(self, utility_matrix, experiment_id, instance_id, culture_id=None, alpha=None):
