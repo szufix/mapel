@@ -25,10 +25,6 @@ dynamic = ["dependencies", "optional-dependencies"]
 Homepage = "https://github.com/szufix/mapel"
 
 
-# setuptools specific options
-[tool.setuptools.packages.find]
-where = [".", "mapel"] 
-
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 

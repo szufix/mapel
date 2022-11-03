@@ -35,6 +35,7 @@ mapel/voting/elections/mallows_positionmatrices/50_matrix.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
 
