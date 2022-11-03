@@ -5,7 +5,6 @@ import csv
 import itertools
 import math
 import os
-import warnings
 from abc import ABCMeta, abstractmethod
 from PIL import Image
 from mapel.main.objects.Family import Family
@@ -253,7 +252,7 @@ class Experiment:
             my_pos = [[f1[e], f2[e]] for e in f1]
         else:
             my_pos = []
-            logging.warning("Unknown method!")
+            logger.warning("Unknown method!")
 
         self.coordinates = {}
         for i, instance_id in enumerate(self.distances):
@@ -361,7 +360,7 @@ class Experiment:
             file_name = f'{self.embedding_id}_{self.distance_id}_{dim}d.csv'
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                             "coordinates", file_name)
-        # print(path)
+        logger.debug(f"Importing coordinates file: {path}")
         with open(path, 'r', newline='') as csv_file:
 
             # ORIGINAL
@@ -386,16 +385,10 @@ class Experiment:
                     coordinates[instance_id] = [float(row['x']), float(row['y']), float(row['z'])]
 
                 if instance_id not in self.instances:
-                    warn = True
-
-            # if warn:
-            #     text = f'Possibly outdated coordinates are imported!'
-            #     warnings.warn(text, stacklevel=2)
 
             if warn:
                 text = f'Possibly outdated coordinates are imported!'
-                logging.warning(text)
-                # warnings.warn(text)
+                logger.warning(text)
 
         return coordinates
 
@@ -608,7 +601,7 @@ class Experiment:
 
             if warn:
                 text = f'Possibly outdated distances are imported!'
-                warnings.warn(text)
+                logger.warn(text)
         return distances, times, stds, mappings
 
     def clean_elections(self):

@@ -1,3 +1,6 @@
+import mapel.main.logs as logs
+logger = logs.get_logger(__name__)
+
 import csv
 import os
 import math
@@ -66,6 +69,8 @@ def print_map_2d(experiment,
                  legend=True, feature_labelsize=14, dpi=250,
                  column_id='value', title_size=16, ticks_pos=None,
                  feature_ids=None, omit=None, textual_size=16, figsize=(6.4, 6.4)) -> None:
+    
+    logger.debug("Printing 2d map")
 
     if textual is None:
         textual = []
