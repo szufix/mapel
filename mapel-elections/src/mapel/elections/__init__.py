@@ -1,33 +1,14 @@
-import mapel.elections.features_ as features
-import mapel.elections.metrics_ as metr
-import mapel.elections.cultures_ as ele
-import mapel.elections.other.development as dev
+from .metrics_ import get_distance
+from .other.development import compute_spoilers
 import mapel.main.printing as pr
-from mapel.elections.objects.ApprovalElectionExperiment import ApprovalElectionExperiment
-from mapel.elections.objects.OrdinalElection import OrdinalElection
-from mapel.elections.objects.ApprovalElection import ApprovalElection
-from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment
-
-try:
-    from mapel.roommates.objects.RoommatesExperiment import RoommatesExperiment
-    from mapel.roommates.objects.Roommates import Roommates
-    import mapel.roommates.cultures_ as rom
-except:
-    print("Failed when importing Roommates")
-
-try:
-    from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
-except:
-    print("Failed when importing Marriages")
-
-
-def hello():
-    print("Hello! It is main Mapel")
+from .objects.ApprovalElectionExperiment import ApprovalElectionExperiment
+from .objects.OrdinalElection import OrdinalElection
+from .objects.ApprovalElection import ApprovalElection
+from .objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 
 
 def prepare_online_ordinal_experiment(*kwargs):
     return prepare_experiment(*kwargs, instance_type='ordinal', store=False)
-
 
 def prepare_offline_ordinal_experiment(*kwargs):
     return prepare_experiment(*kwargs, instance_type='ordinal', store=True)
@@ -64,16 +45,6 @@ def prepare_experiment(experiment_id=None, instances=None, distances=None, insta
                                           coordinates_names=coordinates_names,
                                           embedding_id=embedding_id,
                                           fast_import=fast_import)
-    elif instance_type == 'roommates':
-        return RoommatesExperiment(experiment_id=experiment_id, _import=_import,
-                                   distance_id=distance_id, instance_type=instance_type,
-                                   embedding_id=embedding_id)
-
-    elif instance_type == 'marriages':
-        return MarriagesExperiment(experiment_id=experiment_id, _import=_import,
-                                   distance_id=distance_id, instance_type=instance_type,
-                                   embedding_id=embedding_id)
-
 
 def print_approvals_histogram(*args):
     pr.print_approvals_histogram(*args)
@@ -86,13 +57,8 @@ def custom_div_cmap(**kwargs):
 def print_matrix(**kwargs):
     pr.print_matrix(**kwargs)
 
-
-# def compute_subelection_by_groups(**kwargs):
-#     metr.compute_subelection_by_groups(**kwargs)
-
-
 def compute_spoilers(**kwargs):
-    return dev.compute_spoilers(**kwargs)
+    return compute_spoilers(**kwargs)
 
 
 ### WITHOUT EXPERIMENT ###
@@ -118,16 +84,5 @@ def generate_election_from_votes(votes=None):
     election.votes = votes
     return election
 
-
-def generate_roommates_instance(**kwargs):
-    instance = Roommates('virtual', 'tmp', **kwargs)
-    instance.prepare_instance()
-    return instance
-
-
-def generate_roommates_votes(**kwargs):
-    return rom.generate_votes(**kwargs)
-
-
 def compute_distance(*args, **kwargs):
-    return metr.get_distance(*args, **kwargs)
+    return get_distance(*args, **kwargs)

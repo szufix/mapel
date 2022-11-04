@@ -20,12 +20,47 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.x'
+        python-version: '3.8'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-    - name: Build manylinux Python wheels
+    - name: Build manylinux Python wheels-elections
       uses: RalfG/python-wheels-manylinux-build@v0.5.0-manylinux2014_x86_64
       with:
-        python-versions: 'cp37-cp37m'
+        python-versions: 'cp38-cp38'
         build-requirements: 'pybind11'
+        package-path: 'mapel-elections'
+        system-packages: 'gcc gcc-c++'
+    - name: Build Python wheels-core
+      run:
+        pip wheel ./mapel-core --no-deps -w dist
+    - name: Build Python wheels-roommates
+      run:
+        pip wheel ./mapel-roommates --no-deps -w dist
+    - name: Build Python wheels-marriages
+      run:
+        pip wheel ./mapel-marriages --no-deps -w dist
+    - name: copy fiels to dist
+      run: |
+        mkdir -p dist
+        cp ./mapel-elections/dist/*-manylinux*.whl ./dist/ || echo "Nothing in \
+        mapel-elections"
+        cp ./mapel-roommates/dist/*-manylinux*.whl ./dist/ || echo "Nothing in \
+        mapel-roommates"
+        cp ./mapel-marriages/dist/*-manylinux*.whl ./dist/ || echo "Nothing in \
+        mapel-marriages"
+        find ./dist
+    - name: make sdists
+      run: |
+        mkdir -p dist
+        python -m pip install build
+        python -m build --sdist --outdir dist ./mapel-core/
+        python -m build --sdist --outdir dist ./mapel-elections/
+        python -m build --sdist --outdir dist ./mapel-roommates/
+        python -m build --sdist --outdir dist ./mapel-marriages/
+        find ./dist
+    - name: Publish distribution 📦 to Test PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/

@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=65", "wheel", "pybind11>=2.6.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mapel-elections"
+version= "1.3.1.9"
+authors = [
+ {name = "Stanislaw Szufa", email = "s.szufa@gmail.com"},
+ {name = "Niclas Boehmer", email = "niclas.boehmer@tu-berlin.de"},
+ {name = "Piotr Faliszewski", email = "faliszew@agh.edu.pl"},
+ {name = "Lukasz Janeczko", email = "lukij1997@gmail.com"},
+ {name = "Andrzej Kaczmarczyk", email = "andrzej.kaczmarczyk@agh.edu.pl"},
+ {name = "Kasper Sapala", email = "kasper.sapala@gmail.com"},
+ {name = "Tomasz Was", email = "tomasz.t.was@gmail.com"},
+]
+description = "Map of Elections"
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+requires-python = ">=3.7"
+license = {file = "LICENSE.txt"}
+readme = "README.md"
+dynamic = ["dependencies", "optional-dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.dynamic.optional-dependencies]
+extras = {file = ["optional_requirements.txt"]}
+
