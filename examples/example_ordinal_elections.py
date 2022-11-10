@@ -1,5 +1,6 @@
-import mapel
+#!/usr/bin/env python3
 
+import mapel.elections as mapel
 
 def compute_borda_scores(election) -> list:
     """ Return: List with all Borda scores """
@@ -12,9 +13,9 @@ def compute_borda_scores(election) -> list:
 
 if __name__ == "__main__":
 
-    election_1 = mapel.generate_ordinal_election(model_id='impartial_culture',
+    election_1 = mapel.generate_ordinal_election(culture_id='impartial_culture',
                                                  num_voters=5, num_candidates=3)
-    election_2 = mapel.generate_ordinal_election(model_id='impartial_culture',
+    election_2 = mapel.generate_ordinal_election(culture_id='impartial_culture',
                                                  num_voters=5, num_candidates=3)
 
     print(f'votes_1 {election_1.votes}')

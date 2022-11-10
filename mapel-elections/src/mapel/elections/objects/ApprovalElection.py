@@ -436,13 +436,11 @@ def update_params_approval_alpha(params):
 
 
 def update_params_approval_p(params):
-    print("HERE")
     if 'p' not in params:
         params['p'] = np.random.rand()
     elif type(params['p']) is list:
         params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
         print(params)
-        print("TUTEJ")
 
 
 def update_params_approval_resampling(params):

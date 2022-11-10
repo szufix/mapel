@@ -1,14 +1,16 @@
-import mapel
+#!/usr/bin/env python3
+
+import mapel.elections as mapel
 
 
 if __name__ == "__main__":
 
 
-    election_1 = mapel.generate_approval_election(model_id='impartial_culture',
+    election_1 = mapel.generate_approval_election(culture_id='impartial_culture',
                                                   num_voters=5, num_candidates=3)
-    election_2 = mapel.generate_approval_election(model_id='impartial_culture',
+    election_2 = mapel.generate_approval_election(culture_id='impartial_culture',
                                                   num_voters=5, num_candidates=3)
-    election_3 = mapel.generate_approval_election(model_id='resampling',
+    election_3 = mapel.generate_approval_election(culture_id='resampling',
                                                   params={'p': 0.1, 'phi': 0.4},
                                                   num_voters=5, num_candidates=3)
 

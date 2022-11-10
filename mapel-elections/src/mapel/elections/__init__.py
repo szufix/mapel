@@ -7,19 +7,19 @@ from .objects.ApprovalElection import ApprovalElection
 from .objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 
 
-def prepare_online_ordinal_experiment(*kwargs):
-    return prepare_experiment(*kwargs, instance_type='ordinal', store=False)
+def prepare_online_ordinal_experiment(**kwargs):
+    return prepare_experiment(**kwargs, instance_type='ordinal', store=False)
 
-def prepare_offline_ordinal_experiment(*kwargs):
-    return prepare_experiment(*kwargs, instance_type='ordinal', store=True)
-
-
-def prepare_online_approval_experiment(*kwargs):
-    return prepare_experiment(*kwargs, instance_type='approval', store=False)
+def prepare_offline_ordinal_experiment(**kwargs):
+    return prepare_experiment(**kwargs, instance_type='ordinal', store=True)
 
 
-def prepare_offline_approval_experiment(*kwargs):
-    return prepare_experiment(*kwargs, instance_type='approval', store=True)
+def prepare_online_approval_experiment(**kwargs):
+    return prepare_experiment(**kwargs, instance_type='approval', store=False)
+
+
+def prepare_offline_approval_experiment(**kwargs):
+    return prepare_experiment(**kwargs, instance_type='approval', store=True)
 
 
 def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
