@@ -53,6 +53,7 @@ jobs:
     - name: make sdists
       run: |
         mkdir -p dist
+        export DISTUTILS_DEBUG=DEBUG_ME
         python -m pip install build
         python -m build --sdist --outdir dist ./mapel-core/
         python -m build --sdist --outdir dist ./mapel-elections/
