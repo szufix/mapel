@@ -196,6 +196,7 @@ class AllocationExperiment(Experiment):
 
 
     def compute_distances(self, distance_id, self_distances = True):
+        logger.info(f"Computing distance {distance_id}")
         matchings = {instance_id: {} for instance_id in self.instances}
         distances = {instance_id: {} for instance_id in self.instances}
         times = {instance_id: {} for instance_id in self.instances}

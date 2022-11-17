@@ -385,6 +385,7 @@ class Experiment:
                     coordinates[instance_id] = [float(row['x']), float(row['y']), float(row['z'])]
 
                 if instance_id not in self.instances:
+                    warn = True
 
             if warn:
                 text = f'Possibly outdated coordinates are imported!'
