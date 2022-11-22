@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 import copy
-from mapel.main.objects.Family import Family
+from mapel.core.objects.Family import Family
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
-from mapel.main.utils import *
+from mapel.core.utils import *
 import mapel.elections.cultures.mallows as mallows
 
 

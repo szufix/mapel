@@ -2,7 +2,7 @@
 
 import numpy as np
 from mapel.roommates.cultures._utils import convert
-from mapel.main.utils import *
+from mapel.core.utils import *
 import logging
 
 def generate_roommates_ic_votes(num_agents: int = None):

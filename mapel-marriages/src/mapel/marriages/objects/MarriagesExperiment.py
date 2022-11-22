@@ -7,15 +7,15 @@ import os
 from multiprocessing import Process
 from time import sleep
 
-from mapel.main.objects.Experiment import Experiment
+from mapel.core.objects.Experiment import Experiment
 from mapel.marriages.objects.MarriagesFamily import MarriagesFamily
 from mapel.marriages.objects.Marriages import Marriages
 import mapel.marriages.models_main as models_main
 import mapel.marriages.metrics_main as metr
 import mapel.marriages.features.basic_features as basic
 import mapel.marriages.features_main as features
-from mapel.main.printing import get_values_from_csv_file
-from mapel.main.utils import make_folder_if_do_not_exist
+from mapel.core.printing import get_values_from_csv_file
+from mapel.core.utils import make_folder_if_do_not_exist
 try:
     from sklearn.manifold import MDS
     from sklearn.manifold import TSNE

@@ -17,8 +17,8 @@ import mapel.elections.features.justified_representation as jr
 import mapel.elections.features.dimensionality as dimensionality
 
 
-from mapel.main.glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
-from mapel.main.features_main import get_main_local_feature, get_main_global_feature
+from mapel.core.glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
+from mapel.core.features_main import get_main_local_feature, get_main_global_feature
 
 
 def get_global_feature(feature_id):

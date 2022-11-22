@@ -8,16 +8,16 @@ from multiprocessing import Process
 from time import sleep
 import time
 
-from mapel.main.objects.Experiment import Experiment
+from mapel.core.objects.Experiment import Experiment
 from mapel.roommates.objects.RoommatesFamily import RoommatesFamily
 from mapel.roommates.objects.Roommates import Roommates
 import mapel.roommates.models_ as models_main
 import mapel.roommates.metrics_ as metr
 import mapel.roommates.features.basic_features as basic
 import mapel.roommates.features_ as features
-from mapel.main.utils import *
-from mapel.main.glossary import *
-from mapel.main.printing import get_values_from_csv_file
+from mapel.core.utils import *
+from mapel.core.glossary import *
+from mapel.core.printing import get_values_from_csv_file
 
 try:
     from sklearn.manifold import MDS

@@ -9,8 +9,8 @@ import os
 import csv
 import numpy as np
 
-from mapel.main.inner_distances import map_str_to_func
-from mapel.main.objects.Experiment import Experiment
+from mapel.core.inner_distances import map_str_to_func
+from mapel.core.objects.Experiment import Experiment
 from mapel.marriages.metrics import main_marriages_distances as mrd
 from mapel.marriages.objects.Marriages import Marriages
 

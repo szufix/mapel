@@ -7,7 +7,7 @@ import csv
 import time
 
 import mapel.elections.cultures.mallows as mallows
-from mapel.main.glossary import *
+from mapel.core.glossary import *
 from mapel.elections.cultures.group_separable import get_gs_caterpillar_vectors
 from mapel.elections.cultures.mallows import get_mallows_vectors
 from mapel.elections.cultures.preflib import get_sushi_vectors
@@ -18,10 +18,10 @@ from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
 from mapel.elections.other.winners2 import generate_winners
-from mapel.main.inner_distances import swap_distance_between_potes, \
+from mapel.core.inner_distances import swap_distance_between_potes, \
     spearman_distance_between_potes
 from mapel.elections.features.other import is_condorcet
-from mapel.main.utils import *
+from mapel.core.utils import *
 
 
 class OrdinalElection(Election):

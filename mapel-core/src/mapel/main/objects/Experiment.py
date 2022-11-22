@@ -7,8 +7,8 @@ import os
 import warnings
 from abc import ABCMeta, abstractmethod
 from PIL import Image
-from mapel.main.objects.Family import Family
-import mapel.main.printing as pr
+from mapel.core.objects.Family import Family
+import mapel.core.printing as pr
 import time
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -16,10 +16,10 @@ import numpy as np
 from scipy.stats import stats
 import ast
 import time
-from mapel.main.utils import make_folder_if_do_not_exist
+from mapel.core.utils import make_folder_if_do_not_exist
 
-from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
-from mapel.main.embedding.simulated_annealing.simulated_annealing import SimulatedAnnealing
+from mapel.core.embedding.kamada_kawai.kamada_kawai import KamadaKawai
+from mapel.core.embedding.simulated_annealing.simulated_annealing import SimulatedAnnealing
 
 COLORS = []
 

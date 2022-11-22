@@ -6,7 +6,7 @@ import os
 from collections import Counter
 from scipy.stats import gamma
 from numpy import number
-from mapel.main.utils import get_vector
+from mapel.core.utils import get_vector
 
 
 def generate_didi_votes(num_voters=None, num_candidates=None, params=None):

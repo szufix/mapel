@@ -14,10 +14,10 @@ from mapel.elections.objects.ApprovalElection import ApprovalElection
 import mapel.elections.metrics_ as metr
 import mapel.elections.other.rules as rules
 import mapel.elections.features_ as features
-from mapel.main.objects.Experiment import Experiment
-import mapel.main.printing as pr
-from mapel.main.utils import *
-from mapel.main.glossary import *
+from mapel.core.objects.Experiment import Experiment
+import mapel.core.printing as pr
+from mapel.core.utils import *
+from mapel.core.glossary import *
 
 try:
     from sklearn.manifold import MDS

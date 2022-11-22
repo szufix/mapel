@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-from mapel.main.objects.Family import Family
-from mapel.marriages.objects.Marriages import Marriages
 import copy
 
-import mapel.marriages.cultures.mallows as mallows
+from mapel.core.objects.Family import Family
+from mapel.roommates.objects.Roommates import Roommates
+from mapel.core.utils import *
+
+import mapel.roommates.cultures.mallows as mallows
 
 
-class MarriagesFamily(Family):
+class RoommatesFamily(Family):
 
     def __init__(self,
                  model_id: str = None,
@@ -50,7 +52,7 @@ class MarriagesFamily(Family):
         if 'extremes' in path:
             extremes = path['extremes']
 
-        params = {}
+        params = {'variable': variable}
         if extremes:
             params[variable] = j / (self.size - 1)
         elif not extremes:
@@ -71,13 +73,12 @@ class MarriagesFamily(Family):
 
     def prepare_family(self, experiment_id=None, store=None):
 
-        print(self.num_agents)
-        params = copy.deepcopy(self.params)
-
         instances = {}
 
         _keys = []
         for j in range(self.size):
+
+            params = copy.deepcopy(self.params)
 
             path = self.path
             if path is not None and 'variable' in path:
@@ -88,12 +89,9 @@ class MarriagesFamily(Family):
                 params['phi'] = mallows.phi_from_relphi(self.num_agents,
                                                         relphi=params['norm-phi'])
 
-            if self.single:
-                instance_id = self.family_id
-            else:
-                instance_id = self.family_id + '_' + str(j)
+            instance_id = get_instance_id(self.single, self.family_id, j)
 
-            instance = Marriages(experiment_id, instance_id, _import=False,
+            instance = Roommates(experiment_id, instance_id, _import=False,
                                  model_id=self.model_id, num_agents=self.num_agents)
 
             instance.prepare_instance(store=store, params=params)

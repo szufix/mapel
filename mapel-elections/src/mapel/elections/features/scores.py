@@ -20,7 +20,7 @@ except ImportError:
     abcrules = None
     preferences = None
 
-from mapel.main.glossary import *
+from mapel.core.glossary import *
 from mapel.elections.metrics import lp
 from mapel.elections.other import winners2 as win
 

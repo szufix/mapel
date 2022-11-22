@@ -1,6 +1,6 @@
 from .metrics_ import get_distance
 from .other.development import compute_spoilers
-import mapel.main.printing as pr
+import mapel.core.printing as pr
 from .objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from .objects.OrdinalElection import OrdinalElection
 from .objects.ApprovalElection import ApprovalElection

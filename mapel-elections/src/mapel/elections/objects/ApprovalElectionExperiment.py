@@ -4,12 +4,12 @@ import os
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
 from mapel.elections.other import pabulib
-from mapel.main.glossary import *
-from mapel.main.utils import *
+from mapel.core.glossary import *
+from mapel.core.utils import *
 import numpy as np
 import csv
 
-from mapel.main.matchings import solve_matching_vectors
+from mapel.core.matchings import solve_matching_vectors
 
 try:
     from sklearn.manifold import MDS

@@ -3,7 +3,7 @@ import pickle
 
 import numpy as np
 from mapel.roommates.cultures._utils import convert
-from mapel.main.utils import *
+from mapel.core.utils import *
 
 # Given the number m of candidates and a phi\in [0,1] function computes the expected number of swaps
 # in a vote sampled from Mallows culture_id

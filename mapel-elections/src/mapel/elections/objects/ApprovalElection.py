@@ -9,11 +9,11 @@ from matplotlib import pyplot as plt
 from scipy.stats import gamma
 
 import mapel.elections.cultures.mallows as mallows
-from mapel.main.glossary import *
+from mapel.core.glossary import *
 from mapel.elections.cultures_ import generate_approval_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
-from mapel.main.inner_distances import hamming
-from mapel.main.utils import *
+from mapel.core.inner_distances import hamming
+from mapel.core.utils import *
 import time
 
 class ApprovalElection(Election):

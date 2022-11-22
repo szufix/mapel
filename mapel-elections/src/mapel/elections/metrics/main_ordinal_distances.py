@@ -3,10 +3,10 @@ import os
 from typing import Callable, List
 from itertools import combinations, permutations
 
-from mapel.main.matchings import *
+from mapel.core.matchings import *
 from mapel.elections.objects.OrdinalElection import OrdinalElection
-import mapel.main.utils as utils
-from mapel.main.inner_distances import swap_distance
+import mapel.core.utils as utils
+from mapel.core.inner_distances import swap_distance
 import mapel.elections.metrics.ilp_isomorphic as ilp_iso
 
 try: 

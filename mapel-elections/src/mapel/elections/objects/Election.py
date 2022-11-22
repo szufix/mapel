@@ -15,10 +15,10 @@ from mapel.elections.features_ import get_local_feature
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
 from mapel.elections.other.winners2 import generate_winners
-from mapel.main.glossary import *
-from mapel.main.inner_distances import l2
-from mapel.main.objects.Instance import Instance
-from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
+from mapel.core.glossary import *
+from mapel.core.inner_distances import l2
+from mapel.core.objects.Instance import Instance
+from mapel.core.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 
 OBJECT_TYPES = ['vote', 'candidate']
 

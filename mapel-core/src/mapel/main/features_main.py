@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from mapel.main.features.distortion import calculate_distortion
-from mapel.main.features.monotonicity import calculate_monotonicity, calculate_monotonicity_naive
+from mapel.core.features.distortion import calculate_distortion
+from mapel.core.features.monotonicity import calculate_monotonicity, calculate_monotonicity_naive
 
 
 def get_main_local_feature(feature_id):

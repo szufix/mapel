@@ -3,8 +3,8 @@ from typing import List
 
 import numpy as np
 
-from mapel.main.features.common import extract_selected_coordinates
-from mapel.main.objects.Experiment import Experiment
+from mapel.core.features.common import extract_selected_coordinates
+from mapel.core.objects.Experiment import Experiment
 
 
 def calculate_stability(experiment: Experiment, election_ids: List[str] = None, rotate_to_match=True):

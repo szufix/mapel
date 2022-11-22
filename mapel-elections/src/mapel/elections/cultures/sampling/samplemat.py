@@ -8,7 +8,7 @@ except:
 import random
 import math
 
-import mapel.main.utils as utils
+import mapel.core.utils as utils
 
 def _input_standarization(matrix):
   try: 

@@ -16,7 +16,7 @@ import mapel.elections.cultures.single_crossing as single_crossing
 import mapel.elections.cultures.single_peaked as single_peaked
 import mapel.elections.cultures.urn_model as urn_model
 import mapel.elections.cultures.partylist as partylist
-from mapel.main.glossary import *
+from mapel.core.glossary import *
 from mapel.elections.cultures.preflib import generate_preflib_votes
 import mapel.elections.cultures.field_experiment as fe
 import mapel.elections.cultures.didi as didi

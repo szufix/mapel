@@ -1,6 +1,6 @@
 
 import numpy as np
-from mapel.main.utils import get_vector
+from mapel.core.utils import get_vector
 
 
 def generate_approval_partylist_votes(num_voters=None, num_candidates=None, params=None):

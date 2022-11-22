@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from mapel.main.inner_distances import l2
+from mapel.core.inner_distances import l2
 
 from itertools import combinations
 

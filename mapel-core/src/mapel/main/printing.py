@@ -11,7 +11,7 @@ try:
 except ImportError:
     tikzplotlib = None
 
-from mapel.main.glossary import *
+from mapel.core.glossary import *
 
 
 def print_approvals_histogram(election):
