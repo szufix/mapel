@@ -54,7 +54,7 @@ jobs:
         system-packages: 'gcc gcc-c++'
         pip-wheel-args: '-w ./mapel_dist --no-deps'
     - name: Build pure-Python wheels
-      run:
+      run: |
         pip wheel ./mapel-all --no-deps -w mapel_dist
         pip wheel ./mapel-core --no-deps -w mapel_dist
         pip wheel ./mapel-roommates --no-deps -w mapel_dist
