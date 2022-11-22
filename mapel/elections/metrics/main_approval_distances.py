@@ -3,6 +3,7 @@
 import math
 from typing import Callable, List
 
+import os
 import networkx as nx
 
 from mapel.main.matchings import *

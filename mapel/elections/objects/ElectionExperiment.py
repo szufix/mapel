@@ -59,7 +59,6 @@ class ElectionExperiment(Experiment):
         else:
             self.__dict__[name] = value
 
-
     def prepare_matrices(self):
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices")
         for file_name in os.listdir(path):
@@ -89,11 +88,14 @@ class ElectionExperiment(Experiment):
             for j in range(self.families[family_id].size):
                 instance_id = get_instance_id(single, family_id, j)
                 if self.instance_type == 'ordinal':
-                    instance = OrdinalElection(self.experiment_id, instance_id, _import=True,
+                    instance = OrdinalElection(self.experiment_id, instance_id,
+                                               _import=True,
                                                fast_import=self.fast_import,
                                                with_matrix=self.with_matrix)
                 elif self.instance_type == 'approval':
-                    instance = ApprovalElection(self.experiment_id, instance_id, _import=True)
+                    instance = ApprovalElection(self.experiment_id, instance_id,
+                                                _import=True,
+                                                fast_import=self.fast_import)
                 else:
                     instance = None
 
@@ -324,8 +326,6 @@ class ElectionExperiment(Experiment):
                         time_ = str(times[election_1][election_2])
                         writer.writerow([election_1, election_2, distance, time_])
 
-
-
     def get_election_id_from_model_name(self, culture_id: str) -> str:
         for family_id in self.families:
             if self.families[family_id].culture_id == culture_id:
@@ -441,8 +441,6 @@ class ElectionExperiment(Experiment):
             feature_long_id = f'{feature_id}_{self.embedding_id}'
         else:
             feature_long_id = feature_id
-
-
 
         num_iterations = 1
         if 'num_interations' in feature_params:
@@ -583,7 +581,6 @@ def check_if_all_equal(values, subject):
     if any(x != values[0] for x in values):
         text = f'Not all {subject} values are equal!'
         warnings.warn(text)
-
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 22.10.2021 #

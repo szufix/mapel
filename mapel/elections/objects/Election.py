@@ -18,6 +18,7 @@ from mapel.elections.other.winners2 import generate_winners
 from mapel.main.glossary import *
 from mapel.main.inner_distances import l2
 from mapel.main.objects.Instance import Instance
+from mapel.main.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 
 OBJECT_TYPES = ['vote', 'candidate']
 
@@ -165,7 +166,13 @@ class Election(Instance):
             plt.clf()
 
     def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
-                  object_type=None, double_gradient=False, saveas=None):
+                  object_type=None, double_gradient=False, saveas=None, color='blue',
+                  marker='o', title_size=20):
+
+        if object_type == 'vote':
+            length = self.num_voters
+        elif object_type == 'candidate':
+            length = self.num_candidates
 
         if object_type is None:
             object_type = self.object_type
@@ -186,11 +193,11 @@ class Election(Instance):
                         alpha=1,
                         marker='X')
 
-        if circles:
+        if circles: # works only for votes
             weighted_points = {}
             Xs = {}
             Ys = {}
-            for i in range(self.num_voters):
+            for i in range(length):
                 str_elem = str(self.votes[i])
                 if str_elem in weighted_points:
                     weighted_points[str_elem] += 1
@@ -200,7 +207,7 @@ class Election(Instance):
                     Ys[str_elem] = Y[i]
 
             for str_elem in weighted_points:
-                if weighted_points[str_elem] > 10:
+                if weighted_points[str_elem] > 10 and str_elem!='set()':
                     plt.scatter(Xs[str_elem], Ys[str_elem],
                                 color='purple',
                                 s=10 * weighted_points[str_elem],
@@ -209,18 +216,21 @@ class Election(Instance):
         # print(len(weighted_points))
 
         if double_gradient:
-            for i in range(self.num_voters):
+            for i in range(length):
                 x = float(self.points['voters'][i][0])
                 y = float(self.points['voters'][i][1])
                 plt.scatter(X[i], Y[i], color=[0,y,x], s=s, alpha=alpha)
         else:
-            plt.scatter(X, Y, color='blue', s=s, alpha=alpha)
+            plt.scatter(X, Y, color=color, s=s, alpha=alpha, marker=marker)
+
+        avg_x = np.mean(X)
+        avg_y = np.mean(Y)
 
         if radius:
-            plt.xlim([-radius, radius])
-            plt.ylim([-radius, radius])
+            plt.xlim([avg_x-radius, avg_x+radius])
+            plt.ylim([avg_y-radius, avg_y+radius])
         # plt.title(self.label, size=38)
-        plt.title(self.label, size=32)
+        plt.title(texify_label(self.label), size=title_size)
         plt.axis('off')
 
         if saveas is None:
@@ -279,16 +289,20 @@ class Election(Instance):
         if object_type is None:
             object_type = self.object_type
 
-        # self.coordinates = KamadaKawai().embed(
-        #     distances=self.distances,
+        # self.coordinates[object_type] = KamadaKawai().embed(
+        #     distances=self.distances[object_type],
         # )
         MDS_object = MDS(n_components=2, dissimilarity='precomputed',
             # max_iter=1000,
             # n_init=20,
             # eps=1e-4,
             )
-
         self.coordinates[object_type] = MDS_object.fit_transform(self.distances[object_type])
+
+        if object_type == 'vote':
+            length = self.num_voters
+        elif object_type == 'candidate':
+            length = self.num_candidates
 
         # ADJUST
         # find max dist
@@ -315,7 +329,7 @@ class Election(Instance):
                 self.rotate(alpha - math.pi / 2., object_type)
                 self.rotate(math.pi / 4., object_type)
             except Exception:
-                print("e1")
+                # print("e1")
                 pass
 
             # PUT heavier corner in the left lower part
@@ -328,7 +342,7 @@ class Election(Instance):
             try:
                 left_ctr = 0
                 right_ctr = 0
-                for v in range(self.num_voters):
+                for v in range(length):
                     d_left = l2(self.coordinates[object_type][left], self.coordinates[object_type][v])
                     d_right = l2(self.coordinates[object_type][right], self.coordinates[object_type][v])
                     if d_left < d_right:
@@ -340,7 +354,7 @@ class Election(Instance):
                     self.rotate(math.pi, object_type)
 
             except Exception:
-                print("e2")
+                # print("e2")
                 pass
 
         if self.store and not virtual:
@@ -358,8 +372,12 @@ class Election(Instance):
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(["v1", "v2", "distance"])
-            for v1 in range(self.num_voters):
-                for v2 in range(self.num_voters):
+            if object_type=='vote':
+                length = self.num_voters
+            elif object_type=='candidate':
+                length = self.num_candidates
+            for v1 in range(length):
+                for v2 in range(length):
                     distance = str(self.distances[object_type][v1][v2])
                     writer.writerow([v1, v2, distance])
 
@@ -388,7 +406,11 @@ class Election(Instance):
         with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(["vote_id", "x", "y"])
-            for vote_id in range(self.num_voters):
+            if object_type=='vote':
+                length = self.num_voters
+            elif object_type=='candidate':
+                length = self.num_candidates
+            for vote_id in range(length):
                 x = str(self.coordinates[object_type][vote_id][0])
                 y = str(self.coordinates[object_type][vote_id][1])
                 writer.writerow([vote_id, x, y])
@@ -444,6 +466,22 @@ class Election(Instance):
             self.compute_feature(feature_id, feature_long_id,  **kwargs)
         return self.features[feature_long_id]
 
+    def texify_label(self, name):
+        return name.replace('phi', '$\phi$'). \
+            replace('alpha', '$\\alpha$'). \
+            replace('0.005', '$\\frac{1}{200}$'). \
+            replace('0.025', '$\\frac{1}{40}$'). \
+            replace('0.75', '$\\frac{3}{4}$'). \
+            replace('0.25', '$\\frac{1}{4}$'). \
+            replace('0.01', '$\\frac{1}{100}$'). \
+            replace('0.05', '$\\frac{1}{20}$'). \
+            replace('0.5', '$\\frac{1}{2}$'). \
+            replace('0.1', '$\\frac{1}{10}$'). \
+            replace('0.2', '$\\frac{1}{5}$'). \
+            replace('0.4', '$\\frac{2}{5}$'). \
+            replace('0.8', '$\\frac{4}{5}$'). \
+            replace(' ', '\n', 1)
+
 
 def map_the_votes(election, party_id, party_size) -> Election:
     new_votes = [[] for _ in range(election.num_voters)]
@@ -474,3 +512,5 @@ def remove_candidate_from_election(election, party_id, party_size) -> Election:
             vote.remove(_id)
     election.num_candidates -= party_size
     return election
+
+

@@ -103,7 +103,7 @@ class Experiment:
         if isinstance(distances, dict):
             self.distances = distances
             print('=== Omitting import! ===')
-        elif _import and self.experiment_id != 'virtual': # and fast_import==False:
+        elif _import and self.experiment_id != 'virtual':# and fast_import == False:
             try:
                 self.distances, self.times, self.stds, self.mappings = self.add_distances_to_experiment()
                 print('=== Distances imported successfully! ===')
@@ -155,7 +155,7 @@ class Experiment:
 
     def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
               dim: int = 2, num_neighbors: int = None, method: str = 'standard',
-              zero_distance: float = 0.1, factor: float = 1., saveas: str = None,
+              zero_distance: float = 1., factor: float = 1., saveas: str = None,
               init_pos: dict = None, fixed=True, attraction_factor=None) -> None:
 
         if attraction_factor is None:
@@ -919,12 +919,40 @@ class Experiment:
             plt.savefig(saveas, bbox_inches='tight')
             # plt.show()
 
-    def merge_election_images(self, size=250, name=None, show=False, ncol=1, nrow=1):
+    def merge_election_images(self, size=250, name=None, show=False, ncol=1, nrow=1,
+                              distance_id='hamming'):
 
         images = []
         for i, election in enumerate(self.instances.values()):
             print(election.label)
-            images.append(Image.open(f'images/{name}/{election.label}.png'))
+            images.append(Image.open(f'images/{name}/{election.label}_{distance_id}.png'))
+        image1_size = images[0].size
+
+        new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]),
+                              (size, size, size))
+
+        print(len(images))
+        for i in range(ncol):
+            for j in range(nrow):
+                new_image.paste(images[i + j * ncol], (image1_size[0] * i, image1_size[1] * j))
+
+        new_image.save(f'images/microscope/{name}.png', "PNG", quality=85)
+        if show:
+            new_image.show()
+
+    def merge_election_images_in_parts(self, size=250, name=None, show=False, ncol=1, nrow=1,
+                              distance_id='hamming'):
+        pass
+
+    def merge_election_images_double(self, size=250, name=None,
+                                     distance_ids=None,
+                                     show=False, ncol=1, nrow=1):
+
+        images = []
+        for i, election in enumerate(self.instances.values()):
+            print(election.label)
+            images.append(Image.open(f'images/{name}/{election.label}_{distance_ids[0]}.png'))
+            images.append(Image.open(f'images/{name}/{election.label}_{distance_ids[1]}.png'))
         image1_size = images[0].size
 
         new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]),

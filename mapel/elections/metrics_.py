@@ -69,7 +69,9 @@ def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElectio
         'voter_subelection': mod.compute_voter_subelection,
         'candidate_subelection': mod.compute_candidate_subelection,
         'swap': mod.compute_swap_distance,
-        'spearman': mod.compute_spearman_distance
+        'spearman': mod.compute_spearman_distance,
+        'ilp_spearman': mod.compute_spearman_distance_ilp_py,
+        'ilp_swap': mod.compute_swap_distance_ilp_py,
     }
 
     metrics_with_inner_distance = {
@@ -103,8 +105,8 @@ def _extract_distance_id(distance_id: str) -> (Callable, str):
 
 
 def run_single_process(exp: Experiment, instances_ids: list,
-                      distances: dict, times: dict, matchings: dict,
-                      printing: bool, safe_mode=False) -> None:
+                       distances: dict, times: dict, matchings: dict,
+                       printing: bool, safe_mode=False) -> None:
     """ Single process for computing distances """
 
     for instance_id_1, instance_id_2 in instances_ids:
@@ -131,8 +133,8 @@ def run_single_process(exp: Experiment, instances_ids: list,
 
 
 def run_multiple_processes(exp: Experiment, instances_ids: list,
-                      distances: dict, times: dict, matchings: dict,
-                      printing: bool, t) -> None:
+                           distances: dict, times: dict, matchings: dict,
+                           printing: bool, t) -> None:
     """ Single process for computing distances """
 
     for instance_id_1, instance_id_2 in instances_ids:
@@ -167,7 +169,6 @@ def _store_distances(exp, instances_ids, distances, times, t):
             distance = float(distances[election_id_1][election_id_2])
             time_ = float(times[election_id_1][election_id_2])
             writer.writerow([election_id_1, election_id_2, distance, time_])
-
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 17.08.2022 #

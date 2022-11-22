@@ -330,7 +330,6 @@ def import_values_for_feature(experiment, feature_id=None, upper_limit=None,
                 if election_id not in omit and my_shade[election_id] is not None:
                     my_shade[election_id] = my_shade[election_id]**0.5
 
-
     local_min = min(x for x in my_shade.values() if x is not None)
     local_max = max(x for x in my_shade.values() if x is not None)
 
@@ -804,6 +803,7 @@ def basic_coloring(experiment=None, ax=None, dim=2, textual=None, ms=20):
                            s=ms,
                            marker=family.marker)
 
+
 def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
     for family_id in experiment.families:
         if experiment.families[family_id].show:
@@ -1013,7 +1013,6 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
             mapping[ctr] = instance_id
             ctr += 1
 
-
     # PREPARE EMPTY DICTS
     matrix = {family_id_1: {} for family_id_1 in selected_families}
     quantities = {family_id_1: {} for family_id_1 in selected_families}
@@ -1111,7 +1110,6 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
             labels.append(SHORT_NICE_NAME[experiment.families[family_id].label])
         else:
             labels.append(experiment.families[family_id].label)
-    print(labels)
 
     ax.matshow(matrix_new, cmap=plt.cm.Blues, vmin=vmin, vmax=vmax)
 

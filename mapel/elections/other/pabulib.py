@@ -5,7 +5,8 @@ import numpy as np
 from mapel.elections.cultures_ import store_votes_in_a_file
 
 
-def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pabulib'):
+def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pabulib',
+                      aggregated=True):
 
     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "source")
 
@@ -83,5 +84,6 @@ def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pab
         election = None
         model_id = model
         store_votes_in_a_file(election, model_id, num_candidates, num_voters,
-                          params, path, ballot, votes=final_approval_votes_cut)
+                          params, path, ballot, votes=final_approval_votes_cut,
+                              aggregated=aggregated)
 

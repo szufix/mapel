@@ -42,11 +42,25 @@ def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = No
 def generate_approval_euclidean_votes(num_voters: int = None, num_candidates: int = None,
                                       params: dict = None) -> list:
     votes = [set() for _ in range(num_voters)]
+    dim = params['dim']
+    space = params['space']
 
-    name = f'{params["dim"]}d_{params["space"]}'
+    name = f'{dim}d_{space}'
 
-    voters = np.array([get_rand(name) for _ in range(num_voters)])
-    candidates = np.array([get_rand(name) for _ in range(num_candidates)])
+    # if model == 'euclidean':
+    if space == 'uniform':
+        voters = np.random.rand(num_voters, dim)
+        candidates = np.random.rand(num_candidates, dim)
+    elif space == 'gaussian':
+        voters = np.random.normal(loc=0.5, scale=0.15, size=(num_voters, dim))
+        candidates = np.random.normal(loc=0.5, scale=0.15, size=(num_candidates, dim))
+    elif space == 'sphere':
+        voters = np.array([list(random_sphere(dim)[0]) for _ in range(num_voters)])
+        candidates = np.array([list(random_sphere(dim)[0]) for _ in range(num_candidates)])
+    # else:
+    #     voters = np.array([get_rand(name) for _ in range(num_voters)])
+    #     candidates = np.array([get_rand(name) for _ in range(num_candidates)])
+
     for v in range(num_voters):
         for c in range(num_candidates):
             if params['radius'] >= np.linalg.norm(voters[v] - candidates[c]):

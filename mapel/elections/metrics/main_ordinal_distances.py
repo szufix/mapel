@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Callable, List
 from itertools import combinations, permutations
 
@@ -6,6 +7,7 @@ from mapel.main.matchings import *
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 import mapel.main.utils as utils
 from mapel.main.inner_distances import swap_distance
+import mapel.elections.metrics.ilp_isomorphic as ilp_iso
 
 try: 
   import mapel.elections.metrics.cppdistances as cppd
@@ -72,10 +74,11 @@ def compute_swap_distance_bf(election_1: OrdinalElection, election_2: OrdinalEle
         obj_values.append(solve_matching_vectors(cost_table)[0])
     return min(obj_values)
 
+
 def compute_swap_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Swap distance between elections (using the C++ extension) """
     if not utils.is_module_loaded("mapel.elections.metrics.cppdistances"):
-      return compute_swap_distance_bf(election_1, election_2)
+      return compute_swap_distance_ilp_py(election_1, election_2)
     swapd = cppd.swapd(election_1.votes.tolist(),
     election_2.votes.tolist())
     return swapd
@@ -83,13 +86,13 @@ def compute_swap_distance(election_1: OrdinalElection, election_2: OrdinalElecti
 def compute_spearman_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Spearman distance between elections (using the C++ extension) """
     if not utils.is_module_loaded("mapel.elections.metrics.cppdistances"):
-      return compute_spearman_distance_py(election_1, election_2)
+      return compute_spearman_distance_ilp_py(election_1, election_2)
     speard = cppd.speard(election_1.votes.tolist(),
     election_2.votes.tolist())
     return speard
 
-# DEPRECATED
-def compute_spearman_distance_py(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+
+def compute_spearman_distance_ilp_py(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Spearman distance between elections """
     votes_1 = election_1.votes
     votes_2 = election_2.votes
@@ -97,10 +100,28 @@ def compute_spearman_distance_py(election_1: OrdinalElection, election_2: Ordina
 
     file_name = f'{np.random.random()}.lp'
     path = os.path.join(os.getcwd(), "trash", file_name)
-    lp.generate_ilp_distance(path, votes_1, votes_2, params, 'spearman')
-    objective_value = lp.solve_ilp_distance(path, votes_1, votes_2, params, 'spearman')
-    lp.remove_lp_file(path)
+    ilp_iso.generate_ilp_spearman_distance(path, votes_1, votes_2, params)
+    objective_value = ilp_iso.solve_ilp_distance(path)
+    ilp_iso.remove_lp_file(path)
+    objective_value = int(round(objective_value, 0))
     return objective_value
+
+
+def compute_swap_distance_ilp_py(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+    """ Compute Spearman distance between elections """
+    votes_1 = election_1.votes
+    votes_2 = election_2.votes
+    params = {'voters': election_1.num_voters, 'candidates': election_1.num_candidates}
+
+    file_name = f'{np.random.random()}.lp'
+    path = os.path.join(os.getcwd(), "trash", file_name)
+    ilp_iso.generate_ilp_swap_distance(path, votes_1, votes_2, params)
+    # objective_value = ilp_iso.solve_ilp_distance(path)
+    objective_value = ilp_iso.solve_ilp_distance_swap(path, votes_1, votes_2, params)
+    # ilp_iso.remove_lp_file(path)
+    objective_value = int(round(objective_value, 0))
+    return objective_value
+
 
 def compute_discrete_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Discrete distance between elections """
