@@ -31,6 +31,7 @@ jobs:
       run: |
         mkdir -p mapel_dist
         python -m pip install build 
+        python -m build --sdist --outdir mapel_dist ./mapel-all/
         python -m build --sdist --outdir mapel_dist ./mapel-core/
         python -m build --sdist --outdir mapel_dist ./mapel-elections/ 
         python -m build --sdist --outdir mapel_dist ./mapel-roommates/
@@ -54,6 +55,7 @@ jobs:
         pip-wheel-args: '-w ./mapel_dist --no-deps'
     - name: Build pure-Python wheels
       run:
+        pip wheel ./mapel-all --no-deps -w mapel_dist
         pip wheel ./mapel-core --no-deps -w mapel_dist
         pip wheel ./mapel-roommates --no-deps -w mapel_dist
         pip wheel ./mapel-marriages --no-deps -w mapel_dist
