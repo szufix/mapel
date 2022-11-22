@@ -8,7 +8,9 @@ name: modularizing
 on:
   push:
     branches:
-      - modularizing
+      - master
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]*'
 
 permissions:
   contents: read
@@ -20,12 +22,49 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.x'
+        python-version: '3.8'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-    - name: Build manylinux Python wheels
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+    - name: make sdists
+      run: |
+        mkdir -p mapel_dist
+        python -m pip install build 
+        python -m build --sdist --outdir mapel_dist ./mapel-all/
+        python -m build --sdist --outdir mapel_dist ./mapel-core/
+        python -m build --sdist --outdir mapel_dist ./mapel-elections/ 
+        python -m build --sdist --outdir mapel_dist ./mapel-roommates/
+        python -m build --sdist --outdir mapel_dist ./mapel-marriages/
+        ls ./mapel_dist # Listing the contents of ./mapel_dist for a sanity check
+        
+    # Due to the fact that the manylinyux action (the following one)
+    # runs everything as root, it is MANDATORY to first build sdists (the action above).
+    # The issue is that for mapel-elections (the only package containing
+    # a C++ extension), the manylinux action creates a directory mapel-elections/src/mapel_elections.egg-info
+    # as root. However, the sdist action wants to use this package as no-root
+    # which causes permission denied error!
+    
+    - name: Build manylinux Python wheels-elections
       uses: RalfG/python-wheels-manylinux-build@v0.5.0-manylinux2014_x86_64
       with:
-        python-versions: 'cp37-cp37m'
+        python-versions: 'cp38-cp38'
         build-requirements: 'pybind11'
+        package-path: 'mapel-elections'
+        system-packages: 'gcc gcc-c++'
+        pip-wheel-args: '-w ./mapel_dist --no-deps'
+    - name: Build pure-Python wheels
+      run: |
+        pip wheel ./mapel-all --no-deps -w mapel_dist
+        pip wheel ./mapel-core --no-deps -w mapel_dist
+        pip wheel ./mapel-roommates --no-deps -w mapel_dist
+        pip wheel ./mapel-marriages --no-deps -w mapel_dist
+        ls ./mapel_dist # Listing the contents of ./mapel_dist for a sanity check
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        packages_dir: mapel_dist/
+        verbose: true
