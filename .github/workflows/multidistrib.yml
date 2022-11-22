@@ -29,13 +29,13 @@ jobs:
         python -m pip install --upgrade pip
     - name: make sdists
       run: |
-        mkdir -p dist
+        mkdir -p mapel_dist
         python -m pip install build 
-        python -m build --sdist --outdir dist ./mapel-core/
-        python -m build --sdist --outdir dist ./mapel-elections/ 
-        python -m build --sdist --outdir dist ./mapel-roommates/
-        python -m build --sdist --outdir dist ./mapel-marriages/
-        ls ./dist # Listing the contents of ./dist for a sanity check
+        python -m build --sdist --outdir mapel_dist ./mapel-core/
+        python -m build --sdist --outdir mapel_dist ./mapel-elections/ 
+        python -m build --sdist --outdir mapel_dist ./mapel-roommates/
+        python -m build --sdist --outdir mapel_dist ./mapel-marriages/
+        ls ./mapel_dist # Listing the contents of ./mapel_dist for a sanity check
         
     # Due to the fact that the manylinyux action (the following one)
     # runs everything as root, it is MANDATORY to first build sdists (the action above).
@@ -51,22 +51,14 @@ jobs:
         build-requirements: 'pybind11'
         package-path: 'mapel-elections'
         system-packages: 'gcc gcc-c++'
+        pip-wheel-args: '-w ./mapel_dist --no-deps'
     - name: Build pure-Python wheels
       run:
-        pip wheel ./mapel-core --no-deps -w dist
-        pip wheel ./mapel-roommates --no-deps -w dist
-        pip wheel ./mapel-marriages --no-deps -w dist
-    - name: copy wheels to dist
-      run: |
-        mkdir -p dist
-        cp ./mapel-elections/dist/*-manylinux*.whl ./dist/ || echo "Nothing in \
-        mapel-elections"
-        cp ./mapel-roommates/dist/*-manylinux*.whl ./dist/ || echo "Nothing in \
-        mapel-roommates"
-        cp ./mapel-marriages/dist/*-manylinux*.whl ./dist/ || echo "Nothing in \
-        mapel-marriages"
-        ls ./dist # Listing the contents of ./dist for a sanity check
+        pip wheel ./mapel-core --no-deps -w mapel_dist
+        pip wheel ./mapel-roommates --no-deps -w mapel_dist
+        pip wheel ./mapel-marriages --no-deps -w mapel_dist
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
+        packages_dir: mapel_dist/
