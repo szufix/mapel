@@ -66,7 +66,7 @@ jobs:
         cp ./mapel-marriages/dist/*-manylinux*.whl ./dist/ || echo "Nothing in \
         mapel-marriages"
         ls ./dist # Listing the contents of ./dist for a sanity check
-    - name: Publish distribution 📦 to Test PyPI
+    - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        password: ${{ secrets.PYPI_API_TOKEN }}
