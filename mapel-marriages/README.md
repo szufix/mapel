@@ -13,7 +13,7 @@ in the console.
 For more complicated variants of installation, refer to the readme of mapel
 [here](https://github.com/szufix/mapel).
 
-# Support
+# Acknowledgments
 
 This project is part of the [PRAGMA project](https://home.agh.edu.pl/~pragma/)
 which has received funding from the [European Research Council

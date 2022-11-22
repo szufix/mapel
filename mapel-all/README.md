@@ -9,7 +9,7 @@ the mapel ecosystem:
 See the documentation of the above for further information.
 
 
-# Support
+# Acknowledgments
 
 This project is part of the [PRAGMA project](https://home.agh.edu.pl/~pragma/)
 which has received funding from the [European Research Council

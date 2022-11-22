@@ -48,7 +48,7 @@ If the instalation was successfull, you should be able to mimic the following:
 >>> exit()
 ```
 
-# Support
+# Acknowledgments
 
 This project is part of the [PRAGMA project](https://home.agh.edu.pl/~pragma/)
 which has received funding from the [European Research Council
