@@ -8,7 +8,7 @@ name: modularizing
 on:
   push:
     branches:
-      - modularizing
+      - last_step
 
 permissions:
   contents: read
