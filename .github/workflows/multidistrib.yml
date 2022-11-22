@@ -59,8 +59,10 @@ jobs:
         pip wheel ./mapel-core --no-deps -w mapel_dist
         pip wheel ./mapel-roommates --no-deps -w mapel_dist
         pip wheel ./mapel-marriages --no-deps -w mapel_dist
+        ls ./mapel_dist # Listing the contents of ./mapel_dist for a sanity check
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
         packages_dir: mapel_dist/
+        verbose: true
