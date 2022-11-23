@@ -118,7 +118,7 @@ def compute_swap_distance_ilp_py(election_1: OrdinalElection, election_2: Ordina
     ilp_iso.generate_ilp_swap_distance(path, votes_1, votes_2, params)
     # objective_value = ilp_iso.solve_ilp_distance(path)
     objective_value = ilp_iso.solve_ilp_distance_swap(path, votes_1, votes_2, params)
-    # ilp_iso.remove_lp_file(path)
+    ilp_iso.remove_lp_file(path)
     objective_value = int(round(objective_value, 0))
     return objective_value
 

@@ -7,12 +7,16 @@
     </content>
     <content url="file://$MODULE_DIR$/mapel-elections">
       <sourceFolder url="file://$MODULE_DIR$/mapel-elections/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/mapel-elections/tests" isTestSource="true" />
     </content>
     <content url="file://$MODULE_DIR$/mapel-marriages">
       <sourceFolder url="file://$MODULE_DIR$/mapel-marriages/src" isTestSource="false" />
     </content>
     <content url="file://$MODULE_DIR$/mapel-roommates">
       <sourceFolder url="file://$MODULE_DIR$/mapel-roommates/src" isTestSource="false" />
+    </content>
+    <content url="file://$MODULE_DIR$/projects">
+      <excludeFolder url="file://$MODULE_DIR$/projects" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.8 (bin)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

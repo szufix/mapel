@@ -46,7 +46,6 @@ class Experiment:
                  coordinates=None, distance_id='emd-positionwise', experiment_id=None,
                  instance_type='ordinal', _import=True, clean=False, coordinates_names=None,
                  embedding_id='kamada', fast_import=False, with_matrix=False):
-
         self._import = _import
         self.clean = clean
         self.experiment_id = experiment_id
@@ -136,6 +135,7 @@ class Experiment:
                     self.instances[instance_id].label = self.families[family_id].label
         except:
             pass
+
 
     @abstractmethod
     def add_culture(self):
