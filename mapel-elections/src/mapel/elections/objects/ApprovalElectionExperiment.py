@@ -9,7 +9,7 @@ from mapel.core.utils import *
 import numpy as np
 import csv
 
-from mapel.core.matchings import solve_matching_vectors
+# from mapel.core.matchings import solve_matching_vectors
 
 try:
     from sklearn.manifold import MDS

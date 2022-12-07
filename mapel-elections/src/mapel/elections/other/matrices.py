@@ -5,7 +5,7 @@ from mapel.elections.cultures.single_peaked import get_walsh_vectors, \
     get_conitzer_vectors
 from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
 
-import mapel.elections.models_ as el
+import mapel.elections.cultures_ as el
 
 from mapel.elections.objects.Election import Election
 from mapel.elections.objects.OrdinalElectionExperiment import OrdinalElectionExperiment

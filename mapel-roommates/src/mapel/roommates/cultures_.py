@@ -11,7 +11,7 @@ import mapel.roommates.cultures.urn as urn
 import mapel.roommates.cultures.group_separable as group_separable
 
 
-def generate_votes(model_id: str = None, num_agents: int = None,
+def generate_votes(culture_id: str = None, num_agents: int = None,
                    params: dict = None) -> Union[list, np.ndarray]:
 
     main_models_with_params = {
@@ -39,14 +39,14 @@ def generate_votes(model_id: str = None, num_agents: int = None,
         'roommates_asymmetric': impartial.generate_roommates_asymmetric_votes,
     }
 
-    if model_id in main_models_with_params:
-        return main_models_with_params.get(model_id)(num_agents=num_agents, params=params)
+    if culture_id in main_models_with_params:
+        return main_models_with_params.get(culture_id)(num_agents=num_agents, params=params)
 
-    if model_id in main_models_without_params:
-        return main_models_without_params.get(model_id)(num_agents=num_agents)
+    if culture_id in main_models_without_params:
+        return main_models_without_params.get(culture_id)(num_agents=num_agents)
 
     else:
-        print("No such election culture_id!", model_id)
+        print("No such election culture_id!", culture_id)
         return []
 
 

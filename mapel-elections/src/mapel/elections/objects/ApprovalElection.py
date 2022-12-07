@@ -241,7 +241,7 @@ class ApprovalElection(Election):
 
     def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
                   object_type=None, double_gradient=False, saveas=None, color='blue',
-                  marker='o', title_size=20):
+                  marker='o', title_size=20, annotate=False):
 
         if object_type == 'vote':
             length = self.num_voters
@@ -255,6 +255,7 @@ class ApprovalElection(Election):
             object_type = self.object_type
 
         plt.figure(figsize=(6.4, 6.4))
+         # = plt.subplots()
 
         X = []
         Y = []
@@ -309,6 +310,10 @@ class ApprovalElection(Election):
                 plt.scatter(X[i], Y[i], color=[0,y,x], s=s, alpha=alpha)
         else:
             plt.scatter(X, Y, color=color, s=s, alpha=alpha, marker=marker)
+
+        if annotate:
+            for i in range(len(X)):
+                plt.annotate(i, (X[i], Y[i]), color='black')
 
         avg_x = np.mean(X)
         avg_y = np.mean(Y)

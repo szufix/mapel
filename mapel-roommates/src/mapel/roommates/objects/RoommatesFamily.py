@@ -12,7 +12,7 @@ import mapel.roommates.cultures.mallows as mallows
 class RoommatesFamily(Family):
 
     def __init__(self,
-                 model_id: str = None,
+                 culture_id: str = None,
                  family_id='none',
                  params: dict = None,
                  size: int = 1,
@@ -25,10 +25,9 @@ class RoommatesFamily(Family):
                  starting_from: int = 0,
                  path: dict = None,
                  single: bool = False,
-
                  num_agents: int = None):
 
-        super().__init__(model_id=model_id,
+        super().__init__(culture_id=culture_id,
                          family_id=family_id,
                          params=params,
                          size=size,
@@ -92,7 +91,7 @@ class RoommatesFamily(Family):
             instance_id = get_instance_id(self.single, self.family_id, j)
 
             instance = Roommates(experiment_id, instance_id, _import=False,
-                                 model_id=self.model_id, num_agents=self.num_agents)
+                                 culture_id=self.culture_id, num_agents=self.num_agents)
 
             instance.prepare_instance(store=store, params=params)
 

@@ -15,9 +15,7 @@
     <content url="file://$MODULE_DIR$/mapel-roommates">
       <sourceFolder url="file://$MODULE_DIR$/mapel-roommates/src" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$/projects">
-      <excludeFolder url="file://$MODULE_DIR$/projects" />
-    </content>
+    <content url="file://$MODULE_DIR$/projects" />
     <orderEntry type="jdk" jdkName="Python 3.8 (bin)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

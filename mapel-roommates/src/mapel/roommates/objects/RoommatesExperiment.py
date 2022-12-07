@@ -11,7 +11,7 @@ import time
 from mapel.core.objects.Experiment import Experiment
 from mapel.roommates.objects.RoommatesFamily import RoommatesFamily
 from mapel.roommates.objects.Roommates import Roommates
-import mapel.roommates.models_ as models_main
+import mapel.roommates.cultures_ as models_main
 import mapel.roommates.metrics_ as metr
 import mapel.roommates.features.basic_features as basic
 import mapel.roommates.features_ as features
@@ -83,19 +83,19 @@ class RoommatesExperiment(Experiment):
 
         return instances
 
-    def add_instance(self, model_id="none", params=None, label=None,
+    def add_instance(self, culture_id="none", params=None, label=None,
                      color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
                      num_agents=None, instance_id=None):
 
         if num_agents is None:
             num_agents = self.default_num_agents
 
-        return self.add_family(model_id=model_id, params=params, size=size, label=label,
+        return self.add_family(culture_id=culture_id, params=params, size=size, label=label,
                                color=color, alpha=alpha, show=show, marker=marker,
                                starting_from=starting_from, family_id=instance_id,
                                num_agents=num_agents, single_instance=True)
 
-    def add_family(self, model_id: str = "none", params: dict = None, size: int = 1,
+    def add_family(self, culture_id: str = "none", params: dict = None, size: int = 1,
                    label: str = None, color: str = "black", alpha: float = 1.,
                    show: bool = True, marker: str = 'o', starting_from: int = 0,
                    family_id: str = None, single_instance: bool = False,
@@ -110,7 +110,7 @@ class RoommatesExperiment(Experiment):
         if label is None:
             label = family_id
 
-        self.families[family_id] = RoommatesFamily(model_id=model_id, family_id=family_id,
+        self.families[family_id] = RoommatesFamily(culture_id=culture_id, family_id=family_id,
                                                    params=params, label=label, color=color,
                                                    alpha=alpha, single=single_instance,
                                                    show=show, size=size, marker=marker,
@@ -121,7 +121,7 @@ class RoommatesExperiment(Experiment):
         self.num_instances = sum([self.families[family_id].size for family_id in self.families])
 
         models_main.prepare_instances(experiment=self,
-                                    model_id=self.families[family_id].model_id,
+                                    culture_id=self.families[family_id].culture_id,
                                     family_id=family_id,
                                     params=copy.deepcopy(self.families[family_id].params))
 
@@ -226,7 +226,7 @@ class RoommatesExperiment(Experiment):
         starting_from = 0
         for row in reader:
 
-            model_id = None
+            culture_id = None
             color = None
             label = None
             params = None
@@ -238,7 +238,7 @@ class RoommatesExperiment(Experiment):
             show = True
 
             if 'culture_id' in row.keys():
-                model_id = str(row['culture_id']).strip()
+                culture_id = str(row['culture_id']).strip()
 
             if 'color' in row.keys():
                 color = str(row['color']).strip()
@@ -272,7 +272,7 @@ class RoommatesExperiment(Experiment):
 
             single_instance = size == 1
 
-            families[family_id] = RoommatesFamily(model_id=model_id,
+            families[family_id] = RoommatesFamily(culture_id=culture_id,
                                                   family_id=family_id,
                                                   params=params, label=label,
                                                   color=color, alpha=alpha, show=show,
@@ -481,9 +481,9 @@ class RoommatesExperiment(Experiment):
             print("Experiment already exists!")
 
 
-    def get_election_id_from_model_name(self, model_id: str) -> str:
+    def get_election_id_from_model_name(self, culture_id: str) -> str:
         for family_id in self.families:
-            if self.families[family_id].model_id == model_id:
+            if self.families[family_id].culture_id == culture_id:
                 return family_id
 
 
