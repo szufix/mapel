@@ -29,12 +29,14 @@ try:
     from sklearn.manifold import SpectralEmbedding
     from sklearn.manifold import LocallyLinearEmbedding
     from sklearn.manifold import Isomap
+    from sklearn.decomposition import PCA
 except ImportError as error:
     MDS = None
     TSNE = None
     SpectralEmbedding = None
     LocallyLinearEmbedding = None
     Isomap = None
+    PCA = None
     print(error)
 
 
@@ -254,6 +256,10 @@ class Experiment:
                 if f2[f] is None:
                     f2[f] = 0
             my_pos = [[f1[e], f2[e]] for e in f1]
+        elif algorithm.lower() in {'pca'}:
+            pca = PCA(n_components=2)
+            principalComponents = pca.fit_transform(x)
+            my_pos = principalComponents
         else:
             my_pos = []
             logging.warning("Unknown method!")

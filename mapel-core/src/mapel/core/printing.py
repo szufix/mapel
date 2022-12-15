@@ -964,7 +964,8 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
 
         if bbox_inches is None:
             print(file_name)
-            plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
+            # plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
+            plt.savefig(file_name, dpi=dpi)
         else:
             plt.savefig(file_name, bbox_inches=bbox_inches, dpi=dpi)
 

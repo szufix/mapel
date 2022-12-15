@@ -249,7 +249,10 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name='0'):
                               rhs=[1.0] * election_2.num_candidates,
                               names=['C4_' + str(i) for i in range(election_2.num_candidates)])
 
+
     # MAIN CONSTRAINT FOR VOTES
+    potes_1 = election_1.get_potes()
+    potes_2 = election_2.get_potes()
     lin_expr = []
     for v1 in range(election_1.num_voters):
         for v2 in range(election_2.num_voters):
@@ -258,7 +261,7 @@ def solve_lp_voter_subelection(election_1, election_2, metric_name='0'):
             for c1 in range(election_1.num_candidates):
                 for c2 in range(election_2.num_candidates):
                     ind.append('M' + str(c1) + '_' + str(c2))
-                    if abs(election_1.potes[v1][c1] - election_2.potes[v2][c2]) <= int(metric_name):
+                    if abs(potes_1[v1][c1] - potes_2[v2][c2]) <= int(metric_name):
                         val.append(1.)
                     else:
                         val.append(0.)
