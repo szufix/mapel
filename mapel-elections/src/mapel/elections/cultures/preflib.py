@@ -46,7 +46,7 @@ def generate_preflib_election(experiment=None, model=None, name=None,
 
 # REAL
 def generate_votes_preflib(model, num_candidates=None, num_voters=None,  folder=None,
-                           selection_method='random'):
+                           selection_method='borda'):
     """ Generate votes based on elections from Preflib """
 
     long_name = str(model)
