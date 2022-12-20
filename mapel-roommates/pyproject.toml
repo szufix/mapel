@@ -8,11 +8,6 @@ version = "2.0.0.dev5"
 authors = [
  {name = "Stanislaw Szufa", email = "s.szufa@gmail.com"},
  {name = "Niclas Boehmer", email = "niclas.boehmer@tu-berlin.de"},
- {name = "Piotr Faliszewski", email = "faliszew@agh.edu.pl"},
- {name = "Lukasz Janeczko", email = "lukij1997@gmail.com"},
- {name = "Andrzej Kaczmarczyk", email = "andrzej.kaczmarczyk@agh.edu.pl"},
- {name = "Kasper Sapala", email = "kasper.sapala@gmail.com"},
- {name = "Tomasz Was", email = "tomasz.t.was@gmail.com"},
 ]
 description = "Map of Roommates"
 classifiers=[
