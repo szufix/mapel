@@ -483,7 +483,7 @@ class ElectionExperiment(Experiment):
                                         'distortion_from_all',
                                         'distortion_from_top_100'}:
                         value = feature(self, instance_id)
-                    elif feature_id in ['ejr', 'core', 'pareto']:
+                    elif feature_id in ['ejr', 'core', 'pareto', 'priceability']:
                         value = instance.get_feature(feature_id, feature_long_id,
                                                      feature_params=feature_params)
                     else:

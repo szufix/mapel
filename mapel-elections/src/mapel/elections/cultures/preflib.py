@@ -68,6 +68,7 @@ def generate_votes_preflib(model, num_candidates=None, num_voters=None,  folder=
             original_votes[j][k] = int(value[k])
 
     file_votes.close()
+    print(model, len(original_votes), len(np.unique(original_votes, axis=0)))
 
     for j in range(num_voters):
         r = np.random.randint(0, original_num_voters - 1)
@@ -239,7 +240,6 @@ def get_sushi_matrix():
 
 
 def generate_preflib_votes(culture_id=None, num_candidates=None, num_voters=None, params=None):
-
     model = f'{culture_id}_{params["id"]}'
     votes = generate_votes_preflib(model, num_candidates, num_voters, params['folder'])
     return np.array(votes)

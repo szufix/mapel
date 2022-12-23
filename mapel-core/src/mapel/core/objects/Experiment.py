@@ -182,10 +182,10 @@ class Experiment:
                 if i < j:
 
                     self.distances[instance_id_1][instance_id_2] *= factor
-                    if self.distances[instance_id_1][instance_id_2] == 0.:
-                        self.distances[instance_id_1][instance_id_2] = zero_distance
-                        self.distances[instance_id_2][instance_id_1] = zero_distance
                     if algorithm in {'spring'}:
+                        if self.distances[instance_id_1][instance_id_2] == 0.:
+                            self.distances[instance_id_1][instance_id_2] = zero_distance
+                            self.distances[instance_id_2][instance_id_1] = zero_distance
                         normal = True
                         if self.distances[instance_id_1][instance_id_2] > radius:
                             x[i][j] = 0.
