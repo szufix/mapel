@@ -9,6 +9,8 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]*'
+env:
+  WHL_HOUSE: wheelhouse
 
 permissions:
   contents: read
@@ -20,23 +22,20 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.8'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
+        python-version: '3.11'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
     - name: make sdists
       run: |
-        mkdir -p mapel_dist
+        mkdir -p $WHL_HOUSE
         python -m pip install build 
-        python -m build --sdist --outdir mapel_dist ./mapel-all/
-        python -m build --sdist --outdir mapel_dist ./mapel-core/
-        python -m build --sdist --outdir mapel_dist ./mapel-elections/ 
-        python -m build --sdist --outdir mapel_dist ./mapel-roommates/
-        python -m build --sdist --outdir mapel_dist ./mapel-marriages/
-        ls ./mapel_dist # Listing the contents of ./mapel_dist for a sanity check
+        python -m build --sdist --outdir $WHL_HOUSE ./mapel-all/
+        python -m build --sdist --outdir $WHL_HOUSE ./mapel-core/
+        python -m build --sdist --outdir $WHL_HOUSE ./mapel-elections/ 
+        python -m build --sdist --outdir $WHL_HOUSE ./mapel-roommates/
+        python -m build --sdist --outdir $WHL_HOUSE ./mapel-marriages/
+        ls ./$WHL_HOUSE # Listing the contents of ./$WHL_HOUSE for a sanity check
         
     # Due to the fact that the manylinyux action (the following one)
     # runs everything as root, it is MANDATORY to first build sdists (the action above).
@@ -48,21 +47,21 @@ jobs:
     - name: Build manylinux Python wheels-elections
       uses: RalfG/python-wheels-manylinux-build@v0.5.0-manylinux2014_x86_64
       with:
-        python-versions: 'cp38-cp38'
+        python-versions: 'cp38-cp38 cp39-cp39 cp310-cp310'
         build-requirements: 'pybind11'
         package-path: 'mapel-elections'
         system-packages: 'gcc gcc-c++'
-        pip-wheel-args: '-w ./mapel_dist --no-deps'
+        pip-wheel-args: '-w ../${{ env.WHL_HOUSE }} --no-deps'
     - name: Build pure-Python wheels
       run: |
-        pip wheel ./mapel-all --no-deps -w mapel_dist
-        pip wheel ./mapel-core --no-deps -w mapel_dist
-        pip wheel ./mapel-roommates --no-deps -w mapel_dist
-        pip wheel ./mapel-marriages --no-deps -w mapel_dist
-        ls ./mapel_dist # Listing the contents of ./mapel_dist for a sanity check
-    - name: Publish distribution 📦 to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
-        packages_dir: mapel_dist/
-        verbose: true
+        pip wheel ./mapel-all --no-deps -w $WHL_HOUSE
+        pip wheel ./mapel-core --no-deps -w $WHL_HOUSE
+        pip wheel ./mapel-roommates --no-deps -w $WHL_HOUSE
+        pip wheel ./mapel-marriages --no-deps -w $WHL_HOUSE
+        ls ./$WHL_HOUSE # Listing the contents of ./$WHL_HOUSE for a sanity check
+        ###    - name: Publish distribution 📦 to PyPI
+        ###      uses: pypa/gh-action-pypi-publish@release/v1
+        ###      with:
+        ###        password: ${{ secrets.PYPI_API_TOKEN }}
+        ###        packages_dir: $WHL_HOUSE/
+        ###        verbose: true
