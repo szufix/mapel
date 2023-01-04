@@ -12,7 +12,7 @@ on:
 env:
   WHL_HOUSE: wheelhouse
   MAPEL_EL_ARTS: mapel-election-artifacts
-  MAPEL_REST_ARTS: mapel-rest-artifacts permissions
+  MAPEL_REST_ARTS: mapel-rest-artifacts
 
 permissions:
   contents: read
