@@ -11,6 +11,8 @@ on:
     #      - 'v[0-9]+.[0-9]+.[0-9]*'
 env:
   WHL_HOUSE: wheelhouse
+  MAPEL_EL_ARTS: mapel-election-artifacts
+  MAPEL_REST_ARTS: mapel-rest-artifacts
 
 permissions:
   contents: read
@@ -46,8 +48,8 @@ jobs:
     - name: Artifactize pure-python wheels and sdists
       uses: actions/upload-artifact@v3
       with:
-        name: pure-python-and-sdists
-        path: ${{ env.WHL_HOUSE }} # or path/to/artifact
+        name: ${{ env.MAPEL_REST_ARTS }}
+        path: ${{ env.WHL_HOUSE }} 
 
   build-compiled-python-wheels:
     # The manylinyux action (the following one) runs everything as root. So it
@@ -74,7 +76,7 @@ jobs:
       - name: Artifactize compiled-python wheels
         uses: actions/upload-artifact@v3
         with:
-          name: compiled-python
+          name: ${{ env.MAPEL_EL_ARTS }}
           path: ${{ env.WHL_HOUSE }}
 
   publish:
@@ -85,13 +87,20 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           path: ${{ env.WHL_HOUSE }}
-      
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: ${{ env.WHL_HOUSE }}
-        ###      - name: Publish distribution 📦 to PyPI
-        ###        uses: pypa/gh-action-pypi-publish@release/v1
-        ###        with:
-        ###          password: ${{ secrets.PYPI_API_TOKEN }}
-        ###          packages_dir: ${{ env.WHL_HOUSE }}/
-        ###          verbose: true
+      - name: Prepare the distrib directory
+        run: |
+          mv $MAPEL_EL_ARTS/* .
+          mv $MAPEL_REST_ARTS/* .
+        working-directory: ${{ env.WHL_HOUSE }}
+      - name: Display all artifacts
+        run: ls -R
+        working-directory: ${{ env.WHL_HOUSE }}
+        #- name: Publish distribution 📦 to PyPI
+        #  uses: pypa/gh-action-pypi-publish@release/v1
+        #  with:
+        #    password: ${{ secrets.PYPI_API_TOKEN }}
+        #    packages_dir: ${{ env.WHL_HOUSE }}/
+        #    verbose: true
