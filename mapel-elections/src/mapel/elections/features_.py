@@ -13,7 +13,6 @@ import mapel.elections.features.clustering as clustering
 import mapel.elections.features.distortion as distortion
 import mapel.elections.features.other as other
 import mapel.elections.features.justified_representation as jr
-import mapel.elections.features.from_abcvoting as from_abc
 import mapel.elections.features.dimensionality as dimensionality
 
 
@@ -100,8 +99,6 @@ LIST_OF_LOCAL_FEATURES = {'highest_borda_score': scores.highest_borda_score,
             'support_diversity_normed3_summed': diversity.support_diversity_normed3_summed,
             'dist_to_Borda_mean': diversity.dist_to_Borda_mean,
             'dist_to_Kemeny_mean': diversity.dist_to_Kemeny_mean,
-            'priceability': from_abc.test_priceability,
-            'core': from_abc.test_core,
             'ejr': jr.test_ejr,
             'min_dim': dimensionality.min_dim,
             }
