@@ -3,6 +3,8 @@ import math
 import numpy as np
 import itertools
 # AUXILIARY FUNCTIONS
+from mapel.core.glossary import LIST_OF_FAKE_MODELS
+
 
 def kemeny_ranking(election):
     print(election.culture_id)
@@ -550,7 +552,3 @@ def votes_std(election):
 #     return score
 #
 #
-# def borda_diversity(election):
-#     vector = election.votes_to_bordawise_vector()
-#     avg = sum(vector)/len(vector)
-#     return sum([abs(value-avg) for value in vector])

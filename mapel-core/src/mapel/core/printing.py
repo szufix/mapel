@@ -434,6 +434,7 @@ def import_values_for_features(experiment, feature_ids=None, limit=None, normali
     local_min = min(local_min_1, local_min_2)
     local_max = max(local_max_1, local_max_2)
 
+
     for family_id in experiment.families:
 
         for k in range(experiment.families[family_id].size):
@@ -656,21 +657,22 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
     mask_6 = [False] * len(shades_1)
 
     for i in range(len(shades_1)):
+        # print(shades_1[i]-shades_2[i])
         if shades_1[i] > shades_2[i]:
             # markers.append('x')
-            if shades_1[i]==1:
+            if shades_1[i] == 1.:
                 mask_4[i] = True
             else:
                 mask_1[i] = True
         elif shades_1[i] < shades_2[i]:
             # markers.append('o')
-            if shades_2[i]==1:
-                mask_5[i]=True
+            if shades_2[i] == 1.:
+                mask_5[i] = True
             else:
                 mask_2[i] = True
         else:
             # markers.append('^')
-            if shades_1[i] == 1:
+            if shades_1[i] == 1.:
                 mask_6[i] = True
             else:
                 mask_3[i] = True
@@ -680,18 +682,19 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
         # else:
         #     markers.append('x')
 
+
     images = []
 
     if mses_1 is None:
         mses = np.asarray([ms for _ in range(len(shades_1))])
 
-    cmap_1 = custom_div_cmap(colors=[(1, 0.9, 0.9), 'red'])
-    cmap_2 = custom_div_cmap(colors=[(0.9, 1, 0.9), 'green'])
-    cmap_3 = custom_div_cmap(colors=[(0.9, 0.9, 1), 'blue'])
+    cmap_1 = 'Blues' #custom_div_cmap(colors=[(1, 0.9, 0.9), 'red'])
+    cmap_2 = 'Reds' #custom_div_cmap(colors=[(0.9, 1, 0.9), 'green'])
+    cmap_3 = custom_div_cmap(colors=[(0.9, 0.9, 1), 'green'])
 
-    cmap_4 = custom_div_cmap(colors=[(1, 0.9, 0.9), 'red'])
-    cmap_5 = custom_div_cmap(colors=[(0.9, 1, 0.9), 'green'])
-    cmap_6 = custom_div_cmap(colors=[(0.9, 0.9, 1), 'blue'])
+    # cmap_4 = custom_div_cmap(colors=[(1, 0.9, 0.9), 'red'])
+    # cmap_5 = custom_div_cmap(colors=[(0.9, 1, 0.9), 'green'])
+    # cmap_6 = custom_div_cmap(colors=[(0.9, 0.9, 1), 'blue'])
 
     images.append(ax.scatter(xx[mask_1], yy[mask_1], c=shades_1[mask_1], vmin=0, vmax=1,
                              cmap=cmap_1, s=mses[mask_1], marker='o'))
@@ -964,8 +967,8 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
 
         if bbox_inches is None:
             print(file_name)
-            # plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
-            plt.savefig(file_name, dpi=dpi)
+            plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
+            # plt.savefig(file_name, dpi=dpi)
         else:
             plt.savefig(file_name, bbox_inches=bbox_inches, dpi=dpi)
 
@@ -1668,7 +1671,7 @@ def get_values_from_file_old(experiment, experiment_id, values,
 #         pass
 
 
-def adjust_the_map_on_three_points(experiment, left, right, down) -> None:
+def adjust_the_map_on_three_points(experiment, left, right, down, is_down=True) -> None:
     try:
         d_x = experiment.coordinates[right][0] - experiment.coordinates[left][0]
         d_y = experiment.coordinates[right][1] - experiment.coordinates[left][1]
@@ -1679,8 +1682,12 @@ def adjust_the_map_on_three_points(experiment, left, right, down) -> None:
     except Exception:
         pass
 
-    if experiment.coordinates[left][1] < experiment.coordinates[down][1]:
-        experiment.reverse()
+    if is_down:
+        if experiment.coordinates[left][1] < experiment.coordinates[down][1]:
+            experiment.reverse()
+    else:
+        if experiment.coordinates[left][1] > experiment.coordinates[down][1]:
+            experiment.reverse()
 
 
 def adjust_the_map(experiment) -> None:
@@ -1693,13 +1700,13 @@ def adjust_the_map(experiment) -> None:
             down = experiment.get_election_id_from_model_name('stratification')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
-            # try:
-            #     left = experiment.get_election_id_from_model_name('real_uniformity')
-            #     right = experiment.get_election_id_from_model_name('real_identity')
-            #     down = experiment.get_election_id_from_model_name('real_stratification')
-            #     adjust_the_map_on_three_points(experiment, left, right, down)
-            # except Exception:
-            #     pass
+            try:
+                left = experiment.get_election_id_from_model_name('un_from_matrix')
+                right = experiment.get_election_id_from_model_name('real_identity')
+                up = experiment.get_election_id_from_model_name('real_antagonism')
+                adjust_the_map_on_three_points(experiment, left, right, up, is_down=False)
+            except Exception:
+                pass
             pass
 
     elif experiment.instance_type == 'approval':
@@ -1789,6 +1796,9 @@ def get_color_alpha_for_urn(color, alpha):
         return 'orange', 0.9
     else:
         return 'gold', 0.9
+
+
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

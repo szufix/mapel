@@ -1,6 +1,7 @@
 import ast
 import os
 import numpy as np
+from matplotlib import pyplot as plt
 from scipy.stats import gamma
 import random as rand
 import csv
@@ -368,6 +369,107 @@ class OrdinalElection(Election):
             for row in reader:
                 points.append([float(row['x']), float(row['y'])])
         return points
+
+    def texify_label(self, name):
+        return name.replace('phi', '$\phi$'). \
+            replace('alpha', '$\\ \\alpha$'). \
+            replace('§', '\n', 1)
+            # replace('0.005', '$\\frac{1}{200}$'). \
+            # replace('0.025', '$\\frac{1}{40}$'). \
+            # replace('0.75', '$\\frac{3}{4}$'). \
+            # replace('0.25', '$\\frac{1}{4}$'). \
+            # replace('0.01', '$\\frac{1}{100}$'). \
+            # replace('0.05', '$\\frac{1}{20}$'). \
+            # replace('0.5', '$\\frac{1}{2}$'). \
+            # replace('0.1', '$\\frac{1}{10}$'). \
+            # replace('0.2', '$\\frac{1}{5}$'). \
+            # replace('0.4', '$\\frac{2}{5}$'). \
+            # replace('0.8', '$\\frac{4}{5}$'). \
+            # replace(' ', '\n', 1)
+
+    def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
+                  object_type=None, double_gradient=False, saveas=None, color='blue',
+                  marker='o', title_size=20):
+
+        if object_type == 'vote':
+            length = self.num_voters
+        elif object_type == 'candidate':
+            length = self.num_candidates
+
+        if object_type is None:
+            object_type = self.object_type
+
+        plt.figure(figsize=(6.4, 6.4))
+
+        X = []
+        Y = []
+        for elem in self.coordinates[object_type]:
+            X.append(elem[0])
+            Y.append(elem[1])
+
+        start = False
+        if start:
+            plt.scatter(X[0], Y[0],
+                        color='sienna',
+                        s=1000,
+                        alpha=1,
+                        marker='X')
+
+        if double_gradient:
+            for i in range(length):
+                x = float(self.points['voters'][i][0])
+                y = float(self.points['voters'][i][1])
+                plt.scatter(X[i], Y[i], color=[0,y,x], s=s, alpha=alpha)
+        else:
+            plt.scatter(X, Y, color=color, s=s, alpha=alpha, marker=marker)
+
+
+        if circles: # works only for votes
+            weighted_points = {}
+            Xs = {}
+            Ys = {}
+            for i in range(length):
+                str_elem = str(self.votes[i])
+                # str_elem = f'{round(X[i])}_{round(Y[i])}'
+                if str_elem in weighted_points:
+                    weighted_points[str_elem] += 1
+                else:
+                    weighted_points[str_elem] = 1
+                    Xs[str_elem] = X[i]
+                    Ys[str_elem] = Y[i]
+            # print(weighted_points)
+            # print(len(weighted_points))
+            for str_elem in weighted_points:
+                if weighted_points[str_elem] > 10 and str_elem!='set()':
+                    plt.scatter(Xs[str_elem], Ys[str_elem],
+                                color='purple',
+                                s=10 * weighted_points[str_elem],
+                                alpha=0.2)
+
+        # print(len(weighted_points))
+
+        avg_x = np.mean(X)
+        avg_y = np.mean(Y)
+
+        if radius:
+            plt.xlim([avg_x-radius, avg_x+radius])
+            plt.ylim([avg_y-radius, avg_y+radius])
+        # plt.title(self.label, size=38)
+        plt.title(self.texify_label(self.label), size=38)
+        # plt.title(self.texify_label(self.label), size=38, y=0.94)
+        # plt.title(self.label, size=title_size)
+        plt.axis('off')
+
+        if saveas is None:
+            saveas = f'{self.label}'
+
+        file_name = os.path.join(os.getcwd(), "images", name, f'{saveas}.png')
+        plt.savefig(file_name, bbox_inches='tight', dpi=100)
+        if show:
+            plt.show()
+        else:
+            plt.clf()
+
 
 def get_fake_multiplication(num_candidates, params, model):
     params['weight'] = 0.

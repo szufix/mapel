@@ -1,19 +1,27 @@
 import csv
 import os
 import numpy as np
+import random
 
 from mapel.elections.cultures_ import store_votes_in_a_file
 
 
 def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pabulib',
-                      aggregated=True):
+                      aggregated=True, num_instances=1):
 
-    path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "source")
+    main_path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "source")
 
-    for p, name in enumerate(os.listdir(path)):
-        print(name)
-        path = f'experiments/{experiment.experiment_id}/source/{name}'
+    paths = []
+    for name in os.listdir(main_path):
+        # print(name)
+        paths.append(f'experiments/{experiment.experiment_id}/source/{name}')
 
+    for p in range(num_instances):
+
+        random_index = random.randint(0, len(paths) - 1)
+        path = paths[random_index]
+
+        print(p, path)
 
         votes = {}
         projects = {}
@@ -66,12 +74,18 @@ def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pab
         perm = np.random.permutation(len(votes))
         # print(len(perm))
         final_approval_votes_cut = []
-        for i, vote in enumerate(approval_votes_cut):
-            # print(num_voters)
-            if perm[i] < num_voters:
-                # print(perm[i])
+
+        ctr = 0
+        for i in range(len(approval_votes_cut)):
+            j = perm[i]
+            vote = approval_votes_cut[j]
+            if vote != set():
                 final_approval_votes_cut.append(vote)
-        # print(len(final_approval_votes_cut))
+                ctr += 1
+
+            if ctr == num_voters:
+                break
+
 
         # store in .app file
         name = name.replace('.pb', '')

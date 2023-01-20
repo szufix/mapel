@@ -104,6 +104,7 @@ LIST_OF_LOCAL_FEATURES = {'highest_borda_score': scores.highest_borda_score,
             'core': from_abc.test_core,
             'ejr': jr.test_ejr,
             'min_dim': dimensionality.min_dim,
+            'borda_spread': scores.borda_spread,
             }
 
 

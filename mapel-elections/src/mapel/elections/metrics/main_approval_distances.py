@@ -11,6 +11,7 @@ from mapel.elections.objects.ApprovalElection import ApprovalElection
 
 
 # MAIN APPROVAL DISTANCES
+
 def compute_approvalwise(election_1: ApprovalElection, election_2: ApprovalElection,
                          inner_distance: Callable) -> float:
     """ Return: approvalwise distance """

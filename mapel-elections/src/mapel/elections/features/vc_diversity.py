@@ -1,3 +1,5 @@
+from mapel.core.glossary import LIST_OF_FAKE_MODELS
+import numpy as np
 
 
 def num_of_diff_votes(election):
@@ -31,7 +33,8 @@ def voterlikeness_harmonic(election):
 
 
 def borda_diversity(election):
-    vector = election.votes_to_bordawise_vector()
-    avg = sum(vector)/len(vector)
-    return sum([abs(value-avg) for value in vector])
+    if election.culture_id in LIST_OF_FAKE_MODELS:
+        return 'None'
 
+    vector = np.array(election.votes_to_bordawise_vector())
+    return np.std(vector)

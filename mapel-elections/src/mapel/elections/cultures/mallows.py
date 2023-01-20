@@ -246,7 +246,7 @@ def generate_approval_moving_resampling_votes(num_voters=None, num_candidates=No
     # for c in range(num_candidates):
     #     if rand.random() <= params['p']:
     #         central_vote.add(c)
-    num_legs = params['legs']
+    num_legs = params.get('legs', 1)
     breaks = [int(num_voters/num_legs)*i for i in range(num_legs)]
     print(breaks)
 

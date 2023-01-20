@@ -201,7 +201,7 @@ class ApprovalElection(Election):
                                   aggregated=aggregated)
 
     def compute_distances_between_votes(self, distance_id='hamming'):
-
+        print(self.num_voters)
         distances = np.zeros([self.num_voters, self.num_voters])
         for v1 in range(self.num_voters):
             for v2 in range(self.num_voters):

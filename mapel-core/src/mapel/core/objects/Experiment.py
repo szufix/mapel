@@ -926,12 +926,15 @@ class Experiment:
             # plt.show()
 
     def merge_election_images(self, size=250, name=None, show=False, ncol=1, nrow=1,
-                              distance_id='hamming'):
+                              distance_id=None):
 
         images = []
         for i, election in enumerate(self.instances.values()):
             print(election.label)
-            images.append(Image.open(f'images/{name}/{election.label}_{distance_id}.png'))
+            if distance_id is None:
+                images.append(Image.open(f'images/{name}/{election.label}.png'))
+            else:
+                images.append(Image.open(f'images/{name}/{election.label}_{distance_id}.png'))
         image1_size = images[0].size
 
         new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]),

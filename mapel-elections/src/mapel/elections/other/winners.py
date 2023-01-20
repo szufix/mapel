@@ -18,7 +18,8 @@ def randomize(vector, num_winners):
         right += 1
     # print(left, right)
     if left < right:
-        ranking[left:right] = np.random.sample(ranking[left:right], right - left)
+        ranking[left:right] = np.random.choice(ranking[left:right], right - left,
+                                               replace=False)
     # print(ranking)
     return ranking
 

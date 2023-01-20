@@ -76,7 +76,7 @@ def lowest_dodgson_score(election):
     for target_id in range(election.num_candidates):
 
         # PREPARE N
-        unique_potes, N = _potes_to_unique_potes(election.potes)
+        unique_potes, N = _potes_to_unique_potes(election.get_potes())
 
         e = np.zeros([len(N), election.num_candidates,
                       election.num_candidates])
@@ -294,3 +294,13 @@ def get_pav_dissat(election, winners) -> float:
                 ctr += 1
 
     return dissat
+
+
+# OTHER
+def borda_spread(election) -> int:
+    """ Compute the difference between the highest and the lowest Borda score """
+    c = election.num_candidates
+    vectors = election.get_vectors()
+    borda = [sum([vectors[i][pos] * (c - pos - 1) for pos in range(c)])
+             for i in range(c)]
+    return (max(borda)-min(borda)) * election.num_voters
