@@ -537,7 +537,7 @@ class Experiment:
         times = {}
         stds = {}
         mappings = {}
-
+        print(path)
         with open(path, 'r', newline='') as csv_file:
 
             reader = csv.DictReader(csv_file, delimiter=';')

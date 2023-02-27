@@ -732,30 +732,53 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
         if ticks_pos is None:
             ticks_pos = [0, 0.2, 0.4, 0.6, 0.8, 1]
 
-        cb_0 = fig.colorbar(images[0], orientation="horizontal", pad=-0.1, shrink=0.55,
+        # VERTICAL VERSION
+        cb_0 = fig.colorbar(images[0], orientation="vertical", pad=-0.1, shrink=0.55,
                             ticks=ticks)
         cb_0.ax.locator_params(nbins=len(xticklabels), tight=True)
         cb_0.ax.tick_params(labelsize=feature_labelsize)
-        cb_0.ax.xaxis.set_ticks(ticks_pos)
-        cb_0.ax.set_xticklabels(xticklabels)
-        # cb_0.ax..set_ticks([])
+        cb_0.ax.yaxis.set_ticks(ticks_pos)
+        cb_0.ax.set_yticklabels(xticklabels)
 
-        cb_1 = fig.colorbar(images[1], orientation="horizontal", pad=-0.1, shrink=0.55,
+        cb_1 = fig.colorbar(images[1], orientation="vertical", pad=-0.1, shrink=0.55,
                             ticks=ticks)
-        # cb.ax.locator_params(nbins=len(xticklabels), tight=True)
-        # cb.ax.tick_params(labelsize=feature_labelsize)
+        # cb_1.ax.xaxis.set_ticks(ticks_pos)
+        # cb_1.ax.set_xticklabels(xticklabels)
+        cb_1.ax.set_yticklabels([])
 
-        cb_1.ax.xaxis.set_ticks(ticks_pos)
-        cb_1.ax.set_xticklabels(xticklabels)
-        cb_1.ax.set_xticklabels([])
-
-        cb_2 = fig.colorbar(images[2], orientation="horizontal", pad=0, shrink=0.55,
+        cb_2 = fig.colorbar(images[2], orientation="vertical", pad=0, shrink=0.55,
                             ticks=ticks)
-        # cb.ax.locator_params(nbins=len(xticklabels), tight=True)
-        # cb.ax.tick_params(labelsize=feature_labelsize)
-        cb_2.ax.xaxis.set_ticks(ticks_pos)
-        cb_2.ax.set_xticklabels(xticklabels)
-        cb_2.ax.set_xticklabels([])
+        # cb_2.ax.xaxis.set_ticks(ticks_pos)
+        # cb_2.ax.set_xticklabels(xticklabels)
+        cb_2.ax.set_yticklabels([])
+
+
+        # HORIZONTAL VERSION
+        # cb_0 = fig.colorbar(images[0], orientation="vertical", pad=-0.1, shrink=0.55,
+        #                     ticks=ticks)
+        # cb_0.ax.locator_params(nbins=len(xticklabels), tight=True)
+        # cb_0.ax.tick_params(labelsize=feature_labelsize)
+        # cb_0.ax.xaxis.set_ticks(ticks_pos)
+        # cb_0.ax.set_xticklabels(xticklabels)
+        # # cb_0.ax..set_ticks([])
+        #
+        # cb_1 = fig.colorbar(images[1], orientation="vertical", pad=-0.1, shrink=0.55,
+        #                     ticks=ticks)
+        # # cb.ax.locator_params(nbins=len(xticklabels), tight=True)
+        # # cb.ax.tick_params(labelsize=feature_labelsize)
+        #
+        # cb_1.ax.xaxis.set_ticks(ticks_pos)
+        # cb_1.ax.set_xticklabels(xticklabels)
+        # cb_1.ax.set_xticklabels([])
+        #
+        # cb_2 = fig.colorbar(images[2], orientation="vertical", pad=0, shrink=0.55,
+        #                     ticks=ticks)
+        # # cb.ax.locator_params(nbins=len(xticklabels), tight=True)
+        # # cb.ax.tick_params(labelsize=feature_labelsize)
+        # cb_2.ax.xaxis.set_ticks(ticks_pos)
+        # cb_2.ax.set_xticklabels(xticklabels)
+        # cb_2.ax.set_xticklabels([])
+
 
 
 # HELPER FUNCTIONS FOR PRINT_3D

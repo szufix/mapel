@@ -373,6 +373,7 @@ class OrdinalElection(Election):
     def texify_label(self, name):
         return name.replace('phi', '$\phi$'). \
             replace('alpha', '$\\ \\alpha$'). \
+            replace('omega', '$\\ \\omega$'). \
             replace('§', '\n', 1)
             # replace('0.005', '$\\frac{1}{200}$'). \
             # replace('0.025', '$\\frac{1}{40}$'). \
@@ -455,7 +456,7 @@ class OrdinalElection(Election):
             plt.xlim([avg_x-radius, avg_x+radius])
             plt.ylim([avg_y-radius, avg_y+radius])
         # plt.title(self.label, size=38)
-        plt.title(self.texify_label(self.label), size=38)
+        plt.title(self.texify_label(self.label), size=title_size)
         # plt.title(self.texify_label(self.label), size=38, y=0.94)
         # plt.title(self.label, size=title_size)
         plt.axis('off')

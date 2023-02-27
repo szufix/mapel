@@ -84,5 +84,19 @@ def generate_election_from_votes(votes=None):
     election.votes = votes
     return election
 
+def generate_ordinal_election_from_votes(votes=None):
+    election = OrdinalElection("virtual", "virtual")
+    election.num_candidates = len(votes[0])
+    election.num_voters = len(votes)
+    election.votes = votes
+    return election
+
+def generate_approval_election_from_votes(votes=None):
+    election = ApprovalElection("virtual", "virtual")
+    election.num_candidates = len(set().union(*votes))
+    election.num_voters = len(votes)
+    election.votes = votes
+    return election
+
 def compute_distance(*args, **kwargs):
     return get_distance(*args, **kwargs)
