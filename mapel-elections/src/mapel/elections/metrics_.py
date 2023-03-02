@@ -38,7 +38,7 @@ def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElec
     metrics_without_params = {
         'flow': mad.compute_flow,
         'hamming': mad.compute_hamming,
-        'name_of_the_distance': mad.name_of_the_distance,
+        # 'name_of_the_distance': mad.name_of_the_distance,
     }
 
     metrics_with_inner_distance = {
