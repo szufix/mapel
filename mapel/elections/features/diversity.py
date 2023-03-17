@@ -645,15 +645,6 @@ def support_diversity_normed3_summed(election):
         res = res + support_diversity_normed3(election, i)
     return res
 
-def votes_std(election):
-    if election.fake:
-        return 'None'
-    return 'None'
-
-
-
-
-
 # FROM vc_diversity.py
 # def num_of_diff_votes(election):
 #     if election.fake:

@@ -875,8 +875,10 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
         if bbox_inches is None:
             print(file_name)
             plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
+            plt.savefig(file_name + '.pdf', bbox_inches='tight', format='pdf')
         else:
             plt.savefig(file_name, bbox_inches=bbox_inches, dpi=dpi)
+            plt.savefig(file_name + '.pdf', bbox_inches=bbox_inches, format='pdf')
 
 
 # TEX

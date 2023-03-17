@@ -194,7 +194,7 @@ class Election(Instance):
                     Ys[str_elem] = Y[i]
 
             for str_elem in weighted_points:
-                if weighted_points[str_elem] > 30:
+                if weighted_points[str_elem] > 10:
                     plt.scatter(Xs[str_elem], Ys[str_elem],
                                 color='purple',
                                 s=10 * weighted_points[str_elem],
