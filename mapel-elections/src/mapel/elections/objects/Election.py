@@ -9,6 +9,7 @@ from abc import abstractmethod
 
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.linalg as la
 from sklearn.manifold import MDS
 
 from mapel.elections.features_ import get_local_feature
@@ -165,6 +166,64 @@ class Election(Instance):
         else:
             plt.clf()
 
+    #DIV-MERGE # TO DELETE?
+    def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
+                  object_type=None, double_gradient=False, saveas=None):
+
+        if object_type is None:
+            object_type = self.object_type
+
+        plt.figure(figsize=(6.4, 6.4))
+
+        X = []
+        Y = []
+        for elem in self.coordinates[object_type]:
+            X.append(elem[0])
+            Y.append(elem[1])
+
+        if circles:
+            weighted_points = {}
+            Xs = {}
+            Ys = {}
+            for i in range(self.num_voters):
+                str_elem = str(self.votes[i])
+                if str_elem in weighted_points:
+                    weighted_points[str_elem] += 1
+                else:
+                    weighted_points[str_elem] = 1
+                    Xs[str_elem] = X[i]
+                    Ys[str_elem] = Y[i]
+
+            for str_elem in weighted_points:
+                if weighted_points[str_elem] > 10:
+                    plt.scatter(Xs[str_elem], Ys[str_elem],
+                                color='purple',
+                                s=10 * weighted_points[str_elem],
+                                alpha=0.2)
+
+        if double_gradient:
+            for i in range(self.num_voters):
+                x = float(self.points['voters'][i][0])
+                y = float(self.points['voters'][i][1])
+                plt.scatter(X[i], Y[i], color=[0,y,x], s=s, alpha=alpha)
+        else:
+            plt.scatter(X, Y, color='blue', s=s, alpha=alpha)
+
+        if radius:
+            plt.xlim([-radius, radius])
+            plt.ylim([-radius, radius])
+        plt.title(self.label, size=38)
+        plt.axis('off')
+
+        if saveas is None:
+            saveas = f'{self.label}_euc'
+
+        file_name = os.path.join(os.getcwd(), "images", name, f'{saveas}.png')
+        plt.savefig(file_name, bbox_inches='tight', dpi=100)
+        if show:
+            plt.show()
+        else:
+            plt.clf()
 
     # def online_mini_map(self):
     #
@@ -207,6 +266,7 @@ class Election(Instance):
     def compute_distances(self):
         pass
 
+    #DIV-MERGE
     def embed(self, algorithm='MDS', object_type=None, virtual=False):
 
         if object_type is None:
@@ -220,7 +280,12 @@ class Election(Instance):
             # n_init=20,
             # eps=1e-6,
             )
-        self.coordinates[object_type] = MDS_object.fit_transform(self.distances[object_type])
+
+        #DIV-MERGE
+        if algorithm == 'PCA':
+            self.coordinates[object_type] = pca(self.distances[object_type])
+        else:
+            self.coordinates[object_type] = MDS_object.fit_transform(self.distances[object_type])
 
         if object_type == 'vote':
             length = self.num_voters
@@ -420,4 +485,49 @@ def remove_candidate_from_election(election, party_id, party_size) -> Election:
     election.num_candidates -= party_size
     return election
 
+#DIV-MERGE
+def pca(distance_matrix):
+    # print(distance_matrix)
+    # df = pd.read_csv("http://rosetta.reltech.org/TC/v15/Mapping/data/dist-Aus.csv")
+    # A = df.values.T[1:].astype(float)
+    A = distance_matrix
+    # square it
+    A = A ** 2
+    # centering matrix
+    n = A.shape[0]
+    # J_c = 1. / n * (np.eye(n) - 1 + (n - 1) * np.eye(n))
+    J_c = np.eye(n) - 1./n
 
+    # perform double centering
+    B = -0.5 * np.matmul(np.matmul(J_c, A), J_c)
+
+    # find eigenvalues and eigenvectors
+    eigen_val = la.eig(B)[0]
+    eigen_vec = la.eig(B)[1].T
+
+    eigen_vec_real = np.round(np.real(eigen_vec), 5)
+    # eigen_vec_imag = np.round(np.imag(eigen_vec), 5)
+    # if np.abs(eigen_vec_imag).sum() > 1:
+    #     print("Complex eigenvectors!")
+    #     print(np.abs(eigen_vec_imag).sum())
+        # print(eigen_vec_imag)
+        # print(eigen_vec)
+
+    eigen_val_real = np.round(np.real(eigen_val), 5)
+    # eigen_val_imag = np.round(np.imag(eigen_val), 5)
+    # print(eigen_val_real)
+    # print(eigen_val_imag)
+    # if np.abs(eigen_val_imag).sum() > 1:
+    #     print("Complex eigenvalues!")
+        # print(eigen_val_imag)
+        # print(eigen_val)
+    bests = np.argsort(-eigen_val_real)
+    i = bests[0]
+    j = bests[1]
+
+    PC1 = np.sqrt(eigen_val_real[i]) * eigen_vec_real[i]
+    PC2 = np.sqrt(eigen_val_real[j]) * eigen_vec_real[j]
+    res = np.array([[x, y] for x, y in zip(PC1, PC2)])
+    # print(PC1)
+    # print(PC2)
+    return res

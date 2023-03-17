@@ -55,6 +55,7 @@ def print_map_1d(experiment, saveas=None):
 
 
 # Main functions
+#DIV-MERGE
 def print_map_2d(experiment,
                  xlabel=None, shading=False, legend_pos=None, title_pos=None,
                  angle=0, reverse=False, update=False, feature_id=None,
@@ -69,7 +70,7 @@ def print_map_2d(experiment,
                  legend=True, feature_labelsize=14, dpi=250,
                  column_id='value', title_size=16, ticks_pos=None,
                  feature_ids=None, omit=None, textual_size=16, figsize=(6.4, 6.4),
-                 strech=None) -> None:
+                 strech=None, urn_orangered=True) -> None:
 
     if textual is None:
         textual = []
@@ -138,8 +139,9 @@ def print_map_2d(experiment,
             add_roads(experiment=experiment, roads=roads, ax=ax)
         else:
             if shading:
+                #DIV-MERGE
                 basic_coloring_with_shading(experiment=experiment, ax=ax, dim=dim,
-                                            textual=textual, ms=ms)
+                                            textual=textual, ms=ms, urn_orangered=urn_orangered)
             elif individual:
                 basic_coloring_with_individual(experiment=experiment, ax=ax, individual=individual)
             else:
@@ -844,8 +846,8 @@ def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
                            s=individual['ms'][election_id],
                            marker=individual['marker'][election_id])
 
-
-def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None, ms=20):
+#DIV-MERGE
+def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None, ms=20, urn_orangered=True):
     for family in experiment.families.values():
         if family.show:
             label = family.label
@@ -873,12 +875,17 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None, m
 
                         if 'Mallows (triangle)' in label:
                             tint = experiment.instances[election_id].params['tint']
-                            alpha = 1 - (1 - alpha) * 0.8
-                            color = (0.5, 0.8 - tint, 0.3 + tint)
+                            # color = (2 * tint, 0, 1 - tint * 2)
+                            # alpha = alpha
+                            tint = 2 * tint
+                            color = (0.75 - 0.75 * alpha + 0.125 * tint + 0.875 * alpha * tint,
+                                     0.75 - 0.75 * alpha,
+                                     0.75 - 0.75 * alpha + 0.125 * (1 - tint) + 0.875 * alpha * (1- tint))
+                            alpha = 1
 
                         if 'Urn' in label:
 
-                            color, alpha = get_color_alpha_for_urn(color, alpha)
+                            color, alpha = get_color_alpha_for_urn(color, alpha, urn_orangered)
 
                         else:
 
@@ -992,8 +999,12 @@ def basic_background(ax=None, values=None, legend=None, saveas=None, xlabel=None
             print(file_name)
             plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
             # plt.savefig(file_name, dpi=dpi)
+            #DIV-MERGE
+            # plt.savefig(file_name + '.pdf', bbox_inches='tight', format='pdf')
         else:
             plt.savefig(file_name, bbox_inches=bbox_inches, dpi=dpi)
+            #DIV-MERGE
+            # plt.savefig(file_name + '.pdf', bbox_inches=bbox_inches, format='pdf')
 
 
 # TEX
@@ -1224,7 +1235,7 @@ def add_textual(experiment=None, textual=None, ax=None, size=16,
         except KeyError as err:
           if name_id in ['ST', 'UN']:
             x, y = experiment.coordinates[name_id + "_0"]
-            
+
 
         if name in RULE_NAME_MAP:
             name = RULE_NAME_MAP[name]
@@ -1807,18 +1818,24 @@ def adjust_the_map_on_one_point(experiment) -> None:
     except:
         print('Cannot adjust!')
 
-
-def get_color_alpha_for_urn(color, alpha):
+#DIV-MERGE
+def get_color_alpha_for_urn(color, alpha, orangered=True):
     # return 'red', min(alpha, 1)
 
-    if alpha > 1.07:
-        return 'red', 0.9
-    elif alpha > 0.53:
-        return 'orangered', 0.9
-    elif alpha > 0.22:
-        return 'orange', 0.9
+    if orangered:
+        if alpha > 1.07:
+            return 'red', 0.9
+        elif alpha > 0.53:
+            return 'orangered', 0.9
+        elif alpha > 0.22:
+            return 'orange', 0.9
+        else:
+            return 'gold', 0.9
     else:
-        return 'gold', 0.9
+        if alpha > 2:
+            return 'orange', 1
+        else:
+            return 'orange', alpha * 0.35 + 0.3
 
 
 

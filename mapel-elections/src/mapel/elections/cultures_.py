@@ -128,6 +128,7 @@ LIST_OF_ORDINAL_MODELS_WITHOUT_PARAMS = {
     'real_antagonism': guardians.generate_real_antagonism_votes,
     'real_stratification': guardians.generate_real_stratification_votes,
     'un_from_matrix': guardians_plus.generate_un_from_matrix_votes,
+    'un_from_list': guardians_plus.generate_un_from_list,
 }
 
 
