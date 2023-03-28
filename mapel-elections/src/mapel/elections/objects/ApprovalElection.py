@@ -10,6 +10,8 @@ from scipy.stats import gamma
 
 import mapel.elections.cultures.mallows as mallows
 from mapel.core.glossary import *
+
+from mapel.elections.costs import generate_projects_cost
 from mapel.elections.cultures_ import generate_approval_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
 from mapel.core.inner_distances import hamming
@@ -185,14 +187,13 @@ class ApprovalElection(Election):
                                              num_candidates=self.num_candidates,
                                              num_voters=self.num_voters,
                                              params=self.params)
-        if self.cost_function is None:
-            self.candidates_cost = {c: 1 for c in range(self.num_candidates)}
-
-        else:
-            self.candidates_cost = {c: self.cost_function() for c in range(self.num_candidates)}
 
         if self.budget is None:
             self.budget = 1
+
+        self.candidates_cost = {c: cost for c, cost in enumerate(
+            generate_projects_cost(self.cost_function, self.num_candidates,
+                                   self.budget, self.params))}
 
         avg = 0
         for vote in self.votes:

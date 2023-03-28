@@ -369,6 +369,7 @@ class ElectionExperiment(Experiment):
                 num_candidates = None
                 num_voters = None
                 budget = None
+                cost_function = None
                 family_id = None
                 show = True
 
@@ -415,6 +416,9 @@ class ElectionExperiment(Experiment):
                 if 'budget' in row.keys():
                     budget = float(row['budget'])
 
+                if 'cost_function' in row.keys():
+                    cost_function = str(row['cost_function']).strip()
+
                 single = size == 1
 
                 families[family_id] = ElectionFamily(culture_id=culture_id,
@@ -426,6 +430,7 @@ class ElectionExperiment(Experiment):
                                                      num_candidates=num_candidates,
                                                      num_voters=num_voters, path=path,
                                                      single=single, budget=budget,
+                                                     cost_function=cost_function,
                                                      instance_type=self.instance_type)
                 starting_from += size
 
