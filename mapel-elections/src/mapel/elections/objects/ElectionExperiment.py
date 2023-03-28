@@ -139,6 +139,7 @@ class ElectionExperiment(Experiment):
                    label: str = None, color: str = "black", alpha: float = 1.,
                    show: bool = True, marker: str = 'o', starting_from: int = 0,
                    num_candidates: int = None, num_voters: int = None,
+                   cost_function=None, budget: float = None,
                    family_id: str = None, single: bool = False,
                    path: dict = None,
                    election_id: str = None) -> list:
@@ -175,7 +176,10 @@ class ElectionExperiment(Experiment):
                                                   show=show, size=size, marker=marker,
                                                   starting_from=starting_from,
                                                   num_candidates=num_candidates,
-                                                  num_voters=num_voters, path=path,
+                                                  num_voters=num_voters,
+                                                  cost_function=cost_function,
+                                                  budget=budget,
+                                                  path=path,
                                                   single=single,
                                                   instance_type=self.instance_type)
 
@@ -237,7 +241,10 @@ class ElectionExperiment(Experiment):
         if distance_id is None:
             distance_id = self.distance_id
 
-        if '-approvalwise' in distance_id:
+        if '-approvalwise_budget' in distance_id:
+            for election in self.elections.values():
+                election.votes_to_approvalwise_budget_vector()
+        elif '-approvalwise' in distance_id:
             for election in self.elections.values():
                 election.votes_to_approvalwise_vector()
         elif '-coapproval_frequency' in distance_id or 'flow' in distance_id:
@@ -252,6 +259,7 @@ class ElectionExperiment(Experiment):
         elif '-pairwise' in distance_id:
             for election in self.elections.values():
                 election.votes_to_pairwise_matrix()
+
 
         matchings = {election_id: {} for election_id in self.elections}
         distances = {election_id: {} for election_id in self.elections}
@@ -360,6 +368,7 @@ class ElectionExperiment(Experiment):
                 marker = None
                 num_candidates = None
                 num_voters = None
+                budget = None
                 family_id = None
                 show = True
 
@@ -403,6 +412,9 @@ class ElectionExperiment(Experiment):
                 if 'show' in row.keys():
                     show = row['show'].strip() == 't'
 
+                if 'budget' in row.keys():
+                    budget = float(row['budget'])
+
                 single = size == 1
 
                 families[family_id] = ElectionFamily(culture_id=culture_id,
@@ -413,7 +425,7 @@ class ElectionExperiment(Experiment):
                                                      starting_from=starting_from,
                                                      num_candidates=num_candidates,
                                                      num_voters=num_voters, path=path,
-                                                     single=single,
+                                                     single=single, budget=budget,
                                                      instance_type=self.instance_type)
                 starting_from += size
 

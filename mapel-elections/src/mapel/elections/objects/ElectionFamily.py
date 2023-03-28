@@ -28,6 +28,8 @@ class ElectionFamily(Family):
 
                  num_candidates=None,
                  num_voters=None,
+                 cost_function=None,
+                 budget=None,
                  election_ids=None,
                  instance_type: str = 'ordinal'):
 
@@ -48,6 +50,8 @@ class ElectionFamily(Family):
 
         self.num_candidates = num_candidates
         self.num_voters = num_voters
+        self.cost_function = cost_function
+        self.budget = budget
         self.instance_type = instance_type
 
     def __getattr__(self, attr):
@@ -151,6 +155,8 @@ class ElectionFamily(Family):
                 election = ApprovalElection(experiment_id, election_id, culture_id=self.culture_id,
                                             num_voters=self.num_voters, label=self.label,
                                             num_candidates=self.num_candidates,
+                                            cost_function=self.cost_function,
+                                            budget=self.budget,
                                             params=copy.deepcopy(params), ballot=self.instance_type,
                                             variable=variable, _import=False
                                             )

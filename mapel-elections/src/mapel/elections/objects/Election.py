@@ -27,6 +27,7 @@ class Election(Instance):
 
     def __init__(self, experiment_id, election_id, votes=None, alpha=None, culture_id=None,
                  ballot: str = 'ordinal', num_voters: int = None, num_candidates: int = None,
+                 cost_function=None, budget: float = None,
                  label=None, fast_import=False):
 
         super().__init__(experiment_id, election_id, culture_id=culture_id, alpha=alpha)
@@ -38,6 +39,9 @@ class Election(Instance):
         self.num_voters = num_voters
         self.num_candidates = num_candidates
         self.votes = votes
+        self.candidates_cost = None
+        self.cost_function = cost_function
+        self.budget = budget
 
         self.store = True
         self.winners = None
