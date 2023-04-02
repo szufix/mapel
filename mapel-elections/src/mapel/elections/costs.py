@@ -14,7 +14,9 @@ def generate_projects_cost(cost_function=None, num_candidates: int = None,
                                               budget=budget, params=params)
 
     else:
-        logging.warning(f'No such model id: {cost_function}, using unit cost as default')
+        if cost_function is not None:
+            logging.warning(f'No such model id: {cost_function}, using unit cost as default')
+
         return generate_unit_cost(num_candidates, budget, params)
 
 
