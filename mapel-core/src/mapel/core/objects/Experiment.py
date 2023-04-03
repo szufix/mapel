@@ -154,7 +154,7 @@ class Experiment:
     def add_family(self):
         pass
 
-    def embed(self, embedding_id: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
+    def embed(self, embedding_id: str = None, num_iterations: int = 1000, radius: float = np.infty,
               dim: int = 2, num_neighbors: int = None, method: str = 'standard',
               zero_distance: float = 1., factor: float = 1., saveas: str = None,
               init_pos: dict = None, fixed=True, attraction_factor=None) -> None:
@@ -215,7 +215,7 @@ class Experiment:
         if num_neighbors is None:
             num_neighbors = 100
 
-        if embedding_id.lower() == 'spring':
+        if embedding_id.lower() in {'fr', 'spring'}:
             my_pos = nx.spring_layout(graph, iterations=num_iterations, dim=dim)
         elif embedding_id.lower() in {'mds'}:
             my_pos = MDS(n_components=dim, dissimilarity='precomputed',
@@ -235,7 +235,7 @@ class Experiment:
                                             n_neighbors=num_neighbors,
                                             max_iter=num_iterations,
                                             method=method).fit_transform(x)
-        elif embedding_id.lower() in {'kamada-kawai', 'kamada', 'kawai'}:
+        elif embedding_id.lower() in {'kk', 'kamada-kawai', 'kamada', 'kawai'}:
             my_pos = KamadaKawai().embed(
                 distances=x, initial_positions=initial_positions,
                 fix_initial_positions=fixed
