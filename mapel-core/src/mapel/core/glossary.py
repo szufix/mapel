@@ -195,7 +195,8 @@ ROOMMATES_PROBLEM_MODELS = {'roommates_ic'}
 FEATURES_WITH_DISSAT = {'highest_cc_score', 'highest_hb_score', 'highest_pav_score',
                         'greedy_approx_cc_score', 'removal_approx_cc_score',
                         'greedy_approx_hb_score', 'removal_approx_hb_score',
-                        'greedy_approx_pav_score', 'removal_approx_pav_score'}
+                        'greedy_approx_pav_score', 'removal_approx_pav_score',
+                        'banzhaf_cc_score', 'ranging_cc_score'}
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

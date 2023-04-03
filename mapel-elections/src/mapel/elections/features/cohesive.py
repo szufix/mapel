@@ -9,13 +9,13 @@ except Exception:
     pulp = None
 
 
-from mapel.elections.objects.ApprovalElection import ApprovalElection
+# from mapel.elections.objects.ApprovalElection import ApprovalElection
 from math import ceil
 import itertools
 from collections import defaultdict
 
 
-def count_number_of_cohesive_groups_brute(election: ApprovalElection, l: int = 1,
+def count_number_of_cohesive_groups_brute(election, l: int = 1,
                                           committee_size: int = 10):
     answer = 0
     min_size = int(ceil(l * election.num_voters / committee_size))
@@ -54,7 +54,7 @@ def newton(n: int, k: int):
     return answer
 
 
-def count_number_of_cohesive_groups(election: ApprovalElection, l: int = 1,
+def count_number_of_cohesive_groups(election, l: int = 1,
                                     committee_size: int = 10):
 
     if l > 1:
@@ -80,13 +80,13 @@ def count_number_of_cohesive_groups(election: ApprovalElection, l: int = 1,
 ####################################################################################################
 ####################################################################################################
 
-def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElection, feature_params):
+def count_largest_cohesiveness_level_l_of_cohesive_group(election, feature_params):
     committee_size = feature_params['committee_size']
 
-    if election.model == 'approval_zeros':
-        return 0
-    elif election.model == 'approval_ones':
-        return min(committee_size, election.num_candidates)
+    # if election.model == 'approval_zeros':
+    #     return 0
+    # elif election.model == 'approval_ones':
+    #     return min(committee_size, election.num_candidates)
 
     l_ans = 0
     for l in range(1, election.num_voters + 1):
@@ -97,7 +97,7 @@ def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElect
     return l_ans
 
 
-def solve_ilp_instance(election: ApprovalElection, committee_size: int, l: int = 1) -> bool:
+def solve_ilp_instance(election, committee_size: int, l: int = 1) -> bool:
     pulp.getSolver('CPLEX_CMD')
     model = pulp.LpProblem("cohesiveness_level_l", pulp.LpMaximize)
     X = [pulp.LpVariable("x_" + str(i), cat='Binary') for i in

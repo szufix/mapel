@@ -9,7 +9,6 @@ from abc import ABCMeta, abstractmethod
 from PIL import Image
 from mapel.core.objects.Family import Family
 import mapel.core.printing as pr
-import time
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -735,9 +734,6 @@ class Experiment:
             }.get(name)
 
         for name_1, name_2 in itertools.combinations(names, 2):
-            # for target in ['double', 'radius', '2g-IC', 'IC_', '1d_', 'maleuc', 'malasym', 'vec']:
-            #         ['MD', 'MA', 'CH', 'ID', '2d_rev', 'Mallows']:
-            # for target in ['MD']:
 
             if all:
 
@@ -756,47 +752,19 @@ class Experiment:
                 empty_x = []
                 empty_y = []
                 for e1, e2 in itertools.combinations(all_distances[name_1], 2):
-                    # if e1 in ['IC'] or e2 in ['IC']:
                     if e1 in ['AN', 'UN', 'ID', 'ST'] or e2 in ['AN', 'UN', 'ID', 'ST']:
                         empty_x.append(all_distances[name_1][e1][e2])
                         empty_y.append(all_distances[name_2][e1][e2])
                     else:
                         values_x.append(all_distances[name_1][e1][e2])
                         values_y.append(all_distances[name_2][e1][e2])
-                    # values_x.append(all_distances[name_1][e1][e2] * normalize(name_1))
-                    # values_y.append(all_distances[name_2][e1][e2] * normalize(name_2))
 
             fig = plt.figure(figsize=[6.4, 4.8])
             plt.gcf().subplots_adjust(left=0.2)
             plt.gcf().subplots_adjust(bottom=0.2)
             ax = fig.add_subplot()
-            # a = []
-            # b = []
-            # for x, y in zip(values_x, values_y):
-            #     a.append(x / y)
-            #     b.append(y / x)
-            # print("avg", sum(b) / len(b))
-            # print("avg", sum(a) / len(a))
-            # print(max(a), min(a))
-            # print(max(b), min(b))
-            # limit_1 = 1.48
-            # b_approx = [x for x in b if x > limit_1]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # limit_2 = 0.82
-            # b_approx = [x for x in b if x < limit_2]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # b_approx = [x for x in b if (x < limit_2 or x > limit_1)]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # empty_x = np.linspace(0, 500, 100)
-            # empty_y = [limit_1 * x for x in empty_x]
 
             ax.scatter(values_x, values_y, s=s, alpha=alpha, color=color)
-            # ax.scatter(values_x, values_y, s=4, alpha=0.005, color='purple')
-
-            # ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
 
             PCC = round(stats.pearsonr(values_x, values_y)[0], 3)
             print('PCC', PCC)
@@ -806,9 +774,6 @@ class Experiment:
             SCC = round(stats.spearmanr(values_x, values_y)[0], 3)
             print('SCC', SCC)
 
-            # if title is None:
-            #     title = f'{nice(name_1)} vs {nice(name_2)}'
-            # title=f'{target}'
 
             plt.xlim(left=0)
             plt.ylim(bottom=0)
@@ -821,7 +786,6 @@ class Experiment:
 
             if title:
                 plt.title(title, size=title_size)
-            # saveas = f'images/correlation/corr_{name_1}_{name_2}_{target}'
 
             path = f'images/correlation'
             is_exist = os.path.exists(path)
@@ -831,106 +795,13 @@ class Experiment:
 
             saveas = f'images/correlation/corr_{name_1}_{name_2}'
             plt.savefig(saveas, pad_inches=1)
-            # plt.savefig(saveas, bbox_inches=1)
             plt.show()
-
-    def print_correlation_old(self, distance_id_1='spearman', distance_id_2='l1-mutual_attraction',
-                              title=None):
-
-        all_distances = {}
-
-        all_distances[distance_id_1] = self.import_distances(distance_id=distance_id_1)
-        all_distances[distance_id_2] = self.import_distances(distance_id=distance_id_2)
-
-        names = list(all_distances.keys())
-
-        def nice(name):
-            return {
-                'spearman': 'Spearman',
-                'l1-mutual_attraction': '$\ell_1$ Mutual Attraction',
-                'emd-positionwise': 'EMD-Positionwise',
-            }.get(name)
-
-        def normalize(name):
-            return {
-                'spearman': 1.,
-                'l1-mutual_attraction': 1.,
-                'emd-positionwise': 1.,
-            }.get(name)
-
-        for name_1, name_2 in itertools.combinations(names, 2):
-
-            # for target in ['double', 'radius', '2g-IC', 'IC_', '1d_', 'maleuc', 'malasym', 'vec']:
-            #         ['MD', 'MA', 'CH', 'ID', '2d_rev', 'Mallows']:
-            # for target in ['MD']:
-
-            values_x = []
-            values_y = []
-            # empty_x = []
-            # empty_y = []
-            for e1, e2 in itertools.combinations(all_distances[name_1], 2):
-                # if e1 in ['IC'] or e2 in ['IC']:
-                # if target in e1 or target in e2:
-                #     empty_x.append(all_distances[name_1][e1][e2])
-                #     empty_y.append(all_distances[name_2][e1][e2])
-                # else:
-                values_x.append(all_distances[name_1][e1][e2])
-                values_y.append(all_distances[name_2][e1][e2])
-                # values_x.append(all_distances[name_1][e1][e2] * normalize(name_1))
-                # values_y.append(all_distances[name_2][e1][e2] * normalize(name_2))
-
-            fig = plt.figure()
-            ax = fig.add_subplot()
-
-            # a = []
-            # b = []
-            # for x, y in zip(values_x, values_y):
-            #     a.append(x / y)
-            #     b.append(y / x)
-            # print("avg", sum(b) / len(b))
-            # print("avg", sum(a) / len(a))
-            # print(max(a), min(a))
-            # print(max(b), min(b))
-            # limit_1 = 1.48
-            # b_approx = [x for x in b if x > limit_1]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # limit_2 = 0.82
-            # b_approx = [x for x in b if x < limit_2]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # b_approx = [x for x in b if (x < limit_2 or x > limit_1)]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # empty_x = np.linspace(0, 500, 100)
-            # empty_y = [limit_1 * x for x in empty_x]
-
-            ax.scatter(values_x, values_y, s=4, alpha=0.01, color='purple')
-            # ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
-
-            pear = round(stats.pearsonr(values_x, values_y)[0], 3)
-            pear_text = f'PCC = {pear}'
-            print('pear', pear)
-            # plt.text(0.7, 0.1, pear_text, transform=ax.transAxes, size=14)
-
-            if title is None:
-                title = f'{nice(name_1)} vs {nice(name_2)}'
-            # title=f'{target}'
-
-            plt.xlabel(nice(name_1), size=20)
-            plt.ylabel(nice(name_2), size=20)
-            # plt.title(title, size=24)
-            # saveas = f'images/correlation/corr_{name_1}_{name_2}_{target}'
-            saveas = f'images/correlation/corr_{name_1}_{name_2}'
-            plt.savefig(saveas, bbox_inches='tight')
-            # plt.show()
 
     def merge_election_images(self, size=250, name=None, show=False, ncol=1, nrow=1,
                               distance_id=None):
 
         images = []
         for i, election in enumerate(self.instances.values()):
-            print(election.label)
             if distance_id is None:
                 images.append(Image.open(f'images/{name}/{election.label}.png'))
             else:
@@ -940,7 +811,6 @@ class Experiment:
         new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]),
                               (size, size, size))
 
-        print(len(images))
         for i in range(ncol):
             for j in range(nrow):
                 new_image.paste(images[i + j * ncol], (image1_size[0] * i, image1_size[1] * j))
@@ -956,10 +826,8 @@ class Experiment:
     def merge_election_images_double(self, size=250, name=None,
                                      distance_ids=None,
                                      show=False, ncol=1, nrow=1):
-
         images = []
         for i, election in enumerate(self.instances.values()):
-            print(election.label)
             images.append(Image.open(f'images/{name}/{election.label}_{distance_ids[0]}.png'))
             images.append(Image.open(f'images/{name}/{election.label}_{distance_ids[1]}.png'))
         image1_size = images[0].size
@@ -967,7 +835,6 @@ class Experiment:
         new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]),
                               (size, size, size))
 
-        print(len(images))
         for i in range(ncol):
             for j in range(nrow):
                 new_image.paste(images[i + j * ncol], (image1_size[0] * i, image1_size[1] * j))

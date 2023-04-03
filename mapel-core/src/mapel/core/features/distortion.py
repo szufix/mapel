@@ -7,7 +7,8 @@ from typing import List
 
 import numpy as np
 
-from mapel.core.features.common import extract_selected_coordinates_from_experiment, extract_selected_distances, \
+from mapel.core.features.common import extract_selected_coordinates_from_experiment, \
+    extract_selected_distances, \
     extract_calculated_distances, MockExperiment
 from mapel.core.objects.Experiment import Experiment
 
@@ -16,7 +17,8 @@ def _close_zero(number, e=1e-6):
     return e if number <= e else number
 
 
-def calculate_distortion(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0,
+def calculate_distortion(experiment: Experiment, election_ids: List[str] = None,
+                         max_distance_percentage=1.0,
                          normalize=True):
     """
 
@@ -35,7 +37,8 @@ def calculate_distortion(experiment: Experiment, election_ids: List[str] = None,
     coordinates = extract_selected_coordinates_from_experiment(experiment, election_ids)
     distances = extract_selected_distances(experiment, election_ids)
 
-    calculated_distances = np.linalg.norm(coordinates[:, np.newaxis] - coordinates[np.newaxis, :], axis=2)
+    calculated_distances = np.linalg.norm(coordinates[:, np.newaxis] - coordinates[np.newaxis, :],
+                                          axis=2)
     if normalize:
         calculated_distances /= np.max(calculated_distances)
         distances /= np.max(distances)
@@ -59,15 +62,21 @@ def calculate_distortion(experiment: Experiment, election_ids: List[str] = None,
     }
 
 
-def calculate_distortion_naive(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0,
+def calculate_distortion_naive(experiment: Experiment, election_ids: List[str] = None,
+                               max_distance_percentage=1.0,
                                normalize=True):
     coordinates = extract_selected_coordinates_from_experiment(experiment, election_ids)
 
     desired_distances = extract_selected_distances(experiment, election_ids)
     calculated_distances = extract_calculated_distances(coordinates)
+
+    original_diameter = experiment.distances['ID']['UN']
+    embedded_diameter = np.linalg.norm(np.array(experiment.coordinates['ID'])
+                                       - np.array(experiment.coordinates['UN']), ord=2)
+
     if normalize:
-        calculated_distances /= np.max(calculated_distances)
-        desired_distances /= np.max(desired_distances)
+        calculated_distances /= embedded_diameter
+        desired_distances /= original_diameter
 
     max_distance = np.max(desired_distances)
     allowed_distance = max_distance * max_distance_percentage

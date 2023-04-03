@@ -21,6 +21,8 @@ from mapel.elections.cultures.preflib import generate_preflib_votes
 import mapel.elections.cultures.field_experiment as fe
 import mapel.elections.cultures.didi as didi
 
+from mapel.elections.cultures.alliances import *
+
 
 def generate_approval_votes(culture_id: str = None, num_candidates: int = None,
                             num_voters: int = None, params: dict = None) -> Union[list, np.ndarray]:
@@ -164,13 +166,15 @@ def generate_ordinal_votes(culture_id: str = None,
 
 
 def store_votes_in_a_file(election, culture_id, num_candidates, num_voters,
-                          params, path, ballot, votes=None, aggregated=True):
+                          params, path, ballot, votes=None, aggregated=True,
+                          alliances=None):
     """ Store votes in a file """
     if votes is None:
         votes = election.votes
 
     if params is None:
         params = {}
+
 
     with open(path, 'w') as file_:
         if culture_id in NICE_NAME:
@@ -179,9 +183,12 @@ def store_votes_in_a_file(election, culture_id, num_candidates, num_voters,
             file_.write("# " + culture_id + " " + str(params) + "\n")
 
         file_.write(str(num_candidates) + "\n")
-
-        for i in range(num_candidates):
-            file_.write(str(i) + ', c' + str(i) + "\n")
+        if len(alliances) > 0:
+            for i in range(num_candidates):
+                file_.write(f'{str(i)}, c{str(i)}, {str(alliances[i])} \n')
+        else:
+            for i in range(num_candidates):
+                file_.write(str(i) + ', c' + str(i) + "\n")
 
         if aggregated:
 
@@ -233,7 +240,6 @@ def store_votes_in_a_file(election, culture_id, num_candidates, num_voters,
                     file_.write("\n")
 
 
-
 def approval_votes_to_vectors(votes, num_candidates=None, num_voters=None):
     vectors = np.zeros([num_candidates, num_candidates])
     for vote in votes:
@@ -251,7 +257,6 @@ def approval_votes_to_vectors(votes, num_candidates=None, num_voters=None):
     return vectors
 
 
-
 def from_approval(culture_id=None, num_candidates=None, num_voters=None, params=None):
     # params['phi'] = np.random.rand()
     # params['p'] = np.random.rand()
@@ -264,7 +269,30 @@ def from_approval(culture_id=None, num_candidates=None, num_voters=None, params=
     return approval_votes_to_vectors(votes, num_candidates=num_candidates, num_voters=num_voters)
 
 
+LIST_OF_ORDINAL_ALLIANCE_MODELS = {
+    'ic': generate_ordinal_alliance_ic_votes,
+    'urn': generate_ordinal_alliance_urn_votes,
+    'euc': generate_ordinal_alliance_euclidean_votes,
+    'norm-mallows': generate_ordinal_alliance_norm_mallows_votes,
+}
 
+
+def generate_ordinal_alliance_votes(culture_id: str = None,
+                           num_candidates: int = None,
+                           num_voters: int = None,
+                           params: dict = None):
+
+    if culture_id in LIST_OF_ORDINAL_ALLIANCE_MODELS:
+        votes, alliances = LIST_OF_ORDINAL_ALLIANCE_MODELS.get(culture_id)\
+                                                                  (num_voters=num_voters,
+                                                                   num_candidates=num_candidates,
+                                                                   params=params)
+    else:
+        votes = []
+        alliances = []
+        logging.warning(f'No such culture id: {culture_id}')
+
+    return np.array(votes), alliances
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 16.05.2022 #

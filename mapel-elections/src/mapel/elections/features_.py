@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import mapel.elections.features.partylist as partylist
-# import mapel.elections.features.cohesive as cohesive
+import mapel.elections.features.cohesive as cohesive
 # import mapel.elections.features.proportionality_degree as prop_deg
 import mapel.elections.features.scores as scores
 import mapel.elections.features.approx as approx
@@ -40,7 +40,7 @@ LIST_OF_LOCAL_FEATURES = {'highest_borda_score': scores.highest_borda_score,
             'avg_distortion_from_guardians': distortion.avg_distortion_from_guardians,
             'worst_distortion_from_guardians': distortion.worst_distortion_from_guardians,
             'max_approval_score': other.max_approval_score,
-            # 'cohesiveness': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
+            'cohesiveness': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
             # 'number_of_cohesive_groups': cohesive.count_number_of_cohesive_groups,
             # 'number_of_cohesive_groups_brute': cohesive.count_number_of_cohesive_groups_brute,
             # 'proportionality_degree_av': prop_deg.proportionality_degree_av,

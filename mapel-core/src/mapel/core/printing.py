@@ -124,7 +124,7 @@ def print_map_2d(experiment,
         color_map_by_features(experiment=experiment, fig=fig, ax=ax,
                               feature_ids=feature_ids, rounding=rounding,
                               normalizing_func=normalizing_func, ticks_pos=ticks_pos,
-                              marker_func=marker_func,
+                              marker_func=marker_func, upper_limit=upper_limit,
                               xticklabels=xticklabels, ms=ms, cmap=cmap,
                               ticks=ticks, column_id=column_id, feature_labelsize=feature_labelsize)
         add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size)
@@ -404,15 +404,15 @@ def import_values_for_feature(experiment, feature_id=None, upper_limit=None,
     return xx, yy, zz, shades, markers, mses, local_min, local_max, blank_xx, blank_yy, names
 
 
-def import_values_for_features(experiment, feature_ids=None, limit=None, normalizing_func=None,
+def import_values_for_features(experiment, feature_ids=None, upper_limit=np.infty, normalizing_func=None,
                                marker_func=None, dim=2, column_id='value'):
     """ Import values for a feature_id """
 
     values_1 = get_values_from_csv_file(experiment, feature_id=feature_ids[0],
-                                         column_id=column_id)
+                                         column_id=column_id, upper_limit=upper_limit)
 
     values_2 = get_values_from_csv_file(experiment, feature_id=feature_ids[1],
-                                         column_id=column_id)
+                                         column_id=column_id, upper_limit=upper_limit)
 
     xx = []
     yy = []
@@ -640,12 +640,12 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
     return shades_dict, cmap
 
 
-def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, limit=np.infty,
+def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, upper_limit=np.infty,
                           normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
                           cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
                           feature_labelsize=14, ticks_pos=None):
     xx, yy, zz, shades_1, shades_2, markers_1, mses_1, _min, _max, blank_xx_1, blank_yy_1 = import_values_for_features(
-        experiment, feature_ids=feature_ids, limit=limit, normalizing_func=normalizing_func,
+        experiment, feature_ids=feature_ids, upper_limit=upper_limit, normalizing_func=normalizing_func,
         marker_func=marker_func, dim=dim, column_id=column_id)
 
     markers = []
@@ -656,23 +656,25 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
     mask_5 = [False] * len(shades_1)
     mask_6 = [False] * len(shades_1)
 
+    # print(max(shades_1), max(shades_2))
+
     for i in range(len(shades_1)):
         # print(shades_1[i]-shades_2[i])
-        if shades_1[i] > shades_2[i]:
+        if shades_1[i] < shades_2[i]:
             # markers.append('x')
-            if shades_1[i] == 1.:
+            if shades_1[i] == 0.:
                 mask_4[i] = True
             else:
                 mask_1[i] = True
-        elif shades_1[i] < shades_2[i]:
+        elif shades_1[i] > shades_2[i]:
             # markers.append('o')
-            if shades_2[i] == 1.:
+            if shades_2[i] == 0.:
                 mask_5[i] = True
             else:
                 mask_2[i] = True
         else:
             # markers.append('^')
-            if shades_1[i] == 1.:
+            if shades_1[i] == 0.:
                 mask_6[i] = True
             else:
                 mask_3[i] = True
@@ -682,15 +684,24 @@ def color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None, 
         # else:
         #     markers.append('x')
 
+    tmp = []
+    for a,b in zip(shades_1, shades_2):
+        tmp.append(min(a,b))
+    div = max(tmp)
+    shades_1 = np.array([x/div for x in shades_1])
+    shades_2 = np.array([x/div for x in shades_2])
+    _max = _min + (_max-_min)*div
+    print(_max)
+
 
     images = []
 
     if mses_1 is None:
         mses = np.asarray([ms for _ in range(len(shades_1))])
 
-    cmap_1 = 'Blues' #custom_div_cmap(colors=[(1, 0.9, 0.9), 'red'])
-    cmap_2 = 'Reds' #custom_div_cmap(colors=[(0.9, 1, 0.9), 'green'])
-    cmap_3 = custom_div_cmap(colors=[(0.9, 0.9, 1), 'green'])
+    cmap_1 = 'Blues_r' #custom_div_cmap(colors=[(1, 0.9, 0.9), 'red'])
+    cmap_2 = 'Reds_r' #custom_div_cmap(colors=[(0.9, 1, 0.9), 'green'])
+    cmap_3 = custom_div_cmap(colors=['green', (0.9, 0.9, 1)])
 
     # cmap_4 = custom_div_cmap(colors=[(1, 0.9, 0.9), 'red'])
     # cmap_5 = custom_div_cmap(colors=[(0.9, 1, 0.9), 'green'])

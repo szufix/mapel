@@ -2,20 +2,24 @@
 import scipy.special
 import numpy as np
 
-from mapel.elections.features.scores import get_cc_score
+from mapel.elections.features.scores import get_cc_score, get_cc_dissat
 
 
 def get_ranging_cc_score(election, committee_size=1):
     if election.fake:
-        return 'None'
+        return 'None', 'None'
 
     x = election.num_candidates * scipy.special.lambertw(committee_size).real / committee_size
 
-    scores = []
+    best_score = 0
+    best_dissat = 0
     for threshold in range(1, int(x)):
-        scores.append(get_algorithm_p_committee(election, committee_size, x))
+        score, dissat = get_algorithm_p_committee(election, committee_size, x)
+        if score > best_score:
+            best_score = score
+            best_dissat = dissat
 
-    return max(scores)
+    return best_score, best_dissat
 
 
 def get_algorithm_p_committee(election, committee_size, x):
@@ -40,4 +44,4 @@ def get_algorithm_p_committee(election, committee_size, x):
                         active[v] = False
                         break
 
-    return get_cc_score(election, winners)
+    return get_cc_score(election, winners), get_cc_dissat(election, winners)

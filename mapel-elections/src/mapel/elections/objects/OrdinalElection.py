@@ -14,7 +14,8 @@ from mapel.elections.cultures.mallows import get_mallows_vectors
 from mapel.elections.cultures.preflib import get_sushi_vectors
 from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
 from mapel.elections.cultures.single_peaked import get_walsh_vectors, get_conitzer_vectors
-from mapel.elections.cultures_ import generate_ordinal_votes, store_votes_in_a_file, from_approval
+from mapel.elections.cultures_ import generate_ordinal_votes, store_votes_in_a_file, \
+    from_approval, generate_ordinal_alliance_votes
 from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
@@ -46,6 +47,7 @@ class OrdinalElection(Election):
         self.potes = None
         self.condorcet = None
         self.points = {}
+        self.alliances = {}
 
         if _import and experiment_id != 'virtual':
             try:
@@ -68,7 +70,7 @@ class OrdinalElection(Election):
                         self.num_candidates = import_fake_soc_election(experiment_id, election_id)
                     else:
                         self.votes, self.num_voters, self.num_candidates, self.params, \
-                        self.culture_id = import_real_soc_election(experiment_id, election_id,
+                        self.culture_id, self.alliances = import_real_soc_election(experiment_id, election_id,
                                                                    shift, fast_import)
                         try:
                             self.points['voters'] = self.import_ideal_points('voters')
@@ -292,10 +294,17 @@ class OrdinalElection(Election):
         # self.params['exp_id'] = self.experiment_id
         # self.params['ele_id'] = self.election_id
         # self.params['aggregated'] = aggregated
-        self.votes = generate_ordinal_votes(culture_id=self.culture_id,
+        if 'num_alliances' in self.params:
+            self.votes, self.alliances = generate_ordinal_alliance_votes(culture_id=self.culture_id,
                                                 num_candidates=self.num_candidates,
                                                 num_voters=self.num_voters,
                                                 params=self.params)
+        else:
+            self.votes = generate_ordinal_votes(culture_id=self.culture_id,
+                                                    num_candidates=self.num_candidates,
+                                                    num_voters=self.num_voters,
+                                                    params=self.params)
+
         if store:
             self._store_ordinal_election(aggregated=aggregated)
 
@@ -316,7 +325,7 @@ class OrdinalElection(Election):
         else:
             store_votes_in_a_file(self, self.culture_id, self.num_candidates, self.num_voters,
                                   self.params, path_to_file, self.ballot, votes=self.votes,
-                                  aggregated=aggregated)
+                                  aggregated=aggregated, alliances=self.alliances)
 
     def compute_distances(self, distance_id='swap', object_type=None):
         """ Return: distances between votes """
@@ -348,7 +357,7 @@ class OrdinalElection(Election):
                         for pote in self.potes:
                             dist += abs(pote[c1] - pote[c2])
                         distances[c1][c2] = dist
-
+        print(object_type)
         self.distances[object_type] = distances
 
         if self.store:
@@ -741,8 +750,11 @@ def import_real_soc_election(experiment_id: str, election_id: str, shift=False,
 
         num_candidates = int(my_file.readline())
 
-    for _ in range(num_candidates):
-        my_file.readline()
+    alliances = {}
+    for i in range(num_candidates):
+        line = my_file.readline().strip().split()
+        if len(line) > 2:
+            alliances[i] = int(line[2])
 
     line = my_file.readline().rstrip("\n").split(',')
     num_voters = int(line[0])
@@ -771,7 +783,7 @@ def import_real_soc_election(experiment_id: str, election_id: str, shift=False,
                 votes[i][j] -= 1
     my_file.close()
 
-    return np.array(votes), num_voters, num_candidates, params, model_name
+    return np.array(votes), num_voters, num_candidates, params, model_name, alliances
 
 
 def convert_ordinal_to_approval(votes):
