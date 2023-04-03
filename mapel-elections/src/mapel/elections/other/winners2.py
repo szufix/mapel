@@ -272,11 +272,11 @@ def get_winners_stv(params, votes, candidates):
     return winners
 
 
-# def get_winners_approx_pav(votes, params, algorithm='greedy'):
+# def get_winners_approx_pav(votes, params, embedding_id='greedy'):
 #
-#     if algorithm == "removal":
+#     if embedding_id == "removal":
 #         return get_winners_approx_pav_removal(votes, params)
-#     elif algorithm == "greedy":
+#     elif embedding_id == "greedy":
 #         return get_winners_approx_pav_greedy(votes, params)
 
 

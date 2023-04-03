@@ -154,14 +154,14 @@ class Experiment:
     def add_family(self):
         pass
 
-    def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
+    def embed(self, embedding_id: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
               dim: int = 2, num_neighbors: int = None, method: str = 'standard',
               zero_distance: float = 1., factor: float = 1., saveas: str = None,
               init_pos: dict = None, fixed=True, attraction_factor=None) -> None:
 
         if attraction_factor is None:
             attraction_factor = 1
-            if algorithm == 'spring':
+            if embedding_id == 'spring':
                 attraction_factor = 2
 
         num_elections = len(self.distances)
@@ -181,7 +181,7 @@ class Experiment:
                 if i < j:
 
                     self.distances[instance_id_1][instance_id_2] *= factor
-                    if algorithm in {'spring'}:
+                    if embedding_id in {'spring'}:
                         if self.distances[instance_id_1][instance_id_2] == 0.:
                             self.distances[instance_id_1][instance_id_2] = zero_distance
                             self.distances[instance_id_2][instance_id_1] = zero_distance
@@ -215,38 +215,38 @@ class Experiment:
         if num_neighbors is None:
             num_neighbors = 100
 
-        if algorithm.lower() == 'spring':
+        if embedding_id.lower() == 'spring':
             my_pos = nx.spring_layout(graph, iterations=num_iterations, dim=dim)
-        elif algorithm.lower() in {'mds'}:
+        elif embedding_id.lower() in {'mds'}:
             my_pos = MDS(n_components=dim, dissimilarity='precomputed',
                          max_iter=num_iterations,
                          # n_init=20,
                          # eps=1e-4,
                          ).fit_transform(x)
-        elif algorithm.lower() in {'tsne'}:
+        elif embedding_id.lower() in {'tsne'}:
             my_pos = TSNE(n_components=dim,
                           n_iter=num_iterations).fit_transform(x)
-        elif algorithm.lower() in {'se'}:
+        elif embedding_id.lower() in {'se'}:
             my_pos = SpectralEmbedding(n_components=dim).fit_transform(x)
-        elif algorithm.lower() in {'isomap'}:
+        elif embedding_id.lower() in {'isomap'}:
             my_pos = Isomap(n_components=dim, n_neighbors=num_neighbors).fit_transform(x)
-        elif algorithm.lower() in {'lle'}:
+        elif embedding_id.lower() in {'lle'}:
             my_pos = LocallyLinearEmbedding(n_components=dim,
                                             n_neighbors=num_neighbors,
                                             max_iter=num_iterations,
                                             method=method).fit_transform(x)
-        elif algorithm.lower() in {'kamada-kawai', 'kamada', 'kawai'}:
+        elif embedding_id.lower() in {'kamada-kawai', 'kamada', 'kawai'}:
             my_pos = KamadaKawai().embed(
                 distances=x, initial_positions=initial_positions,
                 fix_initial_positions=fixed
             )
-        elif algorithm.lower() in {'simulated-annealing'}:
+        elif embedding_id.lower() in {'simulated-annealing'}:
             my_pos = SimulatedAnnealing().embed(
                 distances=x,
                 initial_positions=initial_positions,
                 fix_initial_positions=fixed
             )
-        elif algorithm.lower() in {'geo'}:
+        elif embedding_id.lower() in {'geo'}:
             f1 = self.import_feature('voterlikeness_sqrt')
             f2 = self.import_feature('borda_diversity')
             for f in f1:
@@ -255,7 +255,7 @@ class Experiment:
                 if f2[f] is None:
                     f2[f] = 0
             my_pos = [[f1[e], f2[e]] for e in f1]
-        elif algorithm.lower() in {'pca'}:
+        elif embedding_id.lower() in {'pca'}:
             pca = PCA(n_components=2)
             principalComponents = pca.fit_transform(x)
             my_pos = principalComponents
@@ -271,7 +271,7 @@ class Experiment:
 
         if self.store:
             if saveas is None:
-                file_name = f'{algorithm}_{self.distance_id}_{str(dim)}d.csv'
+                file_name = f'{embedding_id}_{self.distance_id}_{str(dim)}d.csv'
             else:
                 file_name = f'{saveas}.csv'
             path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,

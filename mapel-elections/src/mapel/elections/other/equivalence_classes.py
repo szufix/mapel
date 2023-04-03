@@ -137,7 +137,7 @@ def count_number_of_eq_classes():
 
 
             #
-            # target_exp.embed(algorithm='mds')
+            # target_exp.embed(embedding_id='mds')
             # target_exp.print_map(title=f'{exp_id} {distance_id}', ms=50,
             #                      saveas=f'equivalence/{exp_id} {distance_id}',
             #                      individual=individual)
@@ -206,14 +206,14 @@ def func_7():
             title = 'swap_distance_from_id'
 
             # experiment.compute_feature(feature_id=feature_id)
-            # experiment.embed(algorithm='mds')
+            # experiment.embed(embedding_id='mds')
             experiment.print_map(feature_id=feature_id,
                                  title=f'{exp_id} {distance_id}', ms=mses[exp_id],
                                  adjust_single=True, rounding=0,
                                  xticklabels=['0', ' ', 'max'],
                                  saveas=f'equivalence/{exp_id} {distance_id}', )
 
-            # experiment.embed(algorithm='mds', dim=3)
+            # experiment.embed(embedding_id='mds', dim=3)
             # experiment.print_map(dim=3, feature_id=feature_id)
             # experiment.print_map(feature_id=feature_id, adjust=True, rounding=0,
             #                      saveas=f'full_egg/features/{name}_{distance_id}_{feature_id}',
