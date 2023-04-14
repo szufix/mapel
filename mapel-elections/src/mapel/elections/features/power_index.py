@@ -15,7 +15,8 @@ def banzhaf(rgWeights, fpThold=0.5, normalize=True):
     rgWeights = np.array(rgWeights)
     cDecisive = np.zeros(n, dtype=np.uint64)
     for bitmask in range(0, 2**n-1):
-        w = rgWeights * np.unpackbits(np.uint8(struct.unpack('B' * (8), np.uint64(bitmask))), bitorder='little')[:n]
+        w = rgWeights * np.unpackbits(np.uint8(struct.unpack('B' * (8), np.uint64(bitmask))),
+                                      bitorder='little')[:n]
         wSum = sum(w)
         if wSum >= wThold:
             cDecisive = np.add(cDecisive, (w > (wSum - wThold)))

@@ -83,10 +83,10 @@ class OrdinalElectionExperiment(ElectionExperiment):
                 file_csv.write("3;10;100;3d_cube;{'dim': 3};ForestGreen;0.7;3D Cube;o;t\n")
                 file_csv.write("3;10;100;2d_sphere;{'dim': 2};black;0.2;2D Sphere;o;t\n")
                 file_csv.write("3;10;100;3d_sphere;{'dim': 3};black;0.4;3D Sphere;o;t\n")
-                file_csv.write("3;10;100;urn_model;{'alpha':0.1};yellow;1;Urn culture_id 0.1;o;t\n")
+                file_csv.write("3;10;100;urn;{'alpha':0.1};yellow;1;Urn culture_id 0.1;o;t\n")
                 file_csv.write(
                     "3;10;100;norm-mallows;{'norm-phi':0.5};blue;1;Norm-Mallows 0.5;o;t\n")
-                file_csv.write("3;10;100;urn_model;{'alpha':0};orange;1;Urn culture_id (gamma);o;t\n")
+                file_csv.write("3;10;100;urn;{'alpha':0};orange;1;Urn culture_id (gamma);o;t\n")
                 file_csv.write(
                     "3;10;100;norm-mallows;{'norm-phi':0};cyan;1;Norm-Mallows (uniform);o;t\n")
                 file_csv.write("1;10;100;identity;{};blue;1;Identity;x;t\n")

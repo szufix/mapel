@@ -14,12 +14,14 @@ import mapel.elections.cultures.impartial as impartial
 import mapel.elections.cultures.mallows as mallows
 import mapel.elections.cultures.single_crossing as single_crossing
 import mapel.elections.cultures.single_peaked as single_peaked
-import mapel.elections.cultures.urn_model as urn_model
+import mapel.elections.cultures.urn as urn
 import mapel.elections.cultures.partylist as partylist
 from mapel.core.glossary import *
 from mapel.elections.cultures.preflib import generate_preflib_votes
 import mapel.elections.cultures.field_experiment as fe
 import mapel.elections.cultures.didi as didi
+import mapel.elections.cultures.other as other
+import mapel.elections.cultures.sp_matrices as sp_matrices
 
 from mapel.elections.cultures.alliances import *
 
@@ -31,13 +33,13 @@ def generate_approval_votes(culture_id: str = None, num_candidates: int = None,
                    'id': impartial.generate_approval_id_votes,
                    'resampling': mallows.generate_approval_resampling_votes,
                    'noise': mallows.generate_approval_noise_model_votes,
-                   'urn': urn_model.generate_approval_urn_votes,
-                   'urn_model': urn_model.generate_approval_urn_votes,
+                   'urn': other.generate_approval_urn_votes,
+                   'urn_model': other.generate_approval_urn_votes,  # deprecated name
                    'euclidean': euclidean.generate_approval_euclidean_votes,
                    'disjoint_resampling': mallows.generate_approval_disjoint_resamplin_votes,
                    'vcr': euclidean.generate_approval_vcr_votes,
                    'truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
-                   'truncated_urn': urn_model.generate_approval_truncated_urn_votes,
+                   'truncated_urn': urn.generate_approval_truncated_urn_votes,
                    'moving_resampling': mallows.generate_approval_moving_resampling_votes,
                    'simplex_resampling': mallows.generate_approval_simplex_resampling_votes,
                    'anti_pjr': mallows.approval_anti_pjr_votes,
@@ -60,7 +62,7 @@ def generate_approval_votes(culture_id: str = None, num_candidates: int = None,
     elif culture_id in APPROVAL_FAKE_MODELS:
         return [culture_id, num_candidates, num_voters, params]
     else:
-        logging.warning(f'No such model id: {culture_id}')
+        logging.warning(f'No such culture id: {culture_id}')
         return []
 
 
@@ -88,15 +90,15 @@ LIST_OF_ORDINAL_MODELS_WITH_PARAMS = {
     'euclidean': euclidean.generate_ordinal_euclidean_votes,
     '1d_gaussian_party': euclidean.generate_1d_gaussian_party,
     '2d_gaussian_party': euclidean.generate_2d_gaussian_party,
-    'walsh_party': single_peaked.generate_sp_party,
-    'conitzer_party': single_peaked.generate_sp_party,
+    'walsh_party': other.generate_sp_party,
+    'conitzer_party': other.generate_sp_party,
     'mallows_party': mallows.generate_mallows_party,
-    'ic_party': impartial.generate_ic_party,
-    'urn_model': urn_model.generate_urn_votes,
-    'urn': urn_model.generate_urn_votes,
+    'ic_party': other.generate_ic_party,
+    'urn': urn.generate_urn_votes,
+    'urn_model': urn.generate_urn_votes,  # deprecated name
     'group-separable': group_separable.generate_ordinal_group_separable_votes,
     'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
-    'weighted_stratification': impartial.generate_weighted_stratification_votes,
+    'weighted_stratification': other.generate_weighted_stratification_votes,
     'idan_part': guardians_plus.generate_idan_part_votes,
     'idun_part': guardians_plus.generate_idun_part_votes,
     'idst_part': guardians_plus.generate_idst_part_votes,
@@ -114,8 +116,8 @@ LIST_OF_ORDINAL_MODELS_WITH_PARAMS = {
     'norm-mallows': mallows.generate_mallows_votes,
     'norm-mallows_with_walls': mallows.generate_norm_mallows_with_walls_votes,
     'norm-mallows_mixture': mallows.generate_norm_mallows_mixture_votes,
-    'walsh_mallows': single_peaked.generate_walsh_mallows_votes,
-    'conitzer_mallows': single_peaked.generate_conitzer_mallows_votes,
+    'walsh_mallows': sp_matrices.generate_walsh_mallows_votes,
+    'conitzer_mallows': sp_matrices.generate_conitzer_mallows_votes,
     'mallows_triangle': mallows.generate_mallows_votes,
 }
 
@@ -169,6 +171,7 @@ def store_votes_in_a_file(election, culture_id, num_candidates, num_voters,
                           params, path, ballot, votes=None, aggregated=True,
                           alliances=None):
     """ Store votes in a file """
+
     if votes is None:
         votes = election.votes
 
@@ -260,7 +263,7 @@ def approval_votes_to_vectors(votes, num_candidates=None, num_voters=None):
 def from_approval(culture_id=None, num_candidates=None, num_voters=None, params=None):
     # params['phi'] = np.random.rand()
     # params['p'] = np.random.rand()
-    # votes = urn_model.generate_approval_urn_votes(num_candidates=num_candidates, num_voters=num_voters,
+    # votes = urn.generate_approval_urn_votes(num_candidates=num_candidates, num_voters=num_voters,
     #                                     params=params)
 
     votes = generate_approval_votes(culture_id=params['culture_id'],

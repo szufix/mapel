@@ -66,7 +66,7 @@ NICE_NAME = {
     '5d_sphere': '5D_Sphere',
     'impartial_culture': 'Impartial_Culture',
     'iac': 'Impartial_Anonymous_Culture',
-    'urn_model': 'Urn_Model',
+    'urn': 'Urn_Model',
     'conitzer': 'Single-Peaked_(by_Conitzer)',
     'spoc_conitzer': 'SPOC',
     'walsh': 'Single-Peaked_(by_Walsh)',

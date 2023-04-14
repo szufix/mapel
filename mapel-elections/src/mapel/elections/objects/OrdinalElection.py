@@ -911,7 +911,7 @@ def update_params_ordinal(params, variable, culture_id, num_candidates):
             update_params_ordinal_mallows(params)
         elif culture_id.lower() == 'norm_mallows' or culture_id.lower() == 'norm-mallows':
             update_params_ordinal_norm_mallows(params, num_candidates)
-        elif culture_id.lower() == 'urn_model' or culture_id.lower() == 'urn':
+        elif culture_id.lower() == 'urn' or culture_id.lower() == 'urn':
             update_params_ordinal_urn_model(params)
         elif culture_id.lower() == 'mallows_matrix_path':
             update_params_ordinal_mallows_matrix_path(params, num_candidates)

@@ -158,7 +158,7 @@ class ElectionExperiment(Experiment):
 
         if family_id is None:
             family_id = culture_id + '_' + str(num_candidates) + '_' + str(num_voters)
-            if culture_id in {'urn_model'} and params['alpha'] is not None:
+            if culture_id in {'urn'} and params['alpha'] is not None:
                 family_id += '_' + str(float(params['alpha']))
             elif culture_id in {'mallows'} and params['phi'] is not None:
                 family_id += '_' + str(float(params['phi']))

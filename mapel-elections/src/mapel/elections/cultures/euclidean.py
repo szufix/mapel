@@ -254,8 +254,7 @@ def random_sphere(dimension, num_points=1, radius=1):
 
 
 def get_rand(model: str, cat: str = "voters") -> list:
-    """ generate random values"""
-    # print(model ==  "1d_uniform")
+    """ generate random values """
 
     point = [0]
     if model in {"1d_uniform",  "1d_interval"}:
@@ -355,6 +354,6 @@ def get_rand(model: str, cat: str = "voters") -> list:
         else:
             return np.random.normal(loc=0.75, scale=0.15, size=2)
     else:
-        print('unknown culture_id', model)
+        logging.warning(f'No such culture id: {model}')
         point = [0, 0]
     return point

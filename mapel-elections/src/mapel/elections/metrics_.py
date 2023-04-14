@@ -19,7 +19,7 @@ from mapel.core.objects.Experiment import Experiment
 
 def get_distance(election_1: Election, election_2: Election,
                  distance_id: str = None) -> float or (float, list):
-    """ Return: distance between instances, (if applicable) optimal matching """
+    """ Return: distance between elections, (if applicable) optimal matching """
 
     if type(election_1) is ApprovalElection and type(election_2) is ApprovalElection:
         return get_approval_distance(election_1, election_2, distance_id=distance_id)
@@ -38,7 +38,6 @@ def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElec
     metrics_without_params = {
         'flow': mad.compute_flow,
         'hamming': mad.compute_hamming,
-        # 'name_of_the_distance': mad.name_of_the_distance,
     }
 
     metrics_with_inner_distance = {
@@ -160,7 +159,7 @@ def run_multiple_processes(exp: Experiment, instances_ids: list,
 
 
 def _store_distances(exp, instances_ids, distances, times, t):
-    """ Store distances to file """
+    """ Store distances to csv file """
     file_name = f'{exp.distance_id}_p{t}.csv'
     path = os.path.join(os.getcwd(), "experiments", exp.experiment_id, "distances", file_name)
     with open(path, 'w', newline='') as csv_file:

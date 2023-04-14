@@ -25,6 +25,3 @@ class Instance:
             self.__dict__[name] = value
 
 
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 22.10.2021 #
-# # # # # # # # # # # # # # # #
