@@ -42,6 +42,7 @@ def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElec
 
     metrics_with_inner_distance = {
         'approvalwise': mad.compute_approvalwise,
+        'approvalwise_budget': mad.compute_approvalwise_budget,
         'coapproval_frequency': mad.compute_coapproval_frequency_vectors,
         'pairwise': mad.compute_pairwise,
         'voterlikeness': mad.compute_voterlikeness,

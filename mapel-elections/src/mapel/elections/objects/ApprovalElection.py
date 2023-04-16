@@ -10,6 +10,8 @@ from scipy.stats import gamma
 
 import mapel.elections.cultures.mallows as mallows
 from mapel.core.glossary import *
+
+from mapel.elections.costs import generate_projects_cost
 from mapel.elections.cultures_ import generate_approval_votes, store_votes_in_a_file
 from mapel.elections.objects.Election import Election
 from mapel.core.inner_distances import hamming
@@ -19,11 +21,13 @@ import time
 class ApprovalElection(Election):
 
     def __init__(self, experiment_id, election_id, votes=None, alpha=1, culture_id=None,
-                 ballot='approval', num_voters=None, num_candidates=None, _import=False,
+                 ballot='approval', num_voters=None, num_candidates=None,
+                 cost_function=None, budget: float = None, _import=False,
                  shift: bool = False, params=None, variable=None, label=None, fast_import=False):
 
         super().__init__(experiment_id, election_id, votes=votes, alpha=alpha,
                          culture_id=culture_id, ballot=ballot, num_voters=num_voters,
+                         cost_function=cost_function, budget=budget,
                          num_candidates=num_candidates, label=label, fast_import=fast_import)
         self.params = params
         self.variable = variable
@@ -83,6 +87,16 @@ class ApprovalElection(Election):
                     approvalwise_vector[c] += 1
             approvalwise_vector = approvalwise_vector / self.num_voters
             self.approvalwise_vector = np.sort(approvalwise_vector)
+
+    def votes_to_approvalwise_budget_vector(self) -> None:
+        """ Convert votes to approvalwise budget vectors """
+        # self.votes_to_approvalwise_vector()
+        approvalwise_vector = np.zeros([self.num_candidates])
+        for vote in self.votes:
+            for c in vote:
+                approvalwise_vector[c] += self.candidates_cost[c] / self.budget
+        approvalwise_vector = approvalwise_vector / self.num_voters
+        self.approvalwise_vector = np.sort(approvalwise_vector)
 
     def votes_to_coapproval_frequency_vectors(self, vector_type='A') -> None:
         """ Convert votes to frequency vectors """
@@ -173,6 +187,14 @@ class ApprovalElection(Election):
                                              num_candidates=self.num_candidates,
                                              num_voters=self.num_voters,
                                              params=self.params)
+
+        if self.budget is None:
+            self.budget = 1
+
+        self.candidates_cost = {c: cost for c, cost in enumerate(
+            generate_projects_cost(self.cost_function, self.num_candidates,
+                                   self.budget, self.params))}
+
         avg = 0
         for vote in self.votes:
             avg += len(vote)
