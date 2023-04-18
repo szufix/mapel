@@ -13,7 +13,7 @@ from mapel.elections.cultures.group_separable import get_gs_caterpillar_vectors
 from mapel.elections.cultures.mallows import get_mallows_vectors
 from mapel.elections.cultures.preflib import get_sushi_vectors
 from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
-from mapel.elections.cultures.single_peaked import get_walsh_vectors, get_conitzer_vectors
+from mapel.elections.cultures.sp_matrices import get_walsh_vectors, get_conitzer_vectors
 from mapel.elections.cultures_ import generate_ordinal_votes, store_votes_in_a_file, \
     from_approval, generate_ordinal_alliance_votes
 from mapel.elections.objects.Election import Election
@@ -70,8 +70,10 @@ class OrdinalElection(Election):
                         self.num_candidates = import_fake_soc_election(experiment_id, election_id)
                     else:
                         self.votes, self.num_voters, self.num_candidates, self.params, \
-                        self.culture_id, self.alliances = import_real_soc_election(experiment_id, election_id,
-                                                                   shift, fast_import)
+                        self.culture_id, self.alliances = import_real_soc_election(experiment_id,
+                                                                                   election_id,
+                                                                                   shift,
+                                                                                   fast_import)
                         try:
                             self.points['voters'] = self.import_ideal_points('voters')
                             self.points['candidates'] = self.import_ideal_points('candidates')
@@ -96,18 +98,20 @@ class OrdinalElection(Election):
                 else:
                     if not fast_import:
                         self.votes_to_positionwise_vectors()
-
-
             except:
                 pass
-
 
         if self.params is None:
             self.params = {}
 
-        if culture_id is not None:
-            self.params, self.alpha = update_params_ordinal(self.params, self.variable, self.culture_id,
-                                                            self.num_candidates)
+        try:
+            self.params, self.printing_params, self.alpha = update_params_ordinal(self.params,
+                                                                                      self.printing_params,
+                                                                                      self.variable,
+                                                                                      self.culture_id,
+                                                                                      self.num_candidates)
+        except:
+            pass
 
     def get_vectors(self):
         if self.vectors is not None and len(self.vectors) > 0:
@@ -153,8 +157,8 @@ class OrdinalElection(Election):
         elif self.culture_id in ['from_approval']:
             # print(self.culture_id)
             vectors = from_approval(num_candidates=self.num_candidates,
-                                                num_voters=self.num_voters,
-                                                params=self.params)
+                                    num_voters=self.num_voters,
+                                    params=self.params)
         else:
             for i in range(self.num_voters):
                 pos = 0
@@ -296,14 +300,14 @@ class OrdinalElection(Election):
         # self.params['aggregated'] = aggregated
         if 'num_alliances' in self.params:
             self.votes, self.alliances = generate_ordinal_alliance_votes(culture_id=self.culture_id,
+                                                                         num_candidates=self.num_candidates,
+                                                                         num_voters=self.num_voters,
+                                                                         params=self.params)
+        else:
+            self.votes = generate_ordinal_votes(culture_id=self.culture_id,
                                                 num_candidates=self.num_candidates,
                                                 num_voters=self.num_voters,
                                                 params=self.params)
-        else:
-            self.votes = generate_ordinal_votes(culture_id=self.culture_id,
-                                                    num_candidates=self.num_candidates,
-                                                    num_voters=self.num_voters,
-                                                    params=self.params)
 
         if store:
             self._store_ordinal_election(aggregated=aggregated)
@@ -314,7 +318,7 @@ class OrdinalElection(Election):
 
         path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
         make_folder_if_do_not_exist(path_to_folder)
-        path_to_file = os.path.join(path_to_folder,  f'{self.election_id}.soc')
+        path_to_file = os.path.join(path_to_folder, f'{self.election_id}.soc')
 
         if self.culture_id in LIST_OF_FAKE_MODELS:
             file_ = open(path_to_file, 'w')
@@ -384,18 +388,18 @@ class OrdinalElection(Election):
             replace('alpha', '$\\ \\alpha$'). \
             replace('omega', '$\\ \\omega$'). \
             replace('§', '\n', 1)
-            # replace('0.005', '$\\frac{1}{200}$'). \
-            # replace('0.025', '$\\frac{1}{40}$'). \
-            # replace('0.75', '$\\frac{3}{4}$'). \
-            # replace('0.25', '$\\frac{1}{4}$'). \
-            # replace('0.01', '$\\frac{1}{100}$'). \
-            # replace('0.05', '$\\frac{1}{20}$'). \
-            # replace('0.5', '$\\frac{1}{2}$'). \
-            # replace('0.1', '$\\frac{1}{10}$'). \
-            # replace('0.2', '$\\frac{1}{5}$'). \
-            # replace('0.4', '$\\frac{2}{5}$'). \
-            # replace('0.8', '$\\frac{4}{5}$'). \
-            # replace(' ', '\n', 1)
+        # replace('0.005', '$\\frac{1}{200}$'). \
+        # replace('0.025', '$\\frac{1}{40}$'). \
+        # replace('0.75', '$\\frac{3}{4}$'). \
+        # replace('0.25', '$\\frac{1}{4}$'). \
+        # replace('0.01', '$\\frac{1}{100}$'). \
+        # replace('0.05', '$\\frac{1}{20}$'). \
+        # replace('0.5', '$\\frac{1}{2}$'). \
+        # replace('0.1', '$\\frac{1}{10}$'). \
+        # replace('0.2', '$\\frac{1}{5}$'). \
+        # replace('0.4', '$\\frac{2}{5}$'). \
+        # replace('0.8', '$\\frac{4}{5}$'). \
+        # replace(' ', '\n', 1)
 
     def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
                   object_type=None, double_gradient=False, saveas=None, color='blue',
@@ -429,12 +433,11 @@ class OrdinalElection(Election):
             for i in range(length):
                 x = float(self.points['voters'][i][0])
                 y = float(self.points['voters'][i][1])
-                plt.scatter(X[i], Y[i], color=[0,y,x], s=s, alpha=alpha)
+                plt.scatter(X[i], Y[i], color=[0, y, x], s=s, alpha=alpha)
         else:
             plt.scatter(X, Y, color=color, s=s, alpha=alpha, marker=marker)
 
-
-        if circles: # works only for votes
+        if circles:  # works only for votes
             weighted_points = {}
             Xs = {}
             Ys = {}
@@ -450,7 +453,7 @@ class OrdinalElection(Election):
             # print(weighted_points)
             # print(len(weighted_points))
             for str_elem in weighted_points:
-                if weighted_points[str_elem] > 10 and str_elem!='set()':
+                if weighted_points[str_elem] > 10 and str_elem != 'set()':
                     plt.scatter(Xs[str_elem], Ys[str_elem],
                                 color='purple',
                                 s=10 * weighted_points[str_elem],
@@ -462,8 +465,8 @@ class OrdinalElection(Election):
         avg_y = np.mean(Y)
 
         if radius:
-            plt.xlim([avg_x-radius, avg_x+radius])
-            plt.ylim([avg_y-radius, avg_y+radius])
+            plt.xlim([avg_x - radius, avg_x + radius])
+            plt.ylim([avg_y - radius, avg_y + radius])
         # plt.title(self.label, size=38)
         plt.title(self.texify_label(self.label), size=title_size)
         # plt.title(self.texify_label(self.label), size=38, y=0.94)
@@ -801,16 +804,16 @@ def update_params_ordinal_mallows(params):
         params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
     elif 'phi' not in params:
         params['phi'] = np.random.random()
-    params['alpha'] = params['phi']
+    # params['alpha'] = params['phi']
 
 
 def update_params_ordinal_norm_mallows(params, num_candidates):
-    if 'norm-phi' not in params:
-        params['norm-phi'] = np.random.random()
-    params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+    if 'norm_phi' not in params:
+        params['norm_phi'] = np.random.random()
+    params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm_phi'])
     if 'weight' not in params:
         params['weight'] = 0.
-    params['alpha'] = params['norm-phi']
+    # params['alpha'] = params['norm_phi']
 
 
 def update_params_ordinal_urn_model(params):
@@ -822,19 +825,21 @@ def update_params_ordinal_mallows_matrix_path(params, num_candidates):
     params['norm-phi'] = params['alpha']
     params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
 
+
 def update_params_ordinal_mallows_triangle(params, num_candidates):
     params['norm-phi'] = 1 - np.sqrt(np.random.uniform())
     params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['norm-phi'])
-    params['weight'] = np.random.uniform(0,0.5)
+    params['weight'] = np.random.uniform(0, 0.5)
     params['alpha'] = params['norm-phi']
-    params['tint'] = params['weight'] # for tint on plots
+    params['tint'] = params['weight']  # for tint on plots
 
 
-def update_params_ordinal_alpha(params):
-    if 'alpha' not in params:
-        params['alpha'] = 1
-    elif type(params['alpha']) is list:
-        params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
+def update_params_ordinal_alpha(printing_params):
+    if 'alpha' not in printing_params:
+        printing_params['alpha'] = 1
+    elif type(printing_params['alpha']) is list:
+        printing_params['alpha'] = np.random.uniform(low=printing_params['alpha'][0],
+                                                     high=printing_params['alpha'][1])
 
 
 def update_params_ordinal_preflib(params, model_id):
@@ -902,25 +907,29 @@ def update_params_ordinal_preflib(params, model_id):
     params['folder'] = folder
 
 
-def update_params_ordinal(params, variable, culture_id, num_candidates):
+def update_params_ordinal(params, printing_params, variable, culture_id, num_candidates):
     if variable is not None:
-        params['alpha'] = params[variable]
-        params['variable'] = variable
+        printing_params['alpha'] = params[variable]
+        printing_params['variable'] = variable
     else:
         if culture_id.lower() == 'mallows':
             update_params_ordinal_mallows(params)
+            printing_params['alpha'] = params['phi']
         elif culture_id.lower() == 'norm_mallows' or culture_id.lower() == 'norm-mallows':
             update_params_ordinal_norm_mallows(params, num_candidates)
+            print('params', params)
+            printing_params['alpha'] = params['norm_phi']
         elif culture_id.lower() == 'urn' or culture_id.lower() == 'urn':
             update_params_ordinal_urn_model(params)
+            printing_params['alpha'] = params['alpha']
         elif culture_id.lower() == 'mallows_matrix_path':
             update_params_ordinal_mallows_matrix_path(params, num_candidates)
         elif culture_id.lower() == 'mallows_triangle':
             update_params_ordinal_mallows_triangle(params, num_candidates)
         elif culture_id.lower() in LIST_OF_PREFLIB_MODELS:
             update_params_ordinal_preflib(params, culture_id)
-        update_params_ordinal_alpha(params)
-    return params, params['alpha']
+        update_params_ordinal_alpha(printing_params)
+    return params, printing_params, printing_params['alpha']
 
 
 # HELPER FUNCTIONS #

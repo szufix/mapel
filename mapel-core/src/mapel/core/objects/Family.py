@@ -22,6 +22,7 @@ class Family:
         self.family_id = family_id
         self.culture_id = culture_id
         self.params = params
+        self.printing_params = params
         self.size = size
         self.label = label
         self.color = color

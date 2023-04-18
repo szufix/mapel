@@ -4,7 +4,6 @@ from collections import Counter
 from typing import Union
 
 import logging
-import numpy as np
 
 import mapel.elections.cultures.euclidean as euclidean
 import mapel.elections.cultures.group_separable as group_separable
@@ -20,85 +19,50 @@ from mapel.core.glossary import *
 from mapel.elections.cultures.preflib import generate_preflib_votes
 import mapel.elections.cultures.field_experiment as fe
 import mapel.elections.cultures.didi as didi
-import mapel.elections.cultures.other as other
+import mapel.elections.cultures.unused as unused
 import mapel.elections.cultures.sp_matrices as sp_matrices
+import mapel.elections.cultures.resampling as resampling
+import mapel.elections.cultures.noise as noise
 
 from mapel.elections.cultures.alliances import *
 
+LIST_OF_APPROVAL_MODELS = {
+    'ic': impartial.generate_approval_ic_votes,
+    'id': impartial.generate_approval_id_votes,
+    'resampling': resampling.generate_approval_resampling_votes,
+    'disjoint_resampling': resampling.generate_approval_disjoint_resampling_votes,
+    'moving_resampling': resampling.generate_approval_moving_resampling_votes,
+    'noise': noise.generate_approval_noise_model_votes,
+    'euclidean': euclidean.generate_approval_euclidean_votes,
+    'truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
+    'truncated_urn': urn.generate_approval_truncated_urn_votes,
+    'urn_partylist': partylist.generate_approval_urn_partylist_votes,
+    'full': impartial.generate_approval_full_votes,
+    'empty': impartial.generate_approval_empty_votes,
 
-def generate_approval_votes(culture_id: str = None, num_candidates: int = None,
-                            num_voters: int = None, params: dict = None) -> Union[list, np.ndarray]:
-    main_models = {'impartial_culture': impartial.generate_approval_ic_votes,
-                   'ic': impartial.generate_approval_ic_votes,
-                   'id': impartial.generate_approval_id_votes,
-                   'resampling': mallows.generate_approval_resampling_votes,
-                   'noise': mallows.generate_approval_noise_model_votes,
-                   'urn': other.generate_approval_urn_votes,
-                   'urn_model': other.generate_approval_urn_votes,  # deprecated name
-                   'euclidean': euclidean.generate_approval_euclidean_votes,
-                   'disjoint_resampling': mallows.generate_approval_disjoint_resamplin_votes,
-                   'vcr': euclidean.generate_approval_vcr_votes,
-                   'truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
-                   'truncated_urn': urn.generate_approval_truncated_urn_votes,
-                   'moving_resampling': mallows.generate_approval_moving_resampling_votes,
-                   'simplex_resampling': mallows.generate_approval_simplex_resampling_votes,
-                   'anti_pjr': mallows.approval_anti_pjr_votes,
-                   'partylist': partylist.generate_approval_partylist_votes,
-                   'urn_partylist': partylist.generate_approval_urn_partylist_votes,
-                   'exp_partylist': partylist.generate_approval_exp_partylist_votes,
-                   'field': fe.generate_approval_field_votes,
-                   }
+    'vcr': euclidean.generate_approval_vcr_votes,  # unsupported culture
+    'field': fe.generate_approval_field_votes,  # unsupported culture
 
-    if culture_id in main_models:
-        return main_models.get(culture_id)(num_voters=num_voters,
-                                           num_candidates=num_candidates,
-                                           params=params)
-    elif culture_id in ['approval_full']:
-        return impartial.generate_approval_full_votes(num_voters=num_voters,
-                                                      num_candidates=num_candidates)
-    elif culture_id in ['approval_empty']:
-        return impartial.generate_approval_empty_votes(num_voters=num_voters)
+    'impartial_culture': impartial.generate_approval_ic_votes,  # deprecated name
+    'approval_full': impartial.generate_approval_full_votes,  # deprecated name
+    'approval_empty': impartial.generate_approval_empty_votes,  # deprecated name
+}
 
-    elif culture_id in APPROVAL_FAKE_MODELS:
-        return [culture_id, num_candidates, num_voters, params]
-    else:
-        logging.warning(f'No such culture id: {culture_id}')
-        return []
-
-
-LIST_OF_ORDINAL_MODELS_WITH_PARAMS = {
-    '1d_interval': euclidean.generate_ordinal_euclidean_votes,
-    '1d_gaussian': euclidean.generate_ordinal_euclidean_votes,
-    '1d_one_sided_triangle': euclidean.generate_ordinal_euclidean_votes,
-    '1d_full_triangle': euclidean.generate_ordinal_euclidean_votes,
-    '1d_two_party': euclidean.generate_ordinal_euclidean_votes,
-    '2d_disc': euclidean.generate_ordinal_euclidean_votes,
-    '2d_square': euclidean.generate_ordinal_euclidean_votes,
-    '2d_gaussian': euclidean.generate_ordinal_euclidean_votes,
-    '3d_gaussian': euclidean.generate_ordinal_euclidean_votes,
-    '3d_cube': euclidean.generate_ordinal_euclidean_votes,
-    '4d_cube': euclidean.generate_ordinal_euclidean_votes,
-    '5d_cube': euclidean.generate_ordinal_euclidean_votes,
-    '10d_cube': euclidean.generate_ordinal_euclidean_votes,
-    '2d_sphere': euclidean.generate_ordinal_euclidean_votes,
-    '3d_sphere': euclidean.generate_ordinal_euclidean_votes,
-    '4d_sphere': euclidean.generate_ordinal_euclidean_votes,
-    '5d_sphere': euclidean.generate_ordinal_euclidean_votes,
-    '4d_ball': euclidean.generate_ordinal_euclidean_votes,
-    '5d_ball': euclidean.generate_ordinal_euclidean_votes,
-    '2d_grid': euclidean.generate_elections_2d_grid,
+LIST_OF_ORDINAL_MODELS = {
+    'impartial_culture': impartial.generate_ordinal_ic_votes,
+    'iac': impartial.generate_impartial_anonymous_culture_election,
     'euclidean': euclidean.generate_ordinal_euclidean_votes,
     '1d_gaussian_party': euclidean.generate_1d_gaussian_party,
     '2d_gaussian_party': euclidean.generate_2d_gaussian_party,
-    'walsh_party': other.generate_sp_party,
-    'conitzer_party': other.generate_sp_party,
+    'walsh_party': unused.generate_sp_party,
+    'conitzer_party': unused.generate_sp_party,
     'mallows_party': mallows.generate_mallows_party,
-    'ic_party': other.generate_ic_party,
+    'ic_party': unused.generate_ic_party,
     'urn': urn.generate_urn_votes,
     'urn_model': urn.generate_urn_votes,  # deprecated name
     'group-separable': group_separable.generate_ordinal_group_separable_votes,
     'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
-    'weighted_stratification': other.generate_weighted_stratification_votes,
+    'weighted_stratification': unused.generate_weighted_stratification_votes,
     'idan_part': guardians_plus.generate_idan_part_votes,
     'idun_part': guardians_plus.generate_idun_part_votes,
     'idst_part': guardians_plus.generate_idst_part_votes,
@@ -119,11 +83,6 @@ LIST_OF_ORDINAL_MODELS_WITH_PARAMS = {
     'walsh_mallows': sp_matrices.generate_walsh_mallows_votes,
     'conitzer_mallows': sp_matrices.generate_conitzer_mallows_votes,
     'mallows_triangle': mallows.generate_mallows_votes,
-}
-
-LIST_OF_ORDINAL_MODELS_WITHOUT_PARAMS = {
-    'impartial_culture': impartial.generate_ordinal_ic_votes,
-    'iac': impartial.generate_impartial_anonymous_culture_election,
     'conitzer': single_peaked.generate_ordinal_sp_conitzer_votes,
     'spoc_conitzer': single_peaked.generate_ordinal_spoc_conitzer_votes,
     'walsh': single_peaked.generate_ordinal_sp_walsh_votes,
@@ -135,24 +94,32 @@ LIST_OF_ORDINAL_MODELS_WITHOUT_PARAMS = {
 }
 
 
+def generate_approval_votes(culture_id: str = None,
+                            num_voters: int = None,
+                            num_candidates: int = None,
+                            params: dict = None) -> Union[list, np.ndarray]:
+    if culture_id in LIST_OF_APPROVAL_MODELS:
+        return LIST_OF_APPROVAL_MODELS.get(culture_id)(num_voters, num_candidates, **params)
+
+    else:
+        logging.warning(f'No such culture id: {culture_id}')
+        return []
+
+
 def generate_ordinal_votes(culture_id: str = None,
                            num_candidates: int = None,
                            num_voters: int = None,
                            params: dict = None) -> Union[list, np.ndarray]:
-
     if culture_id in LIST_OF_PREFLIB_MODELS:
         return generate_preflib_votes(culture_id=culture_id,
                                       num_candidates=num_candidates,
                                       num_voters=num_voters,
-                                      params=params)
+                                      **params)
 
-    elif culture_id in LIST_OF_ORDINAL_MODELS_WITH_PARAMS:
-        votes = LIST_OF_ORDINAL_MODELS_WITH_PARAMS.get(culture_id)(num_voters=num_voters,
-                                                                   num_candidates=num_candidates,
-                                                                   params=params)
-    elif culture_id in LIST_OF_ORDINAL_MODELS_WITHOUT_PARAMS:
-        votes = LIST_OF_ORDINAL_MODELS_WITHOUT_PARAMS.get(culture_id)(num_voters=num_voters,
-                                                                      num_candidates=num_candidates)
+    elif culture_id in LIST_OF_ORDINAL_MODELS:
+        votes = LIST_OF_ORDINAL_MODELS.get(culture_id)(num_voters=num_voters,
+                                                       num_candidates=num_candidates,
+                                                       **params)
 
     elif culture_id in LIST_OF_FAKE_MODELS:
         votes = [culture_id, num_candidates, num_voters, params]
@@ -178,7 +145,6 @@ def store_votes_in_a_file(election, culture_id, num_candidates, num_voters,
     if params is None:
         params = {}
 
-
     with open(path, 'w') as file_:
         if culture_id in NICE_NAME:
             file_.write("# " + NICE_NAME[culture_id] + " " + str(params) + "\n")
@@ -186,7 +152,7 @@ def store_votes_in_a_file(election, culture_id, num_candidates, num_voters,
             file_.write("# " + culture_id + " " + str(params) + "\n")
 
         file_.write(str(num_candidates) + "\n")
-        if len(alliances) > 0:
+        if alliances is not None and len(alliances) > 0:
             for i in range(num_candidates):
                 file_.write(f'{str(i)}, c{str(i)}, {str(alliances[i])} \n')
         else:
@@ -252,10 +218,10 @@ def approval_votes_to_vectors(votes, num_candidates=None, num_voters=None):
         for i in range(num_candidates):
             if i in vote:
                 for j in range(denom_in):
-                    vectors[i][j] += 1/denom_in/num_voters
+                    vectors[i][j] += 1 / denom_in / num_voters
             else:
                 for j in range(denom_out):
-                    vectors[i][denom_in+j] += 1/denom_out/num_voters
+                    vectors[i][denom_in + j] += 1 / denom_out / num_voters
     print(vectors)
     return vectors
 
@@ -267,7 +233,8 @@ def from_approval(culture_id=None, num_candidates=None, num_voters=None, params=
     #                                     params=params)
 
     votes = generate_approval_votes(culture_id=params['culture_id'],
-                                    num_candidates=num_candidates, num_voters=num_voters, params=params)
+                                    num_candidates=num_candidates, num_voters=num_voters,
+                                    params=params)
 
     return approval_votes_to_vectors(votes, num_candidates=num_candidates, num_voters=num_voters)
 
@@ -281,21 +248,29 @@ LIST_OF_ORDINAL_ALLIANCE_MODELS = {
 
 
 def generate_ordinal_alliance_votes(culture_id: str = None,
-                           num_candidates: int = None,
-                           num_voters: int = None,
-                           params: dict = None):
-
+                                    num_candidates: int = None,
+                                    num_voters: int = None,
+                                    params: dict = None):
     if culture_id in LIST_OF_ORDINAL_ALLIANCE_MODELS:
-        votes, alliances = LIST_OF_ORDINAL_ALLIANCE_MODELS.get(culture_id)\
-                                                                  (num_voters=num_voters,
-                                                                   num_candidates=num_candidates,
-                                                                   params=params)
+        votes, alliances = LIST_OF_ORDINAL_ALLIANCE_MODELS.get(culture_id) \
+            (num_voters=num_voters,
+             num_candidates=num_candidates,
+             params=params)
     else:
         votes = []
         alliances = []
         logging.warning(f'No such culture id: {culture_id}')
 
     return np.array(votes), alliances
+
+
+def add_approval_culture(name, function):
+    LIST_OF_APPROVAL_MODELS[name] = function
+
+
+def add_ordinal_culture(name, function):
+    LIST_OF_ORDINAL_MODELS[name] = function
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 16.05.2022 #

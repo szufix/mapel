@@ -626,7 +626,7 @@ def color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
     if ticks_pos is None:
         # ticks_pos = [0, 0.2, 0.4, 0.6, 0.8, 1]
         ticks_pos = np.linspace(vmin,vmax,6)
-    print(ticks_pos)
+    # print(ticks_pos)
 
     cb.ax.xaxis.set_ticks(ticks_pos)
 
@@ -874,11 +874,8 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None, m
                         try:
                             alpha = experiment.instances[election_id].alpha
                         except:
-                            try:
-                                alpha = experiment.elections[election_id].alpha
-                            except:
-                                alpha = 1
-                                pass
+                            alpha = 1
+                            pass
 
                         color = family.color
 

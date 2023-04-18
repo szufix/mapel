@@ -47,7 +47,7 @@ class ApprovalElection(Election):
                     self.votes, self.num_voters, self.num_candidates, self.params, \
                     self.culture_id = import_real_app_election(experiment_id, election_id, shift)
                     try:
-                        self.alpha = self.params['alpha']
+                        self.alpha = self.printing_params['alpha']
                     except:
                         self.alpha = 1
                         pass
@@ -58,7 +58,10 @@ class ApprovalElection(Election):
             self.params = {}
 
         if culture_id is not None:
-            self.params, self.alpha = update_params_approval(self.params, self.variable, self.culture_id,
+            self.params, self.printing_params, self.alpha = update_params_approval(self.params,
+                                                                                   self.printing_params,
+                                                                                   self.variable,
+                                                                                   self.culture_id,
                                                             self.num_candidates)
 
 
@@ -433,11 +436,12 @@ def get_skeleton_approvalwise_vector(election):
 
 
 # HELPER FUNCTIONS
-def update_params_approval_alpha(params):
-    if 'alpha' not in params:
-        params['alpha'] = 1
-    elif type(params['alpha']) is list:
-        params['alpha'] = np.random.uniform(low=params['alpha'][0], high=params['alpha'][1])
+def update_params_approval_alpha(printing_params):
+    if 'alpha' not in printing_params:
+        printing_params['alpha'] = 1
+    elif type(printing_params['alpha']) is list:
+        printing_params['alpha'] = np.random.uniform(low=printing_params['alpha'][0],
+                                                     high=printing_params['alpha'][1])
 
 
 def update_params_approval_p(params):
@@ -474,13 +478,14 @@ def update_params_approval_disjoint(params):
         params['p'] = np.random.random() / params['g']
 
 
-def update_params_approval(params, variable, culture_id, num_candidates):
-
+def update_params_approval(params, printing_params, variable, culture_id, num_candidates):
+    printing_params['alpha'] = 0
     if variable is not None:
         if culture_id in APPROVAL_MODELS:
             update_params_approval_p(params)
-        params['alpha'] = params[variable]
-        params['variable'] = variable
+        printing_params['alpha'] = params[variable]
+        printing_params['variable'] = variable
+        del params['variable']
     else:
         if culture_id in APPROVAL_MODELS:
             update_params_approval_p(params)
@@ -488,6 +493,6 @@ def update_params_approval(params, variable, culture_id, num_candidates):
             update_params_approval_resampling(params)
         elif culture_id.lower() == 'disjoint':
             update_params_approval_disjoint(params)
-        update_params_approval_alpha(params)
+        update_params_approval_alpha(printing_params)
 
-    return params, params['alpha']
+    return params, printing_params, printing_params['alpha']

@@ -85,9 +85,9 @@ class ElectionFamily(Family):
                         params = {}
                     params = {**params, **new_params}
 
-                if params is not None and 'norm-phi' in params:
+                if params is not None and 'norm_phi' in params:
                     params['phi'] = mallows.phi_from_relphi(
-                        self.num_candidates, relphi=params['norm-phi'])
+                        self.num_candidates, relphi=params['norm_phi'])
 
                 if self.culture_id in {'all_votes'}:
                     params['iter_id'] = j
@@ -135,10 +135,6 @@ class ElectionFamily(Family):
                     new_params, variable = _get_params_for_paths(self, j)
                     params = {**params, **new_params}
 
-                if params is not None and 'norm-phi' in params:
-                    params['phi'] = mallows.phi_from_relphi(
-                        self.num_candidates, relphi=params['norm-phi'])
-
                 if self.culture_id in {'all_votes'}:
                     params['iter_id'] = j
 
@@ -154,7 +150,6 @@ class ElectionFamily(Family):
                                             params=copy.deepcopy(params), ballot=self.instance_type,
                                             variable=variable, _import=False
                                             )
-
                 election.prepare_instance(store=store, aggregated=aggregated)
 
                 election.votes_to_approvalwise_vector()

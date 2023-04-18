@@ -113,7 +113,7 @@ def get_local_feature(feature_id):
     elif feature_id in LIST_OF_LOCAL_FEATURES:
         return LIST_OF_LOCAL_FEATURES.get(feature_id)
     else:
-        raise ValueError(f'Incorrect feature_id: {feature_id}')
+        raise ValueError(f'Incorrect feature id: {feature_id}')
 
 
 def add_local_feature(name, function):

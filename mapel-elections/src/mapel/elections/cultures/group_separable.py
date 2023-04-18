@@ -22,27 +22,21 @@ def _decompose_tree(num_leaves, num_internal_nodes):
     return tree
 
 
-def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None, params=None):
+def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
+                                           tree: str = 'random'):
     """ Algorithm from: The Complexity of Election Problems
     with Group-Separable Preferences"""
-
-    if params is None:
-        params = {}
-
-    if params is not None and 'tree' not in params:
-        params = {'tree': 'random'}
 
     while True:
         m = num_candidates
         n = num_voters
 
-        if params['tree'] == 'random':
+        if tree == 'random':
             func = lambda m, r: 1./(m-1) * binom(m - 1, r) * \
                                 binom(m - 1 + r, m)
             buckets = [func(m, r) for r in range(1, m)]
 
             denominator = sum(buckets)
-            # print(buckets)
             buckets = [buckets[i]/denominator for i in range(len(buckets))]
 
             num_internal_nodes = \
@@ -51,10 +45,10 @@ def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
             decomposition_tree = \
                 _decompose_tree(num_candidates, num_internal_nodes)
 
-        elif params['tree'] == 'caterpillar':
+        elif tree == 'caterpillar':
             decomposition_tree = _caterpillar(m)
 
-        elif params['tree'] == 'balanced':
+        elif tree == 'balanced':
             decomposition_tree = _balanced(m)
 
         all_inner_nodes = get_all_inner_nodes(decomposition_tree)
@@ -75,7 +69,6 @@ def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
             for i, node in enumerate(all_inner_nodes):
                 node.reverse = False
 
-        # return votes, decomposition_tree
         return votes
 
 REVERSE = {}

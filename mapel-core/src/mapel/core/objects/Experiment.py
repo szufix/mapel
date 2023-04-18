@@ -64,11 +64,13 @@ class Experiment:
         self.coordinates = None
         self.coordinates_lists = {}
 
+        self.features = {}
+        self.cultures = {}
+
         self.families = {}
         self.times = {}
         self.stds = {}
         self.matchings = {}
-        self.features = {}
         self.coordinates_by_families = {}
 
         self.num_families = None
@@ -136,11 +138,6 @@ class Experiment:
                     self.instances[instance_id].label = self.families[family_id].label
         except:
             pass
-
-
-    @abstractmethod
-    def add_culture(self):
-        pass
 
     @abstractmethod
     def prepare_instances(self):
@@ -842,6 +839,10 @@ class Experiment:
         new_image.save(f'images/microscope/{name}.png', "PNG", quality=85)
         if show:
             new_image.show()
+
+    @abstractmethod
+    def add_culture(self, name, function):
+        pass
 
     @abstractmethod
     def add_feature(self, name, function):

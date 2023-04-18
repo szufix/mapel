@@ -163,8 +163,8 @@ class ElectionExperiment(Experiment):
             elif culture_id in {'mallows'} and params['phi'] is not None:
                 family_id += '_' + str(float(params['phi']))
             elif culture_id in {'norm-mallows', 'norm-mallows_matrix'} \
-                    and params['norm-phi'] is not None:
-                family_id += '_' + str(float(params['norm-phi']))
+                    and params['norm_phi'] is not None:
+                family_id += '_' + str(float(params['norm_phi']))
 
         elif label is None:
             label = family_id
@@ -193,9 +193,6 @@ class ElectionExperiment(Experiment):
         self.families[family_id].instance_ids = list(new_instances.keys())
 
         return list(new_instances.keys())
-
-    def add_culture(self):
-        pass
 
     def prepare_elections(self, printing=False, store_points=False, aggregated=True):
         """ Prepare elections for a given experiment """

@@ -18,11 +18,11 @@ def get_range(params):
 
 
 def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = None,
-                                params: dict = None) -> list:
+                                dim=None, space=None, params=None) -> list:
 
     votes = [set() for _ in range(num_voters)]
 
-    name = f'{params["dim"]}d_{params["space"]}'
+    name = f'{dim}d_{space}'
 
     voters = np.array([get_rand(name) for _ in range(num_voters)])
     candidates = np.array([get_rand(name) for _ in range(num_candidates)])
@@ -33,17 +33,15 @@ def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = No
     for v in range(num_voters):
         for c in range(num_candidates):
             if v_range[v] + c_range[c] >= np.linalg.norm(voters[v] - candidates[c],
-                                                         ord=params["dim"]):
+                                                         ord=dim):
                 votes[v].add(c)
 
     return votes
 
 
 def generate_approval_euclidean_votes(num_voters: int = None, num_candidates: int = None,
-                                      params: dict = None) -> list:
+                                      dim=None, space=None, radius=None) -> list:
     votes = [set() for _ in range(num_voters)]
-    dim = params['dim']
-    space = params['space']
 
     name = f'{dim}d_{space}'
 
@@ -57,13 +55,10 @@ def generate_approval_euclidean_votes(num_voters: int = None, num_candidates: in
     elif space == 'sphere':
         voters = np.array([list(random_sphere(dim)[0]) for _ in range(num_voters)])
         candidates = np.array([list(random_sphere(dim)[0]) for _ in range(num_candidates)])
-    # else:
-    #     voters = np.array([get_rand(name) for _ in range(num_voters)])
-    #     candidates = np.array([get_rand(name) for _ in range(num_candidates)])
 
     for v in range(num_voters):
         for c in range(num_candidates):
-            if params['radius'] >= np.linalg.norm(voters[v] - candidates[c]):
+            if radius >= np.linalg.norm(voters[v] - candidates[c]):
                 votes[v].add(c)
 
     return votes
@@ -159,14 +154,10 @@ def store_ideal_points(points, file_name, experiment_id):
 
 def generate_ordinal_euclidean_votes(model: str = 'euclidean', num_voters: int = None,
                                      num_candidates: int = None,
-                                     params: dict = None) -> np.ndarray:
-
-    if params is None:
-        params = {}
-
-    dim = params.get('dim', 2)
-
-    params['space'] = params.get('space', 'uniform')
+                                     dim: int = 2, space: str = 'uniform',
+                                     aggregated='True',
+                                     ele_id=None,
+                                     exp_id=None) -> np.ndarray:
 
     voters = np.zeros([num_voters, dim])
     candidates = np.zeros([num_candidates, dim])
@@ -174,13 +165,13 @@ def generate_ordinal_euclidean_votes(model: str = 'euclidean', num_voters: int =
     distances = np.zeros([num_voters, num_candidates], dtype=float)
 
     if model == 'euclidean':
-        if params['space'] == 'uniform':
+        if space == 'uniform':
             voters = np.random.rand(num_voters, dim)
             candidates = np.random.rand(num_candidates, dim)
-        elif params['space'] == 'gaussian':
+        elif space == 'gaussian':
             voters = np.random.normal(loc=0.5, scale=0.15, size=(num_voters, dim))
             candidates = np.random.normal(loc=0.5, scale=0.15, size=(num_candidates, dim))
-        elif params['space'] == 'sphere':
+        elif space == 'sphere':
             voters = np.array([list(random_sphere(dim)[0]) for _ in range(num_voters)])
             candidates = np.array([list(random_sphere(dim)[0]) for _ in range(num_candidates)])
     else:
@@ -195,13 +186,13 @@ def generate_ordinal_euclidean_votes(model: str = 'euclidean', num_voters: int =
     for v in range(num_voters):
         for c in range(num_candidates):
             votes[v][c] = c
-            distances[v][c] = np.linalg.norm(voters[v] - candidates[c], ord=params['dim'])
+            distances[v][c] = np.linalg.norm(voters[v] - candidates[c], ord=dim)
 
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
-    if 'aggregated' in params and not params['aggregated']:
-        store_ideal_points(voters, f'{params["ele_id"]}_voters', params['exp_id'])
-        store_ideal_points(candidates, f'{params["ele_id"]}_candidates', params['exp_id'])
+    if not aggregated:
+        store_ideal_points(voters, f'{ele_id}_voters', exp_id)
+        store_ideal_points(candidates, f'{ele_id}_candidates', exp_id)
 
     return votes
 

@@ -10,6 +10,7 @@ import numpy as np
 import csv
 
 # from mapel.core.matchings import solve_matching_vectors
+import mapel.elections.cultures_ as cultures
 
 try:
     from sklearn.manifold import MDS
@@ -43,6 +44,9 @@ class ApprovalElectionExperiment(ElectionExperiment):
                          coordinates_names=coordinates_names,
                          embedding_id=embedding_id,
                          fast_import=fast_import)
+
+    def add_culture(self, name, function):
+        cultures.add_approval_culture(name, function)
 
     def compute_distance_between_rules(self, list_of_rules=None, printing=False,
                                        distance_id=None, committee_size=10):

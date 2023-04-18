@@ -8,6 +8,7 @@ class Instance:
         self.instance_id = instance_id
         self.culture_id = culture_id
         self.alpha = alpha
+        self.printing_params = {}
 
     def __getattr__(self, name):
         if name == 'model_id':

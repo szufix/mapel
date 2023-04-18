@@ -7,13 +7,8 @@ import numpy as np
 
 def generate_ordinal_single_crossing_votes(num_voters: int = None,
                                            num_candidates: int = None,
-                                           params: dict = None) -> np.ndarray:
+                                           domain_id: str = 'naive') -> np.ndarray:
     """ helper function: generate simple single-crossing elections"""
-
-    if params is None:
-        params = {}
-
-    domain_id = params.get('domain_id', 'naive')
 
     votes = np.zeros([num_voters, num_candidates])
 

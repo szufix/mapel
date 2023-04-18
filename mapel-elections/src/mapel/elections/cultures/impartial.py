@@ -41,13 +41,10 @@ def generate_impartial_anonymous_culture_election(num_voters: int = None,
 ############
 def generate_approval_ic_votes(num_voters: int = None,
                                num_candidates: int = None,
-                               params: dict = None) -> list:
+                               p: float = 0.5) -> list:
     """ Return: approval votes from impartial culture
         Params: there is a single 'p' parameter which defines the ratio
-                of candidates approves by each candidate (default p=0.5)"""
-    if params is None:
-        params = {}
-    p = params.get('p', 0.5)
+                of candidates approves by each candidate (default p=0.5) """
     if p > 1 or p < 0:
         logging.warning(f'Incorrect value of p: {p}. Value should be in [0,1]')
     votes = [set() for _ in range(num_voters)]
@@ -60,13 +57,10 @@ def generate_approval_ic_votes(num_voters: int = None,
 
 def generate_approval_id_votes(num_voters: int = None,
                                num_candidates: int = None,
-                               params: dict = None) -> list:
+                               p: float = 0.5) -> list:
     """ Return: approval votes from identity culture
         Params: there is a single 'p' parameter which defines the ratio
-                of candidates approves by each candidate (default p=0.5)"""
-    if params is None:
-        params = {}
-    p = params.get('p', 0.5)
+                of candidates approves by each candidate (default p=0.5) """
     if p > 1 or p < 0:
         logging.warning(f'Incorrect value of p: {p}. Value should be in [0,1]')
     k = int(p * num_candidates)
@@ -81,7 +75,8 @@ def generate_approval_full_votes(num_voters: int = None,
     return [vote for _ in range(num_voters)]
 
 
-def generate_approval_empty_votes(num_voters: int = None) -> list:
+def generate_approval_empty_votes(num_voters: int = None,
+                                  num_candidates: int = None) -> list:
     """ Return: approval votes where each vote is empty """
     return [set() for _ in range(num_voters)]
 

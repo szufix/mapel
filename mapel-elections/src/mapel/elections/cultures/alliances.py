@@ -1,7 +1,7 @@
 import numpy as np
 
 from mapel.elections.cultures.impartial import generate_ordinal_ic_votes
-from mapel.elections.cultures.urn_model import generate_urn_votes
+from mapel.elections.cultures.urn import generate_urn_votes
 from mapel.elections.cultures.mallows import generate_mallows_votes, phi_from_relphi
 
 

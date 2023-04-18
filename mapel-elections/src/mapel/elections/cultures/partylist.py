@@ -3,48 +3,28 @@ import numpy as np
 from mapel.core.utils import get_vector
 
 
-def generate_approval_partylist_votes(num_voters=None, num_candidates=None, params=None):
+def generate_approval_partylist_votes(num_voters=None, num_candidates=None, g=5):
 
-    if params is None:
-        params = {}
-
-    num_groups = params.get('g', 5)
+    num_groups = g
 
     alphas = get_vector('linear', num_groups)
-
-    # for i in range(len(alphas)):
-    #     if alphas[i] == 0.:
-    #         alphas[i] = 0.00001
-
     sizes = np.random.dirichlet(alphas)
     cumv = np.cumsum(sizes)
     cumv = np.insert(cumv, 0, 0)
-    print(cumv)
 
     votes = []
 
-    for i in range(0,0):
-        print(i)
-
-    for g in range(1, num_groups+1):
+    for a in range(1, num_groups+1):
         vote = set()
-        print(int(num_candidates*cumv[g-1]))
-        print(int(num_candidates*cumv[g]))
-        for i in range(int(num_candidates*cumv[g-1]), int(num_candidates*cumv[g])):
-            print(i)
+        for i in range(int(num_candidates*cumv[a-1]), int(num_candidates*cumv[a])):
             vote.add(i)
-        for i in range(int(num_candidates * cumv[g - 1]), int(num_candidates * cumv[g])):
+        for i in range(int(num_candidates * cumv[a - 1]), int(num_candidates * cumv[a])):
             votes.append(vote)
-    print(votes)
     return votes
 
 
-def generate_approval_urn_partylist_votes(num_voters=None, num_candidates=None, params=None):
-
-    if params is None:
-        params = {}
-
-    num_groups = params.get('g', 5)
+def generate_approval_urn_partylist_votes(num_voters=None, num_candidates=None, g=5, alpha=0.1):
+    num_groups = g
 
     party_votes = np.zeros([num_voters])
     urn_size = 1.
@@ -54,7 +34,7 @@ def generate_approval_urn_partylist_votes(num_voters=None, num_candidates=None, 
             party_votes[j] = np.random.randint(0, num_groups)
         else:
             party_votes[j] = party_votes[np.random.randint(0, j)]
-        urn_size += params['alpha']
+        urn_size += alpha
 
     party_size = int(num_candidates/num_groups)
     votes = []
@@ -67,24 +47,3 @@ def generate_approval_urn_partylist_votes(num_voters=None, num_candidates=None, 
     return votes
 
 
-def generate_approval_exp_partylist_votes(num_voters=None, num_candidates=None, params=None):
-
-    if params is None:
-        params = {}
-
-    num_groups = params.get('g', 5)
-    exp = params.get('exp', 2.)
-
-    sizes = np.array([1./exp**(i+1) for i in range(num_groups)])
-    sizes = sizes / np.sum(sizes)
-    party_votes = np.random.choice([i for i in range(num_groups)], num_voters, p=sizes)
-
-    party_size = int(num_candidates/num_groups)
-    votes = []
-
-    for i in range(num_voters):
-        shift = party_votes[i]*party_size
-        vote = set([int(c+shift) for c in range(party_size)])
-        votes.append(vote)
-
-    return votes
