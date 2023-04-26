@@ -5,6 +5,7 @@ import csv
 import ast
 import sys
 import numpy as np
+from tqdm import tqdm
 
 try:
     from dotenv import load_dotenv
@@ -17,12 +18,9 @@ except ImportError:
     abcrules = None
 
 
-def compute_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, printing=False,
-                           resolute=False):
+def compute_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, resolute=False):
     all_winning_committees = {}
-    for election in experiment.instances.values():
-        if printing:
-            print(election.election_id)
+    for election in tqdm(experiment.instances.values()):
         profile = Profile(election.num_candidates)
         if experiment.instance_type == 'ordinal':
             profile.add_voters(election.approval_votes)
@@ -70,12 +68,9 @@ def import_committees_from_file(experiment_id, rule_name):
     return all_winning_committees
 
 
-def compute_not_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, printing=False,
-                               resolute=False):
+def compute_not_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, resolute=False):
     all_winning_committees = {}
-    for election in experiment.instances.values():
-        if printing:
-            print(election.election_id)
+    for election in tqdm(experiment.instances.values()):
 
         if rule_name == 'borda_c4':
             winning_committees = compute_borda_c4_rule(election, committee_size)

@@ -41,7 +41,7 @@ class MarriagesExperiment(Experiment):
 
         self.matchings = {}
 
-        # self.import_matchings()
+        # experiment.import_matchings()
 
     def import_matchings(self):
         matchings = {}
@@ -148,7 +148,7 @@ class MarriagesExperiment(Experiment):
                             row['distance'])
                         times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
-        if self.store:
+        if self.is_exported:
             self._store_distances_to_file(distance_id, distances, times)
 
         self.distances = distances
@@ -255,7 +255,7 @@ class MarriagesExperiment(Experiment):
         for family_id in self.families:
 
             new_instances = self.families[family_id].prepare_family(
-                store=self.store,
+                store=self.is_exported,
                 experiment_id=self.experiment_id)
 
             for instance_id in new_instances:
@@ -270,7 +270,7 @@ class MarriagesExperiment(Experiment):
                 usable_matching = basic.compute_stable_SR(self.instances[instance_id].votes)
                 self.matchings[instance_id] = usable_matching
 
-        if self.store:
+        if self.is_exported:
 
             path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                           "features")
@@ -297,7 +297,7 @@ class MarriagesExperiment(Experiment):
         features_with_std = {'avg_num_of_bps_for_rand_matching',
                              'avg_number_of_bps_for_random_matching'}
 
-        # print(self.matchings)
+        # print(experiment.matchings)
 
         if feature_id == 'summed_rank_difference':
             minimal = get_values_from_csv_file(self, feature_id='summed_rank_minimal_matching')
@@ -318,7 +318,7 @@ class MarriagesExperiment(Experiment):
                 feature = features.get_feature(feature_id)
                 instance = self.instances[instance_id]
                 # if feature_id in ['summed_rank_minimal_matching'] \
-                #         and self.matchings[instance_id] is None:
+                #         and experiment.matchings[instance_id] is None:
                 #     value = 'None'
                 # else:
                 value = feature(instance.votes)
@@ -340,7 +340,7 @@ class MarriagesExperiment(Experiment):
                 #                     'worst_distortion_from_guardians',
                 #                     'distortion_from_all',
                 #                     'distortion_from_top_100'}:
-                #     value = feature(self, election_id)
+                #     value = feature(experiment, election_id)
                 # else:
                 #     value = feature(election)
 
@@ -353,7 +353,7 @@ class MarriagesExperiment(Experiment):
                 else:
                     feature_dict['value'][instance_id] = value
 
-        if self.store:
+        if self.is_exported:
 
             path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                           "features")

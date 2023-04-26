@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 import csv
-import os
 import warnings
-from abc import abstractmethod
 from multiprocessing import Process
 from time import sleep
 import ast
 import time
+from tqdm import tqdm
 
 from mapel.elections.objects.ElectionFamily import ElectionFamily
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
-import mapel.elections.metrics_ as metr
+import mapel.elections.distances_ as metr
 import mapel.elections.other.rules as rules
 import mapel.elections.features_ as features
 from mapel.core.objects.Experiment import Experiment
@@ -89,12 +88,12 @@ class ElectionExperiment(Experiment):
                 instance_id = get_instance_id(single, family_id, j)
                 if self.instance_type == 'ordinal':
                     instance = OrdinalElection(self.experiment_id, instance_id,
-                                               _import=True,
+                                               is_imported=True,
                                                fast_import=self.fast_import,
                                                with_matrix=self.with_matrix)
                 elif self.instance_type == 'approval':
                     instance = ApprovalElection(self.experiment_id, instance_id,
-                                                _import=True,
+                                                is_imported=True,
                                                 fast_import=self.fast_import)
                 else:
                     instance = None
@@ -118,9 +117,19 @@ class ElectionExperiment(Experiment):
         """ Set default size of the committee """
         self.default_committee_size = committee_size
 
-    def add_election(self, culture_id="none", params=None, label=None,
-                     color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
-                     num_candidates=None, num_voters=None, election_id=None):
+    def add_election(self,
+                     culture_id="none",
+                     params=None,
+                     label=None,
+                     color="black",
+                     alpha=1.,
+                     show=True,
+                     marker='x',
+                     starting_from=0,
+                     size=1,
+                     num_candidates=None,
+                     num_voters=None,
+                     election_id=None):
         """ Add election to the experiment """
 
         if num_candidates is None:
@@ -129,17 +138,34 @@ class ElectionExperiment(Experiment):
         if num_voters is None:
             num_voters = self.default_num_voters
 
-        return self.add_family(culture_id=culture_id, params=params, size=size, label=label,
-                               color=color, alpha=alpha, show=show, marker=marker,
-                               starting_from=starting_from, family_id=election_id,
-                               num_candidates=num_candidates, num_voters=num_voters,
+        return self.add_family(culture_id=culture_id,
+                               params=params,
+                               size=size,
+                               label=label,
+                               color=color,
+                               alpha=alpha,
+                               show=show,
+                               marker=marker,
+                               starting_from=starting_from,
+                               family_id=election_id,
+                               num_candidates=num_candidates,
+                               num_voters=num_voters,
                                single=True)
 
-    def add_family(self, culture_id: str = "none", params: dict = None, size: int = 1,
-                   label: str = None, color: str = "black", alpha: float = 1.,
-                   show: bool = True, marker: str = 'o', starting_from: int = 0,
-                   num_candidates: int = None, num_voters: int = None,
-                   family_id: str = None, single: bool = False,
+    def add_family(self,
+                   culture_id: str = "none",
+                   params: dict = None,
+                   size: int = 1,
+                   label: str = None,
+                   color: str = "black",
+                   alpha: float = 1.,
+                   show: bool = True,
+                   marker: str = 'o',
+                   starting_from: int = 0,
+                   num_candidates: int = None,
+                   num_voters: int = None,
+                   family_id: str = None,
+                   single: bool = False,
                    path: dict = None,
                    election_id: str = None) -> list:
         """ Add family of elections to the experiment """
@@ -169,13 +195,19 @@ class ElectionExperiment(Experiment):
         elif label is None:
             label = family_id
 
-        self.families[family_id] = ElectionFamily(culture_id=culture_id, family_id=family_id,
-                                                  params=params, label=label, color=color,
+        self.families[family_id] = ElectionFamily(culture_id=culture_id,
+                                                  family_id=family_id,
+                                                  params=params,
+                                                  label=label,
+                                                  color=color,
                                                   alpha=alpha,
-                                                  show=show, size=size, marker=marker,
+                                                  show=show,
+                                                  size=size,
+                                                  marker=marker,
                                                   starting_from=starting_from,
                                                   num_candidates=num_candidates,
-                                                  num_voters=num_voters, path=path,
+                                                  num_voters=num_voters,
+                                                  path=path,
                                                   single=single,
                                                   instance_type=self.instance_type)
 
@@ -184,7 +216,7 @@ class ElectionExperiment(Experiment):
         self.main_order = [i for i in range(self.num_elections)]
 
         new_instances = self.families[family_id].prepare_family(
-            store=self.store,
+            store=self.is_exported,
             experiment_id=self.experiment_id)
 
         for instance_id in new_instances:
@@ -194,7 +226,7 @@ class ElectionExperiment(Experiment):
 
         return list(new_instances.keys())
 
-    def prepare_elections(self, printing=False, store_points=False, aggregated=True):
+    def prepare_elections(self, store_points=False, aggregated=True):
         """ Prepare elections for a given experiment """
 
         self.store_points = store_points
@@ -203,12 +235,10 @@ class ElectionExperiment(Experiment):
         if self.instances is None:
             self.instances = {}
 
-        for family_id in self.families:
-            if printing:
-                print(f'Preparing: {family_id}')
+        for family_id in tqdm(self.families):
 
             new_instances = self.families[family_id].prepare_family(
-                store=self.store,
+                store=self.is_exported,
                 experiment_id=self.experiment_id,
                 store_points=store_points,
                 aggregated=aggregated)
@@ -227,8 +257,7 @@ class ElectionExperiment(Experiment):
                     method=method, party_id=party_id, num_winners=num_winners)
 
     def compute_distances(self, distance_id: str = None, num_processes: int = 1,
-                          self_distances: bool = False, vector_type: str = 'A',
-                          printing: bool = False) -> None:
+                          self_distances: bool = False, **kwargs) -> None:
         """ Compute distances between elections (using processes) """
 
         if distance_id is None:
@@ -239,10 +268,10 @@ class ElectionExperiment(Experiment):
                 election.votes_to_approvalwise_vector()
         elif '-coapproval_frequency' in distance_id or 'flow' in distance_id:
             for election in self.elections.values():
-                election.votes_to_coapproval_frequency_vectors(vector_type=vector_type)
+                election.votes_to_coapproval_frequency_vectors(**kwargs)
         elif '-voterlikeness' in distance_id:
             for election in self.elections.values():
-                election.votes_to_voterlikeness_matrix(vector_type=vector_type)
+                election.votes_to_voterlikeness_matrix(**kwargs)
         elif '-candidatelikeness' in distance_id:
             for election in self.elections.values():
                 election.votes_to_candidatelikeness_sorted_vectors()
@@ -263,12 +292,12 @@ class ElectionExperiment(Experiment):
         num_distances = len(ids)
 
         if self.experiment_id == 'virtual' or num_processes == 1:
-            metr.run_single_process(self, ids, distances, times, matchings, printing)
+            metr.run_single_process(self, ids, distances, times, matchings)
 
         else:
             processes = []
             for t in range(num_processes):
-                print(f'Starting thread: {t}')
+                print(f'Starting process: {t}')
                 sleep(0.1)
                 start = int(t * num_distances / num_processes)
                 stop = int((t + 1) * num_distances / num_processes)
@@ -277,7 +306,7 @@ class ElectionExperiment(Experiment):
                 process = Process(target=metr.run_multiple_processes, args=(self, instances_ids,
                                                                             distances, times,
                                                                             matchings,
-                                                                            printing, t))
+                                                                            t))
                 process.start()
                 processes.append(process)
 
@@ -300,7 +329,7 @@ class ElectionExperiment(Experiment):
                             row['distance'])
                         times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
-        if self.store:
+        if self.is_exported:
             self._store_distances_to_file(distance_id, distances, times, self_distances)
 
         self.distances = distances
@@ -360,12 +389,8 @@ class ElectionExperiment(Experiment):
                 family_id = None
                 show = True
 
-                try:
-                    if 'culture_id' in row.keys():
-                        culture_id = str(row['culture_id']).strip()
-                except:
-                    if 'model_id' in row.keys():
-                        culture_id = str(row['model_id']).strip()
+                if 'culture_id' in row.keys():
+                    culture_id = str(row['culture_id']).strip()
 
                 if 'color' in row.keys():
                     color = str(row['color']).strip()
@@ -404,12 +429,17 @@ class ElectionExperiment(Experiment):
 
                 families[family_id] = ElectionFamily(culture_id=culture_id,
                                                      family_id=family_id,
-                                                     params=params, label=label,
-                                                     color=color, alpha=alpha, show=show,
-                                                     size=size, marker=marker,
+                                                     params=params,
+                                                     label=label,
+                                                     color=color,
+                                                     alpha=alpha,
+                                                     show=show,
+                                                     size=size,
+                                                     marker=marker,
                                                      starting_from=starting_from,
                                                      num_candidates=num_candidates,
-                                                     num_voters=num_voters, path=path,
+                                                     num_voters=num_voters,
+                                                     path=path,
                                                      single=single,
                                                      instance_type=self.instance_type)
                 starting_from += size
@@ -426,8 +456,7 @@ class ElectionExperiment(Experiment):
 
         return families
 
-    def compute_feature(self, feature_id: str = None, feature_params=None,
-                        printing=False, **kwargs) -> dict:
+    def compute_feature(self, feature_id: str = None, feature_params=None, **kwargs) -> dict:
 
         if feature_params is None:
             feature_params = {}
@@ -456,16 +485,14 @@ class ElectionExperiment(Experiment):
 
             values = feature(self, election_ids=list(self.instances), **kwargs)
 
-            for instance_id in self.instances:
+            for instance_id in tqdm(self.instances):
                 feature_dict['value'][instance_id] = values[instance_id]
                 feature_dict['time'][instance_id] = 0
 
         else:
             feature = features.get_local_feature(feature_id)
 
-            for instance_id in self.elections:
-                if printing:
-                    print(instance_id)
+            for instance_id in tqdm(self.instances):
                 instance = self.elections[instance_id]
 
                 start = time.time()
@@ -505,7 +532,7 @@ class ElectionExperiment(Experiment):
                     feature_dict['value'][instance_id] = value
                     feature_dict['time'][instance_id] = total_time
 
-        if self.store:
+        if self.is_exported:
             self._store_election_feature(feature_id, feature_long_id, feature_dict)
 
         self.features[feature_long_id] = feature_dict
@@ -549,30 +576,21 @@ class ElectionExperiment(Experiment):
                 for key in feature_dict['value']:
                     writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
 
-    @abstractmethod
-    def create_structure(self):
-        pass
-
-    def compute_rules(self, list_of_rules, committee_size: int = 10, printing: bool = False,
+    def compute_rules(self, list_of_rules, committee_size: int = 10,
                       resolute: bool = False) -> None:
         for rule_name in list_of_rules:
             print('Computing', rule_name)
             if rule_name in NOT_ABCVOTING_RULES:
                 rules.compute_not_abcvoting_rule(experiment=self, rule_name=rule_name,
-                                                 committee_size=committee_size,
-                                                 printing=printing, resolute=resolute)
+                                                 committee_size=committee_size, resolute=resolute)
             else:
                 rules.compute_abcvoting_rule(experiment=self, rule_name=rule_name,
-                                             committee_size=committee_size,
-                                             printing=printing, resolute=resolute)
+                                             committee_size=committee_size, resolute=resolute)
 
     def import_committees(self, list_of_rules) -> None:
         for rule_name in list_of_rules:
             self.all_winning_committees[rule_name] = rules.import_committees_from_file(
                 experiment_id=self.experiment_id, rule_name=rule_name)
-
-    def add_feature(self, name, function):
-        features.add_local_feature(name, function)
 
 
 def check_if_all_equal(values, subject):

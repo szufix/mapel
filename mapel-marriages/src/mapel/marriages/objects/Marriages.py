@@ -96,9 +96,9 @@ class Marriages(Instance):
         if params is None:
             params = {}
 
-        # if self.culture_id == 'norm-mallows' and 'norm-phi' not in params:
+        # if experiment.culture_id == 'norm-mallows' and 'norm-phi' not in params:
         #     params['norm-phi'] = np.random.rand()
-        # elif self.culture_id == 'urn' and 'alpha' not in params:
+        # elif experiment.culture_id == 'urn' and 'alpha' not in params:
         #     params['alpha'] = np.random.rand()
         if 'norm-phi' in params:
             params['alpha'] = params['norm-phi']
@@ -136,7 +136,7 @@ class Marriages(Instance):
                     else:
                         file_.write(str(i) + ', b' + str(i) + "\n")
 
-                # c = Counter(map(tuple, self.votes[s]))
+                # c = Counter(map(tuple, experiment.votes[s]))
                 # counted_votes = [[count, list(row)] for row, count in c.items()]
                 # counted_votes = sorted(counted_votes, reverse=True)
 

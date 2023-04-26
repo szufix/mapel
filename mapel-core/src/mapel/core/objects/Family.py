@@ -35,19 +35,6 @@ class Family:
         self.path = path
         self.instance_ids = instance_ids
 
-    # def __getattr__(self, attr):
-    #     if attr == 'model_id':
-    #         return self.culture_id
-    #     else:
-    #         return self.__dict__[attr]
-    #
-    # def __setattr__(self, name, value):
-    #     if name == 'model_id':
-    #         self.culture_id = value
-    #     else:
-    #         self.__dict__[name] = value
-
-
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #
 # # # # # # # # # # # # # # # #

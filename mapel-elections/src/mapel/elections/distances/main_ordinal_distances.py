@@ -7,13 +7,13 @@ from mapel.core.matchings import *
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 import mapel.core.utils as utils
 from mapel.core.inner_distances import swap_distance
-import mapel.elections.metrics.ilp_isomorphic as ilp_iso
+import mapel.elections.distances.ilp_isomorphic as ilp_iso
 
 try: 
   import mapel.elections.metrics.cppdistances as cppd
 except:
   logging.warning("The quick C++ procedures for computing the swap and "
-  "Spearman distance sunavailable: using the (slow) python one instead")
+  "Spearman distance is unavailable: using the (slow) python one instead")
 
 # MAIN DISTANCES
 def compute_pos_swap_distance(election_1: OrdinalElection, election_2: OrdinalElection,

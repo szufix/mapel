@@ -26,7 +26,7 @@ import mapel.elections.cultures.noise as noise
 
 from mapel.elections.cultures.alliances import *
 
-LIST_OF_APPROVAL_MODELS = {
+registered_approval_cultures = {
     'ic': impartial.generate_approval_ic_votes,
     'id': impartial.generate_approval_id_votes,
     'resampling': resampling.generate_approval_resampling_votes,
@@ -48,8 +48,8 @@ LIST_OF_APPROVAL_MODELS = {
     'approval_empty': impartial.generate_approval_empty_votes,  # deprecated name
 }
 
-LIST_OF_ORDINAL_MODELS = {
-    'impartial_culture': impartial.generate_ordinal_ic_votes,
+registered_ordinal_cultures = {
+    'ic': impartial.generate_ordinal_ic_votes,
     'iac': impartial.generate_impartial_anonymous_culture_election,
     'euclidean': euclidean.generate_ordinal_euclidean_votes,
     '1d_gaussian_party': euclidean.generate_1d_gaussian_party,
@@ -59,7 +59,6 @@ LIST_OF_ORDINAL_MODELS = {
     'mallows_party': mallows.generate_mallows_party,
     'ic_party': unused.generate_ic_party,
     'urn': urn.generate_urn_votes,
-    'urn_model': urn.generate_urn_votes,  # deprecated name
     'group-separable': group_separable.generate_ordinal_group_separable_votes,
     'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
     'weighted_stratification': unused.generate_weighted_stratification_votes,
@@ -91,6 +90,9 @@ LIST_OF_ORDINAL_MODELS = {
     'real_antagonism': guardians.generate_real_antagonism_votes,
     'real_stratification': guardians.generate_real_stratification_votes,
     'un_from_matrix': guardians_plus.generate_un_from_matrix_votes,
+
+    'impartial_culture': impartial.generate_ordinal_ic_votes,  # deprecated name
+    'urn_model': urn.generate_urn_votes,  # deprecated name
 }
 
 
@@ -98,8 +100,8 @@ def generate_approval_votes(culture_id: str = None,
                             num_voters: int = None,
                             num_candidates: int = None,
                             params: dict = None) -> Union[list, np.ndarray]:
-    if culture_id in LIST_OF_APPROVAL_MODELS:
-        return LIST_OF_APPROVAL_MODELS.get(culture_id)(num_voters, num_candidates, **params)
+    if culture_id in registered_approval_cultures:
+        return registered_approval_cultures.get(culture_id)(num_voters, num_candidates, **params)
 
     else:
         logging.warning(f'No such culture id: {culture_id}')
@@ -114,12 +116,12 @@ def generate_ordinal_votes(culture_id: str = None,
         return generate_preflib_votes(culture_id=culture_id,
                                       num_candidates=num_candidates,
                                       num_voters=num_voters,
-                                      **params)
+                                      params=params)
 
-    elif culture_id in LIST_OF_ORDINAL_MODELS:
-        votes = LIST_OF_ORDINAL_MODELS.get(culture_id)(num_voters=num_voters,
-                                                       num_candidates=num_candidates,
-                                                       **params)
+    elif culture_id in registered_ordinal_cultures:
+        votes = registered_ordinal_cultures.get(culture_id)(num_voters=num_voters,
+                                                            num_candidates=num_candidates,
+                                                            **params)
 
     elif culture_id in LIST_OF_FAKE_MODELS:
         votes = [culture_id, num_candidates, num_voters, params]
@@ -134,86 +136,10 @@ def generate_ordinal_votes(culture_id: str = None,
     return np.array(votes)
 
 
-def store_votes_in_a_file(election, culture_id, num_candidates, num_voters,
-                          params, path, ballot, votes=None, aggregated=True,
-                          alliances=None):
-    """ Store votes in a file """
-
-    if votes is None:
-        votes = election.votes
-
-    if params is None:
-        params = {}
-
-    with open(path, 'w') as file_:
-        if culture_id in NICE_NAME:
-            file_.write("# " + NICE_NAME[culture_id] + " " + str(params) + "\n")
-        else:
-            file_.write("# " + culture_id + " " + str(params) + "\n")
-
-        file_.write(str(num_candidates) + "\n")
-        if alliances is not None and len(alliances) > 0:
-            for i in range(num_candidates):
-                file_.write(f'{str(i)}, c{str(i)}, {str(alliances[i])} \n')
-        else:
-            for i in range(num_candidates):
-                file_.write(str(i) + ', c' + str(i) + "\n")
-
-        if aggregated:
-
-            c = Counter(map(tuple, votes))
-            counted_votes = [[count, list(row)] for row, count in c.items()]
-            counted_votes = sorted(counted_votes, reverse=True)
-
-            file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
-                        str(len(counted_votes)) + "\n")
-
-            if ballot == 'approval':
-                for i in range(len(counted_votes)):
-                    file_.write(str(counted_votes[i][0]) + ', {')
-                    for j in range(len(counted_votes[i][1])):
-                        file_.write(str(int(counted_votes[i][1][j])))
-                        if j < len(counted_votes[i][1]) - 1:
-                            file_.write(", ")
-                    file_.write("}\n")
-
-            elif ballot == 'ordinal':
-                for i in range(len(counted_votes)):
-                    file_.write(str(counted_votes[i][0]) + ', ')
-                    for j in range(len(counted_votes[i][1])):
-                        file_.write(str(int(counted_votes[i][1][j])))
-                        if j < len(counted_votes[i][1]) - 1:
-                            file_.write(", ")
-                    file_.write("\n")
-        else:
-
-            file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
-                        str(num_voters) + "\n")
-
-            if ballot == 'approval':
-                for i in range(len(votes)):
-                    file_.write('1, {')
-                    for j in range(len(votes[i])):
-                        file_.write(str(int(list(votes[i])[j])))
-                        if j < len(votes[i]) - 1:
-                            file_.write(", ")
-                    file_.write("}\n")
-
-            elif ballot == 'ordinal':
-                for i in range(len(votes)):
-                    file_.write('1, ')
-                    for j in range(len(votes[i])):
-                        file_.write(str(int(votes[i][j])))
-                        if j < len(votes[i]) - 1:
-                            file_.write(", ")
-                    file_.write("\n")
-
-
 def approval_votes_to_vectors(votes, num_candidates=None, num_voters=None):
     vectors = np.zeros([num_candidates, num_candidates])
     for vote in votes:
         denom_in = len(vote)
-        # print(denom_in)
         denom_out = num_candidates - denom_in
         for i in range(num_candidates):
             if i in vote:
@@ -222,16 +148,10 @@ def approval_votes_to_vectors(votes, num_candidates=None, num_voters=None):
             else:
                 for j in range(denom_out):
                     vectors[i][denom_in + j] += 1 / denom_out / num_voters
-    print(vectors)
     return vectors
 
 
 def from_approval(culture_id=None, num_candidates=None, num_voters=None, params=None):
-    # params['phi'] = np.random.rand()
-    # params['p'] = np.random.rand()
-    # votes = urn.generate_approval_urn_votes(num_candidates=num_candidates, num_voters=num_voters,
-    #                                     params=params)
-
     votes = generate_approval_votes(culture_id=params['culture_id'],
                                     num_candidates=num_candidates, num_voters=num_voters,
                                     params=params)
@@ -265,12 +185,11 @@ def generate_ordinal_alliance_votes(culture_id: str = None,
 
 
 def add_approval_culture(name, function):
-    LIST_OF_APPROVAL_MODELS[name] = function
+    registered_approval_cultures[name] = function
 
 
 def add_ordinal_culture(name, function):
-    LIST_OF_ORDINAL_MODELS[name] = function
-
+    registered_ordinal_cultures[name] = function
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 16.05.2022 #

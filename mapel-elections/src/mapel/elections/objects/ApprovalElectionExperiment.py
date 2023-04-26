@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 
+from mapel.core.matchings import solve_matching_vectors
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
 from mapel.elections.other import pabulib
@@ -9,8 +10,10 @@ from mapel.core.utils import *
 import numpy as np
 import csv
 
-# from mapel.core.matchings import solve_matching_vectors
 import mapel.elections.cultures_ as cultures
+import mapel.elections.features_ as features
+import mapel.elections.distances_ as distances
+
 
 try:
     from sklearn.manifold import MDS
@@ -30,23 +33,17 @@ except ImportError as error:
 class ApprovalElectionExperiment(ElectionExperiment):
     """ Abstract set of approval elections."""
 
-    def __init__(self, instances=None, distances=None, _import=True, shift=False,
-                 coordinates=None, distance_id='emd-positionwise', experiment_id=None,
-                 instance_type='approval', dim=2, store=True,
-                 coordinates_names=None,
-                 embedding_id='spring',
-                 fast_import=False):
-        self.shift = shift
-        super().__init__(instances=instances, distances=distances,
-                         coordinates=coordinates, distance_id=distance_id,
-                         experiment_id=experiment_id, dim=dim, store=store,
-                         instance_type=instance_type, _import=_import,
-                         coordinates_names=coordinates_names,
-                         embedding_id=embedding_id,
-                         fast_import=fast_import)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def add_culture(self, name, function):
         cultures.add_approval_culture(name, function)
+
+    def add_feature(self, name, function):
+        features.add_approval_feature(name, function)
+
+    def add_distance(self, name, function):
+        distances.add_approval_distance(name, function)
 
     def compute_distance_between_rules(self, list_of_rules=None, printing=False,
                                        distance_id=None, committee_size=10):
@@ -146,9 +143,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
         print("\\toprule")
         print("rule", end=" ")
         for model in list_of_models:
-            # print(f'& {nice_model[model]}', end=" ")
             print(f'& {model}', end=" ")
-        # print("")
         print("\\\\ \\midrule")
 
         for rule in list_of_rules:
@@ -224,36 +219,12 @@ class ApprovalElectionExperiment(ElectionExperiment):
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices"))
 
             # PREPARE MAP.CSV FILE
-
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
 
             with open(path, 'w') as file_csv:
                 file_csv.write("size;num_candidates;num_voters;culture_id;params;color;alpha;"
                                "label;marker;show;path")
-                file_csv.write("1;50;200;approval_id;{'p': 0.5};brown;0.75;ID 0.5;*;t;{}")
-                file_csv.write("1;50;200;approval_ic;{'p': 0.5};black;0.75;IC 0.5;*;t;{}")
-                file_csv.write("1;50;200;approval_full;{};red;0.75;full;*;t;{}")
-                file_csv.write("1;50;200;approval_empty;{};green;0.75;empty;*;t;{}")
-                file_csv.write("30;50;200;approval_id;{};brown;0.7;ID_path;o;t;{'variable': 'p'}")
-                file_csv.write("30;50;200;approval_ic;{};black;0.7;IC_path;o;t;{'variable': 'p'}")
-                file_csv.write("20;50;200;approval_mallows;{'p': 0.1};cyan;1;"
-                               "shumal_p01_path;o;t;{'variable': 'phi'}")
-                file_csv.write("25;50;200;approval_mallows;{'p': 0.2};deepskyblue;1;"
-                               "shumal_p02_path;o;t;{'variable': 'phi'}")
-                file_csv.write("30;50;200;approval_mallows;{'p': 0.3};blue;1;"
-                               "shumal_p03_path;o;t;{'variable': 'phi'}")
-                file_csv.write("35;50;200;approval_mallows;{'p': 0.4};darkblue;1;"
-                               "shumal_p04_path;o;t;{'variable': 'phi'}")
-                file_csv.write("40;50;200;approval_mallows;{'p': 0.5};purple;1;"
-                               "shumal_p05_path;s;t;{'variable': 'phi'}")
-                file_csv.write("35;50;200;approval_mallows;{'p': 0.6};darkblue;1;"
-                               "shumal_p06_path;x;t;{'variable': 'phi'}")
-                file_csv.write("30;50;200;approval_mallows;{'p': 0.7};blue;1;"
-                               "shumal_p07_path;x;t;{'variable': 'phi'}")
-                file_csv.write("25;50;200;approval_mallows;{'p': 0.8};deepskyblue;1;"
-                               "shumal_p08_path;x;t;{'variable': 'phi'}")
-                file_csv.write("20;50;200;approval_mallows;{'p': 0.9};cyan;1;"
-                               "shumal_p09_path;x;t;{'variable': 'phi'}")
+                file_csv.write("1;50;200;ic;{'p': 0.5};black;0.75;IC 0.5;*;t;{}")
         except FileExistsError:
             print("Experiment already exists!")
 

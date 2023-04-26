@@ -66,7 +66,7 @@ def matrix2png(argv):
     if model != "mallows":
         experiment.add_election(election_model=model, election_id="M")
     else:
-        experiment.add_election(election_model="norm-mallows_matrix", params={"norm-phi": param},
+        experiment.add_election(election_model="norm-mallows_matrix", params={"normphi": param},
                                 election_id="M")
     M = experiment.elections["M"].matrix
 

@@ -47,7 +47,6 @@ def distortion_from_all(experiment, election_ids):
             #                      'antagonism_10_100_0', 'stratification_10_100_0'}:
             if election_id_1 != election_id_2:
                 # m = experiment.instances[election_id_1].num_candidates
-                # print(election_id_1, election_id_2)
                 true_distance = experiment.distances[election_id_1][election_id_2]
                 true_distance /= experiment.distances['ID']['UN']
                 embedded_distance = l2(np.array(experiment.coordinates[election_id_1]),
@@ -66,10 +65,6 @@ def distortion_from_all(experiment, election_ids):
                 ratio = max(embedded_distance, true_distance) / min(embedded_distance, true_distance)
 
                 values = np.append(values, ratio)
-
-        # print(min(one_side_values), max(one_side_values))
-        # if election_id_1 == 'IC_0':
-        #     print(values)
 
         all_values[election_id_1] = np.mean(values)
 

@@ -27,7 +27,6 @@ def count_number_of_cohesive_groups_brute(election, l: int = 1,
         for v in s:
             cands &= election.votes[v]
         if len(cands) >= l:
-            # print(s, "  ", cands)
             answer += 1
     return answer
 
@@ -72,7 +71,6 @@ def count_number_of_cohesive_groups(election, l: int = 1,
         for siz in range(min_size, d[s] + 1):
             sign = 2 * (len(s) % 2) - 1  # 1 for even, -1 for odd, comes from (-1) ^ (s-1)
             answer += newton(d[s], siz) * sign
-            # print(s, d[s], siz, sign, newton(d[s], siz) * sign)
     return answer
 
 
@@ -137,9 +135,6 @@ def solve_ilp_instance(election, committee_size: int, l: int = 1) -> bool:
         model += y_ineq >= 0
 
     model.solve(pulp.PULP_CBC_CMD(msg=False))
-    # print(culture_id)
-    # print(LpStatus[culture_id.status])
-    # print(int(value(culture_id.objective)))    # prints the best objective value - in our case useless, but can be useful in the future
     # if LpStatus[culture_id.status] == 'Optimal':
     #     print([var.election_id + "=" + str(var.varValue) for var in culture_id.variables() if var.varValue is not None and var.varValue > 0], sep=" ")    # prints result variables which have value > 0
     return pulp.LpStatus[model.status] == 'Optimal'

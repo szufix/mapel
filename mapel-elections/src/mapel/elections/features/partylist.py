@@ -117,15 +117,9 @@ def partylistdistance(election, feature_params=None):
         if support >= largepartysize:
             num_large_parties += 1
 
-    # print(f"new {newprofile}")
-    # print([sum(edit[(v, c)].X for c in profile.candidates) for v, _ in enumerate(profile)])
-    # print([(c1, c2, same_party[(c1, c2)].X) for c1 in profile.candidates for c2 in range(c1)])
 
-    # return model.objVal, num_large_parties, newprofile
     print(model.objVal, model.objbound, num_large_parties)
     return model.objVal, model.objbound, num_large_parties
-    # print(num_large_parties)
-    # return num_large_parties
 
 
 def pav_time(election):

@@ -3,7 +3,7 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-from mapel.elections.metrics import lp
+from mapel.elections.distances import lp
 
 
 def solve_matching_vectors(cost_table) -> (float, list):

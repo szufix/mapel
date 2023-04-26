@@ -87,7 +87,7 @@ def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pab
                 break
 
 
-        # store in .app file
+        # is_exported in .app file
         name = name.replace('.pb', '')
         path = f'experiments/{experiment.experiment_id}/elections/{model}_{p}.app'
         # num_candidates = num_candidates

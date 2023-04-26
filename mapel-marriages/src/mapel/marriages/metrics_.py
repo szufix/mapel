@@ -96,7 +96,7 @@ def run_multiple_processes(exp: Experiment, instances_ids: list,
         times[instance_id_1][instance_id_2] = time() - start_time
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
-    if exp.store:
+    if exp.is_exported:
         _store_distances(exp, instances_ids, distances, times, t)
 
 

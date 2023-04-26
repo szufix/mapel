@@ -124,10 +124,8 @@ def solve_rand_approx_pav(election, committee_size, W, C, ctr=0, fixed=None):
     values = [0.] * election.num_candidates
     for i in range(election.num_candidates):
         values[i] = cp.solution.get_values('y' + str(i))
-    # print("values:", values)
 
     final_values = approx_rand_tree(values)
-    # print(final_values)
 
     winner_id = 0
     winners = [-1] * committee_size
@@ -163,16 +161,7 @@ def solve_rand_approx_pav(election, committee_size, W, C, ctr=0, fixed=None):
     except:
         score = -1
 
-    # print(score)
     return score
-
-    # if len(fixed) < committee_size:
-    #
-    #     print(score, fixed)
-    #
-    #     solve_rand_approx_pav(election, committee_size, W, C, ctr+1, fixed)
-    # else:
-    #     return score
 
 
 # FOR SUBELECTIONS
@@ -311,8 +300,6 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2):
                                      election_2.potes[u][d2]):
                                 P[v][u][c1][d1][c2][d2] = 1
 
-    # print(P)
-    # """
 
     # CREATE LP FILE
     lp_file = open(lp_file_name, 'w')
@@ -601,8 +588,6 @@ def solve_lp_candidate_subelections(lp_file_name, election_1, election_2):
     ##########################
 
     # objective_value = cp_lp.solution.get_objective_value()
-    # print('O-V: ', objective_value)
-    # print(sum(sum(result)))
     return sum(sum(result))
 
 
@@ -1009,7 +994,6 @@ def solve_lp_bloc_owa(params, votes, owa, t_bloc):
     result = [0.] * params['candidates']
     for i in range(params['candidates']):
         result[i] = cp_lp.solution.get_values('y' + str(i))
-    # print(result)
 
     params['pure'] = True
 

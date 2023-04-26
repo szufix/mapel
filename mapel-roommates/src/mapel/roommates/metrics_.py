@@ -75,7 +75,7 @@ def run_single_thread(experiment: Experiment, thread_ids: list,
         times[election_id_1][election_id_2] = time() - start_time
         times[election_id_2][election_id_1] = times[election_id_1][election_id_2]
 
-    if experiment.store:
+    if experiment.is_exported:
 
         file_name = f'{experiment.distance_id}_p{t}.csv'
         path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances",

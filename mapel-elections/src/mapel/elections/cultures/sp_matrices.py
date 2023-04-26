@@ -5,7 +5,6 @@ from mapel.elections.cultures.mallows import phi_from_relphi, mallows_votes
 from scipy.special import binom
 
 
-
 ### MATRICES ###
 
 # WALSH
@@ -133,7 +132,7 @@ def get_walsh_vectors(m):
 
 ########  MALLOWS SP  ########
 def generate_conitzer_mallows_votes(num_voters, num_candidates, params):
-    params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+    params['phi'] = phi_from_relphi(num_candidates, relphi=params['normphi'])
 
     votes = generate_ordinal_sp_conitzer_votes(num_voters=num_voters, num_candidates=num_candidates)
 
@@ -143,7 +142,7 @@ def generate_conitzer_mallows_votes(num_voters, num_candidates, params):
 
 
 def generate_walsh_mallows_votes(num_voters, num_candidates, params):
-    params['phi'] = phi_from_relphi(num_candidates, relphi=params['norm-phi'])
+    params['phi'] = phi_from_relphi(num_candidates, relphi=params['normphi'])
 
     votes = generate_ordinal_sp_walsh_votes(num_voters=num_voters, num_candidates=num_candidates)
 

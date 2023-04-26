@@ -276,7 +276,6 @@ def _add_num_leaf_descendants(node):
 
 def _add_scheme(node):
 
-    # print(node.election_id)
     for starting_pos in node.scheme_1:
 
         pos = starting_pos
@@ -288,7 +287,6 @@ def _add_scheme(node):
             pos += child.num_leaf_descendants
 
     for starting_pos in node.scheme_2:
-        # print(starting_pos)
         pos = starting_pos
         for child in node.children:
             if pos in child.scheme_2:
@@ -309,7 +307,6 @@ def _construct_vector_from_scheme(node):
     x = node.scheme_1
     y = node.scheme_2
     node.scheme = {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
-    # print(node.scheme, x, y)
 
     weight = 1. / sum(node.scheme.values())
 
@@ -391,7 +388,6 @@ def _balanced(num_leaves):
 
 
 def print_tree(root):
-    print(root.election_id)
     for child in root.children:
         print_tree(child)
 
@@ -437,7 +433,6 @@ def get_frequency_matrix_from_tree(root):
 
     all_nodes = get_all_nodes(root)
     for node in all_nodes:
-        print(node.election_id)
         f[str(node.election_id)] = [0 for _ in range(m)]
     set_left_and_right(root)
 
@@ -445,7 +440,6 @@ def get_frequency_matrix_from_tree(root):
 
     for node in all_nodes:
         if node.election_id != root.election_id:
-            # print(node.election_id)
             for t in range(m):
                 value_1 = 0
                 if t-node.left >= 0:
@@ -483,4 +477,3 @@ def get_frequency_matrix_from_tree(root):
 #     for j in range(num_candidates):
 #         vectors[i][j] /= float(num_voters)
 #
-# print(vectors)

@@ -5,7 +5,7 @@ import os
 
 import numpy as np
 
-from mapel.elections.metrics import lp as lp
+from mapel.elections.distances import lp as lp
 
 
 def generate_winners(election=None, num_winners=1, ballot="ordinal", type=None, name=None):
@@ -173,19 +173,9 @@ def get_winners_scoring(params, votes, candidates, scoring):
 def get_winners_borda_owa(params, votes, owa):
     return lp.solve_lp_borda_owa(params, votes, owa)
 
-# def get_winners_borda_owa(params, votes, candidates, owa):
-#     rand_name = str(np.random.random())
-#     lp_file_name = str(rand_name + ".lp")
-#     lp.generate_lp_file_borda_owa(owa, lp_file_name, params, votes)
-#     winners, obj_value, total_time = lp.get_winners_from_lp(lp_file_name, params, candidates)
-#     os.remove(lp_file_name)
-#     winners = sorted(winners)
-#     return winners, obj_value, total_time
-
 
 def get_winners_bloc_owa(params, votes, owa, t_bloc):
     return lp.solve_lp_bloc_owa(params, votes, owa, t_bloc)
-
 
 
 def get_winners_stv(params, votes, candidates):
@@ -270,15 +260,5 @@ def get_winners_stv(params, votes, candidates):
     winners = sorted(winners)
 
     return winners
-
-
-# def get_winners_approx_pav(votes, params, embedding_id='greedy'):
-#
-#     if embedding_id == "removal":
-#         return get_winners_approx_pav_removal(votes, params)
-#     elif embedding_id == "greedy":
-#         return get_winners_approx_pav_greedy(votes, params)
-
-
 
 

@@ -184,7 +184,7 @@ class RoommatesExperiment(Experiment):
                     distances[row['instance_id_1']][row['instance_id_2']] = float(row['distance'])
                     times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
-        if self.store:
+        if self.is_exported:
 
             path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                           "distances")
@@ -297,7 +297,7 @@ class RoommatesExperiment(Experiment):
         for family_id in self.families:
 
             new_instances = self.families[family_id].prepare_family(
-                store=self.store,
+                store=self.is_exported,
                 experiment_id=self.experiment_id)
 
             for instance_id in new_instances:
@@ -312,7 +312,7 @@ class RoommatesExperiment(Experiment):
                 usable_matching = basic.compute_stable_SR(self.instances[instance_id].votes)
                 self.matchings[instance_id] = usable_matching
 
-        if self.store:
+        if self.is_exported:
 
             path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                           "features")
@@ -414,7 +414,7 @@ class RoommatesExperiment(Experiment):
                     #                     'worst_distortion_from_guardians',
                     #                     'distortion_from_all',
                     #                     'distortion_from_top_100'}:
-                    #     value = feature(self, election_id)
+                    #     value = feature(experiment, election_id)
                     # else:
                     #     value = feature(election)
 
@@ -426,7 +426,7 @@ class RoommatesExperiment(Experiment):
                         feature_dict['value'][instance_id] = value
                         feature_dict['time'][instance_id] = total_time
 
-        if self.store:
+        if self.is_exported:
 
             path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                           "features")

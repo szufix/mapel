@@ -21,7 +21,7 @@ except ImportError:
     preferences = None
 
 from mapel.core.glossary import *
-from mapel.elections.metrics import lp
+from mapel.elections.distances import lp
 from mapel.elections.other import winners2 as win
 
 

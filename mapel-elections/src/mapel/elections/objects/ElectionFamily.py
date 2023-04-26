@@ -65,7 +65,6 @@ class ElectionFamily(Family):
     def prepare_family(self, experiment_id=None, store=None,
                        store_points=False, aggregated=True):
 
-        # print(self.instance_type)
         if self.instance_type == 'ordinal':
 
             # if culture_id in PARTY_MODELS:
@@ -101,10 +100,10 @@ class ElectionFamily(Family):
                                            num_voters=self.num_voters, label=self.label,
                                            num_candidates=self.num_candidates,
                                            params=copy.deepcopy(params), ballot=self.instance_type,
-                                           variable=variable, _import=False,
+                                           variable=variable, is_imported=False,
                                            )
 
-                election.prepare_instance(store=store, aggregated=aggregated)
+                election.prepare_instance(is_exported=store, aggregated=aggregated)
 
                 if store_points:
                     try:
@@ -148,7 +147,7 @@ class ElectionFamily(Family):
                                             num_voters=self.num_voters, label=self.label,
                                             num_candidates=self.num_candidates,
                                             params=copy.deepcopy(params), ballot=self.instance_type,
-                                            variable=variable, _import=False
+                                            variable=variable, is_imported=False
                                             )
                 election.prepare_instance(store=store, aggregated=aggregated)
 

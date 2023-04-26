@@ -154,7 +154,6 @@ class SCNode:
             self.all_next |= node.all_next
         self.all_next.add(self.vote)
         all_computed += 1
-        # print( all_computed, self.all_next )
 
     def count_elections(self, n, nodes):
         if n == 0: return 0
@@ -166,7 +165,6 @@ class SCNode:
         for vote in self.all_next:
             S += nodes[vote].count_elections(n - 1, nodes)
         SC_ELECTION[(self.vote, n)] = S
-        # print( SC_ELECTION[ (self.vote, n) ] )
         return SC_ELECTION[(self.vote, n)]
 
     def sample_election(self, n, nodes):

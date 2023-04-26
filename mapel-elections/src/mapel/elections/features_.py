@@ -20,20 +20,7 @@ from mapel.core.glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
 from mapel.core.features_main import get_main_local_feature, get_main_global_feature
 
 
-def get_global_feature(feature_id):
-    """ Global feature depends on all instances """
-    if feature_id in MAIN_GLOBAL_FEATUERS:
-        return get_main_global_feature(feature_id)
-
-    return {'clustering': clustering.clustering_v1,
-            'clustering_kmeans': clustering.clustering_kmeans,
-            'distortion_from_all': distortion.distortion_from_all,
-            'id_vs_un': clustering.id_vs_un,
-            'an_vs_st': clustering.an_vs_st,
-            }.get(feature_id)
-
-
-LIST_OF_LOCAL_FEATURES = {'highest_borda_score': scores.highest_borda_score,
+registered_features = {'highest_borda_score': scores.highest_borda_score,
             'highest_plurality_score': scores.highest_plurality_score,
             'highest_copeland_score': scores.highest_copeland_score,
             'lowest_dodgson_score': scores.lowest_dodgson_score,
@@ -105,19 +92,37 @@ LIST_OF_LOCAL_FEATURES = {'highest_borda_score': scores.highest_borda_score,
             }
 
 
+def get_global_feature(feature_id):
+    """ Global feature depends on all instances """
+    if feature_id in MAIN_GLOBAL_FEATUERS:
+        return get_main_global_feature(feature_id)
+
+    return {'clustering': clustering.clustering_v1,
+            'clustering_kmeans': clustering.clustering_kmeans,
+            'distortion_from_all': distortion.distortion_from_all,
+            'id_vs_un': clustering.id_vs_un,
+            'an_vs_st': clustering.an_vs_st,
+            }.get(feature_id)
+
+
 def get_local_feature(feature_id):
     """ Local feature depends only on a single instance """
 
     if feature_id in MAIN_LOCAL_FEATUERS:
         return get_main_local_feature(feature_id)
-    elif feature_id in LIST_OF_LOCAL_FEATURES:
-        return LIST_OF_LOCAL_FEATURES.get(feature_id)
+    elif feature_id in registered_features:
+        return registered_features.get(feature_id)
     else:
         raise ValueError(f'Incorrect feature id: {feature_id}')
 
 
-def add_local_feature(name, function):
-    LIST_OF_LOCAL_FEATURES[name] = function
+def add_approval_feature(name, function):
+    registered_features[name] = function
+
+
+def add_ordinal_feature(name, function):
+    registered_features[name] = function
+
 
 
 # # # # # # # # # # # # # # # #

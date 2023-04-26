@@ -2,19 +2,55 @@
 import logging
 from time import time
 from typing import Callable
+from tqdm import tqdm
 
 import copy
 import os
 import csv
 import numpy as np
 
-from mapel.elections.metrics import main_approval_distances as mad
-from mapel.elections.metrics import main_ordinal_distances as mod
+from mapel.elections.distances import main_approval_distances as mad
+from mapel.elections.distances import main_ordinal_distances as mod
 from mapel.core.inner_distances import map_str_to_func
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.Election import Election
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.core.objects.Experiment import Experiment
+
+
+registered_approval_distances = {
+    'flow': mad.compute_flow,
+    'hamming': mad.compute_hamming,
+    'approvalwise': mad.compute_approvalwise,
+    'coapproval_frequency': mad.compute_coapproval_frequency_vectors,
+    'pairwise': mad.compute_pairwise,
+    'voterlikeness': mad.compute_voterlikeness,
+    'candidatelikeness': mad.compute_candidatelikeness,
+}
+
+registered_ordinal_distances = {
+    'discrete': mod.compute_discrete_distance,
+    'voter_subelection': mod.compute_voter_subelection,
+    'candidate_subelection': mod.compute_candidate_subelection,
+    'swap': mod.compute_swap_distance,
+    'spearman': mod.compute_spearman_distance,
+    'ilp_spearman': mod.compute_spearman_distance_ilp_py,
+    'ilp_swap': mod.compute_swap_distance_ilp_py,
+    'positionwise': mod.compute_positionwise_distance,
+    'bordawise': mod.compute_bordawise_distance,
+    'pairwise': mod.compute_pairwise_distance,
+    'voterlikeness': mod.compute_voterlikeness_distance,
+    'agg_voterlikeness': mod.compute_agg_voterlikeness_distance,
+    'pos_swap': mod.compute_pos_swap_distance,
+}
+
+
+def add_approval_distance(name, function):
+    registered_approval_distances[name] = function
+
+
+def add_ordinal_distance(name, function):
+    registered_ordinal_distances[name] = function
 
 
 def get_distance(election_1: Election, election_2: Election,
@@ -30,65 +66,35 @@ def get_distance(election_1: Election, election_2: Election,
 
 
 def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElection,
-                          distance_id: str = None) -> float or (float, list):
+                          distance_id: str = None, **kwargs) -> float or (float, list):
     """ Return: distance between approval elections, (if applicable) optimal matching """
 
     inner_distance, main_distance = _extract_distance_id(distance_id)
 
-    metrics_without_params = {
-        'flow': mad.compute_flow,
-        'hamming': mad.compute_hamming,
-    }
+    if main_distance in registered_approval_distances:
 
-    metrics_with_inner_distance = {
-        'approvalwise': mad.compute_approvalwise,
-        'coapproval_frequency': mad.compute_coapproval_frequency_vectors,
-        'pairwise': mad.compute_pairwise,
-        'voterlikeness': mad.compute_voterlikeness,
-        'candidatelikeness': mad.compute_candidatelikeness,
-    }
+        if inner_distance is not None:
+            registered_approval_distances.get(main_distance)(election_1, election_2, inner_distance)
+        else:
+            registered_approval_distances.get(main_distance)(election_1, election_2, **kwargs)
 
-    if main_distance in metrics_without_params:
-        return metrics_without_params.get(main_distance)(election_1, election_2)
-
-    elif main_distance in metrics_with_inner_distance:
-        return metrics_with_inner_distance.get(main_distance)(election_1, election_2,
-                                                              inner_distance)
     else:
         logging.warning("No such distance!")
 
 
 def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElection,
-                         distance_id: str = None) -> float or (float, list):
+                         distance_id: str = None, **kwargs) -> float or (float, list):
     """ Return: distance between ordinal elections, (if applicable) optimal matching """
 
     inner_distance, main_distance = _extract_distance_id(distance_id)
 
-    metrics_without_params = {
-        'discrete': mod.compute_discrete_distance,
-        'voter_subelection': mod.compute_voter_subelection,
-        'candidate_subelection': mod.compute_candidate_subelection,
-        'swap': mod.compute_swap_distance,
-        'spearman': mod.compute_spearman_distance,
-        'ilp_spearman': mod.compute_spearman_distance_ilp_py,
-        'ilp_swap': mod.compute_swap_distance_ilp_py,
-    }
+    if main_distance in registered_ordinal_distances:
 
-    metrics_with_inner_distance = {
-        'positionwise': mod.compute_positionwise_distance,
-        'bordawise': mod.compute_bordawise_distance,
-        'pairwise': mod.compute_pairwise_distance,
-        'voterlikeness': mod.compute_voterlikeness_distance,
-        'agg_voterlikeness': mod.compute_agg_voterlikeness_distance,
-        'pos_swap': mod.compute_pos_swap_distance,
-    }
+        if inner_distance is not None:
+            registered_ordinal_distances.get(main_distance)(election_1, election_2, inner_distance)
+        else:
+            registered_ordinal_distances.get(main_distance)(election_1, election_2, **kwargs)
 
-    if main_distance in metrics_without_params:
-        return metrics_without_params.get(main_distance)(election_1, election_2)
-
-    elif main_distance in metrics_with_inner_distance:
-        return metrics_with_inner_distance.get(main_distance)(election_1, election_2,
-                                                              inner_distance)
     else:
         logging.warning("No such distance!")
 
@@ -106,12 +112,10 @@ def _extract_distance_id(distance_id: str) -> (Callable, str):
 
 def run_single_process(exp: Experiment, instances_ids: list,
                        distances: dict, times: dict, matchings: dict,
-                       printing: bool, safe_mode=False) -> None:
+                       safe_mode=False) -> None:
     """ Single process for computing distances """
 
-    for instance_id_1, instance_id_2 in instances_ids:
-        if printing:
-            print(instance_id_1, instance_id_2)
+    for instance_id_1, instance_id_2 in tqdm(instances_ids):
         start_time = time()
         if safe_mode:
             distance = get_distance(copy.deepcopy(exp.instances[instance_id_1]),
@@ -134,12 +138,10 @@ def run_single_process(exp: Experiment, instances_ids: list,
 
 def run_multiple_processes(exp: Experiment, instances_ids: list,
                            distances: dict, times: dict, matchings: dict,
-                           printing: bool, t) -> None:
+                           t) -> None:
     """ Single process for computing distances """
 
-    for instance_id_1, instance_id_2 in instances_ids:
-        if t == 0 and printing:
-            print(instance_id_1, instance_id_2)
+    for instance_id_1, instance_id_2 in tqdm(instances_ids):
         start_time = time()
         distance = get_distance(copy.deepcopy(exp.instances[instance_id_1]),
                                 copy.deepcopy(exp.instances[instance_id_2]),
@@ -154,7 +156,7 @@ def run_multiple_processes(exp: Experiment, instances_ids: list,
         times[instance_id_1][instance_id_2] = time() - start_time
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
-    if exp.store:
+    if exp.is_exported:
         _store_distances(exp, instances_ids, distances, times, t)
 
 
@@ -169,6 +171,7 @@ def _store_distances(exp, instances_ids, distances, times, t):
             distance = float(distances[election_id_1][election_id_2])
             time_ = float(times[election_id_1][election_id_2])
             writer.writerow([election_id_1, election_id_2, distance, time_])
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 17.08.2022 #

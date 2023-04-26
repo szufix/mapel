@@ -1,5 +1,4 @@
-from .metrics_ import get_distance
-from .other.development import compute_spoilers
+from .distances_ import get_distance
 import mapel.core.printing as pr
 from .objects.ApprovalElectionExperiment import ApprovalElectionExperiment
 from .objects.OrdinalElection import OrdinalElection
@@ -9,6 +8,7 @@ from .objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 
 def prepare_online_ordinal_experiment(**kwargs):
     return prepare_experiment(**kwargs, instance_type='ordinal', store=False)
+
 
 def prepare_offline_ordinal_experiment(**kwargs):
     return prepare_experiment(**kwargs, instance_type='ordinal', store=True)
@@ -28,7 +28,7 @@ def prepare_experiment(experiment_id=None, instances=None, distances=None, insta
                        embedding_id='spring', fast_import=False, with_matrix=False):
     if instance_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
-                                         instances=instances, dim=dim, store=store,
+                                         instances=instances, dim=dim, export=store,
                                          instance_type=instance_type,
                                          distances=distances, coordinates=coordinates,
                                          distance_id=distance_id,
@@ -38,13 +38,14 @@ def prepare_experiment(experiment_id=None, instances=None, distances=None, insta
                                          with_matrix=with_matrix)
     elif instance_type in ['approval', 'rule']:
         return ApprovalElectionExperiment(experiment_id=experiment_id, shift=shift,
-                                          instances=instances, dim=dim, store=store,
+                                          instances=instances, dim=dim, export=store,
                                           instance_type=instance_type,
                                           distances=distances, coordinates=coordinates,
                                           distance_id=distance_id,
                                           coordinates_names=coordinates_names,
                                           embedding_id=embedding_id,
                                           fast_import=fast_import)
+
 
 def print_approvals_histogram(*args):
     pr.print_approvals_histogram(*args)
@@ -57,8 +58,6 @@ def custom_div_cmap(**kwargs):
 def print_matrix(**kwargs):
     pr.print_matrix(**kwargs)
 
-def compute_spoilers(**kwargs):
-    return compute_spoilers(**kwargs)
 
 
 ### WITHOUT EXPERIMENT ###
