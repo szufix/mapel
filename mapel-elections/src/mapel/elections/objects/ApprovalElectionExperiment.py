@@ -1,11 +1,8 @@
 #!/usr/bin/env python
-import os
 
 from mapel.core.matchings import solve_matching_vectors
-from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
 from mapel.elections.other import pabulib
-from mapel.core.glossary import *
 from mapel.core.utils import *
 import numpy as np
 import csv
@@ -13,7 +10,7 @@ import csv
 import mapel.elections.cultures_ as cultures
 import mapel.elections.features_ as features
 import mapel.elections.distances_ as distances
-
+from tqdm import tqdm
 
 try:
     from sklearn.manifold import MDS
@@ -80,10 +77,8 @@ class ApprovalElectionExperiment(ElectionExperiment):
                                 for k1, c1 in enumerate(com1):
                                     for k2, c2 in enumerate(com2):
 
-                                        ac1 = self.elections[election_id].reverse_approvals[
-                                            c1]
-                                        ac2 = self.elections[election_id].reverse_approvals[
-                                            c2]
+                                        ac1 = self.elections[election_id].reverse_approvals[c1]
+                                        ac2 = self.elections[election_id].reverse_approvals[c2]
                                         if distance_id == 'hamming':
                                             cand_dist[k1][k2] = len(ac1.symmetric_difference(ac2))
                                         elif distance_id == 'jaccard':
@@ -98,8 +93,11 @@ class ApprovalElectionExperiment(ElectionExperiment):
                         mean = sum(all_distance) / self.num_elections
                         writer.writerow([r1, r2, mean, 0.])
 
-    def compute_rule_features(self, feature_id=None, list_of_rules=None, printing=False,
-                              feature_params=None, **kwargs):
+    def compute_rule_features(self,
+                              feature_id=None,
+                              list_of_rules=None,
+                              feature_params=None,
+                              **kwargs):
         if feature_params is None:
             feature_params = {}
 
@@ -113,14 +111,15 @@ class ApprovalElectionExperiment(ElectionExperiment):
                 self.elections[election_id].winning_committee[r] = \
                     self.all_winning_committees[r][election_id][0]
 
-        for rule in list_of_rules:
-            if printing:
-                print(rule)
+        for rule in tqdm(list_of_rules):
             feature_params['rule'] = rule
             self.compute_feature(feature_id=feature_id, feature_params=feature_params, **kwargs)
 
-    def print_latex_table(self, feature_id=None, column_id='value',
-                          list_of_rules=None, list_of_models=None):
+    def print_latex_table(self,
+                          feature_id=None,
+                          column_id='value',
+                          list_of_rules=None,
+                          list_of_models=None):
 
         features = {}
         for rule in list_of_rules:
@@ -153,8 +152,11 @@ class ApprovalElectionExperiment(ElectionExperiment):
             # print("")
             print("\\\\ \\midrule")
 
-    def print_latex_multitable(self, features_id=None, columns_id=None,
-                               list_of_rules=None, list_of_models=None):
+    def print_latex_multitable(self,
+                               features_id=None,
+                               columns_id=None,
+                               list_of_rules=None,
+                               list_of_models=None):
 
         all_results = {}
         for feature_id, column_id in zip(features_id, columns_id):
@@ -197,9 +199,7 @@ class ApprovalElectionExperiment(ElectionExperiment):
             # print("")
             print("\\\\ \\midrule")
 
-    def create_structure(self) -> None:
-
-        # PREPARE STRUCTURE
+    def add_folders_to_experiment(self) -> None:
 
         if not os.path.isdir("experiments/"):
             os.mkdir(os.path.join(os.getcwd(), "experiments"))
@@ -212,12 +212,23 @@ class ApprovalElectionExperiment(ElectionExperiment):
 
         try:
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "features"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices"))
 
+            list_of_folders = ['distances',
+                               'features',
+                               'coordinates',
+                               'elections',
+                               'matrices']
+
+            for folder_name in list_of_folders:
+                try:
+                    os.mkdir(
+                        os.path.join(os.getcwd(), "experiments", self.experiment_id, folder_name))
+                except:
+                    pass
+        except:
+            pass
+
+        try:
             # PREPARE MAP.CSV FILE
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
 

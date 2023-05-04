@@ -3,6 +3,7 @@
 import copy
 import csv
 import itertools
+import logging
 import math
 import os
 from abc import abstractmethod
@@ -31,7 +32,7 @@ class Election(Instance):
                  election_id,
                  culture_id=None,
                  votes=None,
-                 ballot: str = 'ordinal',
+                 ballot_type: str = 'ordinal',
                  num_voters: int = None,
                  num_candidates: int = None,
                  label=None,
@@ -45,7 +46,7 @@ class Election(Instance):
                          **kwargs)
 
         self.election_id = election_id
-        self.ballot = ballot
+        self.ballot_type = ballot_type
         self.label = label
         self.num_voters = num_voters
         self.num_candidates = num_candidates
@@ -209,6 +210,9 @@ class Election(Instance):
             length = self.num_voters
         elif object_type == 'candidate':
             length = self.num_candidates
+        else:
+            logging.warning('No such type of object!')
+            length = None
 
         # ADJUST
         # find max dist
@@ -299,10 +303,6 @@ class Election(Instance):
             feature_long_id = feature_id
         feature = get_local_feature(feature_id)
         self.features[feature_long_id] = feature(self, **kwargs)
-        # if feature_id in ELECTION_FEATURES_WITH_PARAMS:
-        # election.features[feature_long_id] = feature(election, feature_params=feature_params)
-        # else:
-        #     election.features[feature_long_id] = feature(election)
 
     def get_feature(self, feature_id, feature_long_id=None, **kwargs):
         if feature_long_id is None:

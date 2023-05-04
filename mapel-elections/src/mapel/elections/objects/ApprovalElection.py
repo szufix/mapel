@@ -160,14 +160,14 @@ class ApprovalElection(Election):
 
         self.reverse_approvals = reverse_approvals
 
-    def prepare_instance(self, is_exported=None, aggregated=True):
+    def prepare_instance(self, is_exported=None, is_aggregated=True):
 
         self.votes = generate_approval_votes(culture_id=self.culture_id,
                                              num_candidates=self.num_candidates,
                                              num_voters=self.num_voters,
                                              params=self.params)
         if is_exported:
-            exports.export_approval_election(self, aggregated=aggregated)
+            exports.export_approval_election(self, is_aggregated=is_aggregated)
 
     def compute_distances_between_votes(self, distance_id='hamming'):
         distances = np.zeros([self.num_voters, self.num_voters])

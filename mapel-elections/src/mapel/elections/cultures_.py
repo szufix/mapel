@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from collections import Counter
 from typing import Union
 
 import logging
@@ -151,7 +150,7 @@ def approval_votes_to_vectors(votes, num_candidates=None, num_voters=None):
     return vectors
 
 
-def from_approval(culture_id=None, num_candidates=None, num_voters=None, params=None):
+def from_approval(num_candidates=None, num_voters=None, params=None):
     votes = generate_approval_votes(culture_id=params['culture_id'],
                                     num_candidates=num_candidates, num_voters=num_voters,
                                     params=params)
@@ -172,10 +171,10 @@ def generate_ordinal_alliance_votes(culture_id: str = None,
                                     num_voters: int = None,
                                     params: dict = None):
     if culture_id in LIST_OF_ORDINAL_ALLIANCE_MODELS:
-        votes, alliances = LIST_OF_ORDINAL_ALLIANCE_MODELS.get(culture_id) \
-            (num_voters=num_voters,
-             num_candidates=num_candidates,
-             params=params)
+        votes, alliances = LIST_OF_ORDINAL_ALLIANCE_MODELS.get(culture_id)(
+            num_voters=num_voters,
+            num_candidates=num_candidates,
+            params=params)
     else:
         votes = []
         alliances = []

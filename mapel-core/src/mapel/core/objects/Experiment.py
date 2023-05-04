@@ -88,7 +88,7 @@ class Experiment:
         else:
             self.is_exported = True
             self.experiment_id = experiment_id
-            self.create_structure()
+            self.add_folders_to_experiment()
             self.families = self.import_controllers()
             self.is_exported = is_exported
 
@@ -109,7 +109,7 @@ class Experiment:
         if isinstance(distances, dict):
             self.distances = distances
             print('=== Omitting import! ===')
-        elif is_imported and self.experiment_id != 'virtual': # and fast_import == False:
+        elif is_imported and self.experiment_id != 'virtual':  # and fast_import == False:
             self.distances, self.times, self.stds, self.mappings = \
                 imports.add_distances_to_experiment(self)
         else:
@@ -161,10 +161,6 @@ class Experiment:
         pass
 
     @abstractmethod
-    def create_structure(self):
-        pass
-
-    @abstractmethod
     def import_controllers(self):
         pass
 
@@ -179,10 +175,20 @@ class Experiment:
     def embed_2d(self, **kwargs) -> None:
         self.embed(dim=2, **kwargs)
 
-    def embed(self, embedding_id: str = None, num_iterations: int = 1000, radius: float = np.infty,
-              dim: int = 2, num_neighbors: int = None, method: str = 'standard',
-              zero_distance: float = 1., factor: float = 1., saveas: str = None,
-              init_pos: dict = None, fixed=True, attraction_factor=None) -> None:
+    def embed(self,
+              embedding_id: str = None,
+              num_iterations: int = 1000,
+              radius: float = np.infty,
+              dim: int = 2,
+              num_neighbors: int = None,
+              method: str = 'standard',
+              zero_distance: float = 1.,
+              factor: float = 1.,
+              saveas: str = None,
+              init_pos: dict = None,
+              fixed=True,
+              attraction_factor=None,
+              **kwargs) -> None:
 
         if attraction_factor is None:
             attraction_factor = 1
@@ -241,20 +247,27 @@ class Experiment:
             num_neighbors = 100
 
         if embedding_id.lower() in {'fr', 'spring'}:
-            my_pos = nx.spring_layout(graph, iterations=num_iterations, dim=dim)
+            my_pos = nx.spring_layout(graph,
+                                      iterations=num_iterations,
+                                      dim=dim,
+                                      **kwargs)
         elif embedding_id.lower() in {'mds'}:
-            my_pos = MDS(n_components=dim, dissimilarity='precomputed',
+            my_pos = MDS(n_components=dim,
+                         dissimilarity='precomputed',
                          max_iter=num_iterations,
-                         # n_init=20,
-                         # eps=1e-4,
+                         **kwargs
                          ).fit_transform(x)
         elif embedding_id.lower() in {'tsne'}:
             my_pos = TSNE(n_components=dim,
-                          n_iter=num_iterations).fit_transform(x)
+                          n_iter=num_iterations,
+                          **kwargs).fit_transform(x)
         elif embedding_id.lower() in {'se'}:
-            my_pos = SpectralEmbedding(n_components=dim).fit_transform(x)
+            my_pos = SpectralEmbedding(n_components=dim,
+                         **kwargs).fit_transform(x)
         elif embedding_id.lower() in {'isomap'}:
-            my_pos = Isomap(n_components=dim, n_neighbors=num_neighbors).fit_transform(x)
+            my_pos = Isomap(n_components=dim,
+                            n_neighbors=num_neighbors,
+                         **kwargs).fit_transform(x)
         elif embedding_id.lower() in {'lle'}:
             my_pos = LocallyLinearEmbedding(n_components=dim,
                                             n_neighbors=num_neighbors,

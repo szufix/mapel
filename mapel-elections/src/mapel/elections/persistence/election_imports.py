@@ -186,7 +186,8 @@ def _old_name_extractor(first_line):
 def import_distances(experiment, object_type='vote'):
 
     file_name = f'{experiment.election_id}_{object_type}.csv'
-    path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id, 'distances', file_name)
+    path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id, 'distances',
+                        file_name)
 
     with open(path, 'r', newline='') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=';')

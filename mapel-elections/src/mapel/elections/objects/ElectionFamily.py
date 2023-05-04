@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import copy
+import logging
+
 from mapel.core.objects.Family import Family
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
@@ -97,7 +99,7 @@ class ElectionFamily(Family):
                 election = OrdinalElection(experiment_id, election_id, culture_id=self.culture_id,
                                            num_voters=self.num_voters, label=self.label,
                                            num_candidates=self.num_candidates,
-                                           params=copy.deepcopy(params), ballot=self.instance_type,
+                                           params=copy.deepcopy(params), ballot_type=self.instance_type,
                                            variable=variable, is_imported=False,
                                            )
 
@@ -141,13 +143,18 @@ class ElectionFamily(Family):
 
                 election_id = get_instance_id(self.single, self.family_id, j)
 
-                election = ApprovalElection(experiment_id, election_id, culture_id=self.culture_id,
-                                            num_voters=self.num_voters, label=self.label,
+                election = ApprovalElection(experiment_id,
+                                            election_id,
+                                            culture_id=self.culture_id,
+                                            num_voters=self.num_voters,
+                                            label=self.label,
                                             num_candidates=self.num_candidates,
-                                            params=copy.deepcopy(params), ballot=self.instance_type,
-                                            variable=variable, is_imported=False
+                                            params=copy.deepcopy(params),
+                                            ballot_type=self.instance_type,
+                                            variable=variable,
+                                            is_imported=False
                                             )
-                election.prepare_instance(is_exported=is_exported, aggregated=is_aggregated)
+                election.prepare_instance(is_exported=is_exported, is_aggregated=is_aggregated)
 
                 election.votes_to_approvalwise_vector()
 
@@ -157,8 +164,14 @@ class ElectionFamily(Family):
 
             self.election_ids = _keys
 
+        else:
+            logging.warning('No such instance type!')
+            return None
+
         return elections
 
+    def add_election(self, election):
+        pass
 
 
 

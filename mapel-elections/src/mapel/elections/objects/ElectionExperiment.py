@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import csv
 import warnings
+from abc import ABCMeta, abstractmethod
 from multiprocessing import Process
 from time import sleep
 import ast
@@ -34,6 +35,28 @@ except ImportError as error:
 
 
 class ElectionExperiment(Experiment):
+    __metaclass__ = ABCMeta
+    """Abstract set of instances."""
+
+    @abstractmethod
+    def add_folders_to_experiment(self):
+        pass
+
+    @abstractmethod
+    def prepare_instances(self):
+        pass
+
+    @abstractmethod
+    def add_instance(self):
+        pass
+
+    @abstractmethod
+    def add_feature(self, name, function):
+        pass
+
+    @abstractmethod
+    def add_culture(self, name, function):
+        pass
 
     def __init__(self, shift=False, **kwargs):
         super().__init__(**kwargs)
@@ -228,15 +251,15 @@ class ElectionExperiment(Experiment):
         return list(new_instances.keys())
 
     def add_empty_family(self,
-                   culture_id: str = "none",
-                   label: str = None,
-                   color: str = "black",
-                   alpha: float = 1.,
-                   show: bool = True,
-                   marker: str = 'o',
-                   num_candidates: int = None,
-                   num_voters: int = None,
-                   family_id: str = None):
+                         culture_id: str = "none",
+                         label: str = None,
+                         color: str = "black",
+                         alpha: float = 1.,
+                         show: bool = True,
+                         marker: str = 'o',
+                         num_candidates: int = None,
+                         num_voters: int = None,
+                         family_id: str = None):
 
         self.families[family_id] = ElectionFamily(culture_id=culture_id,
                                                   family_id=family_id,
@@ -260,7 +283,7 @@ class ElectionExperiment(Experiment):
         """ Prepare elections for a given experiment """
 
         self.store_points = store_points
-        self.aggregated = is_aggregated
+        self.is_aggregated = is_aggregated
 
         if self.instances is None:
             self.instances = {}
@@ -286,8 +309,11 @@ class ElectionExperiment(Experiment):
                 self.elections[election_id].compute_alternative_winners(
                     method=method, party_id=party_id, num_winners=num_winners)
 
-    def compute_distances(self, distance_id: str = None, num_processes: int = 1,
-                          self_distances: bool = False, **kwargs) -> None:
+    def compute_distances(self,
+                          distance_id: str = None,
+                          num_processes: int = 1,
+                          self_distances: bool = False,
+                          **kwargs) -> None:
         """ Compute distances between elections (using processes) """
 
         if distance_id is None:
@@ -296,7 +322,7 @@ class ElectionExperiment(Experiment):
         if '-approvalwise' in distance_id:
             for election in self.elections.values():
                 election.votes_to_approvalwise_vector()
-        elif '-coapproval_frequency' in distance_id or 'flow' in distance_id:
+        elif '-coapproval_frequency' in distance_id:
             for election in self.elections.values():
                 election.votes_to_coapproval_frequency_vectors(**kwargs)
         elif '-voterlikeness' in distance_id:
@@ -333,8 +359,10 @@ class ElectionExperiment(Experiment):
                 stop = int((t + 1) * num_distances / num_processes)
                 instances_ids = ids[start:stop]
 
-                process = Process(target=metr.run_multiple_processes, args=(self, instances_ids,
-                                                                            distances, times,
+                process = Process(target=metr.run_multiple_processes, args=(self,
+                                                                            instances_ids,
+                                                                            distances,
+                                                                            times,
                                                                             matchings,
                                                                             t))
                 process.start()
@@ -370,9 +398,9 @@ class ElectionExperiment(Experiment):
 
         path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances")
         make_folder_if_do_not_exist(path_to_folder)
-        path_to_file = os.path.join(path_to_folder, f'{distance_id}.csv')
+        path = os.path.join(path_to_folder, f'{distance_id}.csv')
 
-        with open(path_to_file, 'w', newline='') as csv_file:
+        with open(path, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
 

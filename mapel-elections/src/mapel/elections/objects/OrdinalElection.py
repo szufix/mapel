@@ -2,7 +2,6 @@ from matplotlib import pyplot as plt
 
 import csv
 
-
 from mapel.elections.cultures.group_separable import get_gs_caterpillar_vectors
 from mapel.elections.cultures.preflib import get_sushi_vectors
 from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
@@ -22,7 +21,6 @@ from mapel.elections.cultures.fake import *
 from mapel.elections.other.winners import get_borda_points
 
 
-
 class OrdinalElection(Election):
 
     def __init__(self,
@@ -33,7 +31,7 @@ class OrdinalElection(Election):
                  with_matrix=False,
                  params=None,
                  label=None,
-                 ballot: str = 'ordinal',
+                 ballot_type: str = 'ordinal',
                  num_voters: int = None,
                  num_candidates: int = None,
                  is_imported: bool = False,
@@ -45,7 +43,7 @@ class OrdinalElection(Election):
                          election_id,
                          culture_id=culture_id,
                          votes=votes,
-                         ballot=ballot,
+                         ballot_type=ballot_type,
                          label=label,
                          num_voters=num_voters,
                          num_candidates=num_candidates,
@@ -81,12 +79,11 @@ class OrdinalElection(Election):
                     if self.fake:
                         self.culture_id, self.params, self.num_voters, \
                         self.num_candidates = imports.import_fake_soc_election(experiment_id,
-                                                                       election_id)
+                                                                               election_id)
                     else:
                         self.votes, self.num_voters, self.num_candidates, self.params, \
-                        self.culture_id, self.alliances = imports.import_real_soc_election(experiment_id,
-                                                                                           election_id,
-                                                                                           is_shifted)
+                        self.culture_id, self.alliances = imports.import_real_soc_election(
+                            experiment_id, election_id, is_shifted)
                         try:
                             self.points['voters'] = self.import_ideal_points('voters')
                             self.points['candidates'] = self.import_ideal_points('candidates')
@@ -116,11 +113,12 @@ class OrdinalElection(Election):
             self.params = {}
 
         try:
-            self.params, self.printing_params, self.alpha = update_params_ordinal(self.params,
-                                                                                  self.printing_params,
-                                                                                  self.variable,
-                                                                                  self.culture_id,
-                                                                                  self.num_candidates)
+            self.params, self.printing_params, self.alpha = update_params_ordinal(
+                self.params,
+                self.printing_params,
+                self.variable,
+                self.culture_id,
+                self.num_candidates)
         except:
             pass
 
@@ -308,10 +306,11 @@ class OrdinalElection(Election):
         # election.params['ele_id'] = election.election_id
         # election.params['is_aggregated'] = is_aggregated
         if 'num_alliances' in self.params:
-            self.votes, self.alliances = generate_ordinal_alliance_votes(culture_id=self.culture_id,
-                                                                         num_candidates=self.num_candidates,
-                                                                         num_voters=self.num_voters,
-                                                                         params=self.params)
+            self.votes, self.alliances = generate_ordinal_alliance_votes(
+                culture_id=self.culture_id,
+                num_candidates=self.num_candidates,
+                num_voters=self.num_voters,
+                params=self.params)
         else:
             self.votes = generate_ordinal_votes(culture_id=self.culture_id,
                                                 num_candidates=self.num_candidates,
@@ -372,7 +371,8 @@ class OrdinalElection(Election):
                 points.append([float(row['x']), float(row['y'])])
         return points
 
-    def texify_label(self, name):
+    @staticmethod
+    def texify_label(name):
         return name.replace('phi', '$\phi$'). \
             replace('alpha', '$\\ \\alpha$'). \
             replace('omega', '$\\ \\omega$'). \

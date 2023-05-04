@@ -13,7 +13,6 @@ from mapel.elections.distances import main_approval_distances as mad
 from mapel.elections.distances import main_ordinal_distances as mod
 from mapel.core.inner_distances import map_str_to_func
 from mapel.elections.objects.ApprovalElection import ApprovalElection
-from mapel.elections.objects.Election import Election
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.core.objects.Experiment import Experiment
 
@@ -53,7 +52,8 @@ def add_ordinal_distance(name, function):
     registered_ordinal_distances[name] = function
 
 
-def get_distance(election_1: Election, election_2: Election,
+def get_distance(election_1,
+                 election_2,
                  distance_id: str = None) -> float or (float, list):
     """ Return: distance between elections, (if applicable) optimal matching """
     if type(election_1) is ApprovalElection and type(election_2) is ApprovalElection:
@@ -90,9 +90,13 @@ def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElectio
     if main_distance in registered_ordinal_distances:
 
         if inner_distance is not None:
-            return registered_ordinal_distances.get(main_distance)(election_1, election_2, inner_distance)
+            return registered_ordinal_distances.get(main_distance)(election_1,
+                                                                   election_2,
+                                                                   inner_distance)
         else:
-            return registered_ordinal_distances.get(main_distance)(election_1, election_2, **kwargs)
+            return registered_ordinal_distances.get(main_distance)(election_1,
+                                                                   election_2,
+                                                                   **kwargs)
 
     else:
         logging.warning("No such distance!")
@@ -135,13 +139,13 @@ def run_single_process(exp: Experiment, instances_ids: list,
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
 
-
 def run_multiple_processes(exp: Experiment, instances_ids: list,
                            distances: dict, times: dict, matchings: dict,
                            t) -> None:
     """ Single process for computing distances """
 
-    for instance_id_1, instance_id_2 in tqdm(instances_ids, desc=f'Computing distances of thread {t}'):
+    for instance_id_1, instance_id_2 in tqdm(instances_ids,
+                                             desc=f'Computing distances of thread {t}'):
         start_time = time()
         distance = get_distance(copy.deepcopy(exp.instances[instance_id_1]),
                                 copy.deepcopy(exp.instances[instance_id_2]),

@@ -1,16 +1,19 @@
-
-import ast
-import os
 import csv
 from collections import Counter
 
-import numpy as np
 from mapel.core.glossary import *
 from mapel.core.utils import *
 
 
-def export_votes_to_file(election, culture_id, num_candidates, num_voters,
-                         params, path, ballot, votes=None, is_aggregated=True,
+def export_votes_to_file(election,
+                         culture_id,
+                         num_candidates,
+                         num_voters,
+                         params,
+                         path,
+                         ballot_type,
+                         votes=None,
+                         is_aggregated=True,
                          alliances=None):
     """ Store votes in a file """
 
@@ -43,7 +46,7 @@ def export_votes_to_file(election, culture_id, num_candidates, num_voters,
             file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
                         str(len(counted_votes)) + "\n")
 
-            if ballot == 'approval':
+            if ballot_type == 'approval':
                 for i in range(len(counted_votes)):
                     file_.write(str(counted_votes[i][0]) + ', {')
                     for j in range(len(counted_votes[i][1])):
@@ -52,7 +55,7 @@ def export_votes_to_file(election, culture_id, num_candidates, num_voters,
                             file_.write(", ")
                     file_.write("}\n")
 
-            elif ballot == 'ordinal':
+            elif ballot_type == 'ordinal':
                 for i in range(len(counted_votes)):
                     file_.write(str(counted_votes[i][0]) + ', ')
                     for j in range(len(counted_votes[i][1])):
@@ -65,7 +68,7 @@ def export_votes_to_file(election, culture_id, num_candidates, num_voters,
             file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
                         str(num_voters) + "\n")
 
-            if ballot == 'approval':
+            if ballot_type == 'approval':
                 for i in range(len(votes)):
                     file_.write('1, {')
                     for j in range(len(votes[i])):
@@ -74,7 +77,7 @@ def export_votes_to_file(election, culture_id, num_candidates, num_voters,
                             file_.write(", ")
                     file_.write("}\n")
 
-            elif ballot == 'ordinal':
+            elif ballot_type == 'ordinal':
                 for i in range(len(votes)):
                     file_.write('1, ')
                     for j in range(len(votes[i])):
@@ -84,7 +87,7 @@ def export_votes_to_file(election, culture_id, num_candidates, num_voters,
                     file_.write("\n")
 
 
-def export_approval_election(election, aggregated=True):
+def export_approval_election(election, is_aggregated=True):
     """ Store approval election in an .app file """
 
     path_to_folder = os.path.join(os.getcwd(), "experiments", election.experiment_id, "elections")
@@ -99,9 +102,15 @@ def export_approval_election(election, aggregated=True):
         file_.close()
 
     else:
-        export_votes_to_file(election, election.culture_id, election.num_candidates, election.num_voters,
-                             election.params, path_to_file, election.ballot, votes=election.votes,
-                             is_aggregated=aggregated)
+        export_votes_to_file(election,
+                             election.culture_id,
+                             election.num_candidates,
+                             election.num_voters,
+                             election.params,
+                             path_to_file,
+                             election.ballot_type,
+                             votes=election.votes,
+                             is_aggregated=is_aggregated)
 
 
 def export_ordinal_election(election, is_aggregated=True):
@@ -119,7 +128,7 @@ def export_ordinal_election(election, is_aggregated=True):
         file_.close()
     else:
         export_votes_to_file(election, election.culture_id, election.num_candidates, election.num_voters,
-                             election.params, path_to_file, election.ballot, votes=election.votes,
+                             election.params, path_to_file, election.ballot_type, votes=election.votes,
                              is_aggregated=is_aggregated, alliances=election.alliances)
 
 

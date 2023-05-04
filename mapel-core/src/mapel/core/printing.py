@@ -1,4 +1,3 @@
-import csv
 import os
 import math
 
@@ -249,14 +248,22 @@ def print_map_1d(experiment, saveas=None):
 
 
 def print_map_3d(experiment,
-                 xlabel=None, feature_id=None,
-                 attraction_factor=1, axis=False,
-                 distance_name="emd-positionwise",
+                 xlabel=None,
+                 feature_id=None,
+                 axis=False,
                  ticks=None, dim=3,
-                 title=None, shading=False,
-                 saveas="map_2d", show=True, ms=20, normalizing_func=None,
-                 xticklabels=None, cmap=None, marker_func=None, tex=False,
-                 legend=True, title_pos=None):
+                 title=None,
+                 shading=False,
+                 saveas="map_3d",
+                 show=True,
+                 ms=20,
+                 normalizing_func=None,
+                 xticklabels=None,
+                 cmap=None,
+                 marker_func=None,
+                 tex=False,
+                 legend=True,
+                 title_pos=None):
     """ This function is not updated """
     experiment.compute_coordinates_by_families()
 
@@ -275,11 +282,11 @@ def print_map_3d(experiment,
     # COLORING
     if feature_id is not None:
         _color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
-                             feature_id=feature_id,
-                             normalizing_func=normalizing_func,
-                             marker_func=marker_func,
-                             xticklabels=xticklabels, ms=ms, cmap=cmap,
-                             ticks=ticks, dim=dim)
+                              feature_id=feature_id,
+                              normalizing_func=normalizing_func,
+                              marker_func=marker_func,
+                              xticklabels=xticklabels, ms=ms, cmap=cmap,
+                              ticks=ticks, dim=dim)
     else:
         basic_coloring(experiment=experiment, ax=ax, dim=dim)
 
@@ -293,8 +300,6 @@ def print_map_3d(experiment,
 
     if show:
         plt.show()
-
-
 
 
 # HELPER FUNCTIONS FOR PRINT_2D
@@ -325,16 +330,16 @@ def _import_values_for_feature(experiment, feature_id=None, upper_limit=None,
                 values = {k: convert_none(v) for k, v in values.items()}
         else:
             values = imports.get_values_from_csv_file(experiment, feature_id=feature_id,
-                                              feature_long_id=feature_id,
-                                              upper_limit=upper_limit,
-                                              lower_limit=lower_limit,
-                                              column_id=column_id)
+                                                      feature_long_id=feature_id,
+                                                      upper_limit=upper_limit,
+                                                      lower_limit=lower_limit,
+                                                      column_id=column_id)
             if feature_id == 'partylist' and column_id == 'value':
                 bounds = imports.get_values_from_csv_file(experiment, feature_id=feature_id,
-                                                  feature_long_id=feature_id,
-                                                  upper_limit=upper_limit,
-                                                  lower_limit=lower_limit,
-                                                  column_id='bound')
+                                                          feature_long_id=feature_id,
+                                                          upper_limit=upper_limit,
+                                                          lower_limit=lower_limit,
+                                                          column_id='bound')
     else:
         values = feature_id
 
@@ -452,16 +457,20 @@ def _import_values_for_feature(experiment, feature_id=None, upper_limit=None,
     return xx, yy, zz, shades, markers, mses, local_min, local_max, blank_xx, blank_yy, names
 
 
-def _import_values_for_features(experiment, feature_ids=None, upper_limit=np.infty,
+def _import_values_for_features(experiment,
+                                feature_ids=None,
+                                upper_limit=np.infty,
                                 normalizing_func=None,
-                                marker_func=None, dim=2, column_id='value'):
-    """ Import values for a feature_id """
+                                marker_func=None,
+                                dim=2,
+                                column_id='value'):
+    """ Import values for a feature_ids """
 
     values_1 = imports.get_values_from_csv_file(experiment, feature_id=feature_ids[0],
-                                        column_id=column_id, upper_limit=upper_limit)
+                                                column_id=column_id, upper_limit=upper_limit)
 
     values_2 = imports.get_values_from_csv_file(experiment, feature_id=feature_ids[1],
-                                        column_id=column_id, upper_limit=upper_limit)
+                                                column_id=column_id, upper_limit=upper_limit)
 
     xx = []
     yy = []
@@ -606,8 +615,6 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
             cmap = custom_div_cmap(num_colors=num_colors)
         else:
             cmap = custom_div_cmap()
-
-    from matplotlib.colors import LogNorm
 
     for um in unique_markers:
         masks = (markers == um)
@@ -1025,6 +1032,7 @@ def _basic_background(ax=None, legend=None, saveas=None, xlabel=None, title=None
             # plt.savefig(file_name, dpi=dpi)
         else:
             plt.savefig(file_name, bbox_inches=bbox_inches, dpi=dpi)
+
 
 # TEX
 def _saveas_tex(saveas=None):
@@ -1647,7 +1655,6 @@ def print_approvals_histogram(election):
     plt.xlim([-1, election.num_candidates + 1])
     plt.savefig("images/histograms/" + election.election_id + ".png")
     plt.show()
-
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

@@ -41,24 +41,24 @@ def export_embedding(experiment, embedding_id, saveas, dim, my_pos):
 
     with open(path_to_file, 'w', newline='') as csvfile:
 
-                writer = csv.writer(csvfile, delimiter=';')
-                if dim == 1:
-                    writer.writerow(["instance_id", "x"])
-                elif dim == 2:
-                    writer.writerow(["instance_id", "x", "y"])
-                elif dim == 3:
-                    writer.writerow(["instance_id", "x", "y", "z"])
+        writer = csv.writer(csvfile, delimiter=';')
+        if dim == 1:
+            writer.writerow(["instance_id", "x"])
+        elif dim == 2:
+            writer.writerow(["instance_id", "x", "y"])
+        elif dim == 3:
+            writer.writerow(["instance_id", "x", "y", "z"])
 
-                ctr = 0
-                for instance_id in experiment.instances:
-                    x = round(experiment.coordinates[instance_id][0], 5)
-                    if dim == 1:
-                        writer.writerow([instance_id, x])
-                    else:
-                        y = round(experiment.coordinates[instance_id][1], 5)
-                        if dim == 2:
-                            writer.writerow([instance_id, x, y])
-                        else:
-                            z = round(my_pos[ctr][2], 5)
-                            writer.writerow([instance_id, x, y, z])
-                    ctr += 1
+        ctr = 0
+        for instance_id in experiment.instances:
+            x = round(experiment.coordinates[instance_id][0], 5)
+            if dim == 1:
+                writer.writerow([instance_id, x])
+            else:
+                y = round(experiment.coordinates[instance_id][1], 5)
+                if dim == 2:
+                    writer.writerow([instance_id, x, y])
+                else:
+                    z = round(my_pos[ctr][2], 5)
+                    writer.writerow([instance_id, x, y, z])
+            ctr += 1

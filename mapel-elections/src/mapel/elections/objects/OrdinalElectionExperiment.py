@@ -36,7 +36,7 @@ class OrdinalElectionExperiment(ElectionExperiment):
     def add_distance(self, name, function):
         distances.add_ordinal_distance(name, function)
 
-    def create_structure(self) -> None:
+    def add_folders_to_experiment(self) -> None:
 
         if not os.path.isdir("experiments/"):
             os.mkdir(os.path.join(os.getcwd(), "experiments"))
@@ -49,12 +49,23 @@ class OrdinalElectionExperiment(ElectionExperiment):
 
         try:
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "features"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices"))
 
+            list_of_folders = ['distances',
+                               'features',
+                               'coordinates',
+                               'elections',
+                               'matrices']
+
+            for folder_name in list_of_folders:
+                try:
+                    os.mkdir(
+                        os.path.join(os.getcwd(), "experiments", self.experiment_id, folder_name))
+                except:
+                    pass
+        except:
+            pass
+
+        try:
             path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
 
             with open(path, 'w') as file_csv:
