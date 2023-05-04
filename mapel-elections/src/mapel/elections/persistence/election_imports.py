@@ -10,7 +10,7 @@ def import_real_soc_election(experiment_id: str, election_id: str, is_shifted=Fa
     """ Import real ordinal election form .soc file """
 
     file_name = f'{election_id}.soc'
-    path = os.path.join(os.getcwd(), "election", experiment_id, "elections", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
 
     params = 0
@@ -67,7 +67,7 @@ def import_fake_soc_election(experiment_id, name):
     """ Import fake ordinal election form .soc file """
 
     file_name = f'{name}.soc'
-    path = os.path.join(os.getcwd(), "election", experiment_id, "elections", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
 
     first_line = my_file.readline()
@@ -90,7 +90,7 @@ def import_real_app_election(experiment_id: str, election_id: str, is_shifted=Fa
     """ Import real approval election from .app file """
 
     file_name = f'{election_id}.app'
-    path = os.path.join(os.getcwd(), "election", experiment_id, "elections", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
 
     params = 0
@@ -146,7 +146,7 @@ def import_fake_app_election(experiment_id: str, name: str):
     """ Import fake approval election from .app file """
 
     file_name = f'{name}.app'
-    path = os.path.join(os.getcwd(), "election", experiment_id, "elections", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     first_line = my_file.readline()
     first_line = first_line.strip().split()
@@ -164,7 +164,7 @@ def import_fake_app_election(experiment_id: str, name: str):
 
 def check_if_fake(experiment_id, name, extention):
     file_name = f'{name}.{extention}'
-    path = os.path.join(os.getcwd(), "election", experiment_id, "elections", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     my_file = open(path, 'r')
     line = my_file.readline().strip()
     my_file.close()
@@ -186,7 +186,7 @@ def _old_name_extractor(first_line):
 def import_distances(experiment, object_type='vote'):
 
     file_name = f'{experiment.election_id}_{object_type}.csv'
-    path = os.path.join(os.getcwd(), 'election', experiment.experiment_id, 'distances', file_name)
+    path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id, 'distances', file_name)
 
     with open(path, 'r', newline='') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=';')
@@ -204,7 +204,7 @@ def import_distances(experiment, object_type='vote'):
 
 def import_coordinates(self, object_type='vote'):
     file_name = f'{self.election_id}_{object_type}.csv'
-    path = os.path.join(os.getcwd(), 'election', self.experiment_id, 'coordinates',
+    path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'coordinates',
                         file_name)
     with open(path, 'r', newline='') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=';')

@@ -5,7 +5,7 @@ from mapel.core.utils import make_folder_if_do_not_exist
 
 # Features
 def export_instance_feature(experiment, feature_id, feature_dict):
-    path_to_folder = os.path.join(os.getcwd(), "election", experiment.experiment_id, "features")
+    path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features")
     make_folder_if_do_not_exist(path_to_folder)
     path_to_file = os.path.join(path_to_folder, f'{feature_id}_{experiment.embedding_id}.csv')
 
@@ -17,7 +17,7 @@ def export_instance_feature(experiment, feature_id, feature_dict):
 
 
 def export_feature(experiment, feature_dict=None, saveas=None):
-    path_to_folder = os.path.join(os.getcwd(), "election", experiment.experiment_id, "features")
+    path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features")
     make_folder_if_do_not_exist(path_to_folder)
     path_to_file = os.path.join(path_to_folder, f'{saveas}.csv')
 

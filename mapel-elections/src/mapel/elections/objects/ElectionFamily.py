@@ -68,9 +68,6 @@ class ElectionFamily(Family):
 
         if self.instance_type == 'ordinal':
 
-            # if culture_id in PARTY_MODELS:
-            #     params['party'] = prepare_parties(params=params, culture_id=culture_id)
-
             elections = {}
             _keys = []
             for j in range(self.size):

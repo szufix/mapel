@@ -23,7 +23,6 @@ from mapel.elections.other.winners import get_borda_points
 
 
 
-
 class OrdinalElection(Election):
 
     def __init__(self,
