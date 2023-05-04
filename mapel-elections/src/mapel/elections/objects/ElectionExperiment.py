@@ -35,8 +35,9 @@ except ImportError as error:
 
 class ElectionExperiment(Experiment):
 
-    def __init__(self, **kwargs):
+    def __init__(self, shift=False, **kwargs):
         super().__init__(**kwargs)
+        self.shift = shift
         self.default_num_candidates = 10
         self.default_num_voters = 100
         self.default_committee_size = 1
@@ -189,8 +190,8 @@ class ElectionExperiment(Experiment):
             elif culture_id in {'mallows'} and params['phi'] is not None:
                 family_id += '_' + str(float(params['phi']))
             elif culture_id in {'norm-mallows', 'norm-mallows_matrix'} \
-                    and params['norm_phi'] is not None:
-                family_id += '_' + str(float(params['norm_phi']))
+                    and params['normphi'] is not None:
+                family_id += '_' + str(float(params['normphi']))
 
         elif label is None:
             label = family_id
@@ -216,7 +217,7 @@ class ElectionExperiment(Experiment):
         self.main_order = [i for i in range(self.num_elections)]
 
         new_instances = self.families[family_id].prepare_family(
-            store=self.is_exported,
+            is_exported=self.is_exported,
             experiment_id=self.experiment_id)
 
         for instance_id in new_instances:
@@ -226,22 +227,51 @@ class ElectionExperiment(Experiment):
 
         return list(new_instances.keys())
 
-    def prepare_elections(self, store_points=False, aggregated=True):
+    def add_empty_family(self,
+                   culture_id: str = "none",
+                   label: str = None,
+                   color: str = "black",
+                   alpha: float = 1.,
+                   show: bool = True,
+                   marker: str = 'o',
+                   num_candidates: int = None,
+                   num_voters: int = None,
+                   family_id: str = None):
+
+        self.families[family_id] = ElectionFamily(culture_id=culture_id,
+                                                  family_id=family_id,
+                                                  label=label,
+                                                  color=color,
+                                                  alpha=alpha,
+                                                  show=show,
+                                                  size=0,
+                                                  marker=marker,
+                                                  num_candidates=num_candidates,
+                                                  num_voters=num_voters,
+                                                  instance_type=self.instance_type)
+
+        self.families[family_id].prepare_family(
+            is_exported=self.is_exported,
+            experiment_id=self.experiment_id)
+
+        return self.families[family_id]
+
+    def prepare_elections(self, store_points=False, is_aggregated=True):
         """ Prepare elections for a given experiment """
 
         self.store_points = store_points
-        self.aggregated = aggregated
+        self.aggregated = is_aggregated
 
         if self.instances is None:
             self.instances = {}
 
-        for family_id in tqdm(self.families):
+        for family_id in tqdm(self.families, desc="Preparing instances"):
 
             new_instances = self.families[family_id].prepare_family(
-                store=self.is_exported,
+                is_exported=self.is_exported,
                 experiment_id=self.experiment_id,
                 store_points=store_points,
-                aggregated=aggregated)
+                is_aggregated=is_aggregated)
 
             for instance_id in new_instances:
                 self.instances[instance_id] = new_instances[instance_id]
@@ -337,6 +367,7 @@ class ElectionExperiment(Experiment):
         self.matchings = matchings
 
     def _store_distances_to_file(self, distance_id, distances, times, self_distances):
+
         path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances")
         make_folder_if_do_not_exist(path_to_folder)
         path_to_file = os.path.join(path_to_folder, f'{distance_id}.csv')

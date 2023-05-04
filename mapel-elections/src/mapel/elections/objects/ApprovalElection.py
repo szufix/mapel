@@ -7,7 +7,7 @@ from mapel.core.inner_distances import hamming
 from mapel.core.utils import *
 import mapel.elections.persistence.election_imports as imports
 import mapel.elections.persistence.election_exports as exports
-from mapel.elections.cultures.update_params import *
+from mapel.elections.cultures.params import *
 
 
 class ApprovalElection(Election):
@@ -18,7 +18,7 @@ class ApprovalElection(Election):
                  culture_id=None,
                  num_candidates=None,
                  is_imported: bool = False,
-                 shift: bool = False,
+                 is_shifted: bool = False,
                  params=None,
                  variable=None,
                  **kwargs):
@@ -51,7 +51,7 @@ class ApprovalElection(Election):
                     self.votes, self.num_voters, self.num_candidates, self.params, \
                     self.culture_id = imports.import_real_app_election(experiment_id,
                                                                        election_id,
-                                                                       shift)
+                                                                       is_shifted)
                     try:
                         self.alpha = self.printing_params['alpha']
                     except:
@@ -291,7 +291,7 @@ class ApprovalElection(Election):
         if radius:
             plt.xlim([avg_x - radius, avg_x + radius])
             plt.ylim([avg_y - radius, avg_y + radius])
-        # plt.title(experiment.label, size=38)
+        # plt.title(election.label, size=38)
         plt.title(self.texify_label(self.label), size=title_size)
         plt.axis('off')
 

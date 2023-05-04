@@ -22,28 +22,30 @@ from mapel.elections.cultures.fake import *
 from mapel.elections.other.winners import get_borda_points
 
 
+
+
 class OrdinalElection(Election):
 
     def __init__(self,
                  experiment_id,
                  election_id,
+                 culture_id=None,
                  votes=None,
                  with_matrix=False,
-                 culture_id=None,
                  params=None,
                  label=None,
                  ballot: str = 'ordinal',
                  num_voters: int = None,
                  num_candidates: int = None,
                  is_imported: bool = False,
-                 shift: bool = False,
+                 is_shifted: bool = False,
                  variable=None,
                  fast_import=False):
 
         super().__init__(experiment_id,
                          election_id,
-                         votes=votes,
                          culture_id=culture_id,
+                         votes=votes,
                          ballot=ballot,
                          label=label,
                          num_voters=num_voters,
@@ -84,8 +86,8 @@ class OrdinalElection(Election):
                     else:
                         self.votes, self.num_voters, self.num_candidates, self.params, \
                         self.culture_id, self.alliances = imports.import_real_soc_election(experiment_id,
-                                                                                   election_id,
-                                                                                   shift)
+                                                                                           election_id,
+                                                                                           is_shifted)
                         try:
                             self.points['voters'] = self.import_ideal_points('voters')
                             self.points['candidates'] = self.import_ideal_points('candidates')
@@ -259,7 +261,7 @@ class OrdinalElection(Election):
         for v1 in range(self.num_voters):
             for v2 in range(self.num_voters):
                 matrix[v1][v2] = swap_distance_between_potes(self.potes[v1], self.potes[v2])
-                # matrix[v1][v2] = spearman_distance_between_potes(experiment.potes[v1], experiment.potes[v2])
+                # matrix[v1][v2] = spearman_distance_between_potes(election.potes[v1], election.potes[v2])
 
         # VOTERLIKENESS IS SYMMETRIC
         for i in range(self.num_voters):
@@ -302,10 +304,10 @@ class OrdinalElection(Election):
         if method in {'approx_cc', 'approx_hb', 'approx_pav'}:
             self.winners = generate_winners(election=self, num_winners=num_winners)
 
-    def prepare_instance(self, is_exported=None, aggregated=True):
-        # experiment.params['exp_id'] = experiment.experiment_id
-        # experiment.params['ele_id'] = experiment.election_id
-        # experiment.params['aggregated'] = aggregated
+    def prepare_instance(self, is_exported=None, is_aggregated=True):
+        # election.params['exp_id'] = election.experiment_id
+        # election.params['ele_id'] = election.election_id
+        # election.params['is_aggregated'] = is_aggregated
         if 'num_alliances' in self.params:
             self.votes, self.alliances = generate_ordinal_alliance_votes(culture_id=self.culture_id,
                                                                          num_candidates=self.num_candidates,
@@ -318,7 +320,7 @@ class OrdinalElection(Election):
                                                 params=self.params)
 
         if is_exported:
-            exports.export_ordinal_election(self, aggregated=aggregated)
+            exports.export_ordinal_election(self, is_aggregated=is_aggregated)
 
     def compute_distances(self, distance_id='swap', object_type=None):
         """ Return: distances between votes """
@@ -353,7 +355,7 @@ class OrdinalElection(Election):
         self.distances[object_type] = distances
 
         if self.is_exported:
-            self.export_distances(object_type=object_type)
+            exports.export_distances(self, object_type=object_type)
 
     def is_condorcet(self):
         """ Check if election witness Condorcet winner"""
@@ -449,10 +451,10 @@ class OrdinalElection(Election):
         if radius:
             plt.xlim([avg_x - radius, avg_x + radius])
             plt.ylim([avg_y - radius, avg_y + radius])
-        # plt.title(experiment.label, size=38)
+        # plt.title(election.label, size=38)
         plt.title(self.texify_label(self.label), size=title_size)
-        # plt.title(experiment.texify_label(experiment.label), size=38, y=0.94)
-        # plt.title(experiment.label, size=title_size)
+        # plt.title(election.texify_label(election.label), size=38, y=0.94)
+        # plt.title(election.label, size=title_size)
         plt.axis('off')
 
         if saveas is None:

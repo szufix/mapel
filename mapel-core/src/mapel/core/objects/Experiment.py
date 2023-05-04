@@ -109,13 +109,9 @@ class Experiment:
         if isinstance(distances, dict):
             self.distances = distances
             print('=== Omitting import! ===')
-        elif is_imported and self.experiment_id != 'virtual':# and fast_import == False:
-            try:
-                self.distances, self.times, self.stds, self.mappings = \
-                    imports.add_distances_to_experiment(self)
-                print('=== Distances imported successfully! ===')
-            except FileNotFoundError:
-                print('=== Distances not found! ===')
+        elif is_imported and self.experiment_id != 'virtual': # and fast_import == False:
+            self.distances, self.times, self.stds, self.mappings = \
+                imports.add_distances_to_experiment(self)
         else:
             self.distances = {}
 
@@ -127,10 +123,10 @@ class Experiment:
                 if coordinates_names is not None:
                     for file_name in coordinates_names:
                         self.coordinates_lists[file_name] = \
-                            self.add_coordinates_to_experiment(dim=dim, file_name=file_name)
+                            imports.add_coordinates_to_experiment(self, dim=dim, file_name=file_name)
                     self.coordinates = self.coordinates_lists[coordinates_names[0]]
                 else:
-                    self.coordinates = self.add_coordinates_to_experiment(dim=dim)
+                    self.coordinates = imports.add_coordinates_to_experiment(self, dim=dim)
                 print('=== Coordinates imported successfully! ===')
             except FileNotFoundError:
                 print('=== Coordinates not found! ===')
@@ -300,8 +296,6 @@ class Experiment:
 
         if self.is_exported:
             exports.export_embedding(self, embedding_id, saveas, dim, my_pos)
-
-        # experiment.coordinates = coordinates
 
     def print_map_1d(self, **kwargs) -> None:
         pr.print_map_1d(self, **kwargs)
@@ -475,8 +469,8 @@ class Experiment:
 
     def get_feature(self, feature_id, column_id='value'):
 
-        # if feature_id not in experiment.features:
-        #     experiment.features[feature_id] = experiment.import_feature(feature_id)
+        # if feature_id not in election.features:
+        #     election.features[feature_id] = election.import_feature(feature_id)
 
         self.features[feature_id] = self.import_feature(feature_id, column_id=column_id)
 

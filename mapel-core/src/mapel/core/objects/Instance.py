@@ -14,19 +14,19 @@ class Instance:
         self.alpha = alpha
         self.printing_params = {}
 
-    # def __getattr__(experiment, name):
+    # def __getattr__(election, name):
     #     if name == 'model_id':
-    #         return experiment.culture_id
+    #         return election.culture_id
     #     else:
     #         try:
-    #             return experiment.__dict__[name]
+    #             return election.__dict__[name]
     #         except KeyError:
     #             raise AttributeError(name)
     #
-    # def __setattr__(experiment, name, value):
+    # def __setattr__(election, name, value):
     #     if name == 'model_id':
-    #         experiment.culture_id = value
+    #         election.culture_id = value
     #     else:
-    #         experiment.__dict__[name] = value
+    #         election.__dict__[name] = value
 
 

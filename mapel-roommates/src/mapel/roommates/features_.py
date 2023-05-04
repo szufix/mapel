@@ -61,7 +61,7 @@ def distortion_from_all(experiment, election):
         # if election_id_2 in {'identity_10_100_0', 'uniformity_10_100_0',
         #                      'antagonism_10_100_0', 'stratification_10_100_0'}:
         if election_id_1 != election_id_2:
-            # m = experiment.instances[election_id_1].num_candidates
+            # m = election.instances[election_id_1].num_candidates
             # print(election_id_1, election_id_2)
             true_distance = experiment.distances[election_id_1][election_id_2]
             true_distance /= experiment.distances['MD']['MA']

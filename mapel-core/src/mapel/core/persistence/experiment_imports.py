@@ -2,7 +2,6 @@ import ast
 import csv
 import logging
 import os
-import warnings
 
 import numpy as np
 from mapel.core.glossary import *
@@ -53,82 +52,88 @@ def import_distances(experiment, distance_id):
 
 def add_distances_to_experiment(experiment) -> (dict, dict, dict):
         """ Import precomputed distances between each pair of instances from a file """
-        file_name = f'{experiment.distance_id}.csv'
-        path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id, 'distances', file_name)
+        try:
+            file_name = f'{experiment.distance_id}.csv'
+            path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id, 'distances', file_name)
 
-        distances = {}
-        times = {}
-        stds = {}
-        mappings = {}
-        with open(path, 'r', newline='') as csv_file:
+            distances = {}
+            times = {}
+            stds = {}
+            mappings = {}
+            with open(path, 'r', newline='') as csv_file:
 
-            reader = csv.DictReader(csv_file, delimiter=';')
-            warn = False
+                reader = csv.DictReader(csv_file, delimiter=';')
+                warn = False
 
-            for row in reader:
-                try:
-                    instance_id_1 = row['election_id_1']
-                    instance_id_2 = row['election_id_2']
-                except:
+                for row in reader:
                     try:
-                        instance_id_1 = row['instance_id_1']
-                        instance_id_2 = row['instance_id_2']
+                        instance_id_1 = row['election_id_1']
+                        instance_id_2 = row['election_id_2']
+                    except:
+                        try:
+                            instance_id_1 = row['instance_id_1']
+                            instance_id_2 = row['instance_id_2']
+                        except:
+                            pass
+
+                    if instance_id_1 not in experiment.instances or instance_id_2 not in experiment.instances:
+                        continue
+
+                    if instance_id_1 not in distances:
+                        distances[instance_id_1] = {}
+                    if instance_id_1 not in times:
+                        times[instance_id_1] = {}
+                    if instance_id_1 not in stds:
+                        stds[instance_id_1] = {}
+                    if instance_id_1 not in mappings:
+                        mappings[instance_id_1] = {}
+
+                    if instance_id_2 not in distances:
+                        distances[instance_id_2] = {}
+                    if instance_id_2 not in times:
+                        times[instance_id_2] = {}
+                    if instance_id_2 not in stds:
+                        stds[instance_id_2] = {}
+                    if instance_id_2 not in mappings:
+                        mappings[instance_id_2] = {}
+
+                    try:
+                        distances[instance_id_1][instance_id_2] = float(row['distance'])
+                        distances[instance_id_2][instance_id_1] = distances[instance_id_1][
+                            instance_id_2]
                     except:
                         pass
 
-                if instance_id_1 not in experiment.instances or instance_id_2 not in experiment.instances:
-                    continue
+                    try:
+                        times[instance_id_1][instance_id_2] = float(row['time'])
+                        times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
+                    except:
+                        pass
 
-                if instance_id_1 not in distances:
-                    distances[instance_id_1] = {}
-                if instance_id_1 not in times:
-                    times[instance_id_1] = {}
-                if instance_id_1 not in stds:
-                    stds[instance_id_1] = {}
-                if instance_id_1 not in mappings:
-                    mappings[instance_id_1] = {}
+                    try:
+                        stds[instance_id_1][instance_id_2] = float(row['std'])
+                        stds[instance_id_2][instance_id_1] = stds[instance_id_1][instance_id_2]
+                    except:
+                        pass
 
-                if instance_id_2 not in distances:
-                    distances[instance_id_2] = {}
-                if instance_id_2 not in times:
-                    times[instance_id_2] = {}
-                if instance_id_2 not in stds:
-                    stds[instance_id_2] = {}
-                if instance_id_2 not in mappings:
-                    mappings[instance_id_2] = {}
+                    try:
+                        mappings[instance_id_1][instance_id_2] = ast.literal_eval(str(row['mapping']))
+                        mappings[instance_id_2][instance_id_1] = np.argsort(mappings[instance_id_1][instance_id_2])
+                    except:
+                        pass
 
-                try:
-                    distances[instance_id_1][instance_id_2] = float(row['distance'])
-                    distances[instance_id_2][instance_id_1] = distances[instance_id_1][
-                        instance_id_2]
-                except KeyError:
-                    pass
+                    if instance_id_1 not in experiment.instances:
+                        warn = True
 
-                try:
-                    times[instance_id_1][instance_id_2] = float(row['time'])
-                    times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
-                except KeyError:
-                    pass
+                if warn:
+                    text = f'Possibly outdated distances are imported!'
+                    logging.warning(text)
 
-                try:
-                    stds[instance_id_1][instance_id_2] = float(row['std'])
-                    stds[instance_id_2][instance_id_1] = stds[instance_id_1][instance_id_2]
-                except KeyError:
-                    pass
+            print('=== Distances imported successfully! ===')
+            return distances, times, stds, mappings
 
-                try:
-                    mappings[instance_id_1][instance_id_2] = ast.literal_eval(str(row['mapping']))
-                    mappings[instance_id_2][instance_id_1] = np.argsort(mappings[instance_id_1][instance_id_2])
-                except KeyError:
-                    pass
-
-                if instance_id_1 not in experiment.instances:
-                    warn = True
-
-            if warn:
-                text = f'Possibly outdated distances are imported!'
-                warnings.warn(text)
-        return distances, times, stds, mappings
+        except FileNotFoundError:
+            print('=== Distances not found! ===')
 
 
 # Features
@@ -141,8 +146,8 @@ def get_values_from_csv_file(experiment, feature_id, feature_long_id=None,
         feature_long_id = feature_id
 
     if feature_id in EMBEDDING_RELATED_FEATURE:
-        # path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-        #                     "features", f'{feature_long_id}__{experiment.distance_id}.csv')
+        # path = os.path.join(os.getcwd(), "experiments", election.experiment_id,
+        #                     "features", f'{feature_long_id}__{election.distance_id}.csv')
         path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
                             "features", f'{feature_long_id}.csv')
     else:
@@ -216,6 +221,5 @@ def add_coordinates_to_experiment(experiment, dim=2, file_name=None) -> dict:
         if warn:
             text = f'Possibly outdated coordinates are imported!'
             logging.warning(text)
-            # warnings.warn(text)
 
     return coordinates

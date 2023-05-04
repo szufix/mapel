@@ -10,7 +10,7 @@ from mapel.core.utils import *
 
 
 def export_votes_to_file(election, culture_id, num_candidates, num_voters,
-                         params, path, ballot, votes=None, aggregated=True,
+                         params, path, ballot, votes=None, is_aggregated=True,
                          alliances=None):
     """ Store votes in a file """
 
@@ -34,7 +34,7 @@ def export_votes_to_file(election, culture_id, num_candidates, num_voters,
             for i in range(num_candidates):
                 file_.write(str(i) + ', c' + str(i) + "\n")
 
-        if aggregated:
+        if is_aggregated:
 
             c = Counter(map(tuple, votes))
             counted_votes = [[count, list(row)] for row, count in c.items()]
@@ -84,43 +84,43 @@ def export_votes_to_file(election, culture_id, num_candidates, num_voters,
                     file_.write("\n")
 
 
-def export_approval_election(experiment, aggregated=True):
+def export_approval_election(election, aggregated=True):
     """ Store approval election in an .app file """
 
-    path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "elections")
+    path_to_folder = os.path.join(os.getcwd(), "experiments", election.experiment_id, "elections")
     make_folder_if_do_not_exist(path_to_folder)
-    path_to_file = os.path.join(path_to_folder, f'{experiment.election_id}.app')
+    path_to_file = os.path.join(path_to_folder, f'{election.election_id}.app')
 
-    if experiment.culture_id in APPROVAL_FAKE_MODELS:
+    if election.culture_id in APPROVAL_FAKE_MODELS:
         file_ = open(path_to_file, 'w')
-        file_.write(f'$ {experiment.culture_id} {experiment.params} \n')
-        file_.write(str(experiment.num_candidates) + '\n')
-        file_.write(str(experiment.num_voters) + '\n')
+        file_.write(f'$ {election.culture_id} {election.params} \n')
+        file_.write(str(election.num_candidates) + '\n')
+        file_.write(str(election.num_voters) + '\n')
         file_.close()
 
     else:
-        export_votes_to_file(experiment, experiment.culture_id, experiment.num_candidates, experiment.num_voters,
-                             experiment.params, path_to_file, experiment.ballot, votes=experiment.votes,
-                             aggregated=aggregated)
+        export_votes_to_file(election, election.culture_id, election.num_candidates, election.num_voters,
+                             election.params, path_to_file, election.ballot, votes=election.votes,
+                             is_aggregated=aggregated)
 
 
-def export_ordinal_election(experiments, aggregated=True):
+def export_ordinal_election(election, is_aggregated=True):
     """ Store ordinal election in a .soc file """
 
-    path_to_folder = os.path.join(os.getcwd(), "experiments", experiments.experiment_id, "elections")
+    path_to_folder = os.path.join(os.getcwd(), "experiments", election.experiment_id, "elections")
     make_folder_if_do_not_exist(path_to_folder)
-    path_to_file = os.path.join(path_to_folder, f'{experiments.election_id}.soc')
+    path_to_file = os.path.join(path_to_folder, f'{election.election_id}.soc')
 
-    if experiments.culture_id in LIST_OF_FAKE_MODELS:
+    if election.culture_id in LIST_OF_FAKE_MODELS:
         file_ = open(path_to_file, 'w')
-        file_.write(f'$ {experiments.culture_id} {experiments.params} \n')
-        file_.write(str(experiments.num_candidates) + '\n')
-        file_.write(str(experiments.num_voters) + '\n')
+        file_.write(f'$ {election.culture_id} {election.params} \n')
+        file_.write(str(election.num_candidates) + '\n')
+        file_.write(str(election.num_voters) + '\n')
         file_.close()
     else:
-        export_votes_to_file(experiments, experiments.culture_id, experiments.num_candidates, experiments.num_voters,
-                             experiments.params, path_to_file, experiments.ballot, votes=experiments.votes,
-                             aggregated=aggregated, alliances=experiments.alliances)
+        export_votes_to_file(election, election.culture_id, election.num_candidates, election.num_voters,
+                             election.params, path_to_file, election.ballot, votes=election.votes,
+                             is_aggregated=is_aggregated, alliances=election.alliances)
 
 
 def export_distances(experiment, object_type='vote'):

@@ -44,7 +44,7 @@ def compute_abcvoting_rule(experiment=None, rule_name=None, committee_size=1, re
 
 
 def store_committees_to_file(experiment_id, rule_name, all_winning_committees):
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, 'features',
+    path = os.path.join(os.getcwd(), "election", experiment_id, 'features',
                         f'{rule_name}.csv')
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
@@ -55,7 +55,7 @@ def store_committees_to_file(experiment_id, rule_name, all_winning_committees):
 
 def import_committees_from_file(experiment_id, rule_name):
     all_winning_committees = {}
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, 'features',
+    path = os.path.join(os.getcwd(), "election", experiment_id, 'features',
                         f'{rule_name}.csv')
     with open(path, 'r', newline='') as csv_file:
         header = [h.strip() for h in csv_file.readline().split(';')]

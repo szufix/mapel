@@ -78,7 +78,7 @@ def run_single_thread(experiment: Experiment, thread_ids: list,
     if experiment.is_exported:
 
         file_name = f'{experiment.distance_id}_p{t}.csv'
-        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances",
+        path = os.path.join(os.getcwd(), "election", experiment.experiment_id, "distances",
                             file_name)
 
         with open(path, 'w', newline='') as csv_file:

@@ -49,7 +49,7 @@ def matrix2png(argv):
     else:
         name = "%s_phi%d_%d_%s.png" % (model, param * 100, m, tgt)
 
-    # prepare the experiment/matrix
+    # prepare the election/matrix
     experiment = mapel.prepare_experiment()
     experiment.set_default_num_candidates(m)
     experiment.set_default_num_voters(n)

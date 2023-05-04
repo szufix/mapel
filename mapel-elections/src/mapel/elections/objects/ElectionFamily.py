@@ -6,6 +6,7 @@ from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.core.utils import *
 import mapel.elections.cultures.mallows as mallows
+from mapel.elections.cultures.params import *
 
 
 class ElectionFamily(Family):
@@ -62,8 +63,8 @@ class ElectionFamily(Family):
         else:
             self.__dict__[name] = value
 
-    def prepare_family(self, experiment_id=None, store=None,
-                       store_points=False, aggregated=True):
+    def prepare_family(self, experiment_id=None, is_exported=True,
+                       store_points=False, is_aggregated=True):
 
         if self.instance_type == 'ordinal':
 
@@ -79,20 +80,20 @@ class ElectionFamily(Family):
                 variable = None
                 path = self.path
                 if path is not None and 'variable' in path:
-                    new_params, variable = _get_params_for_paths(self, j)
+                    new_params, variable = get_params_for_paths(self, j)
                     if params is None:
                         params = {}
                     params = {**params, **new_params}
 
-                if params is not None and 'norm_phi' in params:
+                if params is not None and 'normphi' in params:
                     params['phi'] = mallows.phi_from_relphi(
-                        self.num_candidates, relphi=params['norm_phi'])
+                        self.num_candidates, relphi=params['normphi'])
 
                 if self.culture_id in {'all_votes'}:
                     params['iter_id'] = j
 
                 if self.culture_id in {'crate'}:
-                    new_params = _get_params_for_crate(j)
+                    new_params = get_params_for_crate(j)
                     params = {**params, **new_params}
                 election_id = get_instance_id(self.single, self.family_id, j)
 
@@ -103,7 +104,7 @@ class ElectionFamily(Family):
                                            variable=variable, is_imported=False,
                                            )
 
-                election.prepare_instance(is_exported=store, aggregated=aggregated)
+                election.prepare_instance(is_exported=is_exported, is_aggregated=is_aggregated)
 
                 if store_points:
                     try:
@@ -131,14 +132,14 @@ class ElectionFamily(Family):
                 variable = None
                 path = self.path
                 if path is not None and 'variable' in path:
-                    new_params, variable = _get_params_for_paths(self, j)
+                    new_params, variable = get_params_for_paths(self, j)
                     params = {**params, **new_params}
 
                 if self.culture_id in {'all_votes'}:
                     params['iter_id'] = j
 
                 if self.culture_id in {'crate'}:
-                    new_params = _get_params_for_crate(j)
+                    new_params = get_params_for_crate(j)
                     params = {**params, **new_params}
 
                 election_id = get_instance_id(self.single, self.family_id, j)
@@ -149,7 +150,7 @@ class ElectionFamily(Family):
                                             params=copy.deepcopy(params), ballot=self.instance_type,
                                             variable=variable, is_imported=False
                                             )
-                election.prepare_instance(store=store, aggregated=aggregated)
+                election.prepare_instance(is_exported=is_exported, aggregated=is_aggregated)
 
                 election.votes_to_approvalwise_vector()
 
@@ -162,50 +163,6 @@ class ElectionFamily(Family):
         return elections
 
 
-def _get_params_for_crate(j):
-    base = []
-    my_size = 10
-    # with_edge
-    for p in range(my_size):
-        for q in range(my_size):
-            for r in range(my_size):
-                a = p / (my_size - 1)
-                b = q / (my_size - 1)
-                c = r / (my_size - 1)
-                d = 1 - a - b - c
-                tmp = [a, b, c, d]
-                if d >= 0 and sum(tmp) == 1:
-                    base.append(tmp)
-    params = {'alpha': base[j]}
-    return params
-
-
-def _get_params_for_paths(family, j, extremes=False):
-    path = family.path
-
-    variable = path['variable']
-
-    if 'extremes' in path:
-        extremes = path['extremes']
-
-    params = {'variable': variable}
-    if extremes:
-        params[variable] = j / (family.size - 1)
-    elif not extremes:
-        params[variable] = (j + 1) / (family.size + 1)
-
-    if 'scale' in path:
-        params[variable] *= path['scale']
-
-    if 'start' in path:
-        params[variable] += path['start']
-    else:
-        path['start'] = 0.
-
-    if 'step' in path:
-        params[variable] = path['start'] + j * path['step']
-
-    return params, variable
 
 
 # # # # # # # # # # # # # # # #

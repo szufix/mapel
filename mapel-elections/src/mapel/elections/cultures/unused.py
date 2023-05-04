@@ -189,7 +189,7 @@ def approval_partylist_votes_old(num_voters=None, num_candidates=None, params=No
     else:
         num_groups = params['g']
 
-    if 'shift' not in params:
+    if 'is_shifted' not in params:
         shift = False
     else:
         shift = True

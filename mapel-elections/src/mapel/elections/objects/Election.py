@@ -29,18 +29,19 @@ class Election(Instance):
     def __init__(self,
                  experiment_id,
                  election_id,
-                 votes=None,
                  culture_id=None,
+                 votes=None,
                  ballot: str = 'ordinal',
                  num_voters: int = None,
                  num_candidates: int = None,
                  label=None,
                  fast_import=False,
-                 shift=False,
+                 is_shifted=False,
                  **kwargs):
 
         super().__init__(experiment_id,
                          election_id,
+                         culture_id=culture_id,
                          **kwargs)
 
         self.election_id = election_id
@@ -58,7 +59,7 @@ class Election(Instance):
         self.features = {}
         self.object_type = 'vote'
         self.points = {}
-        self.shift = shift
+        self.is_shifted = is_shifted
 
         self.distances = {}
         if not fast_import:
@@ -158,8 +159,8 @@ class Election(Instance):
             x = self.points['voters'][i][0]
             y = self.points['voters'][i][1]
             plt.scatter(x, y, color=[0, y, x], s=s, alpha=0.3)
-            # X_voters.append(experiment.points['voters'][i][0])
-            # Y_voters.append(experiment.points['voters'][i][1])
+            # X_voters.append(election.points['voters'][i][0])
+            # Y_voters.append(election.points['voters'][i][1])
         # plt.scatter(X_voters, Y_voters, color='grey', s=s, alpha=0.1)
 
         X_candidates = []
@@ -194,8 +195,8 @@ class Election(Instance):
         if object_type is None:
             object_type = self.object_type
 
-        # experiment.coordinates[object_type] = KamadaKawai().embed(
-        #     distances=experiment.distances[object_type],
+        # election.coordinates[object_type] = KamadaKawai().embed(
+        #     distances=election.distances[object_type],
         # )
         MDS_object = MDS(n_components=2, dissimilarity='precomputed',
                          # max_iter=1000,
@@ -211,8 +212,8 @@ class Election(Instance):
 
         # ADJUST
         # find max dist
-        # if (not ('identity' in experiment.culture_id.lower() and object_type=='vote')) \
-        #         and (not ('approval_id' in experiment.culture_id.lower() and object_type=='vote')):
+        # if (not ('identity' in election.culture_id.lower() and object_type=='vote')) \
+        #         and (not ('approval_id' in election.culture_id.lower() and object_type=='vote')):
         if not self.all_dist_zeros(object_type):
             dist = np.zeros(
                 [len(self.coordinates[object_type]), len(self.coordinates[object_type])])
@@ -299,9 +300,9 @@ class Election(Instance):
         feature = get_local_feature(feature_id)
         self.features[feature_long_id] = feature(self, **kwargs)
         # if feature_id in ELECTION_FEATURES_WITH_PARAMS:
-        # experiment.features[feature_long_id] = feature(experiment, feature_params=feature_params)
+        # election.features[feature_long_id] = feature(election, feature_params=feature_params)
         # else:
-        #     experiment.features[feature_long_id] = feature(experiment)
+        #     election.features[feature_long_id] = feature(election)
 
     def get_feature(self, feature_id, feature_long_id=None, **kwargs):
         if feature_long_id is None:

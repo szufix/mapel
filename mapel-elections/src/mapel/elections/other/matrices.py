@@ -21,14 +21,14 @@ def prepare_matrices(experiment_id):
     is_exported them in the /matrices folder """
     experiment = OrdinalElectionExperiment(experiment_id)
 
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "matrices")
+    path = os.path.join(os.getcwd(), "election", experiment_id, "matrices")
     for file_name in os.listdir(path):
         os.remove(os.path.join(path, file_name))
 
     for election_id in experiment.elections:
         matrix = experiment.elections[election_id].votes_to_positionwise_matrix()
         file_name = election_id + ".csv"
-        path = os.path.join(os.getcwd(), "experiments", experiment_id,
+        path = os.path.join(os.getcwd(), "election", experiment_id,
                             "matrices", file_name)
 
         with open(path, 'w', newline='') as csv_file:

@@ -524,7 +524,7 @@ def _import_values_for_features(experiment, feature_ids=None, upper_limit=np.inf
 
 
 def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func):
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "controllers", "advanced",
+    path = os.path.join(os.getcwd(), "election", experiment_id, "controllers", "advanced",
                         str(values) + ".txt")
     _min = 0
     _max = 0
@@ -1042,7 +1042,7 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
                  saveas=None, show=True, ms=8, title=None, omit=None,
                  self_distances=False, yticks='left', with_std=False, time=False, dpi=100,
                  vmin=None, vmax=None):
-    """Print the matrix with average distances between each pair of experiments """
+    """Print the matrix with average distances between each pair of election """
 
     if omit is None:
         omit = []
@@ -1092,12 +1092,12 @@ def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
                 matrix[bucket[i]][bucket[j]] += experiment.distances[mapping[i]][mapping[j]]
             quantities[bucket[i]][bucket[j]] += 1
     # NORMALIZE
-    # for family_id_1, family_id_2 in combinations(experiment.families, 2):
-    # for family_id_1, family_id_2 in product(experiment.families, 2):
+    # for family_id_1, family_id_2 in combinations(election.families, 2):
+    # for family_id_1, family_id_2 in product(election.families, 2):
     for i, family_id_1 in enumerate(selected_families):
         for j, family_id_2 in enumerate(selected_families):
             if i <= j:
-                # add normalization for experiment distances
+                # add normalization for election distances
                 if quantities[family_id_1][family_id_2] != 0.:
                     matrix[family_id_1][family_id_2] /= float(quantities[family_id_1][family_id_2])
                 matrix[family_id_1][family_id_2] = \
@@ -1462,7 +1462,7 @@ def _level_background(fig=None, ax=None, saveas=None, tex=None):
 
 def get_values_from_file_old(experiment, experiment_id, values,
                              normalizing_func=None, marker_func=None):
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "features",
+    path = os.path.join(os.getcwd(), "election", experiment_id, "features",
                         str(values) + ".txt")
 
     _min = 0
@@ -1552,14 +1552,14 @@ def adjust_the_map(experiment) -> None:
         try:
             left = 'IC 0.5'
             right = 'ID 0.5'
-            # up = experiment.get_election_id_from_model_name('approval_full')
+            # up = election.get_election_id_from_model_name('approval_full')
             down = experiment.get_election_id_from_model_name('approval_empty')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
             try:
                 left = 'IC 0.25'
                 right = 'ID 0.25'
-                # up = experiment.get_election_id_from_model_name('approval_full')
+                # up = election.get_election_id_from_model_name('approval_full')
                 down = experiment.get_election_id_from_model_name('approval_empty')
                 adjust_the_map_on_three_points(experiment, left, right, down)
             except Exception:
@@ -1585,7 +1585,7 @@ def adjust_the_map(experiment) -> None:
         try:
             left = experiment.get_election_id_from_model_name('roommates_asymmetric')
             right = experiment.get_election_id_from_model_name('roommates_symmetric')
-            # up = experiment.get_election_id_from_model_name('antagonism')
+            # up = election.get_election_id_from_model_name('antagonism')
             down = experiment.get_election_id_from_model_name('roommates_id')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
@@ -1597,7 +1597,7 @@ def adjust_the_map(experiment) -> None:
         try:
             left = experiment.get_election_id_from_model_name('asymmetric')
             right = experiment.get_election_id_from_model_name('symmetric')
-            # up = experiment.get_election_id_from_model_name('antagonism')
+            # up = election.get_election_id_from_model_name('antagonism')
             down = experiment.get_election_id_from_model_name('id')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:

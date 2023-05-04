@@ -134,7 +134,7 @@ class Roommates(Instance):
     def store_instance_in_a_file(self):
         """ Store votes in a file """
 
-        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances")
+        path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id, "instances")
         make_folder_if_do_not_exist(path_to_folder)
         path_to_file = os.path.join(path_to_folder, f'{self.instance_id}.ri')
 
@@ -169,7 +169,7 @@ class Roommates(Instance):
         """ Import real ordinal election form .soc file """
 
         file_name = f'{self.instance_id}.ri'
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances", file_name)
+        path = os.path.join(os.getcwd(), "election", self.experiment_id, "instances", file_name)
         print(path)
         with open(path, 'r') as my_file:
             params = 0

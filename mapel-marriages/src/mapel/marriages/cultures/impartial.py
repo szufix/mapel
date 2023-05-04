@@ -51,7 +51,7 @@ def generate_group_ic_votes(num_agents: int = None, params: dict = None):
 # def generate_asymmetric__id_votes(num_agents: int = None, params=None):
 #     votes = [list(range(num_agents)) for _ in range(num_agents)]
 #
-#     votes_1 = [rotate(vote, shift) for shift, vote in enumerate(votes)]
+#     votes_1 = [rotate(vote, is_shifted) for is_shifted, vote in enumerate(votes)]
 #     votes_2 = [list(range(num_agents)) for _ in range(num_agents)]
 #
 #     return [votes_1, votes_2]

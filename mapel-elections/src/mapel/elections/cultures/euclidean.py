@@ -145,7 +145,7 @@ def generate_2d_gaussian_party(num_voters=None, num_candidates=None, params=None
 # Ordinal Euclidean Election Models
 ####################################################################################################
 def store_ideal_points(points, file_name, experiment_id):
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", f'{file_name}.csv')
+    path = os.path.join(os.getcwd(), "election", experiment_id, "elections", f'{file_name}.csv')
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
         writer.writerow(["x", "y"])

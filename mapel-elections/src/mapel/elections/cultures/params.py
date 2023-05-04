@@ -199,3 +199,48 @@ def update_params_approval(params, printing_params, variable, culture_id, num_ca
         update_params_approval_alpha(printing_params)
 
     return params, printing_params, printing_params['alpha']
+
+def get_params_for_crate(j):
+    base = []
+    my_size = 10
+    # with_edge
+    for p in range(my_size):
+        for q in range(my_size):
+            for r in range(my_size):
+                a = p / (my_size - 1)
+                b = q / (my_size - 1)
+                c = r / (my_size - 1)
+                d = 1 - a - b - c
+                tmp = [a, b, c, d]
+                if d >= 0 and sum(tmp) == 1:
+                    base.append(tmp)
+    params = {'alpha': base[j]}
+    return params
+
+
+def get_params_for_paths(family, j, extremes=False):
+    path = family.path
+
+    variable = path['variable']
+
+    if 'extremes' in path:
+        extremes = path['extremes']
+
+    params = {'variable': variable}
+    if extremes:
+        params[variable] = j / (family.size - 1)
+    elif not extremes:
+        params[variable] = (j + 1) / (family.size + 1)
+
+    if 'scale' in path:
+        params[variable] *= path['scale']
+
+    if 'start' in path:
+        params[variable] += path['start']
+    else:
+        path['start'] = 0.
+
+    if 'step' in path:
+        params[variable] = path['start'] + j * path['step']
+
+    return params, variable

@@ -56,7 +56,6 @@ def add_ordinal_distance(name, function):
 def get_distance(election_1: Election, election_2: Election,
                  distance_id: str = None) -> float or (float, list):
     """ Return: distance between elections, (if applicable) optimal matching """
-
     if type(election_1) is ApprovalElection and type(election_2) is ApprovalElection:
         return get_approval_distance(election_1, election_2, distance_id=distance_id)
     elif type(election_1) is OrdinalElection and type(election_2) is OrdinalElection:
@@ -91,9 +90,9 @@ def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElectio
     if main_distance in registered_ordinal_distances:
 
         if inner_distance is not None:
-            registered_ordinal_distances.get(main_distance)(election_1, election_2, inner_distance)
+            return registered_ordinal_distances.get(main_distance)(election_1, election_2, inner_distance)
         else:
-            registered_ordinal_distances.get(main_distance)(election_1, election_2, **kwargs)
+            return registered_ordinal_distances.get(main_distance)(election_1, election_2, **kwargs)
 
     else:
         logging.warning("No such distance!")
@@ -115,7 +114,7 @@ def run_single_process(exp: Experiment, instances_ids: list,
                        safe_mode=False) -> None:
     """ Single process for computing distances """
 
-    for instance_id_1, instance_id_2 in tqdm(instances_ids):
+    for instance_id_1, instance_id_2 in tqdm(instances_ids, desc='Computing distances'):
         start_time = time()
         if safe_mode:
             distance = get_distance(copy.deepcopy(exp.instances[instance_id_1]),
@@ -136,12 +135,13 @@ def run_single_process(exp: Experiment, instances_ids: list,
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
 
+
 def run_multiple_processes(exp: Experiment, instances_ids: list,
                            distances: dict, times: dict, matchings: dict,
                            t) -> None:
     """ Single process for computing distances """
 
-    for instance_id_1, instance_id_2 in tqdm(instances_ids):
+    for instance_id_1, instance_id_2 in tqdm(instances_ids, desc=f'Computing distances of thread {t}'):
         start_time = time()
         distance = get_distance(copy.deepcopy(exp.instances[instance_id_1]),
                                 copy.deepcopy(exp.instances[instance_id_2]),

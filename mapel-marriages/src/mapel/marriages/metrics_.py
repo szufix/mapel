@@ -103,7 +103,7 @@ def run_multiple_processes(exp: Experiment, instances_ids: list,
 def _store_distances(exp, instances_ids, distances, times, t):
     """ Store distances to file """
     file_name = f'{exp.distance_id}_p{t}.csv'
-    path = os.path.join(os.getcwd(), "experiments", exp.experiment_id, "distances", file_name)
+    path = os.path.join(os.getcwd(), "election", exp.experiment_id, "distances", file_name)
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
         writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])

@@ -79,7 +79,7 @@ def mallowsVote(m, insertion_probabilites_list):
     return vote
 
 
-def generate_mallows_votes(num_voters, num_candidates, phi=0.5, weight=0):
+def generate_mallows_votes(num_voters, num_candidates, phi=0.5, weight=0, normphi=None):
     insertion_probabilites_list = []
     for i in range(1, num_candidates):
         insertion_probabilites_list.append(computeInsertionProbas(i, phi))
@@ -237,9 +237,9 @@ def generate_mallows_party(num_voters=None, num_candidates=None,
 
 
 def generate_approval_truncated_mallows_votes(num_voters=None, num_candidates=None, max_range=1,
-                                              norm_phi=None, weight=None):
+                                              normphi=None, weight=None):
 
-    phi = phi_from_relphi(num_candidates, relphi=norm_phi)
+    phi = phi_from_relphi(num_candidates, relphi=normphi)
 
     ordinal_votes = generate_mallows_votes(num_voters, num_candidates, phi=phi, weight=weight)
 

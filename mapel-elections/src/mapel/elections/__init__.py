@@ -7,28 +7,28 @@ from .objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 
 
 def prepare_online_ordinal_experiment(**kwargs):
-    return prepare_experiment(**kwargs, instance_type='ordinal', store=False)
+    return prepare_experiment(**kwargs, instance_type='ordinal', is_exported=False)
 
 
 def prepare_offline_ordinal_experiment(**kwargs):
-    return prepare_experiment(**kwargs, instance_type='ordinal', store=True)
+    return prepare_experiment(**kwargs, instance_type='ordinal', is_exported=True)
 
 
 def prepare_online_approval_experiment(**kwargs):
-    return prepare_experiment(**kwargs, instance_type='approval', store=False)
+    return prepare_experiment(**kwargs, instance_type='approval', is_exported=False)
 
 
 def prepare_offline_approval_experiment(**kwargs):
-    return prepare_experiment(**kwargs, instance_type='approval', store=True)
+    return prepare_experiment(**kwargs, instance_type='approval', is_exported=True)
 
 
 def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
                        coordinates=None, distance_id='emd-positionwise', _import=True,
-                       shift=False, dim=2, store=True, coordinates_names=None,
+                       shift=False, dim=2, is_exported=True, coordinates_names=None,
                        embedding_id='spring', fast_import=False, with_matrix=False):
     if instance_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
-                                         instances=instances, dim=dim, export=store,
+                                         instances=instances, dim=dim, is_exported=is_exported,
                                          instance_type=instance_type,
                                          distances=distances, coordinates=coordinates,
                                          distance_id=distance_id,
@@ -38,7 +38,7 @@ def prepare_experiment(experiment_id=None, instances=None, distances=None, insta
                                          with_matrix=with_matrix)
     elif instance_type in ['approval', 'rule']:
         return ApprovalElectionExperiment(experiment_id=experiment_id, shift=shift,
-                                          instances=instances, dim=dim, export=store,
+                                          instances=instances, dim=dim, is_exported=is_exported,
                                           instance_type=instance_type,
                                           distances=distances, coordinates=coordinates,
                                           distance_id=distance_id,

@@ -18,7 +18,7 @@ def generate_preflib_election(experiment=None, model=None, name=None,
                                    num_voters=num_voters, num_candidates=num_candidates,
                                    folder=folder)
 
-    path = os.path.join("experiments", experiment.experiment_id, "elections", name + ".soc")
+    path = os.path.join("election", experiment.experiment_id, "elections", name + ".soc")
     file_ = open(path, 'w')
 
     file_.write(str(num_candidates) + "\n")
