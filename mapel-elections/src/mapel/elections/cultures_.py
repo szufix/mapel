@@ -89,7 +89,8 @@ registered_ordinal_cultures = {
     'real_antagonism': guardians.generate_real_antagonism_votes,
     'real_stratification': guardians.generate_real_stratification_votes,
     'un_from_matrix': guardians_plus.generate_un_from_matrix_votes,
-
+    'un_from_list': guardians_plus.generate_un_from_list,
+  
     'impartial_culture': impartial.generate_ordinal_ic_votes,  # deprecated name
     'urn_model': urn.generate_urn_votes,  # deprecated name
 }

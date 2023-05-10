@@ -14,7 +14,48 @@ from mapel.core.glossary import *
 import mapel.core.persistence.experiment_imports as imports
 
 
-# MAIN
+def print_approvals_histogram(election):
+    plt.title(election.election_id, size=20)
+    bins = np.linspace(0, 100, 51)
+    plt.hist([len(vote) for vote in election.votes], bins=bins)
+    # x_axis = np.arange(0, 100, 0.01)
+    # plt.plot(x_axis, norm.pdf(x_axis, 50, 2)*2000)
+    plt.ylim([0, election.num_voters])
+    plt.xlim([-1, election.num_candidates + 1])
+    plt.savefig("images/histograms/" + election.election_id + ".png")
+    plt.show()
+
+
+# New 1d map printing
+def print_map_1d(experiment, saveas=None):
+    experiment.compute_coordinates_by_families()
+    all_values = [0]
+    for family in experiment.families.values():
+        x = float(experiment.coordinates_by_families[family.family_id][0][0])
+        all_values.append(x)
+    min_ = min(all_values)
+    max_ = max(all_values)
+
+    fig, ax = plt.subplots(figsize=(3, 8))
+    for family in experiment.families.values():
+        x = float(experiment.coordinates_by_families[family.family_id][0][0])
+        x = (x - min_) / (max_ - min_)
+        # x = x**0.5
+        x = 1 - x
+
+        # ax.scatter(x, 0)
+        # ax.annotate(family.family_id, (x,0), rotation=90,)
+        ax.scatter(0, x)
+        ax.annotate(family.family_id, (0, x), rotation=0, size=10)
+    ax.get_xaxis().set_visible(False)
+    # plt.axis("off")
+    if saveas:
+        plt.savefig(saveas)
+    plt.show()
+
+
+# Main functions
+#DIV-MERGE
 def print_map_2d(experiment,
                  xlabel=None,
                  shading=False,
@@ -30,6 +71,7 @@ def print_map_2d(experiment,
                  bbox_inches=None,
                  saveas=None,
                  show=True,
+                 urn_orangered=True,
                  ms=20,
                  tex=False,
                  legend=True,
@@ -37,6 +79,7 @@ def print_map_2d(experiment,
                  title_size=16,
                  textual_size=16,
                  figsize=(6.4, 6.4)) -> None:
+  
     if textual is None:
         textual = []
 
@@ -64,7 +107,7 @@ def print_map_2d(experiment,
 
     if shading:
         basic_coloring_with_shading(experiment=experiment, ax=ax, dim=2,
-                                    textual=textual, ms=ms)
+                                    textual=textual, ms=ms, urn_orangered=urn_orangered)
     elif individual:
         basic_coloring_with_individual(experiment=experiment, ax=ax, individual=individual)
     else:
@@ -74,7 +117,7 @@ def print_map_2d(experiment,
                       saveas=saveas, xlabel=xlabel, bbox_inches=bbox_inches,
                       title=title, legend_pos=legend_pos, title_size=title_size,
                       title_pos=title_pos, dpi=dpi)
-
+    
     if tex:
         _saveas_tex(saveas=saveas)
 
@@ -907,8 +950,8 @@ def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
                            s=individual['ms'][election_id],
                            marker=individual['marker'][election_id])
 
-
-def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None, ms=20):
+#DIV-MERGE
+def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None, ms=20, urn_orangered=True):
     for family in experiment.families.values():
         if family.show:
             label = family.label
@@ -933,12 +976,17 @@ def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None, m
 
                         if 'Mallows (triangle)' in label:
                             tint = experiment.instances[election_id].params['tint']
-                            alpha = 1 - (1 - alpha) * 0.8
-                            color = (0.5, 0.8 - tint, 0.3 + tint)
+                            # color = (2 * tint, 0, 1 - tint * 2)
+                            # alpha = alpha
+                            tint = 2 * tint
+                            color = (0.75 - 0.75 * alpha + 0.125 * tint + 0.875 * alpha * tint,
+                                     0.75 - 0.75 * alpha,
+                                     0.75 - 0.75 * alpha + 0.125 * (1 - tint) + 0.875 * alpha * (1- tint))
+                            alpha = 1
 
                         if 'Urn' in label:
 
-                            color, alpha = get_color_alpha_for_urn(color, alpha)
+                            color, alpha = get_color_alpha_for_urn(color, alpha, urn_orangered)
 
                         else:
 
@@ -1030,8 +1078,12 @@ def _basic_background(ax=None, legend=None, saveas=None, xlabel=None, title=None
             print(file_name)
             plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
             # plt.savefig(file_name, dpi=dpi)
+            #DIV-MERGE
+            # plt.savefig(file_name + '.pdf', bbox_inches='tight', format='pdf')
         else:
             plt.savefig(file_name, bbox_inches=bbox_inches, dpi=dpi)
+            #DIV-MERGE
+            # plt.savefig(file_name + '.pdf', bbox_inches=bbox_inches, format='pdf')
 
 
 # TEX
@@ -1631,18 +1683,24 @@ def adjust_the_map_on_one_point(experiment) -> None:
     except:
         print('Cannot adjust!')
 
-
-def get_color_alpha_for_urn(color, alpha):
+#DIV-MERGE
+def get_color_alpha_for_urn(color, alpha, orangered=True):
     # return 'red', min(alpha, 1)
 
-    if alpha > 1.07:
-        return 'red', 0.9
-    elif alpha > 0.53:
-        return 'orangered', 0.9
-    elif alpha > 0.22:
-        return 'orange', 0.9
+    if orangered:
+        if alpha > 1.07:
+            return 'red', 0.9
+        elif alpha > 0.53:
+            return 'orangered', 0.9
+        elif alpha > 0.22:
+            return 'orange', 0.9
+        else:
+            return 'gold', 0.9
     else:
-        return 'gold', 0.9
+        if alpha > 2:
+            return 'orange', 1
+        else:
+            return 'orange', alpha * 0.35 + 0.3
 
 
 def print_approvals_histogram(election):
