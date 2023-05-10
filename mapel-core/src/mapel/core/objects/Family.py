@@ -19,6 +19,13 @@ class Family:
                  instance_ids=None,
                  path: dict = None):
 
+        if path is None:
+            path = {}
+        if instance_ids is None:
+            instance_ids = {}
+        if params is None:
+            params = {}
+
         self.family_id = family_id
         self.culture_id = culture_id
         self.params = params
@@ -34,6 +41,7 @@ class Family:
         self.single = single
         self.path = path
         self.instance_ids = instance_ids
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

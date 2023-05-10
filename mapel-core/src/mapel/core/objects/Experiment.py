@@ -46,10 +46,21 @@ class Experiment:
     __metaclass__ = ABCMeta
     """Abstract set of instances."""
 
-    def __init__(self, instances=None, distances=None, dim=2, is_exported=True,
-                 coordinates=None, distance_id='emd-positionwise', experiment_id=None,
-                 instance_type='ordinal', is_imported=True, clean=False, coordinates_names=None,
-                 embedding_id='kamada', fast_import=False, with_matrix=False):
+    def __init__(self,
+                 experiment_id=None,
+                 instances=None,
+                 distances=None,
+                 coordinates=None,
+                 distance_id=None,
+                 embedding_id=None,
+                 dim=2,
+                 is_exported=True,
+                 is_imported=True,
+                 instance_type=None,
+                 clean=False,
+                 coordinates_names=None,
+                 fast_import=False,
+                 with_matrix=False):
 
         self.is_imported = is_imported
         self.clean = clean
@@ -123,7 +134,9 @@ class Experiment:
                 if coordinates_names is not None:
                     for file_name in coordinates_names:
                         self.coordinates_lists[file_name] = \
-                            imports.add_coordinates_to_experiment(self, dim=dim, file_name=file_name)
+                            imports.add_coordinates_to_experiment(self,
+                                                                  dim=dim,
+                                                                  file_name=file_name)
                     self.coordinates = self.coordinates_lists[coordinates_names[0]]
                 else:
                     self.coordinates = imports.add_coordinates_to_experiment(self, dim=dim)
@@ -137,7 +150,7 @@ class Experiment:
             for family_id in self.families:
                 for instance_id in self.families[family_id].instance_ids:
                     self.instances[instance_id].label = self.families[family_id].label
-        except:
+        finally:
             pass
 
     @abstractmethod
@@ -263,11 +276,11 @@ class Experiment:
                           **kwargs).fit_transform(x)
         elif embedding_id.lower() in {'se'}:
             my_pos = SpectralEmbedding(n_components=dim,
-                         **kwargs).fit_transform(x)
+                                       **kwargs).fit_transform(x)
         elif embedding_id.lower() in {'isomap'}:
             my_pos = Isomap(n_components=dim,
                             n_neighbors=num_neighbors,
-                         **kwargs).fit_transform(x)
+                            **kwargs).fit_transform(x)
         elif embedding_id.lower() in {'lle'}:
             my_pos = LocallyLinearEmbedding(n_components=dim,
                                             n_neighbors=num_neighbors,
@@ -377,12 +390,12 @@ class Experiment:
                 coordinates_by_families[family_id][0].append(self.coordinates[family_id][0])
                 try:
                     coordinates_by_families[family_id][1].append(self.coordinates[family_id][1])
-                except Exception:
+                finally:
                     pass
 
                 try:
                     coordinates_by_families[family_id][2].append(self.coordinates[family_id][2])
-                except Exception:
+                finally:
                     pass
         else:
 
@@ -397,12 +410,12 @@ class Experiment:
                         try:
                             coordinates_by_families[family_id][1].append(
                                 self.coordinates[instance_id][1])
-                        except Exception:
+                        finally:
                             pass
                         try:
                             coordinates_by_families[family_id][2].append(
                                 self.coordinates[instance_id][2])
-                        except Exception:
+                        finally:
                             pass
                 except:
                     for instance_id in self.families[family_id].instance_ids:
@@ -590,7 +603,6 @@ class Experiment:
 
             SCC = round(stats.spearmanr(values_x, values_y)[0], 3)
             print('SCC', SCC)
-
 
             plt.xlim(left=0)
             plt.ylim(bottom=0)

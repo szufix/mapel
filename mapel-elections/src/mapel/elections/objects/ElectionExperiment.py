@@ -261,6 +261,9 @@ class ElectionExperiment(Experiment):
                          num_voters: int = None,
                          family_id: str = None):
 
+        if label is None:
+            label = family_id
+
         self.families[family_id] = ElectionFamily(culture_id=culture_id,
                                                   family_id=family_id,
                                                   label=label,
@@ -650,6 +653,10 @@ class ElectionExperiment(Experiment):
         for rule_name in list_of_rules:
             self.all_winning_committees[rule_name] = rules.import_committees_from_file(
                 experiment_id=self.experiment_id, rule_name=rule_name)
+
+    def add_election_to_family(self, election=None, family_id=None):
+        self.instances[election.instance_id] = election
+        self.families[family_id].add_election(election)
 
 
 def check_if_all_equal(values, subject):

@@ -171,6 +171,9 @@ class ElectionFamily(Family):
         return elections
 
     def add_election(self, election):
+        self.size += 1
+        self.election_ids.append(election.instance_id)
+
         pass
 
 
