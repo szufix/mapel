@@ -16,7 +16,7 @@ def _remove_diagonal(A):
 
 
 def calculate_monotonicity(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0,
-                           error_tolerance=0.1):
+                           error_tolerance=0.):
     if election_ids is None:
         election_ids = list(experiment.distances.keys())
 
@@ -35,10 +35,10 @@ def calculate_monotonicity(experiment: Experiment, election_ids: List[str] = Non
     desired_triangles_diff, desired_mask, _ = _get_triangles_differences(desired_distances, good_distances_mask)
     mul = calculated_triangles_diff * desired_triangles_diff
 
-    print(calculated_triangles_diff)
-    print(desired_triangles_diff)
-    print(mul)
-    print(np.abs(calculated_triangles_diff))
+    # print(calculated_triangles_diff)
+    # print(desired_triangles_diff)
+    # print(mul)
+    # print(np.abs(calculated_triangles_diff))
 
 
     good_triangles = mul > 0
@@ -55,7 +55,7 @@ def _get_triangles_differences(distances, good_distances_mask):
     n = distances.shape[0]
     coordinates_delta = _remove_diagonal(distances)
 
-    print(coordinates_delta)
+    # print(coordinates_delta)
 
     coor_min = np.minimum(coordinates_delta[:, :, np.newaxis], coordinates_delta[:, np.newaxis, :])
 
@@ -72,7 +72,7 @@ def _get_triangles_differences(distances, good_distances_mask):
 
 
 def calculate_monotonicity_naive(experiment: Experiment, election_ids: List[str] = None, max_distance_percentage=1.0,
-                                 error_tolerance=0.1):
+                                 error_tolerance=0.):
     coordinates = extract_selected_coordinates_from_experiment(experiment, election_ids)
 
     desired_distances = extract_selected_distances(experiment, election_ids)
@@ -105,7 +105,7 @@ def calculate_monotonicity_naive(experiment: Experiment, election_ids: List[str]
                     all_distances[i] += 1
                     if is_good:
                         good_distances[i] += 1
-        print(good_distances[i] / all_distances[i])
+        # print(good_distances[i] / all_distances[i])
     return {
         election: good_distances[i] / all_distances[i] for i, election in enumerate(election_ids)
     }

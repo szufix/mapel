@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from mapel.elections.cultures.group_separable import get_gs_caterpillar_vectors
-from mapel.elections.cultures.single_peaked import get_walsh_vectors, \
+from mapel.elections.cultures.sp_matrices import get_walsh_vectors, \
     get_conitzer_vectors
 from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
 
@@ -18,17 +18,17 @@ import csv
 
 def prepare_matrices(experiment_id):
     """ compute positionwise matrices and
-    store them in the /matrices folder """
+    is_exported them in the /matrices folder """
     experiment = OrdinalElectionExperiment(experiment_id)
 
-    path = os.path.join(os.getcwd(), "experiments", experiment_id, "matrices")
+    path = os.path.join(os.getcwd(), "election", experiment_id, "matrices")
     for file_name in os.listdir(path):
         os.remove(os.path.join(path, file_name))
 
     for election_id in experiment.elections:
         matrix = experiment.elections[election_id].votes_to_positionwise_matrix()
         file_name = election_id + ".csv"
-        path = os.path.join(os.getcwd(), "experiments", experiment_id,
+        path = os.path.join(os.getcwd(), "election", experiment_id,
                             "matrices", file_name)
 
         with open(path, 'w', newline='') as csv_file:

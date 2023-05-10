@@ -19,9 +19,17 @@ class Family:
                  instance_ids=None,
                  path: dict = None):
 
+        if path is None:
+            path = {}
+        if instance_ids is None:
+            instance_ids = {}
+        if params is None:
+            params = {}
+
         self.family_id = family_id
         self.culture_id = culture_id
         self.params = params
+        self.printing_params = params
         self.size = size
         self.label = label
         self.color = color
@@ -33,18 +41,6 @@ class Family:
         self.single = single
         self.path = path
         self.instance_ids = instance_ids
-
-    # def __getattr__(self, attr):
-    #     if attr == 'model_id':
-    #         return self.culture_id
-    #     else:
-    #         return self.__dict__[attr]
-    #
-    # def __setattr__(self, name, value):
-    #     if name == 'model_id':
-    #         self.culture_id = value
-    #     else:
-    #         self.__dict__[name] = value
 
 
 # # # # # # # # # # # # # # # #

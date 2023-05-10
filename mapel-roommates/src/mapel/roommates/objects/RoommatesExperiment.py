@@ -50,7 +50,7 @@ class RoommatesExperiment(Experiment):
     def import_matchings(self):
         matchings = {}
 
-        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'features',
+        path = os.path.join(os.getcwd(), 'election', self.experiment_id, 'features',
                             'stable_sr.csv')
         with open(path, 'r', newline='') as csv_file:
             reader = csv.DictReader(csv_file, delimiter=';')
@@ -174,7 +174,7 @@ class RoommatesExperiment(Experiment):
         for t in range(num_threads):
 
             file_name = f'{distance_id}_p{t}.csv'
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
+            path = os.path.join(os.getcwd(), "election", self.experiment_id, "distances",
                                 file_name)
 
             with open(path, 'r', newline='') as csv_file:
@@ -184,9 +184,9 @@ class RoommatesExperiment(Experiment):
                     distances[row['instance_id_1']][row['instance_id_2']] = float(row['distance'])
                     times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
-        if self.store:
+        if self.is_exported:
 
-            path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+            path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id,
                                           "distances")
             make_folder_if_do_not_exist(path_to_folder)
             path_to_file = os.path.join(path_to_folder, f'{distance_id}.csv')
@@ -217,7 +217,7 @@ class RoommatesExperiment(Experiment):
 
         families = {}
 
-        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'map.csv')
+        path = os.path.join(os.getcwd(), 'election', self.experiment_id, 'map.csv')
         file_ = open(path, 'r')
 
         header = [h.strip() for h in file_.readline().split(';')]
@@ -297,7 +297,7 @@ class RoommatesExperiment(Experiment):
         for family_id in self.families:
 
             new_instances = self.families[family_id].prepare_family(
-                store=self.store,
+                store=self.is_exported,
                 experiment_id=self.experiment_id)
 
             for instance_id in new_instances:
@@ -312,9 +312,9 @@ class RoommatesExperiment(Experiment):
                 usable_matching = basic.compute_stable_SR(self.instances[instance_id].votes)
                 self.matchings[instance_id] = usable_matching
 
-        if self.store:
+        if self.is_exported:
 
-            path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+            path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id,
                                           "features")
             make_folder_if_do_not_exist(path_to_folder)
             path_to_file = os.path.join(path_to_folder, f'stable_sr.csv')
@@ -414,7 +414,7 @@ class RoommatesExperiment(Experiment):
                     #                     'worst_distortion_from_guardians',
                     #                     'distortion_from_all',
                     #                     'distortion_from_top_100'}:
-                    #     value = feature(self, election_id)
+                    #     value = feature(election, election_id)
                     # else:
                     #     value = feature(election)
 
@@ -426,9 +426,9 @@ class RoommatesExperiment(Experiment):
                         feature_dict['value'][instance_id] = value
                         feature_dict['time'][instance_id] = total_time
 
-        if self.store:
+        if self.is_exported:
 
-            path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
+            path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id,
                                           "features")
             make_folder_if_do_not_exist(path_to_folder)
             path_to_file = os.path.join(path_to_folder, f'{feature_id}.csv')
@@ -453,8 +453,8 @@ class RoommatesExperiment(Experiment):
 
     def create_structure(self) -> None:
 
-        if not os.path.isdir("experiments/"):
-            os.mkdir(os.path.join(os.getcwd(), "experiments"))
+        if not os.path.isdir("election/"):
+            os.mkdir(os.path.join(os.getcwd(), "election"))
 
         if not os.path.isdir("images/"):
             os.mkdir(os.path.join(os.getcwd(), "images"))
@@ -463,15 +463,15 @@ class RoommatesExperiment(Experiment):
             os.mkdir(os.path.join(os.getcwd(), "trash"))
 
         try:
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "features"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "coordinates"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances"))
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id, "matrices"))
+            os.mkdir(os.path.join(os.getcwd(), "election", self.experiment_id))
+            os.mkdir(os.path.join(os.getcwd(), "election", self.experiment_id, "distances"))
+            os.mkdir(os.path.join(os.getcwd(), "election", self.experiment_id, "features"))
+            os.mkdir(os.path.join(os.getcwd(), "election", self.experiment_id, "coordinates"))
+            os.mkdir(os.path.join(os.getcwd(), "election", self.experiment_id, "instances"))
+            os.mkdir(os.path.join(os.getcwd(), "election", self.experiment_id, "matrices"))
 
             # PREPARE MAP.CSV FILE
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
+            path = os.path.join(os.getcwd(), "election", self.experiment_id, "map.csv")
 
             with open(path, 'w') as file_csv:
                 file_csv.write(

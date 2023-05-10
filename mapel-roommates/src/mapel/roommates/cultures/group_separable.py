@@ -397,7 +397,7 @@ def _generate_patterns(num_nodes, num_internal_nodes):
 
 
 def _generate_tree(num_nodes, num_internal_nodes, patterns):
-    """ Algorithm from: A linear-time algorithm for the generation of trees """
+    """ Algorithm from: A linear-time embedding_id for the generation of trees """
 
     sequence = []
     sizes = []

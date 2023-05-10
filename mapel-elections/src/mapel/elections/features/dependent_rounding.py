@@ -59,7 +59,6 @@ def _prepare_tree(vector):
 
 
 def _run_over_tree(node):
-    # print(node.election_id)
     if not node.children[0].leaf:
         for child in node.children:
             _run_over_tree(child)
@@ -112,14 +111,4 @@ def approx_rand_tree(values):
     values = {}
     _get_final_values_from_tree(root, values)
     return values
-
-# values = [0.7, 0.5, 0.5, 0.5, 0.2, 0.6, 0.5, 0.5]
-# root = _prepare_tree(values)
-# print_tree(root)
-# _run_over_tree(root)
-# print("\n")
-# print_tree(root)
-# values = {}
-# _get_final_values_from_tree(root, values)
-# print(values)
 

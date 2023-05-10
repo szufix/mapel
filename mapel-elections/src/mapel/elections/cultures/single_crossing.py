@@ -7,13 +7,8 @@ import numpy as np
 
 def generate_ordinal_single_crossing_votes(num_voters: int = None,
                                            num_candidates: int = None,
-                                           params: dict = None) -> np.ndarray:
+                                           domain_id: str = 'naive') -> np.ndarray:
     """ helper function: generate simple single-crossing elections"""
-
-    if params is None:
-        params = {}
-
-    domain_id = params.get('domain_id', 'naive')
 
     votes = np.zeros([num_voters, num_candidates])
 
@@ -159,7 +154,6 @@ class SCNode:
             self.all_next |= node.all_next
         self.all_next.add(self.vote)
         all_computed += 1
-        # print( all_computed, self.all_next )
 
     def count_elections(self, n, nodes):
         if n == 0: return 0
@@ -171,7 +165,6 @@ class SCNode:
         for vote in self.all_next:
             S += nodes[vote].count_elections(n - 1, nodes)
         SC_ELECTION[(self.vote, n)] = S
-        # print( SC_ELECTION[ (self.vote, n) ] )
         return SC_ELECTION[(self.vote, n)]
 
     def sample_election(self, n, nodes):
@@ -259,86 +252,3 @@ class scDomainNaiveSampler:
         return self.node.sample_domain_naive()
 
 
-### run an experiment
-
-# def scExperiment(name, sampler, p):
-#     experiments = 10000
-#     vts = 0
-#     pos = 0
-#
-#     for i in range(experiments):
-#         dom = sampler.sample()
-#         S = 0
-#         for v in dom:
-#             # print(v)
-#             vts += 1
-#             for i in range(m):
-#                 if v[i] == p: pos += i + 1
-#
-#     print(f"{name}: Average {p} position: {pos / vts}")
-
-
-# if __name__ == "__main__":
-#
-#     print("============")
-#
-#     i = 0
-#     A = timer()
-#
-#     m = 7
-#     n = 10
-#     uni_sampler = scDomainUniformSampler(m)
-#     B = timer()
-#     print(f"single sampler: {B - A}")
-#
-#     uni_sampler.prepareElectionSampler(n)
-#
-#     B = timer()
-#     print(f"prepare all next: {B - A}")
-#
-#     for i in range(30):
-#         E = uni_sampler.sampleElection()
-#         for v in E:
-#             print(v)
-#         print()
-#
-#     B = timer()
-#     print(f"sample election: {B - A}")
-#
-#     exit()
-#
-#     nai_sampler = scDomainNaiveSampler(m)
-#     B = timer()
-#     print(f"both samplers : {B - A}")
-#
-#     for i in range(m):
-#         scExperiment("(uni)", uni_sampler, i)
-#
-#     print("----")
-#
-#     for i in range(m):
-#         scExperiment("(nai)", nai_sampler, i)
-#
-#     B = timer()
-#
-#     print("============")
-#     print(B - A)
-
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 22.10.2021 #
-# # # # # # # # # # # # # # # #
-
-# print('import SC')
-# num_candidates = 9
-# # naive_sampler = scDomainNaiveSampler(num_candidates)
-# # print('halfway')
-# uniform_sampler = scDomainUniformSampler(num_candidates)
-# print('domain prepared')
-
-# m = 7
-# n = 100
-# uniform_sampler = scDomainUniformSampler(m)
-# # B = timer()
-# # print(f"single sampler: {B - A}")
-# uniform_sampler.prepareElectionSampler(n)
-#

@@ -4,22 +4,24 @@ import itertools
 import logging
 import math
 import os
-import warnings
 from abc import ABCMeta, abstractmethod
+from tqdm import tqdm
+
 from PIL import Image
 from mapel.core.objects.Family import Family
 import mapel.core.printing as pr
-import time
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from scipy.stats import stats
-import ast
 import time
-from mapel.core.utils import make_folder_if_do_not_exist
 
 from mapel.core.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 from mapel.core.embedding.simulated_annealing.simulated_annealing import SimulatedAnnealing
+
+import mapel.core.persistence.experiment_imports as imports
+import mapel.core.persistence.experiment_exports as exports
+
 
 COLORS = []
 
@@ -44,11 +46,23 @@ class Experiment:
     __metaclass__ = ABCMeta
     """Abstract set of instances."""
 
-    def __init__(self, instances=None, distances=None, dim=2, store=True,
-                 coordinates=None, distance_id='emd-positionwise', experiment_id=None,
-                 instance_type='ordinal', _import=True, clean=False, coordinates_names=None,
-                 embedding_id='kamada', fast_import=False, with_matrix=False):
-        self._import = _import
+    def __init__(self,
+                 experiment_id=None,
+                 instances=None,
+                 distances=None,
+                 coordinates=None,
+                 distance_id=None,
+                 embedding_id=None,
+                 dim=2,
+                 is_exported=True,
+                 is_imported=True,
+                 instance_type=None,
+                 clean=False,
+                 coordinates_names=None,
+                 fast_import=False,
+                 with_matrix=False):
+
+        self.is_imported = is_imported
         self.clean = clean
         self.experiment_id = experiment_id
         self.fast_import = fast_import
@@ -65,11 +79,13 @@ class Experiment:
         self.coordinates = None
         self.coordinates_lists = {}
 
+        self.features = {}
+        self.cultures = {}
+
         self.families = {}
         self.times = {}
         self.stds = {}
         self.matchings = {}
-        self.features = {}
         self.coordinates_by_families = {}
 
         self.num_families = None
@@ -79,18 +95,18 @@ class Experiment:
 
         if experiment_id is None:
             self.experiment_id = 'virtual'
-            self.store = False
+            self.is_exported = False
         else:
-            self.store = True
+            self.is_exported = True
             self.experiment_id = experiment_id
-            self.create_structure()
+            self.add_folders_to_experiment()
             self.families = self.import_controllers()
-            self.store = store
+            self.is_exported = is_exported
 
         if isinstance(instances, dict):
             self.instances = instances
             print('=== Omitting import! ===')
-        elif _import and self.experiment_id != 'virtual':
+        elif is_imported and self.experiment_id != 'virtual':
             try:
                 self.instances = self.add_instances_to_experiment()
                 self.num_instances = len(self.instances)
@@ -104,27 +120,26 @@ class Experiment:
         if isinstance(distances, dict):
             self.distances = distances
             print('=== Omitting import! ===')
-        elif _import and self.experiment_id != 'virtual':# and fast_import == False:
-            try:
-                self.distances, self.times, self.stds, self.mappings = self.add_distances_to_experiment()
-                print('=== Distances imported successfully! ===')
-            except FileNotFoundError:
-                print('=== Distances not found! ===')
+        elif is_imported and self.experiment_id != 'virtual':  # and fast_import == False:
+            self.distances, self.times, self.stds, self.mappings = \
+                imports.add_distances_to_experiment(self)
         else:
             self.distances = {}
 
         if isinstance(coordinates, dict):
             self.coordinates = coordinates
             print('=== Omitting import! ===')
-        elif _import and self.experiment_id != 'virtual':
+        elif is_imported and self.experiment_id != 'virtual':
             try:
                 if coordinates_names is not None:
                     for file_name in coordinates_names:
                         self.coordinates_lists[file_name] = \
-                            self.add_coordinates_to_experiment(dim=dim, file_name=file_name)
+                            imports.add_coordinates_to_experiment(self,
+                                                                  dim=dim,
+                                                                  file_name=file_name)
                     self.coordinates = self.coordinates_lists[coordinates_names[0]]
                 else:
-                    self.coordinates = self.add_coordinates_to_experiment(dim=dim)
+                    self.coordinates = imports.add_coordinates_to_experiment(self, dim=dim)
                 print('=== Coordinates imported successfully! ===')
             except FileNotFoundError:
                 print('=== Coordinates not found! ===')
@@ -135,13 +150,8 @@ class Experiment:
             for family_id in self.families:
                 for instance_id in self.families[family_id].instance_ids:
                     self.instances[instance_id].label = self.families[family_id].label
-        except:
+        finally:
             pass
-
-
-    @abstractmethod
-    def add_culture(self):
-        pass
 
     @abstractmethod
     def prepare_instances(self):
@@ -155,14 +165,47 @@ class Experiment:
     def add_family(self):
         pass
 
-    def embed(self, algorithm: str = 'spring', num_iterations: int = 1000, radius: float = np.infty,
-              dim: int = 2, num_neighbors: int = None, method: str = 'standard',
-              zero_distance: float = 1., factor: float = 1., saveas: str = None,
-              init_pos: dict = None, fixed=True, attraction_factor=None) -> None:
+    @abstractmethod
+    def add_instances_to_experiment(self):
+        pass
+
+    @abstractmethod
+    def add_folders_to_experiment(self):
+        pass
+
+    @abstractmethod
+    def import_controllers(self):
+        pass
+
+    @abstractmethod
+    def add_culture(self, name, function):
+        pass
+
+    @abstractmethod
+    def add_feature(self, name, function):
+        pass
+
+    def embed_2d(self, **kwargs) -> None:
+        self.embed(dim=2, **kwargs)
+
+    def embed(self,
+              embedding_id: str = None,
+              num_iterations: int = 1000,
+              radius: float = np.infty,
+              dim: int = 2,
+              num_neighbors: int = None,
+              method: str = 'standard',
+              zero_distance: float = 1.,
+              factor: float = 1.,
+              saveas: str = None,
+              init_pos: dict = None,
+              fixed=True,
+              attraction_factor=None,
+              **kwargs) -> None:
 
         if attraction_factor is None:
             attraction_factor = 1
-            if algorithm == 'spring':
+            if embedding_id == 'spring':
                 attraction_factor = 2
 
         num_elections = len(self.distances)
@@ -182,7 +225,7 @@ class Experiment:
                 if i < j:
 
                     self.distances[instance_id_1][instance_id_2] *= factor
-                    if algorithm in {'spring'}:
+                    if embedding_id in {'spring'}:
                         if self.distances[instance_id_1][instance_id_2] == 0.:
                             self.distances[instance_id_1][instance_id_2] = zero_distance
                             self.distances[instance_id_2][instance_id_1] = zero_distance
@@ -216,38 +259,45 @@ class Experiment:
         if num_neighbors is None:
             num_neighbors = 100
 
-        if algorithm.lower() == 'spring':
-            my_pos = nx.spring_layout(graph, iterations=num_iterations, dim=dim)
-        elif algorithm.lower() in {'mds'}:
-            my_pos = MDS(n_components=dim, dissimilarity='precomputed',
+        if embedding_id.lower() in {'fr', 'spring'}:
+            my_pos = nx.spring_layout(graph,
+                                      iterations=num_iterations,
+                                      dim=dim,
+                                      **kwargs)
+        elif embedding_id.lower() in {'mds'}:
+            my_pos = MDS(n_components=dim,
+                         dissimilarity='precomputed',
                          max_iter=num_iterations,
-                         # n_init=20,
-                         # eps=1e-4,
+                         **kwargs
                          ).fit_transform(x)
-        elif algorithm.lower() in {'tsne'}:
+        elif embedding_id.lower() in {'tsne'}:
             my_pos = TSNE(n_components=dim,
-                          n_iter=num_iterations).fit_transform(x)
-        elif algorithm.lower() in {'se'}:
-            my_pos = SpectralEmbedding(n_components=dim).fit_transform(x)
-        elif algorithm.lower() in {'isomap'}:
-            my_pos = Isomap(n_components=dim, n_neighbors=num_neighbors).fit_transform(x)
-        elif algorithm.lower() in {'lle'}:
+                          n_iter=num_iterations,
+                          **kwargs).fit_transform(x)
+        elif embedding_id.lower() in {'se'}:
+            my_pos = SpectralEmbedding(n_components=dim,
+                                       **kwargs).fit_transform(x)
+        elif embedding_id.lower() in {'isomap'}:
+            my_pos = Isomap(n_components=dim,
+                            n_neighbors=num_neighbors,
+                            **kwargs).fit_transform(x)
+        elif embedding_id.lower() in {'lle'}:
             my_pos = LocallyLinearEmbedding(n_components=dim,
                                             n_neighbors=num_neighbors,
                                             max_iter=num_iterations,
                                             method=method).fit_transform(x)
-        elif algorithm.lower() in {'kamada-kawai', 'kamada', 'kawai'}:
+        elif embedding_id.lower() in {'kk', 'kamada-kawai', 'kamada', 'kawai'}:
             my_pos = KamadaKawai().embed(
                 distances=x, initial_positions=initial_positions,
                 fix_initial_positions=fixed
             )
-        elif algorithm.lower() in {'simulated-annealing'}:
+        elif embedding_id.lower() in {'simulated-annealing'}:
             my_pos = SimulatedAnnealing().embed(
                 distances=x,
                 initial_positions=initial_positions,
                 fix_initial_positions=fixed
             )
-        elif algorithm.lower() in {'geo'}:
+        elif embedding_id.lower() in {'geo'}:
             f1 = self.import_feature('voterlikeness_sqrt')
             f2 = self.import_feature('borda_diversity')
             for f in f1:
@@ -256,7 +306,7 @@ class Experiment:
                 if f2[f] is None:
                     f2[f] = 0
             my_pos = [[f1[e], f2[e]] for e in f1]
-        elif algorithm.lower() in {'pca'}:
+        elif embedding_id.lower() in {'pca'}:
             pca = PCA(n_components=2)
             principalComponents = pca.fit_transform(x)
             my_pos = principalComponents
@@ -270,44 +320,25 @@ class Experiment:
 
         pr.adjust_the_map(self)
 
-        if self.store:
-            if saveas is None:
-                file_name = f'{algorithm}_{self.distance_id}_{str(dim)}d.csv'
-            else:
-                file_name = f'{saveas}.csv'
-            path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                          "coordinates")
-            make_folder_if_do_not_exist(path_to_folder)
-            path_to_file = os.path.join(path_to_folder, file_name)
+        if self.is_exported:
+            exports.export_embedding(self, embedding_id, saveas, dim, my_pos)
 
-            with open(path_to_file, 'w', newline='') as csvfile:
+    def print_map_1d(self, **kwargs) -> None:
+        pr.print_map_1d(self, **kwargs)
 
-                writer = csv.writer(csvfile, delimiter=';')
-                if dim == 1:
-                    writer.writerow(["instance_id", "x"])
-                elif dim == 2:
-                    writer.writerow(["instance_id", "x", "y"])
-                elif dim == 3:
-                    writer.writerow(["instance_id", "x", "y", "z"])
+    def print_map_2d(self, **kwargs) -> None:
+        pr.print_map_2d(self, **kwargs)
 
-                ctr = 0
-                for instance_id in self.instances:
-                    x = round(self.coordinates[instance_id][0], 5)
-                    if dim == 1:
-                        writer.writerow([instance_id, x])
-                    else:
-                        y = round(self.coordinates[instance_id][1], 5)
-                        if dim == 2:
-                            writer.writerow([instance_id, x, y])
-                        else:
-                            z = round(my_pos[ctr][2], 5)
-                            writer.writerow([instance_id, x, y, z])
-                    ctr += 1
+    def print_map_2d_colored_by_feature(self, **kwargs) -> None:
+        pr.print_map_2d(self, **kwargs)
 
-        # self.coordinates = coordinates
+    def print_map_2d_colored_by_features(self, **kwargs) -> None:
+        pr.print_map_2d(self, **kwargs)
+
+    def print_map_3d(self, **kwargs) -> None:
+        pr.print_map_3d(self, **kwargs)
 
     def print_map(self, dim: int = 2, **kwargs) -> None:
-        """ Print the two-dimensional embedding of multi-dimensional map of the instances """
         if dim == 1:
             pr.print_map_1d(self, **kwargs)
         elif dim == 2:
@@ -318,90 +349,19 @@ class Experiment:
     def print_matrix(self, **kwargs):
         pr.print_matrix(experiment=self, **kwargs)
 
-    @abstractmethod
-    def add_instances_to_experiment(self):
-        pass
-
-    @abstractmethod
-    def add_folders_to_experiment(self):
-        pass
-
-    @abstractmethod
-    def create_structure(self):
-        pass
-
-    @abstractmethod
-    def import_controllers(self):
-        pass
-
-    def compute_feature_from_function(self, function, feature_id='my_feature', printing=False):
+    def compute_feature_from_function(self, function, feature_id='my_feature'):
         feature_dict = {'value': {}, 'time': {}}
-        for instance_id in self.instances:
-            if printing:
-                print(instance_id)
+        for instance_id in tqdm(self.instances):
             start = time.time()
             instance = self.instances[instance_id]
             value = function(instance)
             total_time = time.time() - start
             feature_dict['value'][instance_id] = value
             feature_dict['time'][instance_id] = total_time
-        if self.store:
-            self._store_instance_feature(feature_id, feature_dict)
+        if self.is_exported:
+            exports.export_instance_feature(self, feature_id, feature_dict)
         self.features[feature_id] = feature_dict
         return feature_dict
-
-    def _store_instance_feature(self, feature_id, feature_dict):
-        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "features")
-        make_folder_if_do_not_exist(path_to_folder)
-        path_to_file = os.path.join(path_to_folder, f'{feature_id}_{self.embedding_id}.csv')
-
-        with open(path_to_file, 'w', newline='') as csv_file:
-            writer = csv.writer(csv_file, delimiter=';')
-            writer.writerow(["instance_id", "value", "time"])
-            for key in feature_dict['value']:
-                writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
-
-    def add_coordinates_to_experiment(self, dim=2, file_name=None) -> dict:
-        """ Import from a file precomputed coordinates of all the points --
-        each point refer to one instance """
-
-        coordinates = {}
-        if file_name is None:
-            file_name = f'{self.embedding_id}_{self.distance_id}_{dim}d.csv'
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                            "coordinates", file_name)
-        with open(path, 'r', newline='') as csv_file:
-
-            # ORIGINAL
-            reader = csv.DictReader(csv_file, delimiter=';')
-
-            warn = False
-
-            for row in reader:
-                try:
-                    instance_id = row['instance_id']
-                except KeyError:
-                    try:
-                        instance_id = row['election_id']
-                    except KeyError:
-                        pass
-
-                if dim == 1:
-                    coordinates[instance_id] = [float(row['x'])]
-                elif dim == 2:
-                    coordinates[instance_id] = [float(row['x']), float(row['y'])]
-                elif dim == 3:
-                    coordinates[instance_id] = [float(row['x']), float(row['y']), float(row['z'])]
-
-                if instance_id not in self.instances:
-                    warn = True
-
-            if warn:
-                text = f'Possibly outdated coordinates are imported!'
-                logging.warning(text)
-                # warnings.warn(text)
-
-        return coordinates
 
     def compute_coordinates_by_families(self, dim=2) -> None:
         """ Group all points by their families """
@@ -430,12 +390,12 @@ class Experiment:
                 coordinates_by_families[family_id][0].append(self.coordinates[family_id][0])
                 try:
                     coordinates_by_families[family_id][1].append(self.coordinates[family_id][1])
-                except Exception:
+                finally:
                     pass
 
                 try:
                     coordinates_by_families[family_id][2].append(self.coordinates[family_id][2])
-                except Exception:
+                finally:
                     pass
         else:
 
@@ -450,12 +410,12 @@ class Experiment:
                         try:
                             coordinates_by_families[family_id][1].append(
                                 self.coordinates[instance_id][1])
-                        except Exception:
+                        finally:
                             pass
                         try:
                             coordinates_by_families[family_id][2].append(
                                 self.coordinates[instance_id][2])
-                        except Exception:
+                        finally:
                             pass
                 except:
                     for instance_id in self.families[family_id].instance_ids:
@@ -528,86 +488,6 @@ class Experiment:
 
         return px, py
 
-    def add_distances_to_experiment(self) -> (dict, dict, dict):
-        """ Import precomputed distances between each pair of instances from a file """
-        file_name = f'{self.distance_id}.csv'
-        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'distances', file_name)
-
-        distances = {}
-        times = {}
-        stds = {}
-        mappings = {}
-        print(path)
-        with open(path, 'r', newline='') as csv_file:
-
-            reader = csv.DictReader(csv_file, delimiter=';')
-            warn = False
-
-            for row in reader:
-                try:
-                    instance_id_1 = row['election_id_1']
-                    instance_id_2 = row['election_id_2']
-                except:
-                    try:
-                        instance_id_1 = row['instance_id_1']
-                        instance_id_2 = row['instance_id_2']
-                    except:
-                        pass
-
-                if instance_id_1 not in self.instances or instance_id_2 not in self.instances:
-                    continue
-
-                if instance_id_1 not in distances:
-                    distances[instance_id_1] = {}
-                if instance_id_1 not in times:
-                    times[instance_id_1] = {}
-                if instance_id_1 not in stds:
-                    stds[instance_id_1] = {}
-                if instance_id_1 not in mappings:
-                    mappings[instance_id_1] = {}
-
-                if instance_id_2 not in distances:
-                    distances[instance_id_2] = {}
-                if instance_id_2 not in times:
-                    times[instance_id_2] = {}
-                if instance_id_2 not in stds:
-                    stds[instance_id_2] = {}
-                if instance_id_2 not in mappings:
-                    mappings[instance_id_2] = {}
-
-                try:
-                    distances[instance_id_1][instance_id_2] = float(row['distance'])
-                    distances[instance_id_2][instance_id_1] = distances[instance_id_1][
-                        instance_id_2]
-                except KeyError:
-                    pass
-
-                try:
-                    times[instance_id_1][instance_id_2] = float(row['time'])
-                    times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
-                except KeyError:
-                    pass
-
-                try:
-                    stds[instance_id_1][instance_id_2] = float(row['std'])
-                    stds[instance_id_2][instance_id_1] = stds[instance_id_1][instance_id_2]
-                except KeyError:
-                    pass
-
-                try:
-                    mappings[instance_id_1][instance_id_2] = ast.literal_eval(str(row['mapping']))
-                    mappings[instance_id_2][instance_id_1] = np.argsort(mappings[instance_id_1][instance_id_2])
-                except KeyError:
-                    pass
-
-                if instance_id_1 not in self.instances:
-                    warn = True
-
-            if warn:
-                text = f'Possibly outdated distances are imported!'
-                warnings.warn(text)
-        return distances, times, stds, mappings
-
     def clean_elections(self):
         path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
         for file_name in os.listdir(path):
@@ -615,8 +495,8 @@ class Experiment:
 
     def get_feature(self, feature_id, column_id='value'):
 
-        # if feature_id not in self.features:
-        #     self.features[feature_id] = self.import_feature(feature_id)
+        # if feature_id not in election.features:
+        #     election.features[feature_id] = election.import_feature(feature_id)
 
         self.features[feature_id] = self.import_feature(feature_id, column_id=column_id)
 
@@ -627,7 +507,7 @@ class Experiment:
             feature_long_id = feature_id
         else:
             feature_long_id = f'{feature_id}_{rule}'
-        return pr.get_values_from_csv_file(self, feature_id=feature_id,
+        return imports.get_values_from_csv_file(self, feature_id=feature_id,
                                            column_id=column_id,
                                            feature_long_id=feature_long_id)
 
@@ -646,58 +526,7 @@ class Experiment:
                 else:
                     f3[election_id] = f1[election_id] / f2[election_id]
 
-        self.store_feature(feature_dict=f3, saveas=saveas)
-
-    def store_feature(self, feature_dict=None, saveas=None):
-        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "features")
-        make_folder_if_do_not_exist(path_to_folder)
-        path_to_file = os.path.join(path_to_folder, f'{saveas}.csv')
-
-        with open(path_to_file, 'w', newline='') as csv_file:
-            writer = csv.writer(csv_file, delimiter=';')
-            writer.writerow(["election_id", "value"])
-            # writer.writerow(["election_id", "value", "bound", "num_large_parties"])
-            for key in feature_dict:
-                writer.writerow([key, str(feature_dict[key])])
-
-    def import_distances(self, distance_id):
-
-        distances = {}
-
-        file_name = f'{distance_id}.csv'
-        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'distances', file_name)
-
-        with open(path, 'r', newline='') as csv_file:
-
-            reader = csv.DictReader(csv_file, delimiter=';')
-
-            for row in reader:
-                try:
-                    instance_id_1 = row['election_id_1']
-                    instance_id_2 = row['election_id_2']
-                except:
-                    try:
-                        instance_id_1 = row['instance_id_1']
-                        instance_id_2 = row['instance_id_2']
-                    except:
-                        pass
-                if instance_id_1 not in self.instances or instance_id_2 not in self.instances:
-                    continue
-
-                if instance_id_1 not in distances:
-                    distances[instance_id_1] = {}
-
-                if instance_id_2 not in distances:
-                    distances[instance_id_2] = {}
-
-                try:
-                    distances[instance_id_1][instance_id_2] = float(row['distance'])
-                    distances[instance_id_2][instance_id_1] = distances[instance_id_1][
-                        instance_id_2]
-                except KeyError:
-                    pass
-
-        return distances
+        exports.export_feature(self, feature_dict=f3, saveas=saveas)
 
     def print_correlation_between_distances(self,
                                             distance_id_1='spearman',
@@ -708,8 +537,8 @@ class Experiment:
 
         all_distances = {}
 
-        all_distances[distance_id_1] = self.import_distances(distance_id=distance_id_1)
-        all_distances[distance_id_2] = self.import_distances(distance_id=distance_id_2)
+        all_distances[distance_id_1] = imports.import_distances(self, distance_id_1)
+        all_distances[distance_id_2] = imports.import_distances(self, distance_id_2)
 
         names = list(all_distances.keys())
 
@@ -735,9 +564,6 @@ class Experiment:
             }.get(name)
 
         for name_1, name_2 in itertools.combinations(names, 2):
-            # for target in ['double', 'radius', '2g-IC', 'IC_', '1d_', 'maleuc', 'malasym', 'vec']:
-            #         ['MD', 'MA', 'CH', 'ID', '2d_rev', 'Mallows']:
-            # for target in ['MD']:
 
             if all:
 
@@ -756,47 +582,19 @@ class Experiment:
                 empty_x = []
                 empty_y = []
                 for e1, e2 in itertools.combinations(all_distances[name_1], 2):
-                    # if e1 in ['IC'] or e2 in ['IC']:
                     if e1 in ['AN', 'UN', 'ID', 'ST'] or e2 in ['AN', 'UN', 'ID', 'ST']:
                         empty_x.append(all_distances[name_1][e1][e2])
                         empty_y.append(all_distances[name_2][e1][e2])
                     else:
                         values_x.append(all_distances[name_1][e1][e2])
                         values_y.append(all_distances[name_2][e1][e2])
-                    # values_x.append(all_distances[name_1][e1][e2] * normalize(name_1))
-                    # values_y.append(all_distances[name_2][e1][e2] * normalize(name_2))
 
             fig = plt.figure(figsize=[6.4, 4.8])
             plt.gcf().subplots_adjust(left=0.2)
             plt.gcf().subplots_adjust(bottom=0.2)
             ax = fig.add_subplot()
-            # a = []
-            # b = []
-            # for x, y in zip(values_x, values_y):
-            #     a.append(x / y)
-            #     b.append(y / x)
-            # print("avg", sum(b) / len(b))
-            # print("avg", sum(a) / len(a))
-            # print(max(a), min(a))
-            # print(max(b), min(b))
-            # limit_1 = 1.48
-            # b_approx = [x for x in b if x > limit_1]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # limit_2 = 0.82
-            # b_approx = [x for x in b if x < limit_2]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # b_approx = [x for x in b if (x < limit_2 or x > limit_1)]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # empty_x = np.linspace(0, 500, 100)
-            # empty_y = [limit_1 * x for x in empty_x]
 
             ax.scatter(values_x, values_y, s=s, alpha=alpha, color=color)
-            # ax.scatter(values_x, values_y, s=4, alpha=0.005, color='purple')
-
-            # ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
 
             PCC = round(stats.pearsonr(values_x, values_y)[0], 3)
             print('PCC', PCC)
@@ -805,10 +603,6 @@ class Experiment:
 
             SCC = round(stats.spearmanr(values_x, values_y)[0], 3)
             print('SCC', SCC)
-
-            # if title is None:
-            #     title = f'{nice(name_1)} vs {nice(name_2)}'
-            # title=f'{target}'
 
             plt.xlim(left=0)
             plt.ylim(bottom=0)
@@ -821,7 +615,6 @@ class Experiment:
 
             if title:
                 plt.title(title, size=title_size)
-            # saveas = f'images/correlation/corr_{name_1}_{name_2}_{target}'
 
             path = f'images/correlation'
             is_exist = os.path.exists(path)
@@ -831,106 +624,13 @@ class Experiment:
 
             saveas = f'images/correlation/corr_{name_1}_{name_2}'
             plt.savefig(saveas, pad_inches=1)
-            # plt.savefig(saveas, bbox_inches=1)
             plt.show()
-
-    def print_correlation_old(self, distance_id_1='spearman', distance_id_2='l1-mutual_attraction',
-                              title=None):
-
-        all_distances = {}
-
-        all_distances[distance_id_1] = self.import_distances(distance_id=distance_id_1)
-        all_distances[distance_id_2] = self.import_distances(distance_id=distance_id_2)
-
-        names = list(all_distances.keys())
-
-        def nice(name):
-            return {
-                'spearman': 'Spearman',
-                'l1-mutual_attraction': '$\ell_1$ Mutual Attraction',
-                'emd-positionwise': 'EMD-Positionwise',
-            }.get(name)
-
-        def normalize(name):
-            return {
-                'spearman': 1.,
-                'l1-mutual_attraction': 1.,
-                'emd-positionwise': 1.,
-            }.get(name)
-
-        for name_1, name_2 in itertools.combinations(names, 2):
-
-            # for target in ['double', 'radius', '2g-IC', 'IC_', '1d_', 'maleuc', 'malasym', 'vec']:
-            #         ['MD', 'MA', 'CH', 'ID', '2d_rev', 'Mallows']:
-            # for target in ['MD']:
-
-            values_x = []
-            values_y = []
-            # empty_x = []
-            # empty_y = []
-            for e1, e2 in itertools.combinations(all_distances[name_1], 2):
-                # if e1 in ['IC'] or e2 in ['IC']:
-                # if target in e1 or target in e2:
-                #     empty_x.append(all_distances[name_1][e1][e2])
-                #     empty_y.append(all_distances[name_2][e1][e2])
-                # else:
-                values_x.append(all_distances[name_1][e1][e2])
-                values_y.append(all_distances[name_2][e1][e2])
-                # values_x.append(all_distances[name_1][e1][e2] * normalize(name_1))
-                # values_y.append(all_distances[name_2][e1][e2] * normalize(name_2))
-
-            fig = plt.figure()
-            ax = fig.add_subplot()
-
-            # a = []
-            # b = []
-            # for x, y in zip(values_x, values_y):
-            #     a.append(x / y)
-            #     b.append(y / x)
-            # print("avg", sum(b) / len(b))
-            # print("avg", sum(a) / len(a))
-            # print(max(a), min(a))
-            # print(max(b), min(b))
-            # limit_1 = 1.48
-            # b_approx = [x for x in b if x > limit_1]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # limit_2 = 0.82
-            # b_approx = [x for x in b if x < limit_2]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # b_approx = [x for x in b if (x < limit_2 or x > limit_1)]
-            # print(len(b), len(b_approx), (len(b) - len(b_approx)) / len(b))
-            #
-            # empty_x = np.linspace(0, 500, 100)
-            # empty_y = [limit_1 * x for x in empty_x]
-
-            ax.scatter(values_x, values_y, s=4, alpha=0.01, color='purple')
-            # ax.scatter(empty_x, empty_y, s=8, alpha=0.2, color='blue')
-
-            pear = round(stats.pearsonr(values_x, values_y)[0], 3)
-            pear_text = f'PCC = {pear}'
-            print('pear', pear)
-            # plt.text(0.7, 0.1, pear_text, transform=ax.transAxes, size=14)
-
-            if title is None:
-                title = f'{nice(name_1)} vs {nice(name_2)}'
-            # title=f'{target}'
-
-            plt.xlabel(nice(name_1), size=20)
-            plt.ylabel(nice(name_2), size=20)
-            # plt.title(title, size=24)
-            # saveas = f'images/correlation/corr_{name_1}_{name_2}_{target}'
-            saveas = f'images/correlation/corr_{name_1}_{name_2}'
-            plt.savefig(saveas, bbox_inches='tight')
-            # plt.show()
 
     def merge_election_images(self, size=250, name=None, show=False, ncol=1, nrow=1,
                               distance_id=None):
 
         images = []
         for i, election in enumerate(self.instances.values()):
-            print(election.label)
             if distance_id is None:
                 images.append(Image.open(f'images/{name}/{election.label}.png'))
             else:
@@ -940,7 +640,6 @@ class Experiment:
         new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]),
                               (size, size, size))
 
-        print(len(images))
         for i in range(ncol):
             for j in range(nrow):
                 new_image.paste(images[i + j * ncol], (image1_size[0] * i, image1_size[1] * j))
@@ -956,10 +655,8 @@ class Experiment:
     def merge_election_images_double(self, size=250, name=None,
                                      distance_ids=None,
                                      show=False, ncol=1, nrow=1):
-
         images = []
         for i, election in enumerate(self.instances.values()):
-            print(election.label)
             images.append(Image.open(f'images/{name}/{election.label}_{distance_ids[0]}.png'))
             images.append(Image.open(f'images/{name}/{election.label}_{distance_ids[1]}.png'))
         image1_size = images[0].size
@@ -967,7 +664,6 @@ class Experiment:
         new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]),
                               (size, size, size))
 
-        print(len(images))
         for i in range(ncol):
             for j in range(nrow):
                 new_image.paste(images[i + j * ncol], (image1_size[0] * i, image1_size[1] * j))
@@ -976,6 +672,5 @@ class Experiment:
         if show:
             new_image.show()
 
-    @abstractmethod
-    def add_feature(self, name, function):
-        pass
+
+

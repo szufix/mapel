@@ -22,27 +22,21 @@ def _decompose_tree(num_leaves, num_internal_nodes):
     return tree
 
 
-def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None, params=None):
+def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
+                                           tree: str = 'random'):
     """ Algorithm from: The Complexity of Election Problems
     with Group-Separable Preferences"""
-
-    if params is None:
-        params = {}
-
-    if params is not None and 'tree' not in params:
-        params = {'tree': 'random'}
 
     while True:
         m = num_candidates
         n = num_voters
 
-        if params['tree'] == 'random':
+        if tree == 'random':
             func = lambda m, r: 1./(m-1) * binom(m - 1, r) * \
                                 binom(m - 1 + r, m)
             buckets = [func(m, r) for r in range(1, m)]
 
             denominator = sum(buckets)
-            # print(buckets)
             buckets = [buckets[i]/denominator for i in range(len(buckets))]
 
             num_internal_nodes = \
@@ -51,10 +45,10 @@ def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
             decomposition_tree = \
                 _decompose_tree(num_candidates, num_internal_nodes)
 
-        elif params['tree'] == 'caterpillar':
+        elif tree == 'caterpillar':
             decomposition_tree = _caterpillar(m)
 
-        elif params['tree'] == 'balanced':
+        elif tree == 'balanced':
             decomposition_tree = _balanced(m)
 
         all_inner_nodes = get_all_inner_nodes(decomposition_tree)
@@ -75,7 +69,6 @@ def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
             for i, node in enumerate(all_inner_nodes):
                 node.reverse = False
 
-        # return votes, decomposition_tree
         return votes
 
 REVERSE = {}
@@ -184,7 +177,7 @@ def _generate_patterns(num_nodes, num_internal_nodes):
 
 
 def _generate_tree(num_nodes, num_internal_nodes, patterns):
-    """ Algorithm from: A linear-time algorithm for the generation of trees """
+    """ Algorithm from: A linear-time embedding_id for the generation of trees """
 
     sequence = []
     sizes = []
@@ -283,7 +276,6 @@ def _add_num_leaf_descendants(node):
 
 def _add_scheme(node):
 
-    # print(node.election_id)
     for starting_pos in node.scheme_1:
 
         pos = starting_pos
@@ -295,7 +287,6 @@ def _add_scheme(node):
             pos += child.num_leaf_descendants
 
     for starting_pos in node.scheme_2:
-        # print(starting_pos)
         pos = starting_pos
         for child in node.children:
             if pos in child.scheme_2:
@@ -316,7 +307,6 @@ def _construct_vector_from_scheme(node):
     x = node.scheme_1
     y = node.scheme_2
     node.scheme = {k: x.get(k, 0) + y.get(k, 0) for k in set(x) | set(y)}
-    # print(node.scheme, x, y)
 
     weight = 1. / sum(node.scheme.values())
 
@@ -398,7 +388,6 @@ def _balanced(num_leaves):
 
 
 def print_tree(root):
-    print(root.election_id)
     for child in root.children:
         print_tree(child)
 
@@ -444,7 +433,6 @@ def get_frequency_matrix_from_tree(root):
 
     all_nodes = get_all_nodes(root)
     for node in all_nodes:
-        print(node.election_id)
         f[str(node.election_id)] = [0 for _ in range(m)]
     set_left_and_right(root)
 
@@ -452,7 +440,6 @@ def get_frequency_matrix_from_tree(root):
 
     for node in all_nodes:
         if node.election_id != root.election_id:
-            # print(node.election_id)
             for t in range(m):
                 value_1 = 0
                 if t-node.left >= 0:
@@ -490,4 +477,3 @@ def get_frequency_matrix_from_tree(root):
 #     for j in range(num_candidates):
 #         vectors[i][j] /= float(num_voters)
 #
-# print(vectors)

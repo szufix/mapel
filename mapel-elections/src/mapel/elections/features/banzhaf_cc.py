@@ -1,13 +1,13 @@
 
 import scipy.special
 
-from mapel.elections.features.scores import get_cc_score
+from mapel.elections.features.scores import get_cc_score, get_cc_dissat
 import time
 
 
 def get_banzhaf_cc_score(election, committee_size=1):
     if election.fake:
-        return 'None'
+        return 'None', 'None'
 
     winners = set()
     BASE = {}
@@ -26,7 +26,7 @@ def get_banzhaf_cc_score(election, committee_size=1):
                 highest_c = c
         winners.add(highest_c)
 
-    return get_cc_score(election, winners)
+    return get_cc_score(election, winners), get_cc_dissat(election, winners)
 
 
 def voter_score(BASE, BINOM, election, v, c, committee_size, winners):

@@ -119,3 +119,18 @@ def compute_stv_winners(election=None, num_winners=1):
     winners = sorted(winners)
 
     return winners
+
+###
+
+def get_borda_points(votes, num_voters, num_candidates):
+    points = np.zeros([num_candidates])
+    scoring = [1. for _ in range(num_candidates)]
+
+    for i in range(len(scoring)):
+        scoring[i] = len(scoring) - i - 1
+
+    for i in range(num_voters):
+        for j in range(num_candidates):
+            points[int(votes[i][j])] += scoring[j]
+
+    return points

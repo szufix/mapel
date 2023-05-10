@@ -18,7 +18,7 @@ def generate_preflib_election(experiment=None, model=None, name=None,
                                    num_voters=num_voters, num_candidates=num_candidates,
                                    folder=folder)
 
-    path = os.path.join("experiments", experiment.experiment_id, "elections", name + ".soc")
+    path = os.path.join("election", experiment.experiment_id, "elections", name + ".soc")
     file_ = open(path, 'w')
 
     file_.write(str(num_candidates) + "\n")
@@ -96,7 +96,6 @@ def generate_votes_preflib(model, num_candidates=None, num_voters=None,  folder=
             selected_candidates = order_by_score[0:num_candidates]
         elif selection_method == 'freq':
             freq = import_freq(model)
-            # print(freq)
             selected_candidates = freq[0:num_candidates]
         else:
             raise NameError('No such selection method!')
@@ -202,8 +201,6 @@ def prepare_preflib_family(experiment=None, model=None, family_id=None,
         ids = []
 
     ctr = 0
-    # print(experiment.families)
-    # print(ids, experiment.families[family_id].size)
     rand_ids = rand.choices(ids, k=experiment.families[family_id].size)
     for ri in rand_ids:
         name = family_id + '_' + str(ctr)

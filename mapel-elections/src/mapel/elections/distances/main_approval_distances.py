@@ -119,7 +119,6 @@ def flow_helper_advanced(v_1, v_2, num_candidates=1, num_voters=1):
         # go right
         if k < m:
             graph.add_edge(k, k + 1, capacity=int(max_capacity), weight=normalize(prob_right))
-        # print(k, prob_left_up, prob_left_down, prob_right)
 
     # lower row
     for k in range(0, int_m):

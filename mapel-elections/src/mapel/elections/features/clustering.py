@@ -58,11 +58,11 @@ def clustering_kmeans(experiment, num_clusters=20):
     # plt.scatter(points[y_km == 3, 0], points[y_km == 3, 1], s=100, c='cyan')
 
     # all_distances = []
-    # for a,b in combinations(experiment.distances, 2):
-    #     all_distances.append([a, b, experiment.distances[a][b]])
+    # for a,b in combinations(election.distances, 2):
+    #     all_distances.append([a, b, election.distances[a][b]])
     # all_distances.sort(key=lambda x: x[2])
     #
-    # clusters = {a: None for a in experiment.distances}
+    # clusters = {a: None for a in election.distances}
     # num_clusters = 0
     # for a,b,dist in all_distances:
     #     if clusters[a] is None and clusters[b] is None:

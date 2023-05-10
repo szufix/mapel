@@ -9,13 +9,13 @@ except Exception:
     pulp = None
 
 
-from mapel.elections.objects.ApprovalElection import ApprovalElection
+# from mapel.elections.objects.ApprovalElection import ApprovalElection
 from math import ceil
 import itertools
 from collections import defaultdict
 
 
-def count_number_of_cohesive_groups_brute(election: ApprovalElection, l: int = 1,
+def count_number_of_cohesive_groups_brute(election, l: int = 1,
                                           committee_size: int = 10):
     answer = 0
     min_size = int(ceil(l * election.num_voters / committee_size))
@@ -27,7 +27,6 @@ def count_number_of_cohesive_groups_brute(election: ApprovalElection, l: int = 1
         for v in s:
             cands &= election.votes[v]
         if len(cands) >= l:
-            # print(s, "  ", cands)
             answer += 1
     return answer
 
@@ -54,7 +53,7 @@ def newton(n: int, k: int):
     return answer
 
 
-def count_number_of_cohesive_groups(election: ApprovalElection, l: int = 1,
+def count_number_of_cohesive_groups(election, l: int = 1,
                                     committee_size: int = 10):
 
     if l > 1:
@@ -72,7 +71,6 @@ def count_number_of_cohesive_groups(election: ApprovalElection, l: int = 1,
         for siz in range(min_size, d[s] + 1):
             sign = 2 * (len(s) % 2) - 1  # 1 for even, -1 for odd, comes from (-1) ^ (s-1)
             answer += newton(d[s], siz) * sign
-            # print(s, d[s], siz, sign, newton(d[s], siz) * sign)
     return answer
 
 
@@ -80,13 +78,13 @@ def count_number_of_cohesive_groups(election: ApprovalElection, l: int = 1,
 ####################################################################################################
 ####################################################################################################
 
-def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElection, feature_params):
+def count_largest_cohesiveness_level_l_of_cohesive_group(election, feature_params):
     committee_size = feature_params['committee_size']
 
-    if election.model == 'approval_zeros':
-        return 0
-    elif election.model == 'approval_ones':
-        return min(committee_size, election.num_candidates)
+    # if election.model == 'approval_zeros':
+    #     return 0
+    # elif election.model == 'approval_ones':
+    #     return min(committee_size, election.num_candidates)
 
     l_ans = 0
     for l in range(1, election.num_voters + 1):
@@ -97,7 +95,7 @@ def count_largest_cohesiveness_level_l_of_cohesive_group(election: ApprovalElect
     return l_ans
 
 
-def solve_ilp_instance(election: ApprovalElection, committee_size: int, l: int = 1) -> bool:
+def solve_ilp_instance(election, committee_size: int, l: int = 1) -> bool:
     pulp.getSolver('CPLEX_CMD')
     model = pulp.LpProblem("cohesiveness_level_l", pulp.LpMaximize)
     X = [pulp.LpVariable("x_" + str(i), cat='Binary') for i in
@@ -137,9 +135,6 @@ def solve_ilp_instance(election: ApprovalElection, committee_size: int, l: int =
         model += y_ineq >= 0
 
     model.solve(pulp.PULP_CBC_CMD(msg=False))
-    # print(culture_id)
-    # print(LpStatus[culture_id.status])
-    # print(int(value(culture_id.objective)))    # prints the best objective value - in our case useless, but can be useful in the future
     # if LpStatus[culture_id.status] == 'Optimal':
     #     print([var.election_id + "=" + str(var.varValue) for var in culture_id.variables() if var.varValue is not None and var.varValue > 0], sep=" ")    # prints result variables which have value > 0
     return pulp.LpStatus[model.status] == 'Optimal'

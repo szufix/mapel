@@ -66,7 +66,7 @@ NICE_NAME = {
     '5d_sphere': '5D_Sphere',
     'impartial_culture': 'Impartial_Culture',
     'iac': 'Impartial_Anonymous_Culture',
-    'urn_model': 'Urn_Model',
+    'urn': 'Urn',
     'conitzer': 'Single-Peaked_(by_Conitzer)',
     'spoc_conitzer': 'SPOC',
     'walsh': 'Single-Peaked_(by_Walsh)',
@@ -121,7 +121,6 @@ NICE_NAME = {
     'norm-mallows_mixture': 'norm-mallows_mixture',
     'ic': 'IC',
     'id': 'ID',
-    'urn': 'Urn',
 }
 
 SHORT_NICE_NAME = {
@@ -195,7 +194,8 @@ ROOMMATES_PROBLEM_MODELS = {'roommates_ic'}
 FEATURES_WITH_DISSAT = {'highest_cc_score', 'highest_hb_score', 'highest_pav_score',
                         'greedy_approx_cc_score', 'removal_approx_cc_score',
                         'greedy_approx_hb_score', 'removal_approx_hb_score',
-                        'greedy_approx_pav_score', 'removal_approx_pav_score'}
+                        'greedy_approx_pav_score', 'removal_approx_pav_score',
+                        'banzhaf_cc_score', 'ranging_cc_score'}
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

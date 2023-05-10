@@ -96,9 +96,9 @@ class Marriages(Instance):
         if params is None:
             params = {}
 
-        # if self.culture_id == 'norm-mallows' and 'norm-phi' not in params:
+        # if election.culture_id == 'norm-mallows' and 'norm-phi' not in params:
         #     params['norm-phi'] = np.random.rand()
-        # elif self.culture_id == 'urn' and 'alpha' not in params:
+        # elif election.culture_id == 'urn' and 'alpha' not in params:
         #     params['alpha'] = np.random.rand()
         if 'norm-phi' in params:
             params['alpha'] = params['norm-phi']
@@ -115,7 +115,7 @@ class Marriages(Instance):
     def store_instance_in_a_file(self):
         """ Store votes in a file """
 
-        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances")
+        path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id, "instances")
         make_folder_if_do_not_exist(path_to_folder)
         path_to_file = os.path.join(path_to_folder, f'{self.instance_id}.mi')
 
@@ -136,7 +136,7 @@ class Marriages(Instance):
                     else:
                         file_.write(str(i) + ', b' + str(i) + "\n")
 
-                # c = Counter(map(tuple, self.votes[s]))
+                # c = Counter(map(tuple, election.votes[s]))
                 # counted_votes = [[count, list(row)] for row, count in c.items()]
                 # counted_votes = sorted(counted_votes, reverse=True)
 
@@ -171,7 +171,7 @@ class Marriages(Instance):
         votes = [0, 0]
 
         file_name = f'{self.instance_id}.mi'
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances", file_name)
+        path = os.path.join(os.getcwd(), "election", self.experiment_id, "instances", file_name)
         with open(path, 'r') as my_file:
 
             params = 0

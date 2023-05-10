@@ -49,7 +49,7 @@ def matrix2png(argv):
     else:
         name = "%s_phi%d_%d_%s.png" % (model, param * 100, m, tgt)
 
-    # prepare the experiment/matrix
+    # prepare the election/matrix
     experiment = mapel.prepare_experiment()
     experiment.set_default_num_candidates(m)
     experiment.set_default_num_voters(n)
@@ -66,7 +66,7 @@ def matrix2png(argv):
     if model != "mallows":
         experiment.add_election(election_model=model, election_id="M")
     else:
-        experiment.add_election(election_model="norm-mallows_matrix", params={"norm-phi": param},
+        experiment.add_election(election_model="norm-mallows_matrix", params={"normphi": param},
                                 election_id="M")
     M = experiment.elections["M"].matrix
 

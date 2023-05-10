@@ -3,18 +3,18 @@ import os
 import numpy as np
 import random
 
-from mapel.elections.cultures_ import store_votes_in_a_file
+import mapel.elections.persistence.election_exports as exports
 
 
 def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pabulib',
                       aggregated=True, num_instances=1):
 
-    main_path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "source")
+    main_path = os.path.join(os.getcwd(), "election", experiment.experiment_id, "source")
 
     paths = []
     for name in os.listdir(main_path):
         # print(name)
-        paths.append(f'experiments/{experiment.experiment_id}/source/{name}')
+        paths.append(f'election/{experiment.experiment_id}/source/{name}')
 
     for p in range(num_instances):
 
@@ -87,9 +87,9 @@ def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pab
                 break
 
 
-        # store in .app file
+        # is_exported in .app file
         name = name.replace('.pb', '')
-        path = f'experiments/{experiment.experiment_id}/elections/{model}_{p}.app'
+        path = f'election/{experiment.experiment_id}/elections/{model}_{p}.app'
         # num_candidates = num_candidates
         # num_voters = len(votes)
         params = {}
@@ -97,7 +97,7 @@ def convert_pb_to_app(experiment, num_candidates=100, num_voters=100, model='pab
 
         election = None
         model_id = model
-        store_votes_in_a_file(election, model_id, num_candidates, num_voters,
-                          params, path, ballot, votes=final_approval_votes_cut,
-                              aggregated=aggregated)
+        exports.export_votes_to_file(election, model_id, num_candidates, num_voters,
+                                     params, path, ballot, votes=final_approval_votes_cut,
+                                     is_aggregated=aggregated)
 
