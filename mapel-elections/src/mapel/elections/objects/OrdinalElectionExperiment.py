@@ -47,30 +47,27 @@ class OrdinalElectionExperiment(ElectionExperiment):
         if not os.path.isdir("trash/"):
             os.mkdir(os.path.join(os.getcwd(), "trash"))
 
-        try:
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
+        os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
 
-            list_of_folders = ['distances',
-                               'features',
-                               'coordinates',
-                               'elections',
-                               'matrices']
+        list_of_folders = ['distances',
+                           'features',
+                           'coordinates',
+                           'elections',
+                           'matrices']
 
-            for folder_name in list_of_folders:
-                try:
-                    os.mkdir(
-                        os.path.join(os.getcwd(), "experiments", self.experiment_id, folder_name))
-                except:
-                    pass
-        except:
-            pass
+        for folder_name in list_of_folders:
+            if not os.path.isdir(os.path.join(os.getcwd(), "experiments",
+                                              self.experiment_id, folder_name)):
+                os.mkdir(os.path.join(os.getcwd(), "experiments",
+                                      self.experiment_id, folder_name))
 
-        try:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
+        if not os.path.exists(path):
 
             with open(path, 'w') as file_csv:
                 file_csv.write(
-                    "size;num_candidates;num_voters;culture_id;params;color;alpha;family_id;label;marker;show\n")
+                    "size;num_candidates;num_voters;culture_id;params;color;alpha;"
+                    "family_id;label;marker;show\n")
                 file_csv.write("3;10;100;ic;{};black;1;ic;Impartial Culture;o;t\n")
-        except FileExistsError:
+        else:
             print("Experiment already exists!")

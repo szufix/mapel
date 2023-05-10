@@ -16,7 +16,7 @@ class Family:
                  marker='o',
                  starting_from: int = 0,
                  single: bool = False,
-                 instance_ids=None,
+                 instance_ids: list = None,
                  path: dict = None):
 
         if path is None:

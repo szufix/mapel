@@ -210,33 +210,27 @@ class ApprovalElectionExperiment(ElectionExperiment):
         if not os.path.isdir("trash/"):
             os.mkdir(os.path.join(os.getcwd(), "trash"))
 
-        try:
-            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
+        os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
 
-            list_of_folders = ['distances',
-                               'features',
-                               'coordinates',
-                               'elections',
-                               'matrices']
+        list_of_folders = ['distances',
+                           'features',
+                           'coordinates',
+                           'elections',
+                           'matrices']
 
-            for folder_name in list_of_folders:
-                try:
-                    os.mkdir(
-                        os.path.join(os.getcwd(), "experiments", self.experiment_id, folder_name))
-                except:
-                    pass
-        except:
-            pass
+        for folder_name in list_of_folders:
+            if not os.path.isdir(os.path.join(os.getcwd(), "experiments",
+                                              self.experiment_id, folder_name)):
+                os.mkdir(os.path.join(os.getcwd(), "experiments",
+                                      self.experiment_id, folder_name))
 
-        try:
-            # PREPARE MAP.CSV FILE
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
-
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "map.csv")
+        if not os.path.exists(path):
             with open(path, 'w') as file_csv:
                 file_csv.write("size;num_candidates;num_voters;culture_id;params;color;alpha;"
                                "label;marker;show;path")
                 file_csv.write("1;50;200;ic;{'p': 0.5};black;0.75;IC 0.5;*;t;{}")
-        except FileExistsError:
+        else:
             print("Experiment already exists!")
 
     def convert_pb_to_app(self, **kwargs):
