@@ -951,7 +951,12 @@ def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
                            marker=individual['marker'][election_id])
 
 #DIV-MERGE
-def basic_coloring_with_shading(experiment=None, ax=None, dim=2, textual=None, ms=20, urn_orangered=True):
+def basic_coloring_with_shading(experiment=None,
+                                ax=None,
+                                dim=2,
+                                textual=None,
+                                ms=20,
+                                urn_orangered=True):
     for family in experiment.families.values():
         if family.show:
             label = family.label
@@ -1077,13 +1082,8 @@ def _basic_background(ax=None, legend=None, saveas=None, xlabel=None, title=None
         if bbox_inches is None:
             print(file_name)
             plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
-            # plt.savefig(file_name, dpi=dpi)
-            #DIV-MERGE
-            # plt.savefig(file_name + '.pdf', bbox_inches='tight', format='pdf')
         else:
             plt.savefig(file_name, bbox_inches=bbox_inches, dpi=dpi)
-            #DIV-MERGE
-            # plt.savefig(file_name + '.pdf', bbox_inches=bbox_inches, format='pdf')
 
 
 # TEX
