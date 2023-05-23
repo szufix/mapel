@@ -210,7 +210,8 @@ class ApprovalElectionExperiment(ElectionExperiment):
         if not os.path.isdir("trash/"):
             os.mkdir(os.path.join(os.getcwd(), "trash"))
 
-        os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
+        if not os.path.isdir(os.path.join(os.getcwd(), "experiments", self.experiment_id)):
+            os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))
 
         list_of_folders = ['distances',
                            'features',

@@ -4,7 +4,7 @@ import scipy.special
 
 def generate_approval_noise_model_votes(num_voters=None,
                                         num_candidates=None,
-                                        p=None, phi=None, type_id='hamming'):
+                                        p=None, phi=0.5, type_id='hamming'):
 
     model_type = type_id
 

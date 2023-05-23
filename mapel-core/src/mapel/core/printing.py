@@ -106,8 +106,7 @@ def print_map_2d(experiment,
     _add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size)
 
     if shading:
-        basic_coloring_with_shading(experiment=experiment, ax=ax, dim=2,
-                                    textual=textual, ms=ms, urn_orangered=urn_orangered)
+        basic_coloring_with_shading(experiment=experiment, ax=ax, ms=ms, urn_orangered=urn_orangered)
     elif individual:
         basic_coloring_with_individual(experiment=experiment, ax=ax, individual=individual)
     else:
@@ -950,106 +949,68 @@ def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
                            s=individual['ms'][election_id],
                            marker=individual['marker'][election_id])
 
-#DIV-MERGE
+
 def basic_coloring_with_shading(experiment=None,
                                 ax=None,
-                                dim=2,
-                                textual=None,
                                 ms=20,
-                                urn_orangered=True):
+                                urn_orangered=False):
     for family in experiment.families.values():
         if family.show:
             label = family.label
-            if dim == 2:
-                if ('_path' in label or 'urn' in label or 'Urn' in label
-                    or 'Mallows' in label or 'mallows' in label
-                    or 'variable' in family.path or 'varibale' in family.path) \
-                        and label.lower() not in {'unid', 'stan', 'anid', 'stid', 'anun', 'stun'}:
-                    if 'background' in label:
-                        label = '_nolegend_'
+            for i in range(family.size):
+                election_id = list(family.instance_ids)[i]
 
-                    for i in range(family.size):
-                        election_id = list(family.instance_ids)[i]
+                try:
+                    alpha = experiment.instances[election_id].printing_params['alpha']
+                except:
+                    alpha = 1
 
-                        try:
-                            alpha = experiment.instances[election_id].alpha
-                        except:
-                            alpha = 1
-                            pass
+                color = family.color
 
-                        color = family.color
+                if 'Mallows (triangle)' in label:
+                    tint = experiment.instances[election_id].params['tint']
+                    tint = 2 * tint
+                    color = (0.75 - 0.75 * alpha + 0.125 * tint + 0.875 * alpha * tint,
+                             0.75 - 0.75 * alpha,
+                             0.75 - 0.75 * alpha + 0.125 * (1 - tint) + 0.875 * alpha * (1- tint))
+                    alpha = 1
 
-                        if 'Mallows (triangle)' in label:
-                            tint = experiment.instances[election_id].params['tint']
-                            # color = (2 * tint, 0, 1 - tint * 2)
-                            # alpha = alpha
-                            tint = 2 * tint
-                            color = (0.75 - 0.75 * alpha + 0.125 * tint + 0.875 * alpha * tint,
-                                     0.75 - 0.75 * alpha,
-                                     0.75 - 0.75 * alpha + 0.125 * (1 - tint) + 0.875 * alpha * (1- tint))
-                            alpha = 1
+                elif 'Urn' in label:
 
-                        if 'Urn' in label:
+                    color, alpha = get_color_alpha_for_urn(color, alpha, urn_orangered)
 
-                            color, alpha = get_color_alpha_for_urn(color, alpha, urn_orangered)
-
-                        else:
-
-                            if 'A_' in election_id or 'B_' in election_id or 'C_' in election_id:
-                                alpha = 1 - alpha
-
-                            if alpha is None or alpha > 1:
-                                alpha = 1
-
-                            if '1D _path' in label:
-                                alpha *= 4
-                            elif '2D _path' in label:
-                                alpha *= 2
-                            elif 'scale' in family.path:
-                                alpha *= 1. / family.path['scale']
-
-                            alpha *= family.alpha
-                            alpha = (alpha + 0.2) / 1.2
-
-                        if i == family.size - 1:
-                            ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
-                                       experiment.coordinates_by_families[family.family_id][1][i],
-                                       color=color,
-                                       label=label,
-                                       alpha=alpha,
-                                       # s=family.ms,
-                                       s=ms,
-                                       marker=family.marker)
-                        else:
-                            ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
-                                       experiment.coordinates_by_families[family.family_id][1][i],
-                                       color=color,
-                                       alpha=alpha,
-                                       # s=family.ms,
-                                       s=ms,
-                                       marker=family.marker)
                 else:
-                    if 'background' in label or label in textual:
-                        label = '_nolegend_'
 
-                    ax.scatter(experiment.coordinates_by_families[family.family_id][0],
-                               experiment.coordinates_by_families[family.family_id][1],
-                               color=family.color,
+                    if alpha is None or alpha > 1:
+                        alpha = 1
+
+                    if '1D _path' in label:
+                        alpha *= 4
+                    elif '2D _path' in label:
+                        alpha *= 2
+                    elif 'scale' in family.path:
+                        alpha *= 1. / family.path['scale']
+
+                    # alpha *= family.alpha
+                    alpha = (alpha + 0.2) / 1.2
+
+                if i == (family.size - 1):
+                    ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
+                               experiment.coordinates_by_families[family.family_id][1][i],
+                               color=color,
                                label=label,
-                               alpha=family.alpha,
+                               alpha=alpha,
                                # s=family.ms,
                                s=ms,
                                marker=family.marker)
-            elif dim == 3:
-                ax.scatter(experiment.coordinates_by_families[family.family_id][0],
-                           experiment.coordinates_by_families[family.family_id][1],
-                           experiment.coordinates_by_families[family.family_id][2],
-                           color=family.color,
-                           label=family.label,
-                           alpha=family.alpha,
-                           # s=family.ms,
-                           s=ms,
-                           marker=family.marker)
+                else:
+                    ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
+                               experiment.coordinates_by_families[family.family_id][1][i],
+                               color=color,
+                               alpha=alpha,
+                               # s=family.ms,
+                               s=ms,
+                               marker=family.marker)
 
 
 # BACKGROUNDS

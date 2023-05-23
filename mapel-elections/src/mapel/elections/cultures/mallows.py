@@ -21,7 +21,8 @@ def calculateExpectedNumberSwaps(num_candidates, phi):
 # the expected number of swaps is exp_abs
 def phi_from_relphi(num_candidates, relphi=None):
     if relphi is None:
-        relphi = np.random.random()
+        logging.warning('normphi is not defined')
+        return -1
     if relphi == 1:
         return 1
     if relphi > 2 or relphi < 0:
@@ -79,7 +80,9 @@ def mallowsVote(m, insertion_probabilites_list):
     return vote
 
 
-def generate_mallows_votes(num_voters, num_candidates, phi=0.5, weight=0, normphi=None):
+def generate_mallows_votes(num_voters, num_candidates, phi=None, weight=0, **kwargs):
+    if phi is None:
+        logging.warning('phi is not defined')
     insertion_probabilites_list = []
     for i in range(1, num_candidates):
         insertion_probabilites_list.append(computeInsertionProbas(i, phi))
@@ -263,8 +266,7 @@ def runif_in_simplex(n):
 
 def mallows_vote(vote, phi):
     num_candidates = len(vote)
-    params = {'weight': 0, 'phi': phi}
-    raw_vote = generate_mallows_votes(1, num_candidates, params)[0]
+    raw_vote = generate_mallows_votes(1, num_candidates, phi)[0]
     new_vote = [0] * len(vote)
     for i in range(num_candidates):
         new_vote[raw_vote[i]] = vote[i]

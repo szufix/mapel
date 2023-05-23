@@ -33,7 +33,6 @@ registered_approval_cultures = {
     'moving_resampling': resampling.generate_approval_moving_resampling_votes,
     'noise': noise.generate_approval_noise_model_votes,
     'euclidean': euclidean.generate_approval_euclidean_votes,
-    'truncated_mallows': mallows.generate_approval_truncated_mallows_votes,
     'truncated_urn': urn.generate_approval_truncated_urn_votes,
     'urn_partylist': partylist.generate_approval_urn_partylist_votes,
     'full': impartial.generate_approval_full_votes,
@@ -41,6 +40,7 @@ registered_approval_cultures = {
 
     'vcr': euclidean.generate_approval_vcr_votes,  # unsupported culture
     'field': fe.generate_approval_field_votes,  # unsupported culture
+    'truncated_mallows': mallows.generate_approval_truncated_mallows_votes,  # unsupported culture
 
     'impartial_culture': impartial.generate_approval_ic_votes,  # deprecated name
     'approval_full': impartial.generate_approval_full_votes,  # deprecated name
@@ -51,45 +51,46 @@ registered_ordinal_cultures = {
     'ic': impartial.generate_ordinal_ic_votes,
     'iac': impartial.generate_impartial_anonymous_culture_election,
     'euclidean': euclidean.generate_ordinal_euclidean_votes,
-    '1d_gaussian_party': euclidean.generate_1d_gaussian_party,
-    '2d_gaussian_party': euclidean.generate_2d_gaussian_party,
-    'walsh_party': unused.generate_sp_party,
-    'conitzer_party': unused.generate_sp_party,
-    'mallows_party': mallows.generate_mallows_party,
-    'ic_party': unused.generate_ic_party,
     'urn': urn.generate_urn_votes,
     'group-separable': group_separable.generate_ordinal_group_separable_votes,
     'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
     'weighted_stratification': unused.generate_weighted_stratification_votes,
-    'idan_part': guardians_plus.generate_idan_part_votes,
-    'idun_part': guardians_plus.generate_idun_part_votes,
-    'idst_part': guardians_plus.generate_idst_part_votes,
-    'anun_part': guardians_plus.generate_anun_part_votes,
-    'anst_part': guardians_plus.generate_anst_part_votes,
-    'unst_part': guardians_plus.generate_unst_part_votes,
-    'idan_mallows': guardians_plus.generate_idan_mallows_votes,
-    'idst_mallows': guardians_plus.generate_idst_mallows_votes,
-    'anun_mallows': guardians_plus.generate_anun_mallows_votes,
-    'unst_mallows': guardians_plus.generate_unst_mallows_votes,
-    'unst_topsize': guardians_plus.generate_unst_topsize_votes,
-    'idst_blocks': guardians_plus.generate_idst_blocks_votes,
-    'didi': didi.generate_didi_votes,
     'mallows': mallows.generate_mallows_votes,
     'norm-mallows': mallows.generate_mallows_votes,
-    'norm-mallows_with_walls': mallows.generate_norm_mallows_with_walls_votes,
-    'norm-mallows_mixture': mallows.generate_norm_mallows_mixture_votes,
-    'walsh_mallows': sp_matrices.generate_walsh_mallows_votes,
-    'conitzer_mallows': sp_matrices.generate_conitzer_mallows_votes,
-    'mallows_triangle': mallows.generate_mallows_votes,
     'conitzer': single_peaked.generate_ordinal_sp_conitzer_votes,
     'spoc_conitzer': single_peaked.generate_ordinal_spoc_conitzer_votes,
     'walsh': single_peaked.generate_ordinal_sp_walsh_votes,
     'real_identity': guardians.generate_real_identity_votes,
-    'real_uniformity': guardians.generate_real_uniformity_votes,
-    'real_antagonism': guardians.generate_real_antagonism_votes,
-    'real_stratification': guardians.generate_real_stratification_votes,
-    'un_from_matrix': guardians_plus.generate_un_from_matrix_votes,
-    'un_from_list': guardians_plus.generate_un_from_list,
+
+    'mallows_urn': urn.generate_mallows_urn_votes,
+    'idan_part': guardians_plus.generate_idan_part_votes,  # unsupported culture
+    'idun_part': guardians_plus.generate_idun_part_votes,  # unsupported culture
+    'idst_part': guardians_plus.generate_idst_part_votes,  # unsupported culture
+    'anun_part': guardians_plus.generate_anun_part_votes,  # unsupported culture
+    'anst_part': guardians_plus.generate_anst_part_votes,  # unsupported culture
+    'unst_part': guardians_plus.generate_unst_part_votes,  # unsupported culture
+    'idan_mallows': guardians_plus.generate_idan_mallows_votes,  # unsupported culture
+    'idst_mallows': guardians_plus.generate_idst_mallows_votes,  # unsupported culture
+    'anun_mallows': guardians_plus.generate_anun_mallows_votes,  # unsupported culture
+    'unst_mallows': guardians_plus.generate_unst_mallows_votes,  # unsupported culture
+    'unst_topsize': guardians_plus.generate_unst_topsize_votes,  # unsupported culture
+    'idst_blocks': guardians_plus.generate_idst_blocks_votes,
+    'didi': didi.generate_didi_votes,  # unsupported culture
+    'norm-mallows_mixture': mallows.generate_norm_mallows_mixture_votes,  # unsupported culture
+    'walsh_mallows': sp_matrices.generate_walsh_mallows_votes,  # unsupported culture
+    'conitzer_mallows': sp_matrices.generate_conitzer_mallows_votes,  # unsupported culture
+    'mallows_triangle': mallows.generate_mallows_votes,  # unsupported culture
+    '1d_gaussian_party': euclidean.generate_1d_gaussian_party,  # unsupported culture
+    '2d_gaussian_party': euclidean.generate_2d_gaussian_party,  # unsupported culture
+    'walsh_party': unused.generate_sp_party,  # unsupported culture
+    'conitzer_party': unused.generate_sp_party,  # unsupported culture
+    'mallows_party': mallows.generate_mallows_party,  # unsupported culture
+    'ic_party': unused.generate_ic_party,  # unsupported culture
+    'real_uniformity': guardians.generate_real_uniformity_votes,  # unsupported culture
+    'real_antagonism': guardians.generate_real_antagonism_votes,  # unsupported culture
+    'real_stratification': guardians.generate_real_stratification_votes,  # unsupported culture
+    'un_from_matrix': guardians_plus.generate_un_from_matrix_votes,  # unsupported culture
+    'un_from_list': guardians_plus.generate_un_from_list,  # unsupported culture
   
     'impartial_culture': impartial.generate_ordinal_ic_votes,  # deprecated name
     'urn_model': urn.generate_urn_votes,  # deprecated name
@@ -111,7 +112,8 @@ def generate_approval_votes(culture_id: str = None,
 def generate_ordinal_votes(culture_id: str = None,
                            num_candidates: int = None,
                            num_voters: int = None,
-                           params: dict = None) -> Union[list, np.ndarray]:
+                           params: dict = None,
+                           **kwargs) -> Union[list, np.ndarray]:
     if culture_id in LIST_OF_PREFLIB_MODELS:
         return generate_preflib_votes(culture_id=culture_id,
                                       num_candidates=num_candidates,

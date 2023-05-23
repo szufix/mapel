@@ -22,7 +22,7 @@ except ImportError:
 
 from mapel.core.glossary import *
 from mapel.elections.distances import lp
-from mapel.elections.other import winners2 as win
+from mapel.elections.other import winners as win
 
 
 # MAIN FUNCTIONS
@@ -117,7 +117,6 @@ def lowest_dodgson_score(election):
         if score < min_score:
             min_score = score
 
-    print(min_score)
     return min_score
 
 

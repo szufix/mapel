@@ -40,7 +40,7 @@ def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = No
 
 
 def generate_approval_euclidean_votes(num_voters: int = None, num_candidates: int = None,
-                                      dim=None, space=None, radius=None) -> list:
+                                      dim=2, space='uniform', radius=0, **kwargs) -> list:
     votes = [set() for _ in range(num_voters)]
 
     name = f'{dim}d_{space}'

@@ -10,7 +10,7 @@ from mapel.elections.cultures_ import generate_ordinal_votes, \
 from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
-from mapel.elections.other.winners2 import generate_winners
+from mapel.elections.other.winners import generate_winners
 from mapel.core.inner_distances import swap_distance_between_potes, \
     spearman_distance_between_potes
 from mapel.elections.features.other import is_condorcet
@@ -37,7 +37,8 @@ class OrdinalElection(Election):
                  is_imported: bool = False,
                  is_shifted: bool = False,
                  variable=None,
-                 fast_import=False):
+                 fast_import=False,
+                 **kwargs):
 
         super().__init__(experiment_id,
                          election_id,
@@ -47,7 +48,8 @@ class OrdinalElection(Election):
                          label=label,
                          num_voters=num_voters,
                          num_candidates=num_candidates,
-                         fast_import=fast_import)
+                         fast_import=fast_import,
+                         **kwargs)
 
         self.params = params
         self.variable = variable
@@ -113,7 +115,7 @@ class OrdinalElection(Election):
             self.params = {}
 
         try:
-            self.params, self.printing_params, self.alpha = update_params_ordinal(
+            self.params, self.printing_params = update_params_ordinal(
                 self.params,
                 self.printing_params,
                 self.variable,

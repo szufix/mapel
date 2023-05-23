@@ -7,8 +7,9 @@ class Family:
                  culture_id: str = None,
                  family_id='none',
                  params: dict = None,
+                 # printing_params: dict = None,
                  size: int = 1,
-                 label: str = "none",
+                 label: str = None,
                  color: str = "black",
                  alpha: float = 1.,
                  ms: int = 20,
@@ -17,7 +18,8 @@ class Family:
                  starting_from: int = 0,
                  single: bool = False,
                  instance_ids: list = None,
-                 path: dict = None):
+                 path: dict = None,
+                 **kwargs):
 
         if path is None:
             path = {}
@@ -25,11 +27,15 @@ class Family:
             instance_ids = {}
         if params is None:
             params = {}
+        # if printing_params is None:
+        #     printing_params = {}
+        if label is None:
+            label = family_id
 
         self.family_id = family_id
         self.culture_id = culture_id
         self.params = params
-        self.printing_params = params
+        # self.printing_params = params
         self.size = size
         self.label = label
         self.color = color

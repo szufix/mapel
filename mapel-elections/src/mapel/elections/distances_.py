@@ -18,29 +18,32 @@ from mapel.core.objects.Experiment import Experiment
 
 
 registered_approval_distances = {
-    'flow': mad.compute_flow,
-    'hamming': mad.compute_hamming,
     'approvalwise': mad.compute_approvalwise,
-    'coapproval_frequency': mad.compute_coapproval_frequency_vectors,
-    'pairwise': mad.compute_pairwise,
-    'voterlikeness': mad.compute_voterlikeness,
-    'candidatelikeness': mad.compute_candidatelikeness,
+    'hamming': mad.compute_hamming,
+
+    'flow': mad.compute_flow,  # unsupported distance
+    'coapproval_frequency': mad.compute_coapproval_frequency_vectors,  # unsupported distance
+    'pairwise': mad.compute_pairwise,  # unsupported distance
+    'voterlikeness': mad.compute_voterlikeness,  # unsupported distance
+    'candidatelikeness': mad.compute_candidatelikeness,  # unsupported distance
 }
 
 registered_ordinal_distances = {
-    'discrete': mod.compute_discrete_distance,
-    'voter_subelection': mod.compute_voter_subelection,
-    'candidate_subelection': mod.compute_candidate_subelection,
-    'swap': mod.compute_swap_distance,
-    'spearman': mod.compute_spearman_distance,
-    'ilp_spearman': mod.compute_spearman_distance_ilp_py,
-    'ilp_swap': mod.compute_swap_distance_ilp_py,
     'positionwise': mod.compute_positionwise_distance,
     'bordawise': mod.compute_bordawise_distance,
     'pairwise': mod.compute_pairwise_distance,
-    'voterlikeness': mod.compute_voterlikeness_distance,
-    'agg_voterlikeness': mod.compute_agg_voterlikeness_distance,
-    'pos_swap': mod.compute_pos_swap_distance,
+    'discrete': mod.compute_discrete_distance,
+
+    'swap': mod.compute_swap_distance,
+    'spearman': mod.compute_spearman_distance,
+
+    'ilp_spearman': mod.compute_spearman_distance_ilp_py,  # unsupported distance
+    'ilp_swap': mod.compute_swap_distance_ilp_py,  # unsupported distance
+    'voterlikeness': mod.compute_voterlikeness_distance,  # unsupported distance
+    'agg_voterlikeness': mod.compute_agg_voterlikeness_distance,  # unsupported distance
+    'pos_swap': mod.compute_pos_swap_distance,  # unsupported distance
+    'voter_subelection': mod.compute_voter_subelection,  # unsupported distance
+    'candidate_subelection': mod.compute_candidate_subelection,  # unsupported distance
 }
 
 

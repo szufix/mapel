@@ -25,8 +25,8 @@ def optimize_bb(func, grad_func, args, x0, max_iter, init_step_size, stop_energy
     energy_history = collections.deque(maxlen=percentage_lookup_history)
 
     for i in range(max_iter):
-        if i%100 == 0:
-            print(f'{i} iterations')
+        # if i%100 == 0:
+        #     print(f'{i} iterations')
 
         current_energy = func(x, *args)
         if current_energy < min_energy:

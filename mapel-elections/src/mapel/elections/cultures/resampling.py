@@ -51,17 +51,19 @@ def generate_approval_disjoint_resampling_votes(num_voters=None, num_candidates=
     return votes
 
 
-
-def generate_approval_moving_resampling_votes(num_voters=None, num_candidates=None, params=None):
+def generate_approval_moving_resampling_votes(num_voters=None,
+                                              num_candidates=None,
+                                              p=0.5,
+                                              phi=0.5,
+                                              legs=1):
     # central_vote = set()
     # for c in range(num_candidates):
     #     if rand.random() <= params['p']:
     #         central_vote.add(c)
-    num_legs = params.get('legs', 1)
+    num_legs = legs
     breaks = [int(num_voters/num_legs)*i for i in range(num_legs)]
-    print(breaks)
 
-    k = int(params['p'] * num_candidates)
+    k = int(p * num_candidates)
     central_vote = {i for i in range(k)}
     ccc = copy.deepcopy(central_vote)
 
@@ -71,9 +73,8 @@ def generate_approval_moving_resampling_votes(num_voters=None, num_candidates=No
     for v in range(1, num_voters):
         vote = set()
         for c in range(num_candidates):
-            # if np.random.random() <= params['phi']**3:
-            if np.random.random() <= params['phi']:
-                if np.random.random() <= params['p']:
+            if np.random.random() <= phi:
+                if np.random.random() <= p:
                     vote.add(c)
             else:
                 if c in central_vote:

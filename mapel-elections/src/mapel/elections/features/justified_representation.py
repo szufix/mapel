@@ -13,9 +13,8 @@ except ImportError:
     pass
 
 
-def test_ejr(election, feature_params):
+def test_ejr(election, rule):
 
-    rule = feature_params['rule']
     print(election.election_id, rule)
 
     profile = Profile(election.num_candidates)

@@ -7,7 +7,6 @@ from mapel.core.glossary import LIST_OF_FAKE_MODELS
 
 
 def kemeny_ranking(election):
-    print(election.culture_id)
     m = election.num_candidates
     wmg = election.votes_to_pairwise_matrix()
     best_d = np.infty

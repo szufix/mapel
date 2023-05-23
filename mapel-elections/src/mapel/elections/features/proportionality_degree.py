@@ -1,5 +1,4 @@
 from numpy import ceil
-from mapel.elections.objects.ApprovalElection import ApprovalElection
 import sys
 import os
 
@@ -10,6 +9,7 @@ except Exception:
 
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
     sys.path.append(os.environ["PATH"])
     from abcvoting import abcrules, preferences
@@ -18,8 +18,8 @@ except ImportError:
     preferences = None
 
 
-def calculate_committees(election: ApprovalElection, resolute=False,
-                             committee_size: int = 10, rule_name=None) -> set:
+def calculate_committees(election, resolute=False,
+                         committee_size: int = 10, rule_name=None) -> set:
     profile = preferences.Profile(num_cand=election.num_candidates)
     profile.add_voters(election.votes)
     try:
@@ -30,7 +30,7 @@ def calculate_committees(election: ApprovalElection, resolute=False,
     return committees
 
 
-def count_proportionality_degree_of_a_committee(election: ApprovalElection, committee: set,
+def count_proportionality_degree_of_a_committee(election, committee: set,
                                                 committee_size: int = 10) -> map:
     f_map = dict()
     for l in range(1, committee_size + 1):
@@ -39,13 +39,15 @@ def count_proportionality_degree_of_a_committee(election: ApprovalElection, comm
     return f_map
 
 
-
-def solve_ilp_instance(election: ApprovalElection, committee: set, l: int = 1,
+def solve_ilp_instance(election, committee: set, l: int = 1,
                        committee_size: int = 10) -> float:
     model = pulp.LpProblem("pd_value_f", pulp.LpMinimize)
-    X = [pulp.LpVariable("x_" + str(i), cat='Binary') for i in range(election.num_voters)]  # X[i] = 1 if we select i-th voter, otherwise 0
-    Y = [pulp.LpVariable("y_" + str(j), cat='Binary') for j in range(election.num_candidates)]  # Y[j] = 1 if we select j-th candidate, otherwise 0
-    s = int(ceil(l * election.num_voters / committee_size))  # If there is any valid l-cohesive group, then there is also at least one with minimum possible size
+    X = [pulp.LpVariable("x_" + str(i), cat='Binary') for i in
+         range(election.num_voters)]  # X[i] = 1 if we select i-th voter, otherwise 0
+    Y = [pulp.LpVariable("y_" + str(j), cat='Binary') for j in
+         range(election.num_candidates)]  # Y[j] = 1 if we select j-th candidate, otherwise 0
+    s = int(ceil(
+        l * election.num_voters / committee_size))  # If there is any valid l-cohesive group, then there is also at least one with minimum possible size
 
     objective = 0
     for v in range(election.num_voters):
@@ -94,7 +96,6 @@ def solve_ilp_instance(election: ApprovalElection, committee: set, l: int = 1,
 
 
 def proportionality_degree(election, committee_size=10, rule_name=None, resolute=False):
-
     committees = calculate_committees(election, committee_size=committee_size, rule_name=rule_name,
                                       resolute=resolute)
 
@@ -113,8 +114,10 @@ def proportionality_degree(election, committee_size=10, rule_name=None, resolute
 def proportionality_degree_av(*args, **kwargs):
     return proportionality_degree(*args, **kwargs, rule_name='av')
 
+
 def proportionality_degree_pav(*args, **kwargs):
     return proportionality_degree(*args, **kwargs, rule_name='pav')
+
 
 def proportionality_degree_cc(*args, **kwargs):
     return proportionality_degree(*args, **kwargs, rule_name='cc', resolute=True)

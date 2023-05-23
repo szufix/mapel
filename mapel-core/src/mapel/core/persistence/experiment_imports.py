@@ -135,6 +135,7 @@ def add_distances_to_experiment(experiment) -> (dict, dict, dict):
 
     except FileNotFoundError:
         print('=== Distances not found! ===')
+        return None, None, None, None
 
 
 # Features

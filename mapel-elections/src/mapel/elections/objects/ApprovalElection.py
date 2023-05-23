@@ -52,11 +52,6 @@ class ApprovalElection(Election):
                     self.culture_id = imports.import_real_app_election(experiment_id,
                                                                        election_id,
                                                                        is_shifted)
-                    try:
-                        self.alpha = self.printing_params['alpha']
-                    except:
-                        self.alpha = 1
-                        pass
             except:
                 pass
 
@@ -64,7 +59,7 @@ class ApprovalElection(Election):
             self.params = {}
 
         if culture_id is not None:
-            self.params, self.printing_params, self.alpha = update_params_approval(self.params,
+            self.params, self.printing_params = update_params_approval(self.params,
                                                                                    self.printing_params,
                                                                                    self.variable,
                                                                                    self.culture_id,

@@ -35,7 +35,6 @@ def get_greedy_approx_score(election, rule, committee_size=1):
     if election.fake:
         return 'None', 'None'
     winners = get_winners_approx_greedy(election, committee_size, rule)
-    print(winners)
     return get_score(election, winners, rule), get_dissat(election, winners, rule)
 
 

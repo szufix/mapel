@@ -135,7 +135,7 @@ def update_params_ordinal(params, printing_params, variable, culture_id, num_can
         elif culture_id.lower() in LIST_OF_PREFLIB_MODELS:
             update_params_ordinal_preflib(params, culture_id)
         update_params_ordinal_alpha(printing_params)
-    return params, printing_params, printing_params['alpha']
+    return params, printing_params
 
 
 # Approval #
@@ -152,7 +152,6 @@ def update_params_approval_p(params):
         params['p'] = np.random.rand()
     elif type(params['p']) is list:
         params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
-        print(params)
 
 
 def update_params_approval_resampling(params):
@@ -198,7 +197,7 @@ def update_params_approval(params, printing_params, variable, culture_id, num_ca
             update_params_approval_disjoint(params)
         update_params_approval_alpha(printing_params)
 
-    return params, printing_params, printing_params['alpha']
+    return params, printing_params
 
 def get_params_for_crate(j):
     base = []

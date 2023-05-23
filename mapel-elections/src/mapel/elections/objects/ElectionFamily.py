@@ -19,7 +19,7 @@ class ElectionFamily(Family):
                  family_id='none',
                  params: dict = None,
                  size: int = 1,
-                 label: str = "none",
+                 label: str = None,
                  color: str = "black",
                  alpha: float = 1.,
                  ms: int = 20,
@@ -32,7 +32,8 @@ class ElectionFamily(Family):
                  num_candidates=None,
                  num_voters=None,
                  election_ids=None,
-                 instance_type: str = 'ordinal'):
+                 instance_type: str = 'ordinal',
+                 **kwargs):
 
         super().__init__(culture_id=culture_id,
                          family_id=family_id,
@@ -47,7 +48,8 @@ class ElectionFamily(Family):
                          starting_from=starting_from,
                          path=path,
                          single=single,
-                         instance_ids=election_ids)
+                         instance_ids=election_ids,
+                         **kwargs)
 
         self.num_candidates = num_candidates
         self.num_voters = num_voters
@@ -84,16 +86,17 @@ class ElectionFamily(Family):
                         params = {}
                     params = {**params, **new_params}
 
-                if params is not None and 'normphi' in params:
-                    params['phi'] = mallows.phi_from_relphi(
-                        self.num_candidates, relphi=params['normphi'])
+                # if params is not None and 'normphi' in params:
+                #     params['phi'] = mallows.phi_from_relphi(
+                #         self.num_candidates, relphi=params['normphi'])
 
-                if self.culture_id in {'all_votes'}:
-                    params['iter_id'] = j
+                # if self.culture_id in {'all_votes'}:
+                #     params['iter_id'] = j
 
-                if self.culture_id in {'crate'}:
-                    new_params = get_params_for_crate(j)
-                    params = {**params, **new_params}
+                # if self.culture_id in {'crate'}:
+                #     new_params = get_params_for_crate(j)
+                #     params = {**params, **new_params}
+
                 election_id = get_instance_id(self.single, self.family_id, j)
 
                 election = OrdinalElection(experiment_id, election_id, culture_id=self.culture_id,
@@ -101,6 +104,7 @@ class ElectionFamily(Family):
                                            num_candidates=self.num_candidates,
                                            params=copy.deepcopy(params), ballot_type=self.instance_type,
                                            variable=variable, is_imported=False,
+                                           # printing_params=printing_params,
                                            )
 
                 election.prepare_instance(is_exported=is_exported, is_aggregated=is_aggregated)

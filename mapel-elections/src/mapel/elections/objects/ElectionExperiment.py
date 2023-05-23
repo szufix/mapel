@@ -191,7 +191,8 @@ class ElectionExperiment(Experiment):
                    family_id: str = None,
                    single: bool = False,
                    path: dict = None,
-                   election_id: str = None) -> list:
+                   election_id: str = None,
+                   **kwargs) -> list:
         """ Add family of elections to the experiment """
 
         if election_id is not None:
@@ -233,7 +234,8 @@ class ElectionExperiment(Experiment):
                                                   num_voters=num_voters,
                                                   path=path,
                                                   single=single,
-                                                  instance_type=self.instance_type)
+                                                  instance_type=self.instance_type,
+                                                  **kwargs)
 
         self.num_families = len(self.families)
         self.num_elections = sum([self.families[family_id].size for family_id in self.families])

@@ -35,7 +35,7 @@ def generate_attributes_votes(num_agents: int = None, params: dict = None):
         for c in range(num_agents):
             votes[v][c] = c
             if params["dim"] == 1:
-                distances[v][c] = (1. - agents_skills[c]) * agents_weights[v]
+                distances[v][c] = abs(1. - agents_skills[c]) * agents_weights[v]
             else:
                 distances[v][c] = weighted_l1(ones, agents_skills[c], agents_weights[v])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]

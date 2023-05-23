@@ -225,7 +225,7 @@ class Experiment:
                 if i < j:
 
                     self.distances[instance_id_1][instance_id_2] *= factor
-                    if embedding_id in {'spring'}:
+                    if embedding_id in {'fr', 'spring'}:
                         if self.distances[instance_id_1][instance_id_2] == 0.:
                             self.distances[instance_id_1][instance_id_2] = zero_distance
                             self.distances[instance_id_2][instance_id_1] = zero_distance
@@ -245,8 +245,7 @@ class Experiment:
                                 x[i][j] = 0.
                                 normal = False
                         if normal:
-                            x[i][j] = 1. / self.distances[instance_id_1][
-                                instance_id_2]
+                            x[i][j] = 1. / self.distances[instance_id_1][instance_id_2]
                     else:
                         x[i][j] = self.distances[instance_id_1][instance_id_2]
                     x[i][j] = x[i][j] ** attraction_factor
@@ -403,34 +402,13 @@ class Experiment:
 
                 coordinates_by_families[family_id] = [[] for _ in range(3)]
 
-                try:
+                if dim == 2:
                     for instance_id in self.families[family_id].instance_ids:
                         coordinates_by_families[family_id][0].append(
                             self.coordinates[instance_id][0])
-                        try:
-                            coordinates_by_families[family_id][1].append(
+                        coordinates_by_families[family_id][1].append(
                                 self.coordinates[instance_id][1])
-                        finally:
-                            pass
-                        try:
-                            coordinates_by_families[family_id][2].append(
-                                self.coordinates[instance_id][2])
-                        finally:
-                            pass
-                except:
-                    for instance_id in self.families[family_id].instance_ids:
-                        coordinates_by_families[family_id][0].append(
-                            self.coordinates[instance_id][0])
-                        try:
-                            coordinates_by_families[family_id][1].append(
-                                self.coordinates[instance_id][1])
-                        except Exception:
-                            pass
-                        try:
-                            coordinates_by_families[family_id][2].append(
-                                self.coordinates[instance_id][2])
-                        except Exception:
-                            pass
+
         self.coordinates_by_families = coordinates_by_families
 
     def get_distance(self, i, j):

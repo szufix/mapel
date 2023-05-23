@@ -48,17 +48,17 @@ class KamadaKawai:
         positions = optim_method_to_fun[self.optim_method](distances, k, positions, fixed_positions_indexes)
 
         k = _calc_k_with_special_value(distances, 1, fixed_positions_indexes)
-        print("MIDDLE ENERGY:", get_total_energy(positions, k, distances), "TIME:", time.time() - start_time)
+        # print("MIDDLE ENERGY:", get_total_energy(positions, k, distances), "TIME:", time.time() - start_time)
 
         positions = optim_method_to_fun[self.optim_method](distances, k, positions, fixed_positions_indexes)
 
-        print("FINAL ENERGY:", get_total_energy(positions, k, distances), "TIME:", time.time() - start_time)
+        # print("FINAL ENERGY:", get_total_energy(positions, k, distances), "TIME:", time.time() - start_time)
 
         if self.max_neighbour_distance_percentage is not None:
             k = _respect_only_close_neighbours_k(k, distances, self.max_neighbour_distance_percentage)
 
             positions = optim_method_to_fun[self.optim_method](distances, k, positions, fixed_positions_indexes)
-            print("Last adjustments:", get_total_energy(positions, k, distances), "TIME:", time.time() - start_time)
+            # print("Last adjustments:", get_total_energy(positions, k, distances), "TIME:", time.time() - start_time)
 
         return positions
 
@@ -80,11 +80,11 @@ def _get_max_derivative(k, distances, positions, fixed_positions_indexes=None):
 
 def _get_positions_kk(distances, k, l, positions, fixed_positions_indexes, epsilon=0.00001):
     max_derivative = _get_max_derivative(k, distances, positions, fixed_positions_indexes)
-    print(max_derivative)
+    # print(max_derivative)
     while max_derivative[0] > epsilon:
         max_der, i = max_derivative
         total_energy = get_total_energy(positions, k, distances)
-        print(f'Energy: {total_energy}, max der: {max_der}')
+        # print(f'Energy: {total_energy}, max der: {max_der}')
         positions[i], succ = _optimize_newton(positions, k, l, i, epsilon)
         if not succ:
             positions[i] += np.random.uniform(-10, 10, size=(2,))
