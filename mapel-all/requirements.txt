@@ -18,5 +18,5 @@ PuLP~=2.5.1
 gurobipy~=10.0.0
 pandas~=1.4.4
 cplex~=20.1.0.1
-setuptools~=52.0.0.post20210125
+setuptools~=52.0.0
 pabutools~=0.8
