@@ -26,12 +26,13 @@ registered_approval_features = {
     'proportionality_degree_pav': prop_deg.proportionality_degree_pav,
     'proportionality_degree_cc': prop_deg.proportionality_degree_cc,
 
-    'cohesiveness': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,  # unsupported feature
+    'cohesiveness': cohesive.count_largest_cohesiveness_level_l_of_cohesive_group,
+    # unsupported feature
     'ejr': jr.test_ejr,  # unsupported feature
 }
 
 registered_ordinal_features = {
-'highest_borda_score': scores.highest_borda_score,
+    'highest_borda_score': scores.highest_borda_score,
     'highest_plurality_score': scores.highest_plurality_score,
     'highest_copeland_score': scores.highest_copeland_score,
     'lowest_dodgson_score': scores.lowest_dodgson_score,

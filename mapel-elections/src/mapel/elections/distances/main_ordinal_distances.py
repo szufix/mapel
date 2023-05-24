@@ -9,11 +9,12 @@ import mapel.core.utils as utils
 from mapel.core.inner_distances import swap_distance
 import mapel.elections.distances.ilp_isomorphic as ilp_iso
 
-try: 
-  import mapel.elections.metrics.cppdistances as cppd
+try:
+    import mapel.elections.distances.cppdistances as cppd
 except:
-  logging.warning("The quick C++ procedures for computing the swap and "
-  "Spearman distance is unavailable: using the (slow) python one instead")
+    logging.warning("The quick C++ procedures for computing the swap and "
+                    "Spearman distance is unavailable: using the (slow) python one instead")
+
 
 # MAIN DISTANCES
 def compute_pos_swap_distance(election_1: OrdinalElection, election_2: OrdinalElection,
@@ -65,6 +66,7 @@ def compute_voterlikeness_distance(election_1: OrdinalElection, election_2: Ordi
     matrix_2 = election_2.votes_to_voterlikeness_matrix()
     return solve_matching_matrices(matrix_1, matrix_2, length, inner_distance)
 
+
 # DEPRECATED
 def compute_swap_distance_bf(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Swap distance between elections (using brute force) """
@@ -78,21 +80,23 @@ def compute_swap_distance_bf(election_1: OrdinalElection, election_2: OrdinalEle
 def compute_swap_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Swap distance between elections (using the C++ extension) """
     if not utils.is_module_loaded("mapel.elections.metrics.cppdistances"):
-      return compute_swap_distance_ilp_py(election_1, election_2)
+        return compute_swap_distance_ilp_py(election_1, election_2)
     swapd = cppd.swapd(election_1.votes.tolist(),
-    election_2.votes.tolist())
+                       election_2.votes.tolist())
     return swapd
+
 
 def compute_spearman_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Spearman distance between elections (using the C++ extension) """
     if not utils.is_module_loaded("mapel.elections.metrics.cppdistances"):
-      return compute_spearman_distance_ilp_py(election_1, election_2)
+        return compute_spearman_distance_ilp_py(election_1, election_2)
     speard = cppd.speard(election_1.votes.tolist(),
-    election_2.votes.tolist())
+                         election_2.votes.tolist())
     return speard
 
 
-def compute_spearman_distance_ilp_py(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+def compute_spearman_distance_ilp_py(election_1: OrdinalElection,
+                                     election_2: OrdinalElection) -> int:
     """ Compute Spearman distance between elections """
     votes_1 = election_1.votes
     votes_2 = election_2.votes
@@ -127,10 +131,12 @@ def compute_discrete_distance(election_1: OrdinalElection, election_2: OrdinalEl
     """ Compute Discrete distance between elections """
     return election_1.num_voters - compute_voter_subelection(election_1, election_2)
 
+
 # SUBELECTIONS #
 def compute_voter_subelection(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Voter-Subelection """
     return lp.solve_lp_voter_subelection(election_1, election_2)
+
 
 def compute_candidate_subelection(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Candidate-Subelection """
@@ -139,6 +145,7 @@ def compute_candidate_subelection(election_1: OrdinalElection, election_2: Ordin
     objective_value = lp.solve_lp_candidate_subelections(path, election_1, election_2)
     lp.remove_lp_file(path)
     return objective_value
+
 
 # HELPER FUNCTIONS #
 def get_matching_cost_pos_swap(election_1: OrdinalElection, election_2: OrdinalElection,
