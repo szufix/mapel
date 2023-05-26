@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from mapel.voting.metrics.main_approval_distances import solve_matching_vectors
+from mapel.core.matchings import solve_matching_vectors
 
 
 def get_matching_cost_committee(election, committee_1, committee_2, distance_id):
