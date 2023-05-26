@@ -9,6 +9,8 @@ import mapel.core.utils as utils
 from mapel.core.inner_distances import swap_distance
 import mapel.elections.distances.ilp_isomorphic as ilp_iso
 
+import mapel.elections.distances.lp as lp
+
 try:
     import mapel.elections.distances.cppdistances as cppd
 except:
