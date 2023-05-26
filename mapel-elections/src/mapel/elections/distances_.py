@@ -19,8 +19,8 @@ from mapel.core.objects.Experiment import Experiment
 
 registered_approval_distances = {
     'approvalwise': mad.compute_approvalwise,
-    'hamming': mad.compute_hamming,
 
+    'hamming': mad.compute_hamming,  # unsupported distance
     'flow': mad.compute_flow,  # unsupported distance
     'coapproval_frequency': mad.compute_coapproval_frequency_vectors,  # unsupported distance
     'pairwise': mad.compute_pairwise,  # unsupported distance
@@ -68,7 +68,7 @@ def get_distance(election_1,
 
 
 def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElection,
-                          distance_id: str = None, **kwargs) -> float or (float, list):
+                          distance_id: str = None, **kwargs) -> (float, list):
     """ Return: distance between approval elections, (if applicable) optimal matching """
 
     inner_distance, main_distance = _extract_distance_id(distance_id)
@@ -76,9 +76,13 @@ def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElec
     if main_distance in registered_approval_distances:
 
         if inner_distance is not None:
-            registered_approval_distances.get(main_distance)(election_1, election_2, inner_distance)
+            return registered_approval_distances.get(main_distance)(election_1,
+                                                                    election_2,
+                                                                    inner_distance)
         else:
-            registered_approval_distances.get(main_distance)(election_1, election_2, **kwargs)
+            return registered_approval_distances.get(main_distance)(election_1,
+                                                                    election_2,
+                                                                    **kwargs)
 
     else:
         logging.warning("No such distance!")

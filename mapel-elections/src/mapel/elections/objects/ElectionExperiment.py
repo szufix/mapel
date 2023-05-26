@@ -324,6 +324,8 @@ class ElectionExperiment(Experiment):
         if distance_id is None:
             distance_id = self.distance_id
 
+        self.distance_id = distance_id
+
         if '-approvalwise' in distance_id:
             for election in self.elections.values():
                 election.votes_to_approvalwise_vector()

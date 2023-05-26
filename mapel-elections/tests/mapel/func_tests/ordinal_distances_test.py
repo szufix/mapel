@@ -10,8 +10,8 @@ registered_ordinal_distances_to_test = {
     'l1-bordawise',
     'l1-pairwise',
     'discrete',
-    # 'swap',  # tested independently
-    # 'spearman',  # tested independently
+    'swap',
+    'spearman',
 }
 
 
@@ -31,4 +31,5 @@ class TestOrdinalDistances:
                                                 num_voters=num_voters,
                                                 num_candidates=num_candidates)
 
-        mapel.compute_distance(ele_1, ele_2, distance_id)
+        distance, mapping = mapel.compute_distance(ele_1, ele_2, distance_id)
+        assert type(float(distance)) is float

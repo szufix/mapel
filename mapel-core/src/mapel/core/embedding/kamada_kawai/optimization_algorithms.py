@@ -39,7 +39,7 @@ def optimize_bb(func, grad_func, args, x0, max_iter, init_step_size, stop_energy
             min_energy_snap = x.copy()
             min_energy_iter = i
         elif i - min_energy_iter > max_iter_without_improvement:
-            print(f'More than {max_iter_without_improvement} iterations without improvement')
+            # print(f'More than {max_iter_without_improvement} iterations without improvement')
             return min_energy_snap
 
         # print(f'Energy: {current_energy}: {min_energy}, grad norm: {np.linalg.norm(prev_grad)} {i}')

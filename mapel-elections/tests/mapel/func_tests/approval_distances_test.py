@@ -24,5 +24,7 @@ class TestOrdinalDistances:
         ele_2 = mapel.generate_approval_election(culture_id='ic', p=0.5,
                                                  num_voters=num_voters,
                                                  num_candidates=num_candidates)
-        for distance_id in registered_approval_distances_to_test:
-            mapel.compute_distance(ele_1, ele_2, distance_id)
+
+        distance, mapping = mapel.compute_distance(ele_1, ele_2, distance_id)
+
+        assert type(float(distance)) is float

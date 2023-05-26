@@ -22,7 +22,6 @@ from mapel.core.embedding.simulated_annealing.simulated_annealing import Simulat
 import mapel.core.persistence.experiment_imports as imports
 import mapel.core.persistence.experiment_exports as exports
 
-
 COLORS = []
 
 try:
@@ -110,9 +109,16 @@ class Experiment:
             try:
                 self.instances = self.add_instances_to_experiment()
                 self.num_instances = len(self.instances)
-                print('=== Elections imported successfully! ===')
+
+                for instance in self.instances.values():
+                    if instance.votes is None:
+                        print('=== Instances not found! ===')
+                        break
+                else:
+                    print('=== Instances imported successfully! ===')
+
             except FileNotFoundError:
-                print('=== Elections not found! ===')
+                print('=== Instances not found! ===')
                 self.instances = {}
         else:
             self.instances = {}
@@ -329,10 +335,10 @@ class Experiment:
         pr.print_map_2d(self, **kwargs)
 
     def print_map_2d_colored_by_feature(self, **kwargs) -> None:
-        pr.print_map_2d(self, **kwargs)
+        pr.print_map_2d_colored_by_feature(self, **kwargs)
 
     def print_map_2d_colored_by_features(self, **kwargs) -> None:
-        pr.print_map_2d(self, **kwargs)
+        pr.print_map_2d_colored_by_features(self, **kwargs)
 
     def print_map_3d(self, **kwargs) -> None:
         pr.print_map_3d(self, **kwargs)
@@ -407,7 +413,7 @@ class Experiment:
                         coordinates_by_families[family_id][0].append(
                             self.coordinates[instance_id][0])
                         coordinates_by_families[family_id][1].append(
-                                self.coordinates[instance_id][1])
+                            self.coordinates[instance_id][1])
 
         self.coordinates_by_families = coordinates_by_families
 
@@ -486,8 +492,8 @@ class Experiment:
         else:
             feature_long_id = f'{feature_id}_{rule}'
         return imports.get_values_from_csv_file(self, feature_id=feature_id,
-                                           column_id=column_id,
-                                           feature_long_id=feature_long_id)
+                                                column_id=column_id,
+                                                feature_long_id=feature_long_id)
 
     def normalize_feature_by_feature(self, nom=None, denom=None, saveas=None, column_id='value'):
 
@@ -627,7 +633,7 @@ class Experiment:
             new_image.show()
 
     def merge_election_images_in_parts(self, size=250, name=None, show=False, ncol=1, nrow=1,
-                              distance_id='hamming'):
+                                       distance_id='hamming'):
         pass
 
     def merge_election_images_double(self, size=250, name=None,
@@ -649,6 +655,3 @@ class Experiment:
         new_image.save(f'images/microscope/{name}.png', "PNG", quality=85)
         if show:
             new_image.show()
-
-
-

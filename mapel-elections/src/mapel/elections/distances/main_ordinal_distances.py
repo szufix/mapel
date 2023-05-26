@@ -34,7 +34,7 @@ def compute_positionwise_distance(election_1: OrdinalElection, election_2: Ordin
 
 
 def compute_agg_voterlikeness_distance(election_1: OrdinalElection, election_2: OrdinalElection,
-                                       inner_distance: Callable) -> float:
+                                       inner_distance: Callable) -> (float, list):
     """ Compute Aggregated-Voterlikeness distance between ordinal elections """
     vector_1, num_possible_scores = election_1.votes_to_agg_voterlikeness_vector()
     vector_2, _ = election_2.votes_to_agg_voterlikeness_vector()
@@ -42,61 +42,64 @@ def compute_agg_voterlikeness_distance(election_1: OrdinalElection, election_2: 
 
 
 def compute_bordawise_distance(election_1: OrdinalElection, election_2: OrdinalElection,
-                               inner_distance: Callable) -> float:
+                               inner_distance: Callable) -> (float, list):
     """ Compute Bordawise distance between ordinal elections """
     vector_1 = election_1.votes_to_bordawise_vector()
     vector_2 = election_2.votes_to_bordawise_vector()
-    return inner_distance(vector_1, vector_2)
+    return inner_distance(vector_1, vector_2), None
 
 
 def compute_pairwise_distance(election_1: OrdinalElection, election_2: OrdinalElection,
-                              inner_distance: Callable) -> float:
+                              inner_distance: Callable) -> (float, list):
     """ Compute Pairwise distance between ordinal elections """
     length = election_1.num_candidates
     matrix_1 = election_1.votes_to_pairwise_matrix()
     matrix_2 = election_2.votes_to_pairwise_matrix()
-    return solve_matching_matrices(matrix_1, matrix_2, length, inner_distance)
+    return solve_matching_matrices(matrix_1, matrix_2, length, inner_distance), None
 
 
 def compute_voterlikeness_distance(election_1: OrdinalElection, election_2: OrdinalElection,
-                                   inner_distance: Callable) -> float:
+                                   inner_distance: Callable) -> (float, list):
     """ Compute Voterlikeness distance between elections """
     length = election_1.num_voters
     matrix_1 = election_1.votes_to_voterlikeness_matrix()
     matrix_2 = election_2.votes_to_voterlikeness_matrix()
-    return solve_matching_matrices(matrix_1, matrix_2, length, inner_distance)
+    return solve_matching_matrices(matrix_1, matrix_2, length, inner_distance), None
 
 
 # DEPRECATED
-def compute_swap_distance_bf(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+def compute_swap_distance_bf(election_1: OrdinalElection,
+                             election_2: OrdinalElection) -> (int, list):
     """ Compute Swap distance between elections (using brute force) """
     obj_values = []
     for mapping in permutations(range(election_1.num_candidates)):
         cost_table = get_matching_cost_swap_bf(election_1, election_2, mapping)
         obj_values.append(solve_matching_vectors(cost_table)[0])
-    return min(obj_values)
+    return min(obj_values), None
 
 
-def compute_swap_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+def compute_swap_distance(election_1: OrdinalElection,
+                          election_2: OrdinalElection) -> (int, list):
     """ Compute Swap distance between elections (using the C++ extension) """
-    if not utils.is_module_loaded("mapel.elections.metrics.cppdistances"):
-        return compute_swap_distance_ilp_py(election_1, election_2)
+    if not utils.is_module_loaded("mapel.elections.distances.cppdistances"):
+        return compute_swap_distance_ilp_py(election_1, election_2), None
     swapd = cppd.swapd(election_1.votes.tolist(),
                        election_2.votes.tolist())
-    return swapd
+    return swapd, None
 
 
-def compute_spearman_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+def compute_spearman_distance(election_1: OrdinalElection,
+                              election_2: OrdinalElection) -> (int, list):
     """ Compute Spearman distance between elections (using the C++ extension) """
-    if not utils.is_module_loaded("mapel.elections.metrics.cppdistances"):
-        return compute_spearman_distance_ilp_py(election_1, election_2)
+    if not utils.is_module_loaded("mapel.elections.distances.cppdistances"):
+        return compute_spearman_distance_ilp_py(election_1, election_2), None
     speard = cppd.speard(election_1.votes.tolist(),
                          election_2.votes.tolist())
-    return speard
+    return speard, None
 
 
 def compute_spearman_distance_ilp_py(election_1: OrdinalElection,
-                                     election_2: OrdinalElection) -> int:
+                                     election_2: OrdinalElection) -> (int, list):
     """ Compute Spearman distance between elections """
     votes_1 = election_1.votes
     votes_2 = election_2.votes
@@ -108,10 +111,11 @@ def compute_spearman_distance_ilp_py(election_1: OrdinalElection,
     objective_value = ilp_iso.solve_ilp_distance(path)
     ilp_iso.remove_lp_file(path)
     objective_value = int(round(objective_value, 0))
-    return objective_value
+    return objective_value, None
 
 
-def compute_swap_distance_ilp_py(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+def compute_swap_distance_ilp_py(election_1: OrdinalElection,
+                                 election_2: OrdinalElection) -> (int, list):
     """ Compute Spearman distance between elections """
     votes_1 = election_1.votes
     votes_2 = election_2.votes
@@ -124,12 +128,13 @@ def compute_swap_distance_ilp_py(election_1: OrdinalElection, election_2: Ordina
     objective_value = ilp_iso.solve_ilp_distance_swap(path, votes_1, votes_2, params)
     ilp_iso.remove_lp_file(path)
     objective_value = int(round(objective_value, 0))
-    return objective_value
+    return objective_value, None
 
 
-def compute_discrete_distance(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
+def compute_discrete_distance(election_1: OrdinalElection,
+                              election_2: OrdinalElection) -> (int, list):
     """ Compute Discrete distance between elections """
-    return election_1.num_voters - compute_voter_subelection(election_1, election_2)
+    return election_1.num_voters - compute_voter_subelection(election_1, election_2), None
 
 
 # SUBELECTIONS #

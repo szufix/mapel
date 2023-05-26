@@ -1,4 +1,3 @@
-
 import mapel.elections as mapel
 
 
@@ -13,10 +12,10 @@ class TestSwapDistance:
                                                          num_voters=5,
                                                          num_candidates=3)
 
-            distances_1 = mapel.compute_distance(election_1, election_2,
-                                                 distance_id='swap')
+            distance_1, _ = mapel.compute_distance(election_1, election_2,
+                                                   distance_id='swap')
 
-            distances_2 = mapel.compute_distance(election_1, election_2,
-                                                 distance_id='ilp_swap')
+            distance_2, _ = mapel.compute_distance(election_1, election_2,
+                                                   distance_id='ilp_swap')
 
-            assert distances_1 == distances_2, "BF swap distance differs from ILP swap distance"
+            assert distance_1 == distance_2, "BF swap distance differs from ILP swap distance"

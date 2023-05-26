@@ -23,9 +23,9 @@ def prepare_offline_approval_experiment(**kwargs):
 
 
 def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
-                       coordinates=None, distance_id='emd-positionwise', _import=True,
+                       coordinates=None, distance_id=None, _import=True,
                        shift=False, dim=2, is_exported=True, coordinates_names=None,
-                       embedding_id='spring', fast_import=False, with_matrix=False):
+                       embedding_id=None, fast_import=False, with_matrix=False):
     if instance_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
                                          instances=instances, dim=dim, is_exported=is_exported,
