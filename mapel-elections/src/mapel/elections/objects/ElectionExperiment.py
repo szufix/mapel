@@ -553,7 +553,10 @@ class ElectionExperiment(Experiment):
 
             for instance_id in tqdm(self.instances):
                 feature_dict['value'][instance_id] = values[instance_id]
-                feature_dict['time'][instance_id] = 0
+                if values[instance_id] is None:
+                    feature_dict['time'][instance_id] = None
+                else:
+                    feature_dict['time'][instance_id] = 0
 
         else:
             feature = features.get_local_feature(feature_id)
@@ -592,11 +595,17 @@ class ElectionExperiment(Experiment):
 
                 elif feature_id in FEATURES_WITH_DISSAT:
                     feature_dict['value'][instance_id] = value[0]
-                    feature_dict['time'][instance_id] = total_time
+                    if value[0] is None:
+                        feature_dict['time'][instance_id] = None
+                    else:
+                        feature_dict['time'][instance_id] = total_time
                     feature_dict['dissat'][instance_id] = value[1]
                 else:
                     feature_dict['value'][instance_id] = value
-                    feature_dict['time'][instance_id] = total_time
+                    if value is None:
+                        feature_dict['time'][instance_id] = None
+                    else:
+                        feature_dict['time'][instance_id] = total_time
 
         if self.is_exported:
             self._store_election_feature(feature_id, feature_long_id, feature_dict)

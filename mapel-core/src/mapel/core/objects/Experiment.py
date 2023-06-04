@@ -111,7 +111,7 @@ class Experiment:
                 self.num_instances = len(self.instances)
 
                 for instance in self.instances.values():
-                    if instance.votes is None:
+                    if instance.is_correct is None or instance.is_correct is False:
                         print('=== Instances not found! ===')
                         break
                 else:

@@ -11,4 +11,4 @@ class Instance:
         self.instance_id = instance_id
         self.culture_id = culture_id
         self.printing_params = {}
-
+        self.is_correct = True

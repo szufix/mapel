@@ -83,6 +83,7 @@ class OrdinalElection(Election):
                         self.num_candidates = imports.import_fake_soc_election(experiment_id,
                                                                                election_id)
                     else:
+
                         self.votes, self.num_voters, self.num_candidates, self.params, \
                         self.culture_id, self.alliances = imports.import_real_soc_election(
                             experiment_id, election_id, is_shifted)
@@ -109,6 +110,7 @@ class OrdinalElection(Election):
                     if not fast_import:
                         self.votes_to_positionwise_vectors()
             except:
+                self.is_correct = False
                 pass
 
         if self.params is None:
