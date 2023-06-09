@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import copy
 import csv
-import itertools
 from time import time
 import logging
 import os
@@ -11,8 +10,17 @@ import numpy as np
 
 from mapel.core.inner_distances import map_str_to_func
 from mapel.core.objects.Experiment import Experiment
-from mapel.roommates.metrics import main_distances as mrd
+from mapel.roommates.distances import main_distances as mrd
 from mapel.roommates.objects.Roommates import Roommates
+
+
+registered_roommates_distances = {
+    'mutual_attraction': mrd.compute_retrospective_distance,
+    'positionwise': mrd.compute_positionwise_distance,
+    'pos_swap': mrd.compute_pos_swap_distance,
+    'swap_bf': mrd.compute_swap_bf_distance,
+    'pairwise': mrd.compute_pairwise_distance,
+}
 
 
 def get_distance(election_1: Roommates, election_2: Roommates,
@@ -21,23 +29,10 @@ def get_distance(election_1: Roommates, election_2: Roommates,
 
     inner_distance, main_distance = extract_distance_id(distance_id)
 
-    metrics_without_params = {
-    }
-
-    metrics_with_inner_distance = {
-        'mutual_attraction': mrd.compute_retrospective_distance,
-        'positionwise': mrd.compute_positionwise_distance,
-        'pos_swap': mrd.compute_pos_swap_distance,
-        'swap_bf': mrd.compute_swap_bf_distance,
-        'pairwise': mrd.compute_pairwise_distance,
-    }
-
-    if main_distance in metrics_without_params:
-        return metrics_without_params.get(main_distance)(election_1, election_2)
-
-    elif main_distance in metrics_with_inner_distance:
-        return metrics_with_inner_distance.get(main_distance)(election_1, election_2,
-                                                              inner_distance)
+    if main_distance in registered_roommates_distances:
+        return registered_roommates_distances.get(main_distance)(election_1,
+                                                                election_2,
+                                                                inner_distance)
     else:
         logging.warning('No such metric!')
 

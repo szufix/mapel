@@ -12,7 +12,7 @@ from mapel.core.objects.Experiment import Experiment
 from mapel.roommates.objects.RoommatesFamily import RoommatesFamily
 from mapel.roommates.objects.Roommates import Roommates
 import mapel.roommates.cultures_ as models_main
-import mapel.roommates.metrics_ as metr
+import mapel.roommates.distances_ as metr
 import mapel.roommates.features.basic_features as basic
 import mapel.roommates.features_ as features
 from mapel.core.utils import *

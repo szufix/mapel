@@ -11,7 +11,7 @@ import numpy as np
 
 from mapel.core.inner_distances import map_str_to_func
 from mapel.core.objects.Experiment import Experiment
-from mapel.marriages.metrics import main_marriages_distances as mrd
+from mapel.marriages.distances import main_marriages_distances as mrd
 from mapel.marriages.objects.Marriages import Marriages
 
 
