@@ -70,7 +70,7 @@ class RoommatesFamily(Family):
 
         return params, variable
 
-    def prepare_family(self, experiment_id=None, store=None):
+    def prepare_family(self, experiment_id=None, is_exported=None):
 
         instances = {}
 
@@ -90,10 +90,10 @@ class RoommatesFamily(Family):
 
             instance_id = get_instance_id(self.single, self.family_id, j)
 
-            instance = Roommates(experiment_id, instance_id, _import=False,
+            instance = Roommates(experiment_id, instance_id, is_imported=False,
                                  culture_id=self.culture_id, num_agents=self.num_agents)
 
-            instance.prepare_instance(store=store, params=params)
+            instance.prepare_instance(is_exported=is_exported, params=params)
 
             instances[instance_id] = instance
 

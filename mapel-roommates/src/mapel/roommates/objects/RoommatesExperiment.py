@@ -3,7 +3,6 @@ import ast
 import copy
 import csv
 import itertools
-import os
 from multiprocessing import Process
 from time import sleep
 import time
@@ -125,9 +124,10 @@ class RoommatesExperiment(Experiment):
                                     family_id=family_id,
                                     params=copy.deepcopy(self.families[family_id].params))
 
-
-    def compute_distances(self, distance_id: str = 'emd-positionwise', num_threads: int = 1,
-                          self_distances: bool = False, printing: bool = False) -> None:
+    def compute_distances(self,
+                          distance_id: str = 'emd-positionwise',
+                          num_threads: int = 1,
+                          self_distances: bool = False) -> None:
 
         self.distance_id = distance_id
 
@@ -149,7 +149,6 @@ class RoommatesExperiment(Experiment):
                     ids.append((instance_1, instance_2))
 
         num_distances = len(ids)
-
         processes =[]
 
         for t in range(num_threads):
@@ -159,9 +158,12 @@ class RoommatesExperiment(Experiment):
             stop = int((t + 1) * num_distances / num_threads)
             thread_ids = ids[start:stop]
 
-            process = Process(target=metr.run_single_thread, args=(self, thread_ids,
-                                                                     distances, times, matchings,
-                                                                     printing, t ))
+            process = Process(target=metr.run_single_thread, args=(self,
+                                                                   thread_ids,
+                                                                     distances,
+                                                                   times,
+                                                                   matchings,
+                                                                     t ))
 
             process.start()
             processes.append(process)
@@ -207,10 +209,10 @@ class RoommatesExperiment(Experiment):
 
         for instance_id_1 in self.distances:
             for instance_id_2 in self.distances[instance_id_1]:
-                self.distances[instance_id_2][instance_id_1] = self.distances[instance_id_1][instance_id_2]
-                self.times[instance_id_2][instance_id_1] = self.times[instance_id_1][instance_id_2]
-
-
+                self.distances[instance_id_2][instance_id_1] = \
+                    self.distances[instance_id_1][instance_id_2]
+                self.times[instance_id_2][instance_id_1] = \
+                    self.times[instance_id_1][instance_id_2]
 
     def import_controllers(self):
         """ Import controllers from a file """
@@ -297,7 +299,7 @@ class RoommatesExperiment(Experiment):
         for family_id in self.families:
 
             new_instances = self.families[family_id].prepare_family(
-                store=self.is_exported,
+                is_exported=self.is_exported,
                 experiment_id=self.experiment_id)
 
             for instance_id in new_instances:
@@ -397,26 +399,6 @@ class RoommatesExperiment(Experiment):
 
                     total_time = time.time() - start
                     total_time /= num_iterations
-                    #
-                    # elif feature_id in ['largest_cohesive_group', 'number_of_cohesive_groups',
-                    #                     'number_of_cohesive_groups_brute',
-                    #                     'proportionality_degree_pav',
-                    #                     'proportionality_degree_av',
-                    #                     'proportionality_degree_cc',
-                    #                     'justified_ratio',
-                    #                     'cohesiveness',
-                    #                     'partylist',
-                    #                     'highest_cc_score',
-                    #                     'highest_hb_score']:
-                    #     value = feature(election, feature_params)
-                    #
-                    # elif feature_id in {'avg_distortion_from_guardians',
-                    #                     'worst_distortion_from_guardians',
-                    #                     'distortion_from_all',
-                    #                     'distortion_from_top_100'}:
-                    #     value = feature(election, election_id)
-                    # else:
-                    #     value = feature(election)
 
                     if feature_id in features_with_std:
                         feature_dict['value'][instance_id] = value[0]

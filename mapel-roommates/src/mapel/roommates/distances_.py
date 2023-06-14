@@ -47,13 +47,14 @@ def extract_distance_id(distance_id: str) -> (Callable, str):
     return inner_distance, main_distance
 
 
-def run_single_thread(experiment: Experiment, thread_ids: list,
-                      distances: dict, times: dict, matchings: dict,
-                      printing: bool, t) -> None:
+def run_single_thread(experiment: Experiment,
+                      thread_ids: list,
+                      distances: dict,
+                      times: dict,
+                      matchings: dict,
+                      t) -> None:
     """ Single thread for computing distances """
     for election_id_1, election_id_2 in thread_ids:
-        if t == 0 and printing:
-            print(election_id_1, election_id_2)
         start_time = time()
 
         distance = get_distance(copy.deepcopy(experiment.instances[election_id_1]),

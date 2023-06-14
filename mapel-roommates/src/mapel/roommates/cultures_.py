@@ -8,7 +8,6 @@ import mapel.roommates.cultures.euclidean as euclidean
 import mapel.roommates.cultures.impartial as impartial
 import mapel.roommates.cultures.mallows as mallows
 import mapel.roommates.cultures.urn as urn
-import mapel.roommates.cultures.group_separable as group_separable
 
 
 registered_roommates_culture = {

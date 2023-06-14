@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import mapel.roommates.features.basic_features as basic
-from mapel.core.glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
-from mapel.core.features_main import get_main_local_feature, get_main_global_feature
+from mapel.core.glossary import MAIN_GLOBAL_FEATUERS
+from mapel.core.features_main import get_main_global_feature
 import numpy as np
 from itertools import combinations
 from mapel.core.inner_distances import l2
@@ -35,7 +35,6 @@ def get_global_feature(feature_id):
             'distortion_from_all': distortion_from_all,
             }.get(feature_id)
 
-
 # TMP FUNCS
 def monotonicity(experiment, instance) -> float:
     e0 = instance.instance_id
@@ -55,18 +54,13 @@ def monotonicity(experiment, instance) -> float:
     return distortion
 
 
-#
 def distortion_from_all(experiment, election):
     values = np.array([])
     one_side_values = np.array([])
     election_id_1 = election.instance_id
 
     for election_id_2 in experiment.instances:
-        # if election_id_2 in {'identity_10_100_0', 'uniformity_10_100_0',
-        #                      'antagonism_10_100_0', 'stratification_10_100_0'}:
         if election_id_1 != election_id_2:
-            # m = election.instances[election_id_1].num_candidates
-            # print(election_id_1, election_id_2)
             true_distance = experiment.distances[election_id_1][election_id_2]
             true_distance /= experiment.distances['MD']['MA']
             embedded_distance = l2(np.array(experiment.coordinates[election_id_1]),
@@ -75,19 +69,11 @@ def distortion_from_all(experiment, election):
             embedded_distance /= \
                 l2(np.array(experiment.coordinates['MD']),
                    np.array(experiment.coordinates['MA']))
-            # try:
-            #     ratio = float(embedded_distance) / float(true_distance)
-            # except:
-            #     ratio = 1.
             one_side_ratio = embedded_distance / true_distance
             one_side_values = np.append(one_side_values, one_side_ratio)
 
             ratio = max(embedded_distance, true_distance) / min(embedded_distance, true_distance)
 
             values = np.append(values, ratio)
-
-    # print(min(one_side_values), max(one_side_values))
-    # if election_id_1 == 'IC_0':
-    #     print(values)
 
     return np.mean(values)

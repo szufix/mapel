@@ -29,7 +29,6 @@ def generate_instance(num_agents):
     return instance
 
 def number_blockingPairs(instance,matching):
-    # print(matching)
     bps=0
     num_agents=len(instance)
     for i in range(num_agents):
