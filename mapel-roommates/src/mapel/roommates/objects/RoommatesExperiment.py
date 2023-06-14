@@ -17,7 +17,7 @@ import mapel.roommates.features.basic_features as basic
 import mapel.roommates.features_ as features
 from mapel.core.utils import *
 from mapel.core.glossary import *
-from mapel.core.printing import get_values_from_csv_file
+from mapel.core.persistence.experiment_imports import get_values_from_csv_file
 
 try:
     from sklearn.manifold import MDS

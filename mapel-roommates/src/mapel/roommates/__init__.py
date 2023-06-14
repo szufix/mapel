@@ -2,7 +2,7 @@
 from .objects.RoommatesExperiment import RoommatesExperiment
 from .objects.Roommates import Roommates
 from . import cultures_ as rom
-
+from .distances_ import get_distance
 # from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
 
 
@@ -33,3 +33,6 @@ def generate_roommates_instance(**kwargs):
 
 def generate_roommates_votes(**kwargs):
     return rom.generate_votes(**kwargs)
+
+def compute_distance(*args, **kwargs):
+    return get_distance(*args, **kwargs)

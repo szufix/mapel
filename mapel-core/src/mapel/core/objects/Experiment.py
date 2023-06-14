@@ -550,7 +550,6 @@ class Experiment:
         for name_1, name_2 in itertools.combinations(names, 2):
 
             if all:
-
                 values_x = []
                 values_y = []
                 for e1, e2 in itertools.combinations(my_list, 2):

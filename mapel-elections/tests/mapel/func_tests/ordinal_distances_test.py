@@ -31,5 +31,5 @@ class TestOrdinalDistances:
                                                 num_voters=num_voters,
                                                 num_candidates=num_candidates)
 
-        distance, mapping = mapel.compute_distance(ele_1, ele_2, distance_id)
+        distance, mapping = mapel.compute_distance(ele_1, ele_2, distance_id=distance_id)
         assert type(float(distance)) is float

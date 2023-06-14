@@ -70,16 +70,16 @@ def mallowsVote(m, insertion_probabilites_list):
     return vote
 
 
-def generate_mallows_votes(num_voters, num_candidates, params):
+def generate_mallows_votes(num_voters, num_candidates, phi=None, weight=0):
     insertion_probabilites_list = []
     for i in range(1, num_candidates):
-        insertion_probabilites_list.append(computeInsertionProbas(i, params['phi']))
+        insertion_probabilites_list.append(computeInsertionProbas(i, phi))
     V = []
     for i in range(num_voters):
         vote = mallowsVote(num_candidates, insertion_probabilites_list)
-        if params['weight'] > 0:
+        if weight > 0:
             probability = np.random.random()
-            if probability >= params['weight']:
+            if probability >= weight:
                 vote.reverse()
         V += [vote]
     return V
@@ -155,25 +155,21 @@ def runif_in_simplex(n):
   return k / sum(k)
 
 
-def generate_roommates_norm_mallows_votes(num_agents=None, params=None):
+def generate_roommates_norm_mallows_votes(num_agents=None, normphi=0.5, weight=0, **kwargs):
 
-    if 'norm-phi' not in params:
-        params['norm-phi'] = np.random.rand()
+    # if 'norm-phi' not in params:
+    #     params['norm-phi'] = np.random.rand()
 
-    params['phi'] = phi_from_relphi(num_agents, relphi=params['norm-phi'])
+    phi = phi_from_relphi(num_agents, relphi=normphi)
 
-    if 'weight' not in params:
-        params['weight'] = 0.
-
-    votes = generate_mallows_votes(num_agents, num_agents, params)
+    votes = generate_mallows_votes(num_agents, num_agents, phi=phi, weight=weight)
 
     return convert(votes)
 
 
 def mallows_vote(vote, phi):
     num_candidates = len(vote)
-    params = {'weight': 0, 'phi': phi}
-    raw_vote = generate_mallows_votes(1, num_candidates, params)[0]
+    raw_vote = generate_mallows_votes(1, num_candidates, phi=phi, weight=0)[0]
     new_vote = [0] * len(vote)
     for i in range(num_candidates):
         new_vote[raw_vote[i]] = vote[i]
@@ -186,17 +182,19 @@ def mallows_votes(votes, phi):
     return votes
 
 
-def generate_roommates_malasym_votes(num_agents: int = None, params=None):
+def generate_roommates_malasym_votes(num_agents: int = None,
+                                     normphi=0.5,
+                                     **kwargs):
     """ Mallows on top of Asymmetric instance """
 
     votes = [list(range(num_agents)) for _ in range(num_agents)]
 
     votes = [rotate(vote, shift) for shift, vote in enumerate(votes)]
 
-    if 'norm-phi' not in params:
-        params['norm-phi'] = np.random.rand()
+    # if 'norm-phi' not in params:
+    #     params['norm-phi'] = np.random.rand()
 
-    params['phi'] = phi_from_relphi(num_agents, relphi=params['norm-phi'])
-    votes = mallows_votes(votes, params['phi'])
+    phi = phi_from_relphi(num_agents, relphi=normphi)
+    votes = mallows_votes(votes, phi)
 
     return convert(votes)

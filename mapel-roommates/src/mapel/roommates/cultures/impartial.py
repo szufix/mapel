@@ -5,7 +5,8 @@ from mapel.roommates.cultures._utils import convert
 from mapel.core.utils import *
 import logging
 
-def generate_roommates_ic_votes(num_agents: int = None):
+
+def generate_roommates_ic_votes(num_agents: int = None, **kwargs):
     """ Impartial Culture """
 
     votes = [list(np.random.permutation(num_agents)) for _ in range(num_agents)]
@@ -13,13 +14,12 @@ def generate_roommates_ic_votes(num_agents: int = None):
     return convert(votes)
 
 
-def generate_roommates_group_ic_votes(num_agents: int = None, params: dict = None):
+def generate_roommates_group_ic_votes(num_agents: int = None,
+                                      proportion=0.5,
+                                      **kwargs):
     """ Impartial Culture with two groups """
 
-    if 'proportion' not in params:
-        params['proportion'] = 0.5
-
-    size_1 = int(params['proportion'] * num_agents)
+    size_1 = int(proportion * num_agents)
     size_2 = int(num_agents - size_1)
 
     votes_1 = [list(np.random.permutation(size_1)) +
@@ -35,7 +35,7 @@ def generate_roommates_group_ic_votes(num_agents: int = None, params: dict = Non
     return convert(votes)
 
 
-def generate_roommates_id_votes(num_agents: int = None):
+def generate_roommates_id_votes(num_agents: int = None, **kwargs):
     """ One of four extreme points for Compass """
 
     votes = [list(range(num_agents)) for _ in range(num_agents)]
@@ -43,7 +43,7 @@ def generate_roommates_id_votes(num_agents: int = None):
     return convert(votes)
 
 
-def generate_roommates_asymmetric_votes(num_agents: int = None):
+def generate_roommates_asymmetric_votes(num_agents: int = None, **kwargs):
     """ One of four extreme points for Compass """
     votes = [list(range(num_agents)) for _ in range(num_agents)]
 
@@ -52,7 +52,7 @@ def generate_roommates_asymmetric_votes(num_agents: int = None):
     return convert(votes)
 
 
-def generate_roommates_symmetric_votes(num_agents: int = None):
+def generate_roommates_symmetric_votes(num_agents: int = None, **kwargs):
     """ One of four extreme points for Compass """
 
     num_rounds = num_agents - 1
@@ -87,7 +87,7 @@ def generate_roommates_symmetric_votes(num_agents: int = None):
     return votes
 
 
-def generate_roommates_chaos_votes(num_agents: int = None):
+def generate_roommates_chaos_votes(num_agents: int = None, **kwargs):
     """ One of four extreme points for Compass """
 
     if num_agents-1 % 3 == 0:

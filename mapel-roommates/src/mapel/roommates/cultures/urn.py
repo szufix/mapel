@@ -2,7 +2,10 @@ import numpy as np
 from mapel.roommates.cultures._utils import convert
 
 
-def generate_roommates_urn_votes(num_agents: int = None, params=None):
+def generate_roommates_urn_votes(num_agents: int = None,
+                                 alpha: int=0.1,
+                                 **kwargs):
+
     votes = np.zeros([num_agents, num_agents], dtype=int)
     urn_size = 1.
     for j in range(num_agents):
@@ -11,10 +14,10 @@ def generate_roommates_urn_votes(num_agents: int = None, params=None):
             votes[j] = np.random.permutation(num_agents)
         else:
             votes[j] = votes[np.random.randint(0, j)]
-        urn_size += params['alpha']
+        urn_size += alpha
 
     return convert(votes)
 
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 16.03.2022 #
+# LAST CLEANUP ON:  9.06.2023 #
 # # # # # # # # # # # # # # # #

@@ -33,7 +33,6 @@ class Roommates(Instance):
             except:
                 pass
 
-
     def get_retrospective_vectors(self):
         if self.retrospetive_vectors is not None:
             return self.retrospetive_vectors
@@ -46,16 +45,16 @@ class Roommates(Instance):
 
     def votes_to_retrospective_vectors(self):
 
-        if self.culture_id == 'roommates_tmp': # A-S-SYM
-
-            n = self.num_agents // 2
-
-            vector = [n-i-1 for i in range(n)] + [2*n-i-2 for i in range(n-1)]
-
-            vectors = [vector for _ in range(self.num_agents)]
-            vectors = np.array(vectors)
-            self.retrospetive_vectors = vectors
-            return vectors
+        # if self.culture_id == 'roommates_tmp': # A-S-SYM
+        #
+        #     n = self.num_agents // 2
+        #
+        #     vector = [n-i-1 for i in range(n)] + [2*n-i-2 for i in range(n-1)]
+        #
+        #     vectors = [vector for _ in range(self.num_agents)]
+        #     vectors = np.array(vectors)
+        #     self.retrospetive_vectors = vectors
+        #     return vectors
 
         vectors = np.zeros([self.num_agents, self.num_agents - 1], dtype=int)
 

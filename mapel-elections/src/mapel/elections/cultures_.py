@@ -114,6 +114,7 @@ def generate_ordinal_votes(culture_id: str = None,
                            num_voters: int = None,
                            params: dict = None,
                            **kwargs) -> Union[list, np.ndarray]:
+
     if culture_id in LIST_OF_PREFLIB_MODELS:
         return generate_preflib_votes(culture_id=culture_id,
                                       num_candidates=num_candidates,

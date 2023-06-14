@@ -120,8 +120,11 @@ def _extract_distance_id(distance_id: str) -> (Callable, str):
     return inner_distance, main_distance
 
 
-def run_single_process(exp: Experiment, instances_ids: list,
-                       distances: dict, times: dict, matchings: dict,
+def run_single_process(exp: Experiment,
+                       instances_ids: list,
+                       distances: dict,
+                       times: dict,
+                       matchings: dict,
                        safe_mode=False) -> None:
     """ Single process for computing distances """
 
@@ -146,8 +149,11 @@ def run_single_process(exp: Experiment, instances_ids: list,
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
 
-def run_multiple_processes(exp: Experiment, instances_ids: list,
-                           distances: dict, times: dict, matchings: dict,
+def run_multiple_processes(exp: Experiment,
+                           instances_ids: list,
+                           distances: dict,
+                           times: dict,
+                           matchings: dict,
                            t) -> None:
     """ Single process for computing distances """
 
@@ -168,10 +174,10 @@ def run_multiple_processes(exp: Experiment, instances_ids: list,
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
     if exp.is_exported:
-        _store_distances(exp, instances_ids, distances, times, t)
+        _export_distances(exp, instances_ids, distances, times, t)
 
 
-def _store_distances(exp, instances_ids, distances, times, t):
+def _export_distances(exp, instances_ids, distances, times, t):
     """ Store distances to csv file """
     file_name = f'{exp.distance_id}_p{t}.csv'
     path = os.path.join(os.getcwd(), "experiments", exp.experiment_id, "distances", file_name)

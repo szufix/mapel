@@ -4,7 +4,9 @@ from numpy import linalg
 from mapel.roommates.cultures._utils import convert
 from mapel.roommates.cultures.mallows import mallows_votes
 
+
 ################################################################
+
 
 def get_range(params):
     if params['p_dist'] == 'beta':
@@ -16,25 +18,27 @@ def get_range(params):
 def weighted_l1(a1, a2, w):
     total = 0
     for i in range(len(a1)):
-        total += abs(a1[i]-a2[i])*w[i]
+        total += abs(a1[i] - a2[i]) * w[i]
     return total
 
 
-def generate_attributes_votes(num_agents: int = None, params: dict = None):
-
-    name = f'{params["dim"]}d_{params["space"]}'
+def generate_roommates_attributes_votes(num_agents: int = None,
+                                        dim: int = 2,
+                                        space='uniform',
+                                        **kwargs):
+    name = f'{dim}d_{space}'
 
     agents_skills = np.array([get_rand(name) for _ in range(num_agents)])
     agents_weights = np.array([get_rand(name) for _ in range(num_agents)])
 
     votes = np.zeros([num_agents, num_agents], dtype=int)
     distances = np.zeros([num_agents, num_agents], dtype=float)
-    ones = np.ones([params["dim"]], dtype=float)
+    ones = np.ones([dim], dtype=float)
 
     for v in range(num_agents):
         for c in range(num_agents):
             votes[v][c] = c
-            if params["dim"] == 1:
+            if dim == 1:
                 distances[v][c] = abs(1. - agents_skills[c]) * agents_weights[v]
             else:
                 distances[v][c] = weighted_l1(ones, agents_skills[c], agents_weights[v])
@@ -43,9 +47,11 @@ def generate_attributes_votes(num_agents: int = None, params: dict = None):
     return convert(votes)
 
 
-def generate_roommates_euclidean_votes(num_agents: int = None, params: dict = None):
-
-    name = f'{params["dim"]}d_{params["space"]}'
+def generate_roommates_euclidean_votes(num_agents: int = None,
+                                       dim: int = 2,
+                                       space='uniform',
+                                       **kwargs):
+    name = f'{dim}d_{space}'
 
     agents = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
 
@@ -54,7 +60,6 @@ def generate_roommates_euclidean_votes(num_agents: int = None, params: dict = No
 
     for v in range(num_agents):
         for c in range(num_agents):
-
             votes[v][c] = c
             distances[v][c] = np.linalg.norm(agents[v] - agents[c])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
@@ -62,9 +67,12 @@ def generate_roommates_euclidean_votes(num_agents: int = None, params: dict = No
     return convert(votes)
 
 
-def generate_roommates_reverse_euclidean_votes(num_agents: int = None, params: dict = None):
-
-    name = f'{params["dim"]}d_{params["space"]}'
+def generate_roommates_reverse_euclidean_votes(num_agents: int = None,
+                                               dim: int = 2,
+                                               space='uniform',
+                                               proportion=0.5,
+                                               **kwargs):
+    name = f'{dim}d_{space}'
 
     agents = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
 
@@ -73,17 +81,13 @@ def generate_roommates_reverse_euclidean_votes(num_agents: int = None, params: d
 
     for v in range(num_agents):
         for c in range(num_agents):
-
             votes[v][c] = c
             distances[v][c] = np.linalg.norm(agents[v] - agents[c])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
-    if 'proportion' in params:
-        p = params['proportion']
-    else:
-        p = 0.5
+    p = proportion
 
-    for i in range(int(num_agents * (1.-p))):
+    for i in range(int(num_agents * (1. - p))):
         tmp = list(votes[i])
         tmp.reverse()
         votes[i] = tmp
@@ -91,25 +95,27 @@ def generate_roommates_reverse_euclidean_votes(num_agents: int = None, params: d
     return convert(votes)
 
 
-def generate_expectation_votes(num_agents: int = None, params: dict = None):
-
-    name = f'{params["dim"]}d_{params["space"]}'
+def generate_roommates_expectation_votes(num_agents: int = None,
+                                         dim: int = 2,
+                                         space='uniform',
+                                         std=0.1,
+                                         **kwargs):
+    name = f'{dim}d_{space}'
 
     agents_reality = np.array([get_rand(name) for _ in range(num_agents)])
     agents_wishes = np.zeros([num_agents, 2])
 
     for v in range(num_agents):
         # while agents_wishes[v][0] <= 0 or agents_wishes[v][0] >= 1:
-        agents_wishes[v][0] = np.random.normal(agents_reality[v][0], params['std'])
+        agents_wishes[v][0] = np.random.normal(agents_reality[v][0], std)
         # while agents_wishes[v][1] <= 0 or agents_wishes[v][1] >= 1:
-        agents_wishes[v][1] = np.random.normal(agents_reality[v][1], params['std'])
+        agents_wishes[v][1] = np.random.normal(agents_reality[v][1], std)
 
     votes = np.zeros([num_agents, num_agents], dtype=int)
     distances = np.zeros([num_agents, num_agents], dtype=float)
 
     for v in range(num_agents):
         for c in range(num_agents):
-
             votes[v][c] = c
             distances[v][c] = np.linalg.norm(agents_reality[c] - agents_wishes[v])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
@@ -117,15 +123,19 @@ def generate_expectation_votes(num_agents: int = None, params: dict = None):
     return convert(votes)
 
 
-def generate_fame_votes(num_agents: int = None, params: dict = None):
+def generate_roommates_fame_votes(num_agents: int = None,
+                                  dim: int = 2,
+                                  space='uniform',
+                                  radius=0.1,
+                                  **kwargs):
     # Also known as radius model
 
-    name = f'{params["dim"]}d_{params["space"]}'
+    name = f'{dim}d_{space}'
 
     agents = np.array([get_rand(name) for _ in range(num_agents)])
     votes = np.zeros([num_agents, num_agents], dtype=int)
     distances = np.zeros([num_agents, num_agents], dtype=float)
-    rays = np.array([np.random.uniform(0, params['radius']) for _ in range(num_agents)])
+    rays = np.array([np.random.uniform(0, radius) for _ in range(num_agents)])
 
     for v in range(num_agents):
         for c in range(num_agents):
@@ -137,9 +147,12 @@ def generate_fame_votes(num_agents: int = None, params: dict = None):
     return convert(votes)
 
 
-def generate_roommates_mallows_euclidean_votes(num_agents: int = None, params: dict = None):
-
-    name = f'{params["dim"]}d_{params["space"]}'
+def generate_roommates_mallows_euclidean_votes(num_agents: int = None,
+                                               dim: int = 2,
+                                               space='uniform',
+                                               phi=0.5,
+                                               **kwargs):
+    name = f'{dim}d_{space}'
 
     agents = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
 
@@ -148,14 +161,14 @@ def generate_roommates_mallows_euclidean_votes(num_agents: int = None, params: d
 
     for v in range(num_agents):
         for c in range(num_agents):
-
             votes[v][c] = c
             distances[v][c] = np.linalg.norm(agents[v] - agents[c])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
-    votes = mallows_votes(votes, params['phi'])
+    votes = mallows_votes(votes, phi)
 
     return convert(votes)
+
 
 # AUXILIARY
 def random_ball(dimension, num_points=1, radius=1):
@@ -167,12 +180,13 @@ def random_ball(dimension, num_points=1, radius=1):
 
 GEN_CTR = 0
 
+
 def get_rand(model: str, i: int = 0, num_agents: int = 0, cat: str = "voters") -> list:
     """ generate random values"""
     # print(model ==  "1d_uniform")
 
     point = [0]
-    if model in {"1d_uniform",  "1d_interval"}:
+    if model in {"1d_uniform", "1d_interval"}:
         return np.random.rand()
     elif model in {'1d_asymmetric'}:
         if np.random.rand() < 0.3:
@@ -186,7 +200,8 @@ def get_rand(model: str, i: int = 0, num_agents: int = 0, cat: str = "voters") -
     elif model == "1d_one_sided_triangle":
         point = np.random.uniform(0, 1) ** 0.5
     elif model == "1d_full_triangle":
-        point = np.random.choice([np.random.uniform(0, 1) ** 0.5, 2 - np.random.uniform(0, 1) ** 0.5])
+        point = np.random.choice(
+            [np.random.uniform(0, 1) ** 0.5, 2 - np.random.uniform(0, 1) ** 0.5])
     elif model == "1d_two_party":
         point = np.random.choice([np.random.uniform(0, 1), np.random.uniform(2, 3)])
     elif model in {"2d_disc", "2d_range_disc"}:
@@ -255,14 +270,14 @@ def get_rand(model: str, i: int = 0, num_agents: int = 0, cat: str = "voters") -
         dim = 5
         point = [np.random.random() for _ in range(dim)]
     elif model == '1d_extreme':
-        if i%2 == 1:
+        if i % 2 == 1:
             i -= 0.1
         point = i
     elif model == '2d_extreme':
         if i % 2 == 1:
-            alpha = 2 * math.pi * ((i-np.random.random()/100) / num_agents)
+            alpha = 2 * math.pi * ((i - np.random.random() / 100) / num_agents)
         else:
-            alpha = 2 * math.pi * ((i+np.random.random()/100) / num_agents)
+            alpha = 2 * math.pi * ((i + np.random.random() / 100) / num_agents)
         x = 1. * math.cos(alpha)
         y = 1. * math.sin(alpha)
         point = [x, y]
