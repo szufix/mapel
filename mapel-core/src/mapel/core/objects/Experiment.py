@@ -52,10 +52,8 @@ class Experiment:
                  coordinates=None,
                  distance_id=None,
                  embedding_id=None,
-                 dim=2,
                  is_exported=True,
                  is_imported=True,
-                 instance_type=None,
                  clean=False,
                  coordinates_names=None,
                  fast_import=False,
@@ -66,6 +64,7 @@ class Experiment:
         self.experiment_id = experiment_id
         self.fast_import = fast_import
         self.with_matrix = with_matrix
+        self.dim = 2
 
         if clean:
             self.clean_elections()
@@ -90,7 +89,6 @@ class Experiment:
         self.num_families = None
         self.num_instances = None
         self.main_order = None
-        self.instance_type = instance_type
 
         if experiment_id is None:
             self.experiment_id = 'virtual'
@@ -104,28 +102,28 @@ class Experiment:
 
         if isinstance(instances, dict):
             self.instances = instances
-            print('=== Omitting import! ===')
+            # print('=== Omitting import! ===')
         elif is_imported and self.experiment_id != 'virtual':
             try:
                 self.instances = self.add_instances_to_experiment()
                 self.num_instances = len(self.instances)
 
-                for instance in self.instances.values():
-                    if instance.is_correct is None or instance.is_correct is False:
-                        print('=== Instances not found! ===')
-                        break
-                else:
-                    print('=== Instances imported successfully! ===')
+                # for instance in experiment.instances.values():
+                #     if instance.is_correct is None or instance.is_correct is False:
+                #         print('=== Instances not found! ===')
+                #         break
+                # else:
+                #     print('=== Instances imported successfully! ===')
 
             except FileNotFoundError:
-                print('=== Instances not found! ===')
+                # print('=== Instances not found! ===')
                 self.instances = {}
         else:
             self.instances = {}
 
         if isinstance(distances, dict):
             self.distances = distances
-            print('=== Omitting import! ===')
+            # print('=== Omitting import! ===')
         elif is_imported and self.experiment_id != 'virtual':  # and fast_import == False:
             self.distances, self.times, self.stds, self.mappings = \
                 imports.add_distances_to_experiment(self)
@@ -134,21 +132,22 @@ class Experiment:
 
         if isinstance(coordinates, dict):
             self.coordinates = coordinates
-            print('=== Omitting import! ===')
+            # print('=== Omitting import! ===')
         elif is_imported and self.experiment_id != 'virtual':
             try:
                 if coordinates_names is not None:
                     for file_name in coordinates_names:
                         self.coordinates_lists[file_name] = \
                             imports.add_coordinates_to_experiment(self,
-                                                                  dim=dim,
+                                                                  dim=self.dim,
                                                                   file_name=file_name)
                     self.coordinates = self.coordinates_lists[coordinates_names[0]]
                 else:
-                    self.coordinates = imports.add_coordinates_to_experiment(self, dim=dim)
-                print('=== Coordinates imported successfully! ===')
+                    self.coordinates = imports.add_coordinates_to_experiment(self, dim=self.dim)
+                # print('=== Coordinates imported successfully! ===')
             except FileNotFoundError:
-                print('=== Coordinates not found! ===')
+                # print('=== Coordinates not found! ===')
+                pass
         else:
             self.coordinates = {}
 
@@ -513,11 +512,21 @@ class Experiment:
         exports.export_feature(self, feature_dict=f3, saveas=saveas)
 
     def print_correlation_between_distances(self,
-                                            distance_id_1='spearman',
-                                            distance_id_2='l1-mutual_attraction',
-                                            title=None, all=False, my_list=None,
-                                            s=12, alpha=0.25, color='purple',
-                                            title_size=24, label_size=20, ticks_size=10):
+                                            distance_id_1=None,
+                                            distance_id_2=None,
+                                            title=None,
+                                            all=False,
+                                            my_list=None,
+                                            s=12,
+                                            alpha=0.25,
+                                            color='purple',
+                                            title_size=24,
+                                            label_size=20,
+                                            ticks_size=10):
+        if distance_id_1 is None:
+            logging.warning('distance_id_1 is not defined')
+        if distance_id_2 is None:
+            logging.warning('distance_id_2 is not defined')
 
         all_distances = {}
 
@@ -538,7 +547,7 @@ class Experiment:
                 'emd-positionwise': 'EMD-Positionwise',
                 'l1-positionwise': "$\ell_1$-Positionwise",
                 'l1-pairwise': "$\ell_1$-Pairwise",
-            }.get(name)
+            }.get(name, name)
 
         def normalize(name):
             return {

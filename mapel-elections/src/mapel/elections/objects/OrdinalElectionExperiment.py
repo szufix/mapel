@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+from abc import ABC
 
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
 import mapel.elections.cultures_ as cultures
@@ -21,7 +22,7 @@ except ImportError as error:
     print(error)
 
 
-class OrdinalElectionExperiment(ElectionExperiment):
+class OrdinalElectionExperiment(ElectionExperiment, ABC):
     """Abstract set of elections."""
 
     def __init__(self, **kwargs):

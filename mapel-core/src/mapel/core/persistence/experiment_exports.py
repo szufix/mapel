@@ -1,7 +1,8 @@
-import csv
-import os
-from mapel.core.utils import make_folder_if_do_not_exist
 
+import os
+import csv
+from mapel.core.glossary import *
+from mapel.core.utils import make_folder_if_do_not_exist
 
 # Features
 def export_instance_feature(experiment, feature_id, feature_dict):
@@ -62,3 +63,62 @@ def export_embedding(experiment, embedding_id, saveas, dim, my_pos):
                     z = round(my_pos[ctr][2], 5)
                     writer.writerow([instance_id, x, y, z])
             ctr += 1
+
+
+# Distances
+def export_distances_to_file(experiment, distance_id, distances, times, self_distances):
+
+    path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances")
+    make_folder_if_do_not_exist(path_to_folder)
+    path = os.path.join(path_to_folder, f'{distance_id}.csv')
+
+    with open(path, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=';')
+        writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
+
+        for i, instance_1 in enumerate(experiment.elections):
+            for j, instance_2 in enumerate(experiment.elections):
+                if i < j or (i == j and self_distances):
+                    distance = str(distances[instance_1][instance_2])
+                    time_ = str(times[instance_1][instance_2])
+                    writer.writerow([instance_1, instance_2, distance, time_])
+
+
+# Temporary
+def export_election_feature_to_file(experiment, feature_id, feature_long_id, feature_dict):
+
+    path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features")
+    make_folder_if_do_not_exist(path_to_folder)
+
+    if feature_id in EMBEDDING_RELATED_FEATURE:
+        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
+                            "features", f'{feature_id}_{experiment.embedding_id}.csv')
+    else:
+        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
+                            "features", f'{feature_long_id}.csv')
+
+    with open(path, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=';')
+        if feature_id == 'ejr':
+            writer.writerow(["instance_id", "ejr", "pjr", "jr", "pareto", "time"])
+            for key in feature_dict['ejr']:
+                writer.writerow([key, feature_dict['ejr'][key],
+                                 feature_dict['pjr'][key],
+                                 feature_dict['jr'][key],
+                                 feature_dict['pareto'][key],
+                                 feature_dict['time'][key]])
+        elif feature_id in {'partylist'}:
+            writer.writerow(["instance_id", "value", "bound", "num_large_parties"])
+            for key in feature_dict:
+                writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
+                                 feature_dict[key][2]])
+        elif feature_id in FEATURES_WITH_DISSAT:
+            writer.writerow(["instance_id", "value", 'time', 'dissat'])
+            for key in feature_dict['value']:
+                writer.writerow(
+                    [key, feature_dict['value'][key], feature_dict['time'][key],
+                     feature_dict['dissat'][key]])
+        else:
+            writer.writerow(["instance_id", "value", "time"])
+            for key in feature_dict['value']:
+                writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])

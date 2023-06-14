@@ -409,10 +409,14 @@ class Election(Instance):
         feature = get_local_feature(feature_id)
         self.features[feature_long_id] = feature(self, **kwargs)
 
-    def get_feature(self, feature_id, feature_long_id=None, **kwargs):
+    def get_feature(self,
+                    feature_id,
+                    feature_long_id=None,
+                    overwrite=False,
+                    **kwargs):
         if feature_long_id is None:
             feature_long_id = feature_id
-        if feature_id not in self.features:
+        if feature_id not in self.features or overwrite:
             self.compute_feature(feature_id, feature_long_id, **kwargs)
         return self.features[feature_long_id]
 

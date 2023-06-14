@@ -130,11 +130,11 @@ def add_distances_to_experiment(experiment) -> (dict, dict, dict):
                 text = f'Possibly outdated distances are imported!'
                 logging.warning(text)
 
-        print('=== Distances imported successfully! ===')
+        # print('=== Distances imported successfully! ===')
         return distances, times, stds, mappings
 
     except FileNotFoundError:
-        print('=== Distances not found! ===')
+        # print('=== Distances not found! ===')
         return None, None, None, None
 
 
@@ -192,6 +192,7 @@ def add_coordinates_to_experiment(experiment, dim=2, file_name=None) -> dict:
         file_name = f'{experiment.embedding_id}_{experiment.distance_id}_{dim}d.csv'
     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
                         "coordinates", file_name)
+
     with open(path, 'r', newline='') as csv_file:
 
         # ORIGINAL

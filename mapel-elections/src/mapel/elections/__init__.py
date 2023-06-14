@@ -7,40 +7,59 @@ from .objects.OrdinalElectionExperiment import OrdinalElectionExperiment
 
 
 def prepare_online_ordinal_experiment(**kwargs):
-    return prepare_experiment(**kwargs, instance_type='ordinal', is_exported=False)
+    return prepare_experiment(**kwargs, instance_type='ordinal',
+                              is_exported=False, is_imported=False)
 
 
 def prepare_offline_ordinal_experiment(**kwargs):
-    return prepare_experiment(**kwargs, instance_type='ordinal', is_exported=True)
+    return prepare_experiment(**kwargs, instance_type='ordinal',
+                              is_exported=True, is_imported=True)
 
 
 def prepare_online_approval_experiment(**kwargs):
-    return prepare_experiment(**kwargs, instance_type='approval', is_exported=False)
+    return prepare_experiment(**kwargs, instance_type='approval',
+                              is_exported=False, is_imported=False)
 
 
 def prepare_offline_approval_experiment(**kwargs):
-    return prepare_experiment(**kwargs, instance_type='approval', is_exported=True)
+    return prepare_experiment(**kwargs, instance_type='approval',
+                              is_exported=True, is_imported=True)
 
 
-def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
-                       coordinates=None, distance_id=None, _import=True,
-                       shift=False, dim=2, is_exported=True, coordinates_names=None,
-                       embedding_id=None, fast_import=False, with_matrix=False):
+def prepare_experiment(experiment_id=None,
+                       instances=None,
+                       distances=None,
+                       instance_type=None,
+                       coordinates=None,
+                       distance_id=None,
+                       is_imported=False,
+                       is_shifted=False,
+                       is_exported=True,
+                       coordinates_names=None,
+                       embedding_id=None,
+                       fast_import=False,
+                       with_matrix=False):
     if instance_type == 'ordinal':
-        return OrdinalElectionExperiment(experiment_id=experiment_id, shift=shift,
-                                         instances=instances, dim=dim, is_exported=is_exported,
-                                         instance_type=instance_type,
-                                         distances=distances, coordinates=coordinates,
+        return OrdinalElectionExperiment(experiment_id=experiment_id,
+                                         is_shifted=is_shifted,
+                                         instances=instances,
+                                         is_exported=is_exported,
+                                         is_imported=is_imported,
+                                         distances=distances,
+                                         coordinates=coordinates,
                                          distance_id=distance_id,
                                          coordinates_names=coordinates_names,
                                          embedding_id=embedding_id,
                                          fast_import=fast_import,
                                          with_matrix=with_matrix)
     elif instance_type in ['approval', 'rule']:
-        return ApprovalElectionExperiment(experiment_id=experiment_id, shift=shift,
-                                          instances=instances, dim=dim, is_exported=is_exported,
-                                          instance_type=instance_type,
-                                          distances=distances, coordinates=coordinates,
+        return ApprovalElectionExperiment(experiment_id=experiment_id,
+                                          is_shifted=is_shifted,
+                                          instances=instances,
+                                          is_exported=is_exported,
+                                          is_imported=is_imported,
+                                          distances=distances,
+                                          coordinates=coordinates,
                                           distance_id=distance_id,
                                           coordinates_names=coordinates_names,
                                           embedding_id=embedding_id,

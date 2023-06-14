@@ -14,18 +14,6 @@ from mapel.core.glossary import *
 import mapel.core.persistence.experiment_imports as imports
 
 
-def print_approvals_histogram(election):
-    plt.title(election.election_id, size=20)
-    bins = np.linspace(0, 100, 51)
-    plt.hist([len(vote) for vote in election.votes], bins=bins)
-    # x_axis = np.arange(0, 100, 0.01)
-    # plt.plot(x_axis, norm.pdf(x_axis, 50, 2)*2000)
-    plt.ylim([0, election.num_voters])
-    plt.xlim([-1, election.num_candidates + 1])
-    plt.savefig("images/histograms/" + election.election_id + ".png")
-    plt.show()
-
-
 # New 1d map printing
 def print_map_1d(experiment, saveas=None):
     experiment.compute_coordinates_by_families()
@@ -977,7 +965,7 @@ def basic_coloring_with_shading(experiment=None,
 
                 elif 'Urn' in label:
 
-                    color, alpha = get_color_alpha_for_urn(color, alpha, urn_orangered)
+                    color, alpha = get_color_alpha_for_urn(alpha, urn_orangered)
 
                 else:
 
@@ -1644,11 +1632,10 @@ def adjust_the_map_on_one_point(experiment) -> None:
     except:
         print('Cannot adjust!')
 
-#DIV-MERGE
-def get_color_alpha_for_urn(color, alpha, orangered=True):
-    # return 'red', min(alpha, 1)
 
-    if orangered:
+def get_color_alpha_for_urn(alpha, urn_orangered=True):
+
+    if urn_orangered:
         if alpha > 1.07:
             return 'red', 0.9
         elif alpha > 0.53:

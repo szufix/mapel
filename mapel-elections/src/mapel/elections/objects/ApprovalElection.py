@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from abc import ABC
 
 from matplotlib import pyplot as plt
 from mapel.elections.cultures_ import generate_approval_votes
@@ -10,7 +11,7 @@ import mapel.elections.persistence.election_exports as exports
 from mapel.elections.cultures.params import *
 
 
-class ApprovalElection(Election):
+class ApprovalElection(Election, ABC):
 
     def __init__(self,
                  experiment_id,
@@ -60,10 +61,10 @@ class ApprovalElection(Election):
 
         if culture_id is not None:
             self.params, self.printing_params = update_params_approval(self.params,
-                                                                                   self.printing_params,
-                                                                                   self.variable,
-                                                                                   self.culture_id,
-                                                                                   self.num_candidates)
+                                                                       self.printing_params,
+                                                                       self.variable,
+                                                                       self.culture_id,
+                                                                       self.num_candidates)
 
     def votes_to_approvalwise_vector(self) -> None:
         """ Convert votes to approvalwise vectors """
@@ -205,7 +206,7 @@ class ApprovalElection(Election):
         self.distances['candidate'] = distances
 
         if self.is_exported:
-            self.export_distances(object_type='candidate')
+            exports.export_distances(self, object_type='candidate')
 
     def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
                   object_type=None, double_gradient=False, saveas=None, color='blue',
@@ -223,7 +224,6 @@ class ApprovalElection(Election):
             object_type = self.object_type
 
         plt.figure(figsize=(6.4, 6.4))
-        # = plt.subplots()
 
         X = []
         Y = []

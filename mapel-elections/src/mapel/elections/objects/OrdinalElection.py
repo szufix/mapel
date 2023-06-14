@@ -1,3 +1,5 @@
+import logging
+
 from matplotlib import pyplot as plt
 
 import csv
@@ -31,7 +33,6 @@ class OrdinalElection(Election):
                  with_matrix=False,
                  params=None,
                  label=None,
-                 ballot_type: str = 'ordinal',
                  num_voters: int = None,
                  num_candidates: int = None,
                  is_imported: bool = False,
@@ -44,7 +45,6 @@ class OrdinalElection(Election):
                          election_id,
                          culture_id=culture_id,
                          votes=votes,
-                         ballot_type=ballot_type,
                          label=label,
                          num_voters=num_voters,
                          num_candidates=num_candidates,
@@ -198,8 +198,11 @@ class OrdinalElection(Election):
             if self.culture_id in {'identity', 'uniformity', 'antagonism', 'stratification'}:
                 matrix = get_fake_matrix_single(self.culture_id, self.num_candidates)
             elif self.culture_id in PATHS:
-                matrix = get_fake_convex(self.culture_id, self.num_candidates, self.num_voters,
-                                         self.fake_param, get_fake_matrix_single)
+                matrix = get_fake_convex(self.culture_id,
+                                         self.num_candidates,
+                                         self.num_voters,
+                                         self.fake_param,
+                                         get_fake_matrix_single)
 
         else:
             for v in range(self.num_voters):
@@ -221,8 +224,10 @@ class OrdinalElection(Election):
                 borda_vector = get_fake_borda_vector(self.culture_id, self.num_candidates,
                                                      self.num_voters)
             elif self.culture_id in PATHS:
-                borda_vector = get_fake_convex(self.culture_id, self.num_candidates,
-                                               self.num_voters, self.params,
+                borda_vector = get_fake_convex(self.culture_id,
+                                               self.num_candidates,
+                                               self.num_voters,
+                                               self.params,
                                                get_fake_borda_vector)
         else:
             c = self.num_candidates
@@ -354,6 +359,8 @@ class OrdinalElection(Election):
                         for pote in self.potes:
                             dist += abs(pote[c1] - pote[c2])
                         distances[c1][c2] = dist
+        else:
+            logging.warning('incorrect object_type')
         self.distances[object_type] = distances
 
         if self.is_exported:

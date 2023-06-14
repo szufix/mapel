@@ -7,7 +7,6 @@ from mapel.core.objects.Family import Family
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.core.utils import *
-import mapel.elections.cultures.mallows as mallows
 from mapel.elections.cultures.params import *
 
 
@@ -16,23 +15,22 @@ class ElectionFamily(Family):
 
     def __init__(self,
                  culture_id: str = None,
-                 family_id='none',
+                 family_id: str = 'none',
                  params: dict = None,
                  size: int = 1,
                  label: str = None,
                  color: str = "black",
                  alpha: float = 1.,
                  ms: int = 20,
-                 show=True,
-                 marker='o',
+                 show: bool = True,
+                 marker: str = 'o',
                  starting_from: int = 0,
                  path: dict = None,
                  single: bool = False,
 
-                 num_candidates=None,
-                 num_voters=None,
+                 num_candidates: int = None,
+                 num_voters: int = None,
                  election_ids=None,
-                 instance_type: str = 'ordinal',
                  **kwargs):
 
         super().__init__(culture_id=culture_id,
@@ -53,7 +51,6 @@ class ElectionFamily(Family):
 
         self.num_candidates = num_candidates
         self.num_voters = num_voters
-        self.instance_type = instance_type
 
     def __getattr__(self, attr):
         if attr == 'election_ids':
@@ -86,25 +83,16 @@ class ElectionFamily(Family):
                         params = {}
                     params = {**params, **new_params}
 
-                # if params is not None and 'normphi' in params:
-                #     params['phi'] = mallows.phi_from_relphi(
-                #         experiment.num_candidates, relphi=params['normphi'])
-
-                # if experiment.culture_id in {'all_votes'}:
-                #     params['iter_id'] = j
-
-                # if experiment.culture_id in {'crate'}:
-                #     new_params = get_params_for_crate(j)
-                #     params = {**params, **new_params}
-
                 election_id = get_instance_id(self.single, self.family_id, j)
 
-                election = OrdinalElection(experiment_id, election_id, culture_id=self.culture_id,
-                                           num_voters=self.num_voters, label=self.label,
+                election = OrdinalElection(experiment_id, election_id,
+                                           culture_id=self.culture_id,
+                                           num_voters=self.num_voters,
+                                           label=self.label,
                                            num_candidates=self.num_candidates,
-                                           params=copy.deepcopy(params), ballot_type=self.instance_type,
-                                           variable=variable, is_imported=False,
-                                           # printing_params=printing_params,
+                                           params=copy.deepcopy(params),
+                                           variable=variable,
+                                           is_imported=False,
                                            )
 
                 election.prepare_instance(is_exported=is_exported, is_aggregated=is_aggregated)

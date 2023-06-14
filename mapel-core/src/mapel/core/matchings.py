@@ -47,7 +47,6 @@ def _generate_lp_file_matching_matrix(matrix_1, matrix_2, length, inner_distance
     types = [cp.variables.type.binary] * len(names)
     cp.variables.add(obj=obj, names=names, types=types)
 
-
     # ADD MISSING VARIABLES
     names = []
     for i in range(length):
@@ -55,7 +54,6 @@ def _generate_lp_file_matching_matrix(matrix_1, matrix_2, length, inner_distance
             names.append(f'Mi{i}j{j}')
     cp.variables.add(names=list(names),
                      types=[cp.variables.type.binary] * len(names))
-
 
     # FIRST GROUP OF CONSTRAINTS
     lin_expr = []

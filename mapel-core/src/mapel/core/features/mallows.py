@@ -3,7 +3,7 @@ import logging
 import numpy as np
 
 
-def generate_mallows_votes(num_voters, num_candidates, phi=None, weight=0, **kwargs):
+def generate_mallows_votes(num_voters, num_candidates, phi=0.5, weight=0, **kwargs):
     if phi is None:
         logging.warning('phi is not defined')
     insertion_probabilites_list = []
@@ -47,10 +47,6 @@ def mallowsVote(m, insertion_probabilites_list):
     return vote
 
 
-def phi_from_normphi(num_candidates=10, normphi=None):
-    return phi_from_relphi(num_candidates, relphi=normphi)
-
-
 
 # Given the number m of candidates and a phi\in [0,1] function computes the expected number of swaps
 # in a vote sampled from Mallows culture_id
@@ -64,17 +60,17 @@ def calculateExpectedNumberSwaps(num_candidates, phi):
 # Given the number m of candidates and a absolute number of expected swaps exp_abs, this function
 # returns a value of phi such that in a vote sampled from Mallows culture_id with this parameter
 # the expected number of swaps is exp_abs
-def phi_from_relphi(num_candidates, relphi=None):
-    if relphi is None:
+def phi_from_normphi(num_candidates=10, normphi=None):
+    if normphi is None:
         logging.warning('normphi is not defined')
         return -1
-    if relphi == 1:
+    if normphi == 1:
         return 1
-    if relphi > 2 or relphi < 0:
+    if normphi > 2 or normphi < 0:
         logging.warning("Incorrect normphi value")
-    if relphi > 1:
-        return 2-relphi
-    exp_abs = relphi * (num_candidates * (num_candidates - 1)) / 4
+    if normphi > 1:
+        return 2 - normphi
+    exp_abs = normphi * (num_candidates * (num_candidates - 1)) / 4
     low = 0
     high = 1
     while low <= high:

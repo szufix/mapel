@@ -88,7 +88,7 @@ def generate_roommates_norm_mallows_votes(num_agents: int = None,
                                           weight: float = 0,
                                           **kwargs):
 
-    phi = ml.phi_from_relphi(num_agents, relphi=normphi)
+    phi = ml.phi_from_normphi(num_agents, normphi=normphi)
 
     votes = generate_mallows_votes(num_agents, num_agents, phi=phi, weight=weight)
 

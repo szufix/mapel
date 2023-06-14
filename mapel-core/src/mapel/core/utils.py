@@ -1,6 +1,5 @@
 import os
 
-
 def make_folder_if_do_not_exist(path):
     is_exist = os.path.exists(path)
     if not is_exist:

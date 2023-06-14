@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from abc import ABC
 
 from mapel.core.matchings import solve_matching_vectors
 from mapel.elections.objects.ElectionExperiment import ElectionExperiment
@@ -27,7 +28,7 @@ except ImportError as error:
     print(error)
 
 
-class ApprovalElectionExperiment(ElectionExperiment):
+class ApprovalElectionExperiment(ElectionExperiment, ABC):
     """ Abstract set of approval elections."""
 
     def __init__(self, **kwargs):

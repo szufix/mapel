@@ -2,7 +2,7 @@ import numpy as np
 
 from mapel.elections.cultures.impartial import generate_ordinal_ic_votes
 from mapel.elections.cultures.urn import generate_urn_votes
-from mapel.core.features.mallows import generate_mallows_votes, phi_from_relphi
+from mapel.core.features.mallows import generate_mallows_votes, phi_from_normphi
 
 
 def generate_ordinal_alliance_ic_votes(num_voters: int = None,
@@ -31,7 +31,7 @@ def generate_ordinal_alliance_urn_votes(num_voters: int = None,
 def generate_ordinal_alliance_norm_mallows_votes(num_voters: int = None,
                                         num_candidates: int = None,
                                         params: dict = None):
-    params['phi'] = phi_from_relphi(num_candidates, params['normphi'])
+    params['phi'] = phi_from_normphi(num_candidates, params['normphi'])
     votes = generate_mallows_votes(num_voters, num_candidates, params)
 
     alliances = np.random.choice([i for i in range(params['num_alliances'])],

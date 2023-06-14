@@ -108,7 +108,7 @@ def export_approval_election(election, is_aggregated=True):
                              election.num_voters,
                              election.params,
                              path_to_file,
-                             election.ballot_type,
+                             ballot_type='approval',
                              votes=election.votes,
                              is_aggregated=is_aggregated)
 
@@ -127,9 +127,16 @@ def export_ordinal_election(election, is_aggregated=True):
         file_.write(str(election.num_voters) + '\n')
         file_.close()
     else:
-        export_votes_to_file(election, election.culture_id, election.num_candidates, election.num_voters,
-                             election.params, path_to_file, election.ballot_type, votes=election.votes,
-                             is_aggregated=is_aggregated, alliances=election.alliances)
+        export_votes_to_file(election,
+                             election.culture_id,
+                             election.num_candidates,
+                             election.num_voters,
+                             election.params,
+                             path_to_file,
+                             ballot_type='ordinal',
+                             votes=election.votes,
+                             is_aggregated=is_aggregated,
+                             alliances=election.alliances)
 
 
 def export_distances(experiment, object_type='vote'):
@@ -163,3 +170,4 @@ def export_coordinates(experiment, object_type='vote'):
             x = str(experiment.coordinates[object_type][vote_id][0])
             y = str(experiment.coordinates[object_type][vote_id][1])
             writer.writerow([vote_id, x, y])
+

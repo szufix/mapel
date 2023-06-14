@@ -18,13 +18,12 @@ def generate_norm_mallows_mixture_votes(num_voters, num_candidates, params):
     params_1 = {'weight': 0, 'phi': phi_1}
     votes_1 = generate_mallows_votes(num_voters, num_candidates, params_1)
 
-
     phi_2 = ml.phi_from_normphi(num_candidates, float(params['normphi_2']))
     params_2 = {'weight': 1, 'phi': phi_2}
     votes_2 = generate_mallows_votes(num_voters, num_candidates, params_2)
 
     votes = []
-    size_1 = int((1-float(params['weight']))*num_voters)
+    size_1 = int((1 - float(params['weight'])) * num_voters)
     for i in range(size_1):
         votes.append(votes_1[i])
     for i in range(size_1, num_voters):
@@ -61,7 +60,7 @@ def calculateZ(m, phi):
 def mallowsMatrix(num_candidates, lphi, pos, normalize=True):
     mat = np.zeros([num_candidates, num_candidates])
     if normalize:
-        phi = ml.phi_from_relphi(num_candidates, lphi)
+        phi = ml.phi_from_normphi(num_candidates, lphi)
     else:
         phi = lphi
     Z = calculateZ(num_candidates, phi)
@@ -87,7 +86,8 @@ def get_mallows_matrix(num_candidates, params, normalize=True):
         lphi_2 = params['sec_normphi']
 
     try:
-        path = os.path.join(os.getcwd(), 'mapel', 'elections', 'cultures', 'mallows_positionmatrices',
+        path = os.path.join(os.getcwd(), 'mapel', 'elections', 'cultures',
+                            'mallows_positionmatrices',
                             str(num_candidates) + "_matrix.txt")
         with open(path, "r") as file:
             pos = pickle.load(file)
@@ -98,7 +98,7 @@ def get_mallows_matrix(num_candidates, params, normalize=True):
     res = np.zeros([num_candidates, num_candidates])
     for i in range(num_candidates):
         for j in range(num_candidates):
-            res[i][j] = (1.-weight) * mat1[i][j] + (weight) * mat2[i][num_candidates - 1 - j]
+            res[i][j] = (1. - weight) * mat1[i][j] + (weight) * mat2[i][num_candidates - 1 - j]
     return res
 
 
@@ -106,16 +106,18 @@ def get_mallows_vectors(num_candidates, fake_param):
     return get_mallows_matrix(num_candidates, fake_param).transpose()
 
 
-def generate_mallows_party(num_voters=None, num_candidates=None,
-                           election_model=None, params=None):
+def generate_mallows_party(num_voters=None,
+                           num_candidates=None,
+                           election_model=None,
+                           params=None):
     num_parties = params['num_parties']
     num_winners = params['num_winners']
     party_size = num_winners
 
-    params['phi'] = ml.phi_from_relphi(num_parties, relphi=params['main-phi'])
+    params['phi'] = ml.phi_from_normphi(num_parties, normphi=params['main-phi'])
     mapping = generate_mallows_votes(num_voters, num_parties, params)[0]
 
-    params['phi'] = ml.phi_from_relphi(num_parties, relphi=params['normphi'])
+    params['phi'] = ml.phi_from_normphi(num_parties, normphi=params['normphi'])
     votes = generate_mallows_votes(num_voters, num_parties, params)
 
     for i in range(num_voters):
@@ -133,34 +135,15 @@ def generate_mallows_party(num_voters=None, num_candidates=None,
     return new_votes
 
 
-
-
-
-# def generate_approval_hamming_noise_model_votes(num_voters=None, num_candidates=None, params=None):
-#     k = int(params['p'] * num_candidates)
-#     central_vote = {i for i in range(k)}
-#
-#     votes = [set() for _ in range(num_voters)]
-#     for v in range(num_voters):
-#         vote = set()
-#         for c in range(num_candidates):
-#             if c in central_vote:
-#                 if np.random.random() <= 1 - params['phi']:
-#                     vote.add(c)
-#             else:
-#                 if np.random.random() < params['phi']:
-#                     vote.add(c)
-#         votes[v] = vote
-#
-#     return votes
-
-def generate_approval_truncated_mallows_votes(num_voters=None, num_candidates=None, max_range=1,
-                                              normphi=None, weight=None):
-
-    phi = ml.phi_from_relphi(num_candidates, relphi=normphi)
+def generate_approval_truncated_mallows_votes(num_voters=None,
+                                              num_candidates=None,
+                                              max_range=1,
+                                              normphi=None,
+                                              weight=None,
+                                              **kwargs):
+    phi = ml.phi_from_normphi(num_candidates, normphi=normphi)
 
     ordinal_votes = generate_mallows_votes(num_voters, num_candidates, phi=phi, weight=weight)
-
 
     votes = []
     k = np.random.randint(low=1., high=int(max_range * num_candidates))
@@ -171,25 +154,7 @@ def generate_approval_truncated_mallows_votes(num_voters=None, num_candidates=No
 
 
 def runif_in_simplex(n):
-  ''' Return uniformly random vector in the n-simplex '''
+    ''' Return uniformly random vector in the n-simplex '''
 
-  k = np.random.exponential(scale=1.0, size=n)
-  return k / sum(k)
-
-
-
-def generate_norm_mallows_with_walls_votes(num_voters, num_candidates, params):
-    votes = []
-    upper_half_size = int(num_candidates*params['p'])
-    if upper_half_size == 0 or upper_half_size == num_candidates:
-        return np.array(generate_mallows_votes(num_voters, num_candidates, params))
-
-    lower_half_size = num_candidates - upper_half_size
-    upper_half_votes = np.array(generate_mallows_votes(num_voters, upper_half_size, params))
-    lower_half_votes = np.array(generate_mallows_votes(num_voters, lower_half_size, params)) \
-                       + upper_half_size
-    for i in range(num_voters):
-        v = np.concatenate([upper_half_votes[i], lower_half_votes[i]])
-        votes.append(v)
-    return votes
-
+    k = np.random.exponential(scale=1.0, size=n)
+    return k / sum(k)

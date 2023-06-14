@@ -12,7 +12,7 @@ def generate_norm_mallows_votes(num_agents=None,
                                 weight=0.,
                                 **kwargs):
 
-    phi = ml.phi_from_relphi(num_agents, relphi=normphi)
+    phi = ml.phi_from_normphi(num_agents, normphi=normphi)
 
     return generate_mallows_votes(num_agents, num_agents, phi)
 

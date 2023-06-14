@@ -19,6 +19,8 @@ import mapel.core.printing as pr
 from mapel.core.utils import *
 from mapel.core.glossary import *
 
+import mapel.core.persistence.experiment_exports as exports
+
 try:
     from sklearn.manifold import MDS
     from sklearn.manifold import TSNE
@@ -58,9 +60,9 @@ class ElectionExperiment(Experiment):
     def add_culture(self, name, function):
         pass
 
-    def __init__(self, shift=False, **kwargs):
+    def __init__(self, is_shifted=False, **kwargs):
         super().__init__(**kwargs)
-        self.shift = shift
+        self.is_shifted = is_shifted
         self.default_num_candidates = 10
         self.default_num_voters = 100
         self.default_committee_size = 1
@@ -380,43 +382,32 @@ class ElectionExperiment(Experiment):
 
             distances = {instance_id: {} for instance_id in self.instances}
             times = {instance_id: {} for instance_id in self.instances}
+
             for t in range(num_processes):
 
                 file_name = f'{distance_id}_p{t}.csv'
-                path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances",
+                path = os.path.join(os.getcwd(),
+                                    "experiments",
+                                    self.experiment_id,
+                                    "distances",
                                     file_name)
 
                 with open(path, 'r', newline='') as csv_file:
                     reader = csv.DictReader(csv_file, delimiter=';')
 
                     for row in reader:
-                        distances[row['instance_id_1']][row['instance_id_2']] = float(
-                            row['distance'])
-                        times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
+                        distances[row['instance_id_1']][row['instance_id_2']] = \
+                            float(row['distance'])
+                        times[row['instance_id_1']][row['instance_id_2']] = \
+                            float(row['time'])
 
         if self.is_exported:
-            self._store_distances_to_file(distance_id, distances, times, self_distances)
+            exports.export_distances_to_file(self, distance_id, distances, times, self_distances)
 
         self.distances = distances
         self.times = times
         self.matchings = matchings
 
-    def _store_distances_to_file(self, distance_id, distances, times, self_distances):
-
-        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "distances")
-        make_folder_if_do_not_exist(path_to_folder)
-        path = os.path.join(path_to_folder, f'{distance_id}.csv')
-
-        with open(path, 'w', newline='') as csv_file:
-            writer = csv.writer(csv_file, delimiter=';')
-            writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
-
-            for i, election_1 in enumerate(self.elections):
-                for j, election_2 in enumerate(self.elections):
-                    if i < j or (i == j and self_distances):
-                        distance = str(distances[election_1][election_2])
-                        time_ = str(times[election_1][election_2])
-                        writer.writerow([election_1, election_2, distance, time_])
 
     def get_election_id_from_model_name(self, culture_id: str) -> str:
         for family_id in self.families:
@@ -506,8 +497,7 @@ class ElectionExperiment(Experiment):
                                                      num_candidates=num_candidates,
                                                      num_voters=num_voters,
                                                      path=path,
-                                                     single=single,
-                                                     instance_type=self.instance_type)
+                                                     single=single)
                 starting_from += size
 
                 all_num_candidates.append(num_candidates)
@@ -522,7 +512,11 @@ class ElectionExperiment(Experiment):
 
         return families
 
-    def compute_feature(self, feature_id: str = None, feature_params=None, **kwargs) -> dict:
+    def compute_feature(self,
+                        feature_id: str = None,
+                        feature_params=None,
+                        overwrite=False,
+                        **kwargs) -> dict:
 
         if feature_params is None:
             feature_params = {}
@@ -551,7 +545,7 @@ class ElectionExperiment(Experiment):
 
             values = feature(self, election_ids=list(self.instances), **kwargs)
 
-            for instance_id in tqdm(self.instances):
+            for instance_id in tqdm(self.instances, desc='Computing feature'):
                 feature_dict['value'][instance_id] = values[instance_id]
                 if values[instance_id] is None:
                     feature_dict['time'][instance_id] = None
@@ -561,7 +555,7 @@ class ElectionExperiment(Experiment):
         else:
             feature = features.get_local_feature(feature_id)
 
-            for instance_id in tqdm(self.instances):
+            for instance_id in tqdm(self.instances, desc='Computing feature'):
                 instance = self.elections[instance_id]
 
                 start = time.time()
@@ -578,10 +572,13 @@ class ElectionExperiment(Experiment):
                         value = feature(self, instance_id)
                     elif feature_id in ['ejr', 'core', 'pareto', 'priceability',
                                         'cohesiveness']:
-                        value = instance.get_feature(feature_id, feature_long_id,
-                                                     feature_params=feature_params)
+                        value = instance.get_feature(feature_id,
+                                                     feature_long_id,
+                                                     feature_params=feature_params,
+                                                     overwrite=overwrite)
                     else:
-                        value = instance.get_feature(feature_id, feature_long_id, **kwargs)
+                        value = instance.get_feature(feature_id, feature_long_id, **kwargs,
+                                                     overwrite=overwrite)
 
                 total_time = time.time() - start
                 total_time /= num_iterations
@@ -608,50 +605,13 @@ class ElectionExperiment(Experiment):
                         feature_dict['time'][instance_id] = total_time
 
         if self.is_exported:
-            self._store_election_feature(feature_id, feature_long_id, feature_dict)
+            exports.export_election_feature_to_file(self, feature_id, feature_long_id, feature_dict)
 
         self.features[feature_long_id] = feature_dict
         return feature_dict
 
-    def _store_election_feature(self, feature_id, feature_long_id, feature_dict):
-
-        path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id, "features")
-        make_folder_if_do_not_exist(path_to_folder)
-
-        if feature_id in EMBEDDING_RELATED_FEATURE:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "features", f'{feature_id}_{self.embedding_id}.csv')
-        else:
-            path = os.path.join(os.getcwd(), "experiments", self.experiment_id,
-                                "features", f'{feature_long_id}.csv')
-
-        with open(path, 'w', newline='') as csv_file:
-            writer = csv.writer(csv_file, delimiter=';')
-            if feature_id == 'ejr':
-                writer.writerow(["instance_id", "ejr", "pjr", "jr", "pareto", "time"])
-                for key in feature_dict['ejr']:
-                    writer.writerow([key, feature_dict['ejr'][key],
-                                     feature_dict['pjr'][key],
-                                     feature_dict['jr'][key],
-                                     feature_dict['pareto'][key],
-                                     feature_dict['time'][key]])
-            elif feature_id in {'partylist'}:
-                writer.writerow(["instance_id", "value", "bound", "num_large_parties"])
-                for key in feature_dict:
-                    writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
-                                     feature_dict[key][2]])
-            elif feature_id in FEATURES_WITH_DISSAT:
-                writer.writerow(["instance_id", "value", 'time', 'dissat'])
-                for key in feature_dict['value']:
-                    writer.writerow(
-                        [key, feature_dict['value'][key], feature_dict['time'][key],
-                         feature_dict['dissat'][key]])
-            else:
-                writer.writerow(["instance_id", "value", "time"])
-                for key in feature_dict['value']:
-                    writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
-
-    def compute_rules(self, list_of_rules, committee_size: int = 10,
+    def compute_rules(self, list_of_rules,
+                      committee_size: int = 10,
                       resolute: bool = False) -> None:
         for rule_name in list_of_rules:
             print('Computing', rule_name)
@@ -662,7 +622,7 @@ class ElectionExperiment(Experiment):
                 rules.compute_abcvoting_rule(experiment=self, rule_name=rule_name,
                                              committee_size=committee_size, resolute=resolute)
 
-    def import_committees(self, list_of_rules) -> None:
+    def import_committees(self, list_of_rules):
         for rule_name in list_of_rules:
             self.all_winning_committees[rule_name] = rules.import_committees_from_file(
                 experiment_id=self.experiment_id, rule_name=rule_name)
