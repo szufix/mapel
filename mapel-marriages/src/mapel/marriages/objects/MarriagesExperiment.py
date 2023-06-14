@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import ast
-import copy
 import csv
 import itertools
 import os
@@ -10,11 +9,10 @@ from time import sleep
 from mapel.core.objects.Experiment import Experiment
 from mapel.marriages.objects.MarriagesFamily import MarriagesFamily
 from mapel.marriages.objects.Marriages import Marriages
-import mapel.marriages.models_main as models_main
-import mapel.marriages.metrics_main as metr
+import mapel.marriages.distances as metr
 import mapel.marriages.features.basic_features as basic
-import mapel.marriages.features_main as features
-from mapel.core.printing import get_values_from_csv_file
+import mapel.marriages.features as features
+from mapel.core.persistence.experiment_imports import get_values_from_csv_file
 from mapel.core.utils import make_folder_if_do_not_exist
 try:
     from sklearn.manifold import MDS

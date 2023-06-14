@@ -1,7 +1,7 @@
 from random import *
 
 import numpy as np
-from mapel.elections.cultures.mallows import phi_from_relphi, mallows_votes
+from mapel.core.features.mallows import phi_from_relphi, mallows_votes
 from scipy.special import binom
 
 

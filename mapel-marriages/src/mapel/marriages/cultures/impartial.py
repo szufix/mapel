@@ -1,17 +1,17 @@
 import numpy as np
 
 
-def generate_ic_votes(num_agents: int = None, params=None):
+def generate_ic_votes(num_agents: int = None, **kwargs):
 
     return [list(np.random.permutation(num_agents)) for _ in range(num_agents)]
 
 
-def generate_id_votes(num_agents: int = None, params=None):
+def generate_id_votes(num_agents: int = None, **kwargs):
 
     return [list(range(num_agents)) for _ in range(num_agents)]
 
 
-def generate_asymmetric_votes(num_agents: int = None, params=None):
+def generate_asymmetric_votes(num_agents: int = None, **kwargs):
     votes = [list(range(num_agents)) for _ in range(num_agents)]
     votes_left = [rotate(vote, shift+1) for shift, vote in enumerate(votes)]
     votes = [list(range(num_agents)) for _ in range(num_agents)]
@@ -19,13 +19,10 @@ def generate_asymmetric_votes(num_agents: int = None, params=None):
     return [votes_left, votes_right]
 
 
-def generate_group_ic_votes(num_agents: int = None, params: dict = None):
+def generate_group_ic_votes(num_agents: int = None, proportion: int = 0.5, **kwargs):
     """ Impartial Culture with two groups """
 
-    if 'proportion' not in params:
-        params['proportion'] = 0.5
-
-    size_1 = int(params['proportion'] * num_agents)
+    size_1 = int(proportion * num_agents)
     size_2 = int(num_agents - size_1)
 
     votes_1 = [list(np.random.permutation(size_1)) +
@@ -40,24 +37,8 @@ def generate_group_ic_votes(num_agents: int = None, params: dict = None):
 
     return votes
 
-# def generate_ic__id_votes(num_agents: int = None, params=None):
-#
-#     votes_1 = [list(np.random.permutation(num_agents)) for _ in range(num_agents)]
-#     votes_2 = [list(range(num_agents)) for _ in range(num_agents)]
-#
-#     return [votes_1, votes_2]
-#
-#
-# def generate_asymmetric__id_votes(num_agents: int = None, params=None):
-#     votes = [list(range(num_agents)) for _ in range(num_agents)]
-#
-#     votes_1 = [rotate(vote, is_shifted) for is_shifted, vote in enumerate(votes)]
-#     votes_2 = [list(range(num_agents)) for _ in range(num_agents)]
-#
-#     return [votes_1, votes_2]
 
-
-def generate_symmetric_votes(num_agents: int = None, params=None):
+def generate_symmetric_votes(num_agents: int = None, **kwargs):
 
     num_rounds = num_agents - 1
 

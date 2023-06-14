@@ -1,7 +1,8 @@
+
 import os
-
-
 import ast
+
+from mapel.core.glossary import NICE_NAME
 
 
 def import_real_instance(self, shift=False):

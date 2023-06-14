@@ -11,6 +11,7 @@
     </content>
     <content url="file://$MODULE_DIR$/mapel-marriages">
       <sourceFolder url="file://$MODULE_DIR$/mapel-marriages/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/mapel-marriages/tests" isTestSource="true" />
     </content>
     <content url="file://$MODULE_DIR$/mapel-roommates">
       <sourceFolder url="file://$MODULE_DIR$/mapel-roommates/src" isTestSource="false" />

@@ -330,7 +330,9 @@ class RoommatesExperiment(Experiment):
                     usable_matching = self.matchings[instance_id]
                     writer.writerow([instance_id, usable_matching])
 
-    def compute_feature(self, feature_id: str = None, feature_params=None, printing=False) -> dict:
+    def compute_feature(self,
+                        feature_id: str = None,
+                        feature_params=None) -> dict:
 
         if feature_params is None:
             feature_params = {}
@@ -376,9 +378,6 @@ class RoommatesExperiment(Experiment):
 
             else:
                 for instance_id in self.instances:
-                    if printing:
-                        print(instance_id)
-                    feature = features.get_local_feature(feature_id)
                     feature = features.get_local_feature(feature_id)
                     instance = self.instances[instance_id]
 

@@ -88,12 +88,12 @@ class ElectionFamily(Family):
 
                 # if params is not None and 'normphi' in params:
                 #     params['phi'] = mallows.phi_from_relphi(
-                #         self.num_candidates, relphi=params['normphi'])
+                #         experiment.num_candidates, relphi=params['normphi'])
 
-                # if self.culture_id in {'all_votes'}:
+                # if experiment.culture_id in {'all_votes'}:
                 #     params['iter_id'] = j
 
-                # if self.culture_id in {'crate'}:
+                # if experiment.culture_id in {'crate'}:
                 #     new_params = get_params_for_crate(j)
                 #     params = {**params, **new_params}
 

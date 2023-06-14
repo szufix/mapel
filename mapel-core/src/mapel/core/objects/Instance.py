@@ -10,5 +10,6 @@ class Instance:
         self.experiment_id = experiment_id
         self.instance_id = instance_id
         self.culture_id = culture_id
+        self.features = {}
         self.printing_params = {}
         self.is_correct = True

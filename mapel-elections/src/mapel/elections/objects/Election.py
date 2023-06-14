@@ -247,19 +247,19 @@ class Election(Instance):
         else:
             plt.clf()
 
-    # def online_mini_map(self):
+    # def online_mini_map(experiment):
     #
-    #     self.compute_potes()
+    #     experiment.compute_potes()
     #
-    #     distances = np.zeros([len(self.potes), len(self.potes)])
-    #     for v1 in range(len(self.potes)):
-    #         for v2 in range(len(self.potes)):
+    #     distances = np.zeros([len(experiment.potes), len(experiment.potes)])
+    #     for v1 in range(len(experiment.potes)):
+    #         for v2 in range(len(experiment.potes)):
     #             swap_distance = 0
-    #             for i, j in itertools.combinations(self.potes[0], 2):
-    #                 if (self.potes[v1][i] > self.potes[v1][j] and
-    #                     self.potes[v2][i] < self.potes[v2][j]) or \
-    #                         (self.potes[v1][i] < self.potes[v1][j] and
-    #                          self.potes[v2][i] > self.potes[v2][j]):
+    #             for i, j in itertools.combinations(experiment.potes[0], 2):
+    #                 if (experiment.potes[v1][i] > experiment.potes[v1][j] and
+    #                     experiment.potes[v2][i] < experiment.potes[v2][j]) or \
+    #                         (experiment.potes[v1][i] < experiment.potes[v1][j] and
+    #                          experiment.potes[v2][i] > experiment.potes[v2][j]):
     #                     swap_distance += 1
     #             distances[v1][v2] = swap_distance
     #
@@ -275,10 +275,10 @@ class Election(Instance):
     #     plt.scatter(X, Y, color='blue', s=12, alpha=0.3)
     #     plt.xlim([-100, 100])
     #     plt.ylim([-100, 100])
-    #     plt.title(self.label, size=26)
+    #     plt.title(experiment.label, size=26)
     #     plt.axis('off')
     #
-    #     file_name = os.path.join(os.getcwd(), "images", "mini_maps", f'{self.label}.png')
+    #     file_name = os.path.join(os.getcwd(), "images", "mini_maps", f'{experiment.label}.png')
     #     plt.savefig(file_name, bbox_inches='tight', dpi=250)
     #     # plt.clf()
     #     # plt.savefig(file_name, bbox_inches=bbox_inches, dpi=250)

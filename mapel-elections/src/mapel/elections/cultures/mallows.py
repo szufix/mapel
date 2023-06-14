@@ -6,104 +6,20 @@ import random
 import numpy as np
 import logging
 
-
-# Given the number m of candidates and a phi\in [0,1] function computes the expected number of swaps
-# in a vote sampled from Mallows culture_id
-def calculateExpectedNumberSwaps(num_candidates, phi):
-    res = phi * num_candidates / (1 - phi)
-    for j in range(1, num_candidates + 1):
-        res = res + (j * (phi ** j)) / ((phi ** j) - 1)
-    return res
+import mapel.core.features.mallows as ml
 
 
-# Given the number m of candidates and a absolute number of expected swaps exp_abs, this function
-# returns a value of phi such that in a vote sampled from Mallows culture_id with this parameter
-# the expected number of swaps is exp_abs
-def phi_from_relphi(num_candidates, relphi=None):
-    if relphi is None:
-        logging.warning('normphi is not defined')
-        return -1
-    if relphi == 1:
-        return 1
-    if relphi > 2 or relphi < 0:
-        logging.warning("Incorrect normphi value")
-    if relphi > 1:
-        return 2-relphi
-    exp_abs = relphi * (num_candidates * (num_candidates - 1)) / 4
-    low = 0
-    high = 1
-    while low <= high:
-        mid = (high + low) / 2
-        cur = calculateExpectedNumberSwaps(num_candidates, mid)
-        if abs(cur - exp_abs) < 1e-5:
-            return mid
-        # If x is greater, ignore left half
-        if cur < exp_abs:
-            low = mid
-
-        # If x is smaller, ignore right half
-        elif cur > exp_abs:
-            high = mid
-
-    # If we reach here, then the element was not present
-    return -1
-
-
-def phi_from_normphi(num_candidates=10, normphi=None):
-    return phi_from_relphi(num_candidates, relphi=normphi)
-
-def computeInsertionProbas(i, phi):
-    probas = (i + 1) * [0]
-    for j in range(i + 1):
-        probas[j] = pow(phi, (i + 1) - (j + 1))
-    return probas
-
-
-def weighted_choice(choices):
-    total = 0
-    for w in choices:
-        total = total + w
-    r = np.random.uniform(0, total)
-    upto = 0.0
-    for i, w in enumerate(choices):
-        if upto + w >= r:
-            return i
-        upto = upto + w
-    assert False, "Shouldn't get here"
-
-
-def mallowsVote(m, insertion_probabilites_list):
-    vote = [0]
-    for i in range(1, m):
-        index = weighted_choice(insertion_probabilites_list[i - 1])
-        vote.insert(index, i)
-    return vote
-
-
-def generate_mallows_votes(num_voters, num_candidates, phi=None, weight=0, **kwargs):
-    if phi is None:
-        logging.warning('phi is not defined')
-    insertion_probabilites_list = []
-    for i in range(1, num_candidates):
-        insertion_probabilites_list.append(computeInsertionProbas(i, phi))
-    V = []
-    for i in range(num_voters):
-        vote = mallowsVote(num_candidates, insertion_probabilites_list)
-        if weight > 0:
-            probability = np.random.random()
-            if probability <= weight:
-                vote.reverse()
-        V += [vote]
-    return V
+def generate_mallows_votes(*args, **kwargs):
+    return ml.generate_mallows_votes(*args, **kwargs)
 
 
 def generate_norm_mallows_mixture_votes(num_voters, num_candidates, params):
-    phi_1 = phi_from_normphi(num_candidates, float(params['normphi_1']))
+    phi_1 = ml.phi_from_normphi(num_candidates, float(params['normphi_1']))
     params_1 = {'weight': 0, 'phi': phi_1}
     votes_1 = generate_mallows_votes(num_voters, num_candidates, params_1)
 
 
-    phi_2 = phi_from_normphi(num_candidates, float(params['normphi_2']))
+    phi_2 = ml.phi_from_normphi(num_candidates, float(params['normphi_2']))
     params_2 = {'weight': 1, 'phi': phi_2}
     votes_2 = generate_mallows_votes(num_voters, num_candidates, params_2)
 
@@ -145,7 +61,7 @@ def calculateZ(m, phi):
 def mallowsMatrix(num_candidates, lphi, pos, normalize=True):
     mat = np.zeros([num_candidates, num_candidates])
     if normalize:
-        phi = phi_from_relphi(num_candidates, lphi)
+        phi = ml.phi_from_relphi(num_candidates, lphi)
     else:
         phi = lphi
     Z = calculateZ(num_candidates, phi)
@@ -196,10 +112,10 @@ def generate_mallows_party(num_voters=None, num_candidates=None,
     num_winners = params['num_winners']
     party_size = num_winners
 
-    params['phi'] = phi_from_relphi(num_parties, relphi=params['main-phi'])
+    params['phi'] = ml.phi_from_relphi(num_parties, relphi=params['main-phi'])
     mapping = generate_mallows_votes(num_voters, num_parties, params)[0]
 
-    params['phi'] = phi_from_relphi(num_parties, relphi=params['normphi'])
+    params['phi'] = ml.phi_from_relphi(num_parties, relphi=params['normphi'])
     votes = generate_mallows_votes(num_voters, num_parties, params)
 
     for i in range(num_voters):
@@ -238,11 +154,10 @@ def generate_mallows_party(num_voters=None, num_candidates=None,
 #
 #     return votes
 
-
 def generate_approval_truncated_mallows_votes(num_voters=None, num_candidates=None, max_range=1,
                                               normphi=None, weight=None):
 
-    phi = phi_from_relphi(num_candidates, relphi=normphi)
+    phi = ml.phi_from_relphi(num_candidates, relphi=normphi)
 
     ordinal_votes = generate_mallows_votes(num_voters, num_candidates, phi=phi, weight=weight)
 
@@ -261,22 +176,6 @@ def runif_in_simplex(n):
   k = np.random.exponential(scale=1.0, size=n)
   return k / sum(k)
 
-
-
-
-def mallows_vote(vote, phi):
-    num_candidates = len(vote)
-    raw_vote = generate_mallows_votes(1, num_candidates, phi)[0]
-    new_vote = [0] * len(vote)
-    for i in range(num_candidates):
-        new_vote[raw_vote[i]] = vote[i]
-    return new_vote
-
-
-def mallows_votes(votes, phi):
-    for i in range(len(votes)):
-        votes[i] = mallows_vote(votes[i], phi)
-    return votes
 
 
 def generate_norm_mallows_with_walls_votes(num_voters, num_candidates, params):

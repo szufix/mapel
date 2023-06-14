@@ -3,7 +3,7 @@ import logging
 
 import numpy as np
 
-from mapel.elections.cultures.mallows import mallows_votes
+from mapel.core.features.mallows import mallows_votes
 
 
 ###########

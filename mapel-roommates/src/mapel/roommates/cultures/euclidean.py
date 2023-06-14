@@ -4,10 +4,6 @@ from numpy import linalg
 from mapel.roommates.cultures._utils import convert
 from mapel.roommates.cultures.mallows import mallows_votes
 
-
-################################################################
-
-
 def get_range(params):
     if params['p_dist'] == 'beta':
         return np.random.beta(params['a'], params['b'])
@@ -169,7 +165,6 @@ def generate_roommates_mallows_euclidean_votes(num_agents: int = None,
 
     return convert(votes)
 
-
 # AUXILIARY
 def random_ball(dimension, num_points=1, radius=1):
     random_directions = np.random.normal(size=(dimension, num_points))
@@ -177,10 +172,7 @@ def random_ball(dimension, num_points=1, radius=1):
     random_radii = np.random.random(num_points) ** (1 / dimension)
     return radius * (random_directions * random_radii).T
 
-
 GEN_CTR = 0
-
-
 def get_rand(model: str, i: int = 0, num_agents: int = 0, cat: str = "voters") -> list:
     """ generate random values"""
     # print(model ==  "1d_uniform")

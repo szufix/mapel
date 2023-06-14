@@ -18,12 +18,12 @@ def compute_retrospective_distance(instance_1, instance_2, inner_distance):
         b, _ = solve_matching_vectors(cost_table_2)
         results.append(a+b)
 
-    return min(results)
+    return min(results), None
 
 
 def compute_positionwise_distance(instance_1, instance_2, inner_distance):
     cost_table = get_matching_cost_positionwise(instance_1, instance_2, inner_distance)
-    return solve_matching_vectors(cost_table)
+    return solve_matching_vectors(cost_table), None
 
 
 def compute_pos_swap_distance(instance_1: Marriages, instance_2: Marriages,

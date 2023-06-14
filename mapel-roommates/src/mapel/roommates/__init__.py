@@ -3,26 +3,31 @@ from .objects.RoommatesExperiment import RoommatesExperiment
 from .objects.Roommates import Roommates
 from . import cultures_ as rom
 from .distances_ import get_distance
-# from mapel.marriages.objects.MarriagesExperiment import MarriagesExperiment
 
 
-def hello():
-    print("Hello!")
+def prepare_online_roommates_experiment(**kwargs):
+    return prepare_roommates_experiment(**kwargs, is_exported=False, is_imported=False)
 
 
-def prepare_experiment(experiment_id=None, instances=None, distances=None, instance_type='ordinal',
-                       coordinates=None, distance_id='emd-positionwise', _import=True,
-                       shift=False, dim=2, store=True, coordinates_names=None,
-                       embedding_id='kamada', fast_import=False):
-    if instance_type == 'roommates':
-        return RoommatesExperiment(experiment_id=experiment_id, _import=_import,
-                                   distance_id=distance_id, instance_type=instance_type,
-                                   embedding_id=embedding_id)
+def prepare_offline_roommates_experiment(**kwargs):
+    return prepare_roommates_experiment(**kwargs, is_exported=True, is_imported=True)
 
 
+def prepare_roommates_experiment(experiment_id=None,
+                                 instance_type=None,
+                                 distance_id=None,
+                                 is_imported=None,
+                                 is_shifted=False,
+                                 is_exported=None,
+                                 embedding_id=None):
 
-# def compute_subelection_by_groups(**kwargs):
-#     metr.compute_subelection_by_groups(**kwargs)
+    return RoommatesExperiment(experiment_id=experiment_id,
+                               is_imported=is_imported,
+                               distance_id=distance_id,
+                               instance_type=instance_type,
+                               embedding_id=embedding_id,
+                               is_shifted=is_shifted,
+                               is_exported=is_exported)
 
 
 def generate_roommates_instance(**kwargs):

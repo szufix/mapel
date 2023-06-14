@@ -16,7 +16,7 @@ from mapel.marriages.objects.Marriages import Marriages
 
 
 def get_distance(election_1: Marriages, election_2: Marriages,
-                 distance_id: str = None) -> float or (float, list):
+                 distance_id: str = None) -> (float, list):
     """ Return: distance between ordinal elections, (if applicable) optimal matching """
     inner_distance, main_distance = extract_distance_id(distance_id)
 

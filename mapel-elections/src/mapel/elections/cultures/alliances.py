@@ -2,7 +2,7 @@ import numpy as np
 
 from mapel.elections.cultures.impartial import generate_ordinal_ic_votes
 from mapel.elections.cultures.urn import generate_urn_votes
-from mapel.elections.cultures.mallows import generate_mallows_votes, phi_from_relphi
+from mapel.core.features.mallows import generate_mallows_votes, phi_from_relphi
 
 
 def generate_ordinal_alliance_ic_votes(num_voters: int = None,

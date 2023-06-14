@@ -1,7 +1,9 @@
 import numpy as np
 
 
-def generate_urn_votes(num_agents: int = None, params=None):
+def generate_urn_votes(num_agents: int = None,
+                       alpha: float = 0,
+                       **kwargs):
 
     votes = np.zeros([num_agents, num_agents], dtype=int)
     urn_size = 1.
@@ -11,7 +13,7 @@ def generate_urn_votes(num_agents: int = None, params=None):
             votes[j] = np.random.permutation(num_agents)
         else:
             votes[j] = votes[np.random.randint(0, j)]
-        urn_size += params['alpha']
+        urn_size += alpha
 
     return votes
 

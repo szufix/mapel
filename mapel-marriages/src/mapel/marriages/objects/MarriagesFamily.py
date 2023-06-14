@@ -93,8 +93,8 @@ class MarriagesFamily(Family):
             else:
                 instance_id = self.family_id + '_' + str(j)
 
-            instance = Marriages(experiment_id, instance_id, _import=False,
-                                 model_id=self.model_id, num_agents=self.num_agents)
+            instance = Marriages(experiment_id, instance_id, is_imported=False,
+                                 culture_id=self.model_id, num_agents=self.num_agents)
 
             instance.prepare_instance(store=store, params=params)
 

@@ -10,7 +10,8 @@ import mapel.marriages.cultures.mallows as mallows
 import mapel.marriages.cultures.urn as urn
 
 
-def generate_votes(model_id: str = None, num_agents: int = None,
+def generate_votes(culture_id: str = None,
+                   num_agents: int = None,
                    params: dict = None) -> Union[list, np.ndarray]:
     independent_models = {
         'ic': impartial.generate_ic_votes,
@@ -31,16 +32,16 @@ def generate_votes(model_id: str = None, num_agents: int = None,
         'fame': euclidean.generate_fame_votes,
     }
 
-    if model_id in independent_models:
-        votes_1 = independent_models.get(model_id)(num_agents=num_agents, params=params)
-        votes_2 = independent_models.get(model_id)(num_agents=num_agents, params=params)
+    if culture_id in independent_models:
+        votes_1 = independent_models.get(culture_id)(num_agents=num_agents, **params)
+        votes_2 = independent_models.get(culture_id)(num_agents=num_agents, **params)
         return [votes_1, votes_2]
 
-    elif model_id in dependent_models:
-        return dependent_models.get(model_id)(num_agents=num_agents, params=params)
+    elif culture_id in dependent_models:
+        return dependent_models.get(culture_id)(num_agents=num_agents, **params)
 
     else:
-        logging.warning(f'No such model id: {model_id}')
+        logging.warning(f'No such culture id: {culture_id}')
         return []
 
 # # # # # # # # # # # # # # # #

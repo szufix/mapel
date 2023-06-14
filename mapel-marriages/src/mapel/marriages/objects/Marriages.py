@@ -1,21 +1,28 @@
-import numpy as np
-import os
-from collections import Counter
-import copy
+
 import ast
 from mapel.core.objects.Instance import Instance
 
-from mapel.marriages.models_main import generate_votes
+from mapel.marriages.cultures_ import *
 from mapel.core.glossary import *
 from mapel.core.utils import *
+
+from mapel.roommates.persistence.instance_imports import import_real_instance
+from mapel.marriages.persistence.instance_exports import export_instance_to_a_file
+
+from mapel.marriages.features_ import get_feature
 
 
 class Marriages(Instance):
 
-    def __init__(self, experiment_id, instance_id, alpha=1, model_id=None, num_agents=None,
-                 _import=True, votes=None):
+    def __init__(self,
+                 experiment_id,
+                 instance_id,
+                 alpha=1,
+                 culture_id=None,
+                 num_agents=None,
+                 is_imported=True, votes=None):
 
-        super().__init__(experiment_id, instance_id, alpha=alpha, model_id=model_id)
+        super().__init__(experiment_id, instance_id, alpha=alpha, culture_id=culture_id)
 
         self.num_agents = num_agents
         self.votes = votes
@@ -23,10 +30,9 @@ class Marriages(Instance):
         self.retrospetive_vectors = None
         self.positionwise_vectors = None
 
-        if _import and experiment_id != 'virtual':
+        if is_imported and experiment_id != 'virtual':
             try:
-                self.votes, self.num_agents, self.params, self.model_id = \
-                    self.import_real_instance()
+                self.votes, self.num_agents, self.params, self.model_id = import_real_instance(self)
                 self.alpha = self.params['alpha']
             except:
                 pass
@@ -92,7 +98,7 @@ class Marriages(Instance):
         return matrix
 
     # PREPARE INSTANCE
-    def prepare_instance(self, store=None, params: dict = None):
+    def prepare_instance(self, is_exported=None, params: dict = None):
         if params is None:
             params = {}
 
@@ -107,122 +113,14 @@ class Marriages(Instance):
 
         self.params = params
         self.alpha = params['alpha']
-        self.votes = generate_votes(model_id=self.model_id, num_agents=self.num_agents, params=params)
+        self.votes = generate_votes(culture_id=self.culture_id, num_agents=self.num_agents, params=params)
 
-        if store:
-            self.store_instance_in_a_file()
-
-    def store_instance_in_a_file(self):
-        """ Store votes in a file """
-
-        path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id, "instances")
-        make_folder_if_do_not_exist(path_to_folder)
-        path_to_file = os.path.join(path_to_folder, f'{self.instance_id}.mi')
-
-        with open(path_to_file, 'w') as file_:
-
-            if self.model_id in NICE_NAME:
-                file_.write("# " + NICE_NAME[self.model_id] + " " + str(self.params) + "\n")
-            else:
-                file_.write("# " + self.model_id + " " + str(self.params) + "\n")
-
-            for s in range(2):
-
-                file_.write(str(self.num_agents) + "\n")
-
-                for i in range(self.num_agents):
-                    if s == 0:
-                        file_.write(str(i) + ', a' + str(i) + "\n")
-                    else:
-                        file_.write(str(i) + ', b' + str(i) + "\n")
-
-                # c = Counter(map(tuple, election.votes[s]))
-                # counted_votes = [[count, list(row)] for row, count in c.items()]
-                # counted_votes = sorted(counted_votes, reverse=True)
-
-                votes = self.votes[s]
-                # print(votes)
-
-                file_.write(str(self.num_agents) + ', ' + str(self.num_agents) + ', ' +
-                            str(len(votes)) + "\n")
-
-                for i in range(len(votes)):
-                    file_.write(str(i) + ', ')
-                    for j in range(self.num_agents):
-                        file_.write(str(int(votes[i][j])))
-                        if j < len(votes[i]) - 1:
-                            file_.write(", ")
-                    file_.write("\n")
-
-    # def old_name_extractor(first_line):
-    #     if len(first_line) == 4:
-    #         model_name = f'{first_line[1]} {first_line[2]} {first_line[3]}'
-    #     elif len(first_line) == 3:
-    #         model_name = f'{first_line[1]} {first_line[2]}'
-    #     elif len(first_line) == 2:
-    #         model_name = first_line[1]
-    #     else:
-    #         model_name = 'noname'
-    #     return model_name
-
-    def import_real_instance(self, shift=False):
-        """ Import real ordinal election form .soc file """
-
-        votes = [0, 0]
-
-        file_name = f'{self.instance_id}.mi'
-        path = os.path.join(os.getcwd(), "election", self.experiment_id, "instances", file_name)
-        with open(path, 'r') as my_file:
-
-            params = 0
-            first_line = my_file.readline()
-
-            if first_line[0] != '#':
-                model_id = 'empty'
-                num_agents = int(first_line)
-            else:
-                first_line = first_line.strip().split()
-                model_id = first_line[1]
-
-                if len(first_line) <= 2:
-                    params = {}
-                else:
-                    params = ast.literal_eval(" ".join(first_line[2:]))
-
-                num_agents = int(my_file.readline())
+        if is_exported:
+            export_instance_to_a_file(self)
 
 
-            for s in range(2):
-
-                if s == 1:
-                    num_agents = int(my_file.readline())
-
-                num_candidates = num_agents
-
-                for _ in range(num_agents):
-                    my_file.readline()
-
-                line = my_file.readline().rstrip("\n").split(',')
-                num_voters = int(line[0])
-                num_options = int(line[2])
-                votes[s] = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
-
-                for j in range(num_options):
-                    line = my_file.readline().rstrip("\n").split(',')
-                    _id = int(line[0])
-
-                    for k in range(1):
-                        for el in range(num_candidates):
-                            votes[s][_id][el] = int(line[el + 1])
-
-                if shift:
-                    for i in range(num_voters):
-                        for j in range(num_candidates):
-                            votes[s][i][j] -= 1
-
-        rev_NICE_NAME = {v: k for k, v in NICE_NAME.items()}
-
-        if model_id in rev_NICE_NAME:
-            model_id = rev_NICE_NAME[model_id]
-
-        return votes, num_agents, params, model_id
+    def compute_feature(self, feature_id, feature_long_id=None, **kwargs):
+        if feature_long_id is None:
+            feature_long_id = feature_id
+        feature = get_feature(feature_id)
+        self.features[feature_long_id] = feature(self, **kwargs)

@@ -1,13 +1,14 @@
+#!/usr/bin/env python
 import numpy as np
-from collections import Counter
 import copy
 from mapel.core.objects.Instance import Instance
 
 from mapel.roommates.cultures_ import generate_votes
-from mapel.core.glossary import *
-from mapel.core.utils import *
-from mapel.roommates.persistence.instance_imports import import_real_instance
 
+from mapel.roommates.persistence.instance_imports import import_real_instance
+from mapel.roommates.persistence.instance_exports import export_instance_to_a_file
+
+from mapel.roommates.features_ import get_local_feature
 
 class Roommates(Instance):
 
@@ -51,6 +52,7 @@ class Roommates(Instance):
         vectors = np.zeros([self.num_agents, self.num_agents - 1], dtype=int)
 
         order_votes = [[] for _ in range(self.num_agents)]
+
         for a in range(self.num_agents):
             (missing,) = set(range(self.num_agents)) - set(self.votes[a])
             order_votes[missing] = copy.deepcopy(self.votes[a])
@@ -72,6 +74,7 @@ class Roommates(Instance):
                 vote = self.votes[i][j]
                 vectors[vote][pos] += 1
                 pos += 1
+
         for i in range(self.num_agents):
             for j in range(self.num_agents - 1):
                 vectors[i][j] /= float(self.num_agents)
@@ -95,7 +98,6 @@ class Roommates(Instance):
 
         return matrix
 
-    # PREPARE INSTANCE
     def prepare_instance(self, is_exported=None, params: dict = None):
 
         if params is None:
@@ -116,42 +118,17 @@ class Roommates(Instance):
 
         self.alpha = params['alpha']
 
-        self.votes = generate_votes(culture_id=self.culture_id, num_agents=self.num_agents, params=params)
+        self.votes = generate_votes(culture_id=self.culture_id,
+                                    num_agents=self.num_agents,
+                                    params=params)
         self.params = params
 
         if is_exported:
-            self.export_instance_to_a_file()
+            export_instance_to_a_file(self)
 
-    def export_instance_to_a_file(self):
-        """ Store votes in a file """
-
-        path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id, "instances")
-        make_folder_if_do_not_exist(path_to_folder)
-        path_to_file = os.path.join(path_to_folder, f'{self.instance_id}.ri')
-
-        with open(path_to_file, 'w') as file_:
-
-            if self.culture_id in NICE_NAME:
-                file_.write("# " + NICE_NAME[self.culture_id] + " " + str(self.params) + "\n")
-            else:
-                file_.write("# " + self.culture_id + " " + str(self.params) + "\n")
-
-            file_.write(str(self.num_agents) + "\n")
-
-            for i in range(self.num_agents):
-                file_.write(str(i) + ', a' + str(i) + "\n")
-
-            c = Counter(map(tuple, self.votes))
-            counted_votes = [[count, list(row)] for row, count in c.items()]
-
-            file_.write(str(self.num_agents) + ', ' + str(self.num_agents) + ', ' +
-                        str(len(counted_votes)) + "\n")
-
-            for i in range(len(counted_votes)):
-                file_.write(str(counted_votes[i][0]) + ', ')
-                for j in range(len(counted_votes[i][1])):
-                    file_.write(str(int(counted_votes[i][1][j])))
-                    if j < len(counted_votes[i][1]) - 1:
-                        file_.write(", ")
-                file_.write("\n")
+    def compute_feature(self, feature_id, feature_long_id=None, **kwargs):
+        if feature_long_id is None:
+            feature_long_id = feature_id
+        feature = get_local_feature(feature_id)
+        self.features[feature_long_id] = feature(self, **kwargs)
 
