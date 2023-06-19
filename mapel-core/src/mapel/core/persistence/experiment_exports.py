@@ -85,7 +85,10 @@ def export_distances_to_file(experiment, distance_id, distances, times, self_dis
 
 
 # Temporary
-def export_election_feature_to_file(experiment, feature_id, feature_long_id, feature_dict):
+def export_election_feature_to_file(experiment,
+                                    feature_id,
+                                    saveas,
+                                    feature_dict,):
 
     path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features")
     make_folder_if_do_not_exist(path_to_folder)
@@ -95,7 +98,7 @@ def export_election_feature_to_file(experiment, feature_id, feature_long_id, fea
                             "features", f'{feature_id}_{experiment.embedding_id}.csv')
     else:
         path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-                            "features", f'{feature_long_id}.csv')
+                            "features", f'{saveas}.csv')
 
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')

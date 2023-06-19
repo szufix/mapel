@@ -18,7 +18,7 @@ def update_params_ordinal_mallows(params):
 def update_params_ordinal_norm_mallows(params, num_candidates):
     if 'normphi' not in params:
         params['normphi'] = np.random.random()
-    params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['normphi'])
+    params['phi'] = mallows.phi_from_normphi(num_candidates, relphi=params['normphi'])
     if 'weight' not in params:
         params['weight'] = 0.
 
@@ -30,12 +30,12 @@ def update_params_ordinal_urn_model(params):
 
 def update_params_ordinal_mallows_matrix_path(params, num_candidates):
     params['normphi'] = params['alpha']
-    params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['normphi'])
+    params['phi'] = mallows.phi_from_normphi(num_candidates, relphi=params['normphi'])
 
 
 def update_params_ordinal_mallows_triangle(params, num_candidates):
     params['normphi'] = 1 - np.sqrt(np.random.uniform())
-    params['phi'] = mallows.phi_from_relphi(num_candidates, relphi=params['normphi'])
+    params['phi'] = mallows.phi_from_normphi(num_candidates, relphi=params['normphi'])
     params['weight'] = np.random.uniform(0, 0.5)
     params['alpha'] = params['normphi']
     params['tint'] = params['weight']  # for tint on plots

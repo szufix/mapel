@@ -180,22 +180,24 @@ APPROVAL_MODELS = {'impartial_culture', 'ic', 'resampling', 'id',
 
 APPROVAL_FAKE_MODELS = {'approval_half_1', 'approval_half_2', 'approval_skeleton'}
 
-GRAPH_MODELS = {'erdos_renyi_graph', 'watts_strogatz_graph', 'barabasi_albert_graph',
-                'random_geometric_graph', 'random_tree',
-                'cycle_graph', 'wheel_graph', 'star_graph', 'ladder_graph', 'circular_ladder_graph',
-                'erdos_renyi_graph_path'}
 
-NOT_ABCVOTING_RULES = {'borda_c4', 'random'}
+NOT_ABCVOTING_RULES = {'borda_c4',
+                       'random'}
 
 EMBEDDING_RELATED_FEATURE = ['monotonicity_triplets', 'distortion_from_all']
 
-ROOMMATES_PROBLEM_MODELS = {'roommates_ic'}
 
-FEATURES_WITH_DISSAT = {'highest_cc_score', 'highest_hb_score', 'highest_pav_score',
-                        'greedy_approx_cc_score', 'removal_approx_cc_score',
-                        'greedy_approx_hb_score', 'removal_approx_hb_score',
-                        'greedy_approx_pav_score', 'removal_approx_pav_score',
-                        'banzhaf_cc_score', 'ranging_cc_score'}
+FEATURES_WITH_DISSAT = {'highest_cc_score',
+                        'highest_hb_score',
+                        'highest_pav_score',
+                        'greedy_approx_cc_score',
+                        'removal_approx_cc_score',
+                        'greedy_approx_hb_score',
+                        'removal_approx_hb_score',
+                        'greedy_approx_pav_score',
+                        'removal_approx_pav_score',
+                        'banzhaf_cc_score',
+                        'ranging_cc_score'}
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

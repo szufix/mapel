@@ -43,7 +43,6 @@ def print_map_1d(experiment, saveas=None):
 
 
 # Main functions
-#DIV-MERGE
 def print_map_2d(experiment,
                  xlabel=None,
                  shading=False,

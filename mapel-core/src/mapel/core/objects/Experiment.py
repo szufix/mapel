@@ -67,7 +67,7 @@ class Experiment:
         self.dim = 2
 
         if clean:
-            self.clean_elections()
+            self.clean_instances()
 
         self.distance_id = distance_id
         self.embedding_id = embedding_id
@@ -471,8 +471,8 @@ class Experiment:
 
         return px, py
 
-    def clean_elections(self):
-        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "elections")
+    def clean_instances(self):
+        path = os.path.join(os.getcwd(), "experiments", self.experiment_id, "instances")
         for file_name in os.listdir(path):
             os.remove(os.path.join(path, file_name))
 

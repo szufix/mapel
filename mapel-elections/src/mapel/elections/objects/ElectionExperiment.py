@@ -516,6 +516,7 @@ class ElectionExperiment(Experiment):
                         feature_id: str = None,
                         feature_params=None,
                         overwrite=False,
+                        saveas=None,
                         **kwargs) -> dict:
 
         if feature_params is None:
@@ -604,10 +605,16 @@ class ElectionExperiment(Experiment):
                     else:
                         feature_dict['time'][instance_id] = total_time
 
-        if self.is_exported:
-            exports.export_election_feature_to_file(self, feature_id, feature_long_id, feature_dict)
+        if saveas is None:
+            saveas = feature_long_id
 
-        self.features[feature_long_id] = feature_dict
+        if self.is_exported:
+            exports.export_election_feature_to_file(self,
+                                                    feature_id,
+                                                    saveas,
+                                                    feature_dict)
+
+        self.features[saveas] = feature_dict
         return feature_dict
 
     def compute_rules(self, list_of_rules,
@@ -616,11 +623,14 @@ class ElectionExperiment(Experiment):
         for rule_name in list_of_rules:
             print('Computing', rule_name)
             if rule_name in NOT_ABCVOTING_RULES:
-                rules.compute_not_abcvoting_rule(experiment=self, rule_name=rule_name,
-                                                 committee_size=committee_size, resolute=resolute)
+                rules.compute_not_abcvoting_rule(experiment=self,
+                                                 rule_name=rule_name,
+                                                 committee_size=committee_size,
+                                                 resolute=resolute)
             else:
                 rules.compute_abcvoting_rule(experiment=self, rule_name=rule_name,
-                                             committee_size=committee_size, resolute=resolute)
+                                             committee_size=committee_size,
+                                             resolute=resolute)
 
     def import_committees(self, list_of_rules):
         for rule_name in list_of_rules:

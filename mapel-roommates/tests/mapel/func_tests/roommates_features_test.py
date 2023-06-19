@@ -11,9 +11,9 @@ registered_roommates_features_to_test = {
     'min_num_bps_matching',
     'num_of_bps_min_weight',
     'avg_num_of_bps_for_rand_matching',
-    # 'mutuality',
-    # 'dist_from_id_1',
-    # 'dist_from_id_2'
+    'mutuality',
+    'dist_from_id_1',
+    'dist_from_id_2'
 }
 
 

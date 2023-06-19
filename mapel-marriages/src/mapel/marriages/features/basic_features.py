@@ -1,10 +1,6 @@
 import gurobipy as gp
 from gurobipy import GRB
-# from mapel.roommates.matching.games import StableRoommates
-try:
-    from mapel.roommates.matching.games import StableRoommates
-except:
-    pass
+
 
 from random import shuffle
 import statistics
@@ -38,22 +34,6 @@ def number_blockingPairs(instance,matching):
                     if instance[j].index(i) < partnerj_index:
                         bps+=1
     return bps
-
-
-def compute_stable_SR(votes):
-    dict_instance={}
-    num_agents=len(votes)
-    for i in range(num_agents):
-        dict_instance[i]=votes[i]
-    game = StableRoommates.create_from_dictionary(dict_instance)
-    try:
-        matching = game.solve()
-        usable_matching = {}
-        for m in matching:
-            usable_matching[m.name] = matching[m].name
-        return usable_matching
-    except:
-        return None
 
 
 
