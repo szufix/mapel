@@ -14,6 +14,8 @@ import mapel.marriages.features.basic_features as basic
 import mapel.marriages.features as features
 from mapel.core.persistence.experiment_imports import get_values_from_csv_file
 from mapel.core.utils import make_folder_if_do_not_exist
+import mapel.core.persistence.experiment_exports as exports
+
 try:
     from sklearn.manifold import MDS
     from sklearn.manifold import TSNE
@@ -147,25 +149,11 @@ class MarriagesExperiment(Experiment):
                         times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
         if self.is_exported:
-            self._store_distances_to_file(distance_id, distances, times)
+            exports.export_distances_to_file(self, distance_id, distances, times)
 
         self.distances = distances
         self.times = times
         self.matchings = matchings
-
-    def _store_distances_to_file(self, distance_id, distances, times):
-        path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id, "distances")
-        make_folder_if_do_not_exist(path_to_folder)
-        path_to_file = os.path.join(path_to_folder, f'{distance_id}.csv')
-
-        with open(path_to_file, 'w', newline='') as csv_file:
-            writer = csv.writer(csv_file, delimiter=';')
-            writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
-
-            for election_1, election_2 in itertools.combinations(self.instances, 2):
-                distance = str(distances[election_1][election_2])
-                time_ = str(times[election_1][election_2])
-                writer.writerow([election_1, election_2, distance, time_])
 
     def import_controllers(self):
         """ Import controllers from a file """

@@ -166,8 +166,6 @@ class ElectionFamily(Family):
         self.size += 1
         self.election_ids.append(election.instance_id)
 
-        pass
-
 
 
 # # # # # # # # # # # # # # # #

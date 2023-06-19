@@ -51,7 +51,8 @@ def prepare_experiment(experiment_id=None,
                                          coordinates_names=coordinates_names,
                                          embedding_id=embedding_id,
                                          fast_import=fast_import,
-                                         with_matrix=with_matrix)
+                                         with_matrix=with_matrix,
+                                         instance_type=instance_type)
     elif instance_type in ['approval', 'rule']:
         return ApprovalElectionExperiment(experiment_id=experiment_id,
                                           is_shifted=is_shifted,
@@ -63,7 +64,8 @@ def prepare_experiment(experiment_id=None,
                                           distance_id=distance_id,
                                           coordinates_names=coordinates_names,
                                           embedding_id=embedding_id,
-                                          fast_import=fast_import)
+                                          fast_import=fast_import,
+                                          instance_type=instance_type)
 
 
 def print_approvals_histogram(*args):

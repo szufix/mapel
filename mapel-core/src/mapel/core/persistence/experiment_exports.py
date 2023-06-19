@@ -66,7 +66,11 @@ def export_embedding(experiment, embedding_id, saveas, dim, my_pos):
 
 
 # Distances
-def export_distances_to_file(experiment, distance_id, distances, times, self_distances):
+def export_distances_to_file(experiment,
+                             distance_id,
+                             distances,
+                             times,
+                             self_distances=False):
 
     path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances")
     make_folder_if_do_not_exist(path_to_folder)
@@ -82,6 +86,10 @@ def export_distances_to_file(experiment, distance_id, distances, times, self_dis
                     distance = str(distances[instance_1][instance_2])
                     time_ = str(times[instance_1][instance_2])
                     writer.writerow([instance_1, instance_2, distance, time_])
+
+
+
+
 
 
 # Temporary

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
+from mapel.core.utils import get_instance_id
+
+
 class Family:
-    """ Family of elections: a set of elections from the same election culture_id """
+    """ Family of elections: a set of instances from the same culture """
 
     def __init__(self,
                  culture_id: str = None,
@@ -22,12 +25,12 @@ class Family:
 
         if path is None:
             path = {}
-        if instance_ids is None:
-            instance_ids = {}
         if params is None:
             params = {}
         if label is None:
             label = family_id
+        if instance_ids is None:
+            instance_ids = {}
 
         self.family_id = family_id
         self.culture_id = culture_id

@@ -60,13 +60,14 @@ class ElectionExperiment(Experiment):
     def add_culture(self, name, function):
         pass
 
-    def __init__(self, is_shifted=False, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, is_shifted=False, instance_type=None, **kwargs):
+        self.instance_type = instance_type
         self.is_shifted = is_shifted
         self.default_num_candidates = 10
         self.default_num_voters = 100
         self.default_committee_size = 1
         self.all_winning_committees = {}
+        super().__init__(**kwargs)
 
     def __getattr__(self, attr):
         if attr == 'elections':

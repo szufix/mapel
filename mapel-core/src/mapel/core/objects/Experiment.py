@@ -94,16 +94,16 @@ class Experiment:
             self.experiment_id = 'virtual'
             self.is_exported = False
         else:
-            self.is_exported = True
+            self.is_exported = is_exported
             self.experiment_id = experiment_id
             self.add_folders_to_experiment()
             self.families = self.import_controllers()
-            self.is_exported = is_exported
 
         if isinstance(instances, dict):
             self.instances = instances
             # print('=== Omitting import! ===')
         elif is_imported and self.experiment_id != 'virtual':
+
             try:
                 self.instances = self.add_instances_to_experiment()
                 self.num_instances = len(self.instances)
@@ -151,12 +151,12 @@ class Experiment:
         else:
             self.coordinates = {}
 
-        try:
-            for family_id in self.families:
-                for instance_id in self.families[family_id].instance_ids:
-                    self.instances[instance_id].label = self.families[family_id].label
-        finally:
-            pass
+        # try:
+        #     for family_id in self.families:
+        #         for instance_id in self.families[family_id].instance_ids:
+        #             self.instances[instance_id].label = self.families[family_id].label
+        # finally:
+        #     pass
 
     @abstractmethod
     def prepare_instances(self):
