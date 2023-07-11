@@ -101,6 +101,20 @@ registered_ordinal_features = {
     'min_dim': dimensionality.min_dim,  # unsupported feature
 }
 
+registered_special_columns = {
+    'highest_cc_score': 'dissat',
+    'highest_hb_score': 'dissat',
+    'highest_pav_score': 'dissat',
+    'greedy_approx_cc_score': 'dissat',
+    'removal_approx_cc_score': 'dissat',
+    'greedy_approx_hb_score': 'dissat',
+    'removal_approx_hb_score': 'dissat',
+    'greedy_approx_pav_score': 'dissat',
+    'removal_approx_pav_score': 'dissat',
+    'banzhaf_cc_score': 'dissat',
+    'ranging_cc_score': 'dissat',
+}
+
 
 def get_global_feature(feature_id):
     """ Global feature depends on all instances """

@@ -219,7 +219,7 @@ class RoommatesExperiment(Experiment):
 
         families = {}
 
-        path = os.path.join(os.getcwd(), 'election', self.experiment_id, 'map.csv')
+        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'map.csv')
         file_ = open(path, 'r')
 
         header = [h.strip() for h in file_.readline().split(';')]

@@ -1,4 +1,5 @@
 import logging
+from collections import Counter
 
 from matplotlib import pyplot as plt
 
@@ -85,8 +86,10 @@ class OrdinalElection(Election):
                     else:
 
                         self.votes, self.num_voters, self.num_candidates, self.params, \
-                        self.culture_id, self.alliances = imports.import_real_soc_election(
+                        self.culture_id, self.alliances, \
+                        self.num_options, self.quantites = imports.import_real_soc_election(
                             experiment_id, election_id, is_shifted)
+
                         try:
                             self.points['voters'] = self.import_ideal_points('voters')
                             self.points['candidates'] = self.import_ideal_points('candidates')
@@ -326,25 +329,41 @@ class OrdinalElection(Election):
                                                 num_voters=self.num_voters,
                                                 params=self.params)
 
+        c = Counter(map(tuple, self.votes))
+        counted_votes = [[count, list(row)] for row, count in c.items()]
+        counted_votes = sorted(counted_votes, reverse=True)
+        self.quantites = [a[0] for a in counted_votes]
+        self.num_options = len(counted_votes)
+
         if is_exported:
             exports.export_ordinal_election(self, is_aggregated=is_aggregated)
+
+    def get_distinct_votes(self):
+        import itertools
+        votes = self.votes
+        votes = votes.tolist()
+        votes.sort()
+        return list(k for k, _ in itertools.groupby(votes))
 
     def compute_distances(self, distance_id='swap', object_type=None):
         """ Return: distances between votes """
         if object_type is None:
             object_type = self.object_type
 
+        self.distinct_votes = self.get_distinct_votes()
+        self.distinct_potes = convert_votes_to_potes(self.distinct_votes)
+        self.num_dist_votes = len(self.distinct_votes)
+
         if object_type == 'vote':
-            self.compute_potes()
-            distances = np.zeros([self.num_voters, self.num_voters])
-            for v1 in range(self.num_voters):
-                for v2 in range(self.num_voters):
+            distances = np.zeros([self.num_dist_votes, self.num_dist_votes])
+            for v1 in range(self.num_dist_votes):
+                for v2 in range(self.num_dist_votes):
                     if distance_id == 'swap':
                         distances[v1][v2] = swap_distance_between_potes(
-                            self.potes[v1], self.potes[v2])
+                            self.distinct_potes[v1], self.distinct_potes[v2])
                     elif distance_id == 'spearman':
                         distances[v1][v2] = spearman_distance_between_potes(
-                            self.potes[v1], self.potes[v2])
+                            self.distinct_potes[v1], self.distinct_potes[v2])
         elif object_type == 'candidate':
             self.compute_potes()
             if distance_id == 'domination':
@@ -361,10 +380,16 @@ class OrdinalElection(Election):
                         distances[c1][c2] = dist
         else:
             logging.warning('incorrect object_type')
+
         self.distances[object_type] = distances
 
+        if object_type == 'vote':
+            length = self.num_dist_votes
+        elif object_type == 'candidate':
+            length = self.num_candidates
+
         if self.is_exported:
-            exports.export_distances(self, object_type=object_type)
+            exports.export_distances(self, object_type=object_type, length=length)
 
     def is_condorcet(self):
         """ Check if election witness Condorcet winner"""
@@ -429,32 +454,42 @@ class OrdinalElection(Election):
                         alpha=1,
                         marker='X')
 
-        if double_gradient:
-            for i in range(length):
-                x = float(self.points['voters'][i][0])
-                y = float(self.points['voters'][i][1])
-                plt.scatter(X[i], Y[i], color=[0, y, x], s=s, alpha=alpha)
-        else:
-            plt.scatter(X, Y, color=color, s=s, alpha=alpha, marker=marker)
+        if object_type == 'vote':
+            if double_gradient:
+                for i in range(length):
+                    x = float(self.points['voters'][i][0])
+                    y = float(self.points['voters'][i][1])
+                    plt.scatter(X[i], Y[i], color=[0, y, x], s=s, alpha=alpha)
+            else:
+                for i in range(len(X)):
+                    plt.scatter(X[i], Y[i], color=color, alpha=alpha, marker=marker,
+                                s=self.quantites[i]*s)
 
-        if circles:  # works only for votes
-            weighted_points = {}
-            Xs = {}
-            Ys = {}
-            for i in range(length):
-                str_elem = str(self.votes[i])
-                if str_elem in weighted_points:
-                    weighted_points[str_elem] += 1
-                else:
-                    weighted_points[str_elem] = 1
-                    Xs[str_elem] = X[i]
-                    Ys[str_elem] = Y[i]
-            for str_elem in weighted_points:
-                if weighted_points[str_elem] > 10 and str_elem != 'set()':
-                    plt.scatter(Xs[str_elem], Ys[str_elem],
-                                color='purple',
-                                s=10 * weighted_points[str_elem],
-                                alpha=0.2)
+        elif object_type == 'candidate':
+            for i in range(len(X)):
+                plt.scatter(X[i], Y[i], color=color, alpha=alpha, marker=marker,
+                            s=s)
+
+        #
+        # if circles:  # works only for votes
+        #     weighted_points = {}
+        #     Xs = {}
+        #     Ys = {}
+        #     for i in range(length):
+        #         str_elem = str(self.votes[i])
+        #         if str_elem in weighted_points:
+        #             weighted_points[str_elem] += 1
+        #         else:
+        #             weighted_points[str_elem] = 1
+        #             Xs[str_elem] = X[i]
+        #             Ys[str_elem] = Y[i]
+        #     for str_elem in weighted_points:
+        #         if weighted_points[str_elem] > 10 and str_elem != 'set()':
+        #             plt.scatter(Xs[str_elem], Ys[str_elem],
+        #                         color='purple',
+        #                         s=10 * weighted_points[str_elem],
+        #                         alpha=0.2)
+
         avg_x = np.mean(X)
         avg_y = np.mean(Y)
 
@@ -462,13 +497,15 @@ class OrdinalElection(Election):
             plt.xlim([avg_x - radius, avg_x + radius])
             plt.ylim([avg_y - radius, avg_y + radius])
         # plt.title(election.label, size=38)
+
         plt.title(self.texify_label(self.label), size=title_size)
+
         # plt.title(election.texify_label(election.label), size=38, y=0.94)
         # plt.title(election.label, size=title_size)
         plt.axis('off')
 
         if saveas is None:
-            saveas = f'{self.label}'
+            saveas = f'{self.label}_{object_type}'
 
         file_name = os.path.join(os.getcwd(), "images", name, f'{saveas}.png')
         plt.savefig(file_name, bbox_inches='tight', dpi=100)
@@ -476,3 +513,9 @@ class OrdinalElection(Election):
             plt.show()
         else:
             plt.clf()
+
+
+def convert_votes_to_potes(votes):
+    """ Convert votes to positional votes (called potes) """
+    return np.array([[list(vote).index(i) for i, _ in enumerate(vote)]
+                                   for vote in votes])

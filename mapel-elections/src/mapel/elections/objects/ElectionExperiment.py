@@ -109,7 +109,6 @@ class ElectionExperiment(Experiment):
 
         for family_id in self.families:
             single = self.families[family_id].single
-
             ids = []
             for j in range(self.families[family_id].size):
                 instance_id = get_instance_id(single, family_id, j)
@@ -117,11 +116,13 @@ class ElectionExperiment(Experiment):
                     instance = OrdinalElection(self.experiment_id, instance_id,
                                                is_imported=True,
                                                fast_import=self.fast_import,
-                                               with_matrix=self.with_matrix)
+                                               with_matrix=self.with_matrix,
+                                               label=self.families[family_id].label)
                 elif self.instance_type == 'approval':
                     instance = ApprovalElection(self.experiment_id, instance_id,
                                                 is_imported=True,
-                                                fast_import=self.fast_import)
+                                                fast_import=self.fast_import,
+                                                label=self.families[family_id].label)
                 else:
                     instance = None
 
@@ -222,7 +223,6 @@ class ElectionExperiment(Experiment):
 
         elif label is None:
             label = family_id
-
         self.families[family_id] = ElectionFamily(culture_id=culture_id,
                                                   family_id=family_id,
                                                   params=params,
@@ -246,7 +246,8 @@ class ElectionExperiment(Experiment):
 
         new_instances = self.families[family_id].prepare_family(
             is_exported=self.is_exported,
-            experiment_id=self.experiment_id)
+            experiment_id=self.experiment_id,
+            instance_type=self.instance_type)
 
         for instance_id in new_instances:
             self.instances[instance_id] = new_instances[instance_id]
@@ -268,7 +269,6 @@ class ElectionExperiment(Experiment):
 
         if label is None:
             label = family_id
-
         self.families[family_id] = ElectionFamily(culture_id=culture_id,
                                                   family_id=family_id,
                                                   label=label,
@@ -302,7 +302,9 @@ class ElectionExperiment(Experiment):
                 is_exported=self.is_exported,
                 experiment_id=self.experiment_id,
                 store_points=store_points,
-                is_aggregated=is_aggregated)
+                is_aggregated=is_aggregated,
+                instance_type=self.instance_type,
+            )
 
             for instance_id in new_instances:
                 self.instances[instance_id] = new_instances[instance_id]

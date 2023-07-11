@@ -141,7 +141,8 @@ def print_map_2d_colored_by_feature(experiment,
                                     omit=None,
                                     textual_size=16,
                                     figsize=(6.4, 6.4),
-                                    strech=None) -> None:
+                                    strech=None,
+                                    colors=None) -> None:
     if textual is None:
         textual = []
 
@@ -171,7 +172,8 @@ def print_map_2d_colored_by_feature(experiment,
                                               omit=omit,
                                               ticks=ticks, column_id=column_id,
                                               feature_labelsize=feature_labelsize,
-                                              strech=strech)
+                                              strech=strech,
+                                              colors=colors)
     _add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size,
                  shades_dict=shades_dict, cmap=cmap, column_id=column_id, feature_id=feature_id)
 
@@ -349,7 +351,7 @@ def _import_values_for_feature(experiment, feature_id=None, upper_limit=None,
                                marker_func=None, dim=2, column_id='value', omit=None,
                                scale='default'):
     """ Import values for a feature_id """
-
+    print(upper_limit)
     if isinstance(feature_id, str):
         if feature_id in experiment.features:
             values = experiment.features[feature_id][column_id]
@@ -380,6 +382,7 @@ def _import_values_for_feature(experiment, feature_id=None, upper_limit=None,
     yy = []
     zz = []
     markers = []
+    none_xx, none_yy = [], []
     blank_xx, blank_yy = [], []
 
     ctr = 0
@@ -613,7 +616,7 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
                           normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
                           cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
                           feature_labelsize=14, ticks_pos=None, omit=None, scale='default',
-                          strech=None):
+                          strech=None, colors=None):
     xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy, names = \
         _import_values_for_feature(
             experiment, feature_id=feature_id, upper_limit=upper_limit, lower_limit=lower_limit,
@@ -623,6 +626,9 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
     vmin = 0
     vmax = 1
     # strech=[1.0,2.0]
+    print(strech)
+    print(_min)
+    print(_max)
     if strech is not None:
         length = _max - _min
         vmin = 0 - (_min - strech[0]) / length
@@ -641,7 +647,10 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
             if num_colors < 10:
                 xticklabels = [str(q) for q in range(num_colors)]
                 ticks_pos = [(2 * q + 1) / num_colors / 2 for q in range(num_colors)]
-            cmap = custom_div_cmap(num_colors=num_colors)
+            if colors is None:
+                cmap = custom_div_cmap(num_colors=num_colors)
+            else:
+                cmap = custom_div_cmap(colors=colors, num_colors=num_colors)
         else:
             cmap = custom_div_cmap()
 
@@ -1046,7 +1055,7 @@ def _saveas_tex(saveas=None):
 
 
 # MAIN FUNCTIONS
-def print_matrix(experiment=None, scale=1., rounding=1, distance_name='',
+def print_matrix(experiment=None, scale=1., rounding=1,
                  saveas=None, show=True, ms=8, title=None, omit=None,
                  self_distances=False, yticks='left', with_std=False, time=False, dpi=100,
                  vmin=None, vmax=None):

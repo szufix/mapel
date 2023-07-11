@@ -166,7 +166,7 @@ def get_values_from_csv_file(experiment, feature_id, feature_long_id=None,
                 except:
                     pass
             value = row[column_id]
-            if value == 'None' or value is None:
+            if value in {'None','Blank'} or value is None:
                 value = None
             elif column_id == 'time' and float(value) == 0.:
                 value = None
@@ -192,7 +192,6 @@ def add_coordinates_to_experiment(experiment, dim=2, file_name=None) -> dict:
         file_name = f'{experiment.embedding_id}_{experiment.distance_id}_{dim}d.csv'
     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
                         "coordinates", file_name)
-
     with open(path, 'r', newline='') as csv_file:
 
         # ORIGINAL

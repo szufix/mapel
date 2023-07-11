@@ -26,8 +26,10 @@ from mapel.elections.other import winners as win
 
 
 # MAIN FUNCTIONS
-def highest_borda_score(election) -> int:
+def highest_borda_score(election):
     """ Compute highest BORDA score of a given election """
+    if election.culture_id in LIST_OF_FAKE_MODELS:
+        return 'None'
     c = election.num_candidates
     vectors = election.get_vectors()
     borda = [sum([vectors[i][pos] * (c - pos - 1) for pos in range(c)])
@@ -35,8 +37,10 @@ def highest_borda_score(election) -> int:
     return max(borda) * election.num_voters
 
 
-def highest_plurality_score(election) -> int:
+def highest_plurality_score(election):
     """ compute highest PLURALITY score of a given election"""
+    if election.culture_id in LIST_OF_FAKE_MODELS:
+        return 'None'
     first_pos = election.get_matrix()[0]
     return max(first_pos) * election.num_voters
 

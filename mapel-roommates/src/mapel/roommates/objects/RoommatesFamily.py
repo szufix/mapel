@@ -84,9 +84,9 @@ class RoommatesFamily(Family):
                 new_params, variable = self._get_params_for_paths(j)
                 params = {**params, **new_params}
 
-            if params is not None and 'norm-phi' in params:
-                params['phi'] = mallows.phi_from_relphi(self.num_agents,
-                                                        relphi=params['norm-phi'])
+            if params is not None and 'normphi' in params:
+                params['phi'] = mallows.phi_from_normphi(self.num_agents,
+                                                        relphi=params['normphi'])
 
             instance_id = get_instance_id(self.single, self.family_id, j)
 

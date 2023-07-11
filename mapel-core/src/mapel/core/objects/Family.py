@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from mapel.core.utils import get_instance_id
-
 
 class Family:
     """ Family of elections: a set of instances from the same culture """
@@ -46,6 +44,7 @@ class Family:
         self.single = single
         self.path = path
         self.instance_ids = instance_ids
+
 
 
 # # # # # # # # # # # # # # # #

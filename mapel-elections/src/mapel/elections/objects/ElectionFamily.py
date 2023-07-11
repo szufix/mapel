@@ -28,6 +28,7 @@ class ElectionFamily(Family):
                  path: dict = None,
                  single: bool = False,
 
+                 instance_type = None,
                  num_candidates: int = None,
                  num_voters: int = None,
                  election_ids=None,
@@ -51,6 +52,8 @@ class ElectionFamily(Family):
 
         self.num_candidates = num_candidates
         self.num_voters = num_voters
+        self.instance_type = instance_type
+
 
     def __getattr__(self, attr):
         if attr == 'election_ids':
@@ -65,7 +68,11 @@ class ElectionFamily(Family):
             self.__dict__[name] = value
 
     def prepare_family(self, experiment_id=None, is_exported=True,
-                       store_points=False, is_aggregated=True):
+                       store_points=False, is_aggregated=True,
+                       instance_type=None):
+
+        if instance_type is not None:
+            self.instance_type = instance_type
 
         if self.instance_type == 'ordinal':
 

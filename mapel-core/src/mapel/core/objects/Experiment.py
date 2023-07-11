@@ -150,7 +150,6 @@ class Experiment:
                 pass
         else:
             self.coordinates = {}
-
         # try:
         #     for family_id in self.families:
         #         for instance_id in self.families[family_id].instance_ids:
@@ -505,7 +504,8 @@ class Experiment:
                 f3[election_id] = None
             else:
                 if f2[election_id] == 0:
-                    f3[election_id] = 1.
+                    f3[election_id] = 'Blank'
+                    # f3[election_id] = 1
                 else:
                     f3[election_id] = f1[election_id] / f2[election_id]
 
@@ -619,14 +619,12 @@ class Experiment:
             plt.show()
 
     def merge_election_images(self, size=250, name=None, show=False, ncol=1, nrow=1,
-                              distance_id=None):
+                              object_type=None):
 
         images = []
         for i, election in enumerate(self.instances.values()):
-            if distance_id is None:
-                images.append(Image.open(f'images/{name}/{election.label}.png'))
-            else:
-                images.append(Image.open(f'images/{name}/{election.label}_{distance_id}.png'))
+            images.append(Image.open(f'images/{name}/{election.label}_{object_type}.png'))
+
         image1_size = images[0].size
 
         new_image = Image.new('RGB', (ncol * image1_size[0], nrow * image1_size[1]),
@@ -636,7 +634,7 @@ class Experiment:
             for j in range(nrow):
                 new_image.paste(images[i + j * ncol], (image1_size[0] * i, image1_size[1] * j))
 
-        new_image.save(f'images/microscope/{name}.png', "PNG", quality=85)
+        new_image.save(f'images/{name}_{object_type}.png', "PNG", quality=85)
         if show:
             new_image.show()
 

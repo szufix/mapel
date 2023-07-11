@@ -45,9 +45,11 @@ def import_real_soc_election(experiment_id: str, election_id: str, is_shifted=Fa
     votes = [[0 for _ in range(num_candidates)] for _ in range(num_voters)]
 
     it = 0
+    quantites = []
     for j in range(num_options):
         line = my_file.readline().rstrip("\n").split(',')
         quantity = int(line[0])
+        quantites.append(quantity)
 
         for k in range(quantity):
             for el in range(num_candidates):
@@ -60,7 +62,8 @@ def import_real_soc_election(experiment_id: str, election_id: str, is_shifted=Fa
                 votes[i][j] -= 1
     my_file.close()
 
-    return np.array(votes), num_voters, num_candidates, params, model_name, alliances
+    return np.array(votes), num_voters, num_candidates, params, model_name, alliances, \
+           num_options, quantites
 
 
 def import_fake_soc_election(experiment_id, name):

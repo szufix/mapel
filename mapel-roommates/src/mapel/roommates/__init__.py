@@ -14,19 +14,19 @@ def prepare_offline_roommates_experiment(**kwargs):
 
 
 def prepare_roommates_experiment(experiment_id=None,
-                                 instance_type=None,
+                                 # instance_type=None,
                                  distance_id=None,
                                  is_imported=None,
-                                 is_shifted=False,
+                                 # is_shifted=False,
                                  is_exported=None,
                                  embedding_id=None):
 
     return RoommatesExperiment(experiment_id=experiment_id,
                                is_imported=is_imported,
                                distance_id=distance_id,
-                               instance_type=instance_type,
+                               # instance_type=instance_type,
                                embedding_id=embedding_id,
-                               is_shifted=is_shifted,
+                               # is_shifted=is_shifted,
                                is_exported=is_exported)
 
 

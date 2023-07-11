@@ -139,33 +139,25 @@ def export_ordinal_election(election, is_aggregated=True):
                              alliances=election.alliances)
 
 
-def export_distances(experiment, object_type='vote'):
+def export_distances(experiment, object_type='vote', length=None):
     file_name = f'{experiment.election_id}_{object_type}.csv'
     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances", file_name)
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
         writer.writerow(["v1", "v2", "distance"])
-        if object_type == 'vote':
-            length = experiment.num_voters
-        elif object_type == 'candidate':
-            length = experiment.num_candidates
         for v1 in range(length):
             for v2 in range(length):
                 distance = str(experiment.distances[object_type][v1][v2])
                 writer.writerow([v1, v2, distance])
 
 
-def export_coordinates(experiment, object_type='vote'):
+def export_coordinates(experiment, object_type='vote', length=None):
     file_name = f'{experiment.election_id}_{object_type}.csv'
     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "coordinates",
                         file_name)
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
         writer.writerow(["vote_id", "x", "y"])
-        if object_type == 'vote':
-            length = experiment.num_voters
-        elif object_type == 'candidate':
-            length = experiment.num_candidates
         for vote_id in range(length):
             x = str(experiment.coordinates[object_type][vote_id][0])
             y = str(experiment.coordinates[object_type][vote_id][1])

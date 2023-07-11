@@ -312,9 +312,10 @@ class Election(Instance):
             self.coordinates[object_type] = MDS_object.fit_transform(self.distances[object_type])
 
         if object_type == 'vote':
-            length = self.num_voters
+            length = self.num_options
         elif object_type == 'candidate':
-            length = self.num_candidates
+            # length = self.num_candidates
+            pass
         else:
             logging.warning('No such type of object!')
             length = None
@@ -375,8 +376,15 @@ class Election(Instance):
             except Exception:
                 pass
 
+
+        if object_type == 'vote':
+            length = self.num_options
+        elif object_type == 'candidate':
+            length = self.num_candidates
+            pass
+
         if self.is_exported and not virtual:
-            exports.export_coordinates(self, object_type=object_type)
+            exports.export_coordinates(self, object_type=object_type, length=length)
 
     def all_dist_zeros(self, object_type):
         if np.abs(self.distances[object_type]).sum():

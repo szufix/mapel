@@ -4,6 +4,7 @@ import csv
 from mapel.core.glossary import *
 from mapel.core.utils import make_folder_if_do_not_exist
 
+
 # Features
 def export_instance_feature(experiment, feature_id, feature_dict):
     path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features")
@@ -24,7 +25,7 @@ def export_feature(experiment, feature_dict=None, saveas=None):
 
     with open(path_to_file, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
-        writer.writerow(["election_id", "value"])
+        writer.writerow(["instance_id", "value"])
         for key in feature_dict:
             writer.writerow([key, str(feature_dict[key])])
 

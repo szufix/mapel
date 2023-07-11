@@ -145,6 +145,10 @@ SHORT_NICE_NAME = {
 'AN': 'AN',
 'ST': 'ST',
 'UN': 'UN',
+'1D Uniform': '1D',
+'2D Uniform': '2D',
+'3D Uniform': '3D',
+'2D Sphere': 'Circle',
 }
 
 LIST_OF_PREFLIB_MODELS = {'sushi', 'irish', 'glasgow', 'skate', 'formula',
