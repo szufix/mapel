@@ -29,8 +29,8 @@ OBJECT_TYPES = ['vote', 'candidate']
 class Election(Instance):
 
     def __init__(self,
-                 experiment_id,
-                 election_id,
+                 experiment_id=None,
+                 election_id=None,
                  culture_id=None,
                  votes=None,
                  ballot_type: str = 'ordinal',
@@ -39,10 +39,11 @@ class Election(Instance):
                  label=None,
                  fast_import=False,
                  is_shifted=False,
+                 is_imported=False,
                  **kwargs):
 
-        super().__init__(experiment_id,
-                         election_id,
+        super().__init__(experiment_id=experiment_id,
+                         instance_id=election_id,
                          culture_id=culture_id,
                          **kwargs)
 
@@ -52,7 +53,6 @@ class Election(Instance):
         self.num_voters = num_voters
         self.num_candidates = num_candidates
         self.votes = votes
-
         self.is_exported = True
         self.winners = None
         self.alternative_winners = {}
@@ -62,15 +62,22 @@ class Election(Instance):
         self.object_type = 'vote'
         self.points = {}
         self.is_shifted = is_shifted
+        self.is_imported = is_imported
+        self.fast_import = fast_import
 
+        self.import_distances()
+        self.import_coordinates()
+
+    def import_distances(self):
         self.distances = {}
-        if not fast_import:
+        if not self.fast_import:
             for object_type in OBJECT_TYPES:
                 try:
                     self.distances[object_type] = imports.import_distances(self, object_type)
                 except:
                     pass
 
+    def import_coordinates(self):
         self.coordinates = {}
         for object_type in OBJECT_TYPES:
             try:
@@ -188,102 +195,6 @@ class Election(Instance):
         else:
             plt.clf()
 
-    #DIV-MERGE # TO DELETE?
-    def print_map_verfity(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
-                  object_type=None, double_gradient=False, saveas=None):
-
-        if object_type is None:
-            object_type = self.object_type
-
-        plt.figure(figsize=(6.4, 6.4))
-
-        X = []
-        Y = []
-        for elem in self.coordinates[object_type]:
-            X.append(elem[0])
-            Y.append(elem[1])
-
-        if circles:
-            weighted_points = {}
-            Xs = {}
-            Ys = {}
-            for i in range(self.num_voters):
-                str_elem = str(self.votes[i])
-                if str_elem in weighted_points:
-                    weighted_points[str_elem] += 1
-                else:
-                    weighted_points[str_elem] = 1
-                    Xs[str_elem] = X[i]
-                    Ys[str_elem] = Y[i]
-
-            for str_elem in weighted_points:
-                if weighted_points[str_elem] > 10:
-                    plt.scatter(Xs[str_elem], Ys[str_elem],
-                                color='purple',
-                                s=10 * weighted_points[str_elem],
-                                alpha=0.2)
-
-        if double_gradient:
-            for i in range(self.num_voters):
-                x = float(self.points['voters'][i][0])
-                y = float(self.points['voters'][i][1])
-                plt.scatter(X[i], Y[i], color=[0,y,x], s=s, alpha=alpha)
-        else:
-            plt.scatter(X, Y, color='blue', s=s, alpha=alpha)
-
-        if radius:
-            plt.xlim([-radius, radius])
-            plt.ylim([-radius, radius])
-        plt.title(self.label, size=38)
-        plt.axis('off')
-
-        if saveas is None:
-            saveas = f'{self.label}_euc'
-
-        file_name = os.path.join(os.getcwd(), "images", name, f'{saveas}.png')
-        plt.savefig(file_name, bbox_inches='tight', dpi=100)
-        if show:
-            plt.show()
-        else:
-            plt.clf()
-
-    # def online_mini_map(experiment):
-    #
-    #     experiment.compute_potes()
-    #
-    #     distances = np.zeros([len(experiment.potes), len(experiment.potes)])
-    #     for v1 in range(len(experiment.potes)):
-    #         for v2 in range(len(experiment.potes)):
-    #             swap_distance = 0
-    #             for i, j in itertools.combinations(experiment.potes[0], 2):
-    #                 if (experiment.potes[v1][i] > experiment.potes[v1][j] and
-    #                     experiment.potes[v2][i] < experiment.potes[v2][j]) or \
-    #                         (experiment.potes[v1][i] < experiment.potes[v1][j] and
-    #                          experiment.potes[v2][i] > experiment.potes[v2][j]):
-    #                     swap_distance += 1
-    #             distances[v1][v2] = swap_distance
-    #
-    #     # my_pos = KamadaKawai().embed(
-    #     #     distances=distances,
-    #     # )
-    #     my_pos = MDS(n_components=2, dissimilarity='precomputed').fit_transform(distances)
-    #     X = []
-    #     Y = []
-    #     for elem in my_pos:
-    #         X.append(elem[0])
-    #         Y.append(elem[1])
-    #     plt.scatter(X, Y, color='blue', s=12, alpha=0.3)
-    #     plt.xlim([-100, 100])
-    #     plt.ylim([-100, 100])
-    #     plt.title(experiment.label, size=26)
-    #     plt.axis('off')
-    #
-    #     file_name = os.path.join(os.getcwd(), "images", "mini_maps", f'{experiment.label}.png')
-    #     plt.savefig(file_name, bbox_inches='tight', dpi=250)
-    #     # plt.clf()
-    #     # plt.savefig(file_name, bbox_inches=bbox_inches, dpi=250)
-    #     plt.show()
-
 
     @abstractmethod
     def compute_distances(self):
@@ -295,9 +206,6 @@ class Election(Instance):
         if object_type is None:
             object_type = self.object_type
 
-        # election.coordinates[object_type] = KamadaKawai().embed(
-        #     distances=election.distances[object_type],
-        # )
         MDS_object = MDS(n_components=2, dissimilarity='precomputed',
 
             # max_iter=1000,
@@ -314,7 +222,7 @@ class Election(Instance):
         if object_type == 'vote':
             length = self.num_options
         elif object_type == 'candidate':
-            # length = self.num_candidates
+            # length = experiment_id.num_candidates
             pass
         else:
             logging.warning('No such type of object!')

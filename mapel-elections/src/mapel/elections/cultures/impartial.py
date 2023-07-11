@@ -47,11 +47,10 @@ def generate_approval_ic_votes(num_voters: int = None,
                 of candidates approves by each candidate (default p=0.5) """
     if p > 1 or p < 0:
         logging.warning(f'Incorrect value of p: {p}. Value should be in [0,1]')
-    votes = [set() for _ in range(num_voters)]
-    for i in range(num_voters):
-        for j in range(num_candidates):
-            if np.random.random() <= p:
-                votes[i].add(j)
+
+    votes = [set(j for j in range(num_candidates) if np.random.random() <= p)
+             for _ in range(num_voters)]
+
     return votes
 
 

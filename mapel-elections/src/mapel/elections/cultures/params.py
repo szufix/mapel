@@ -12,7 +12,6 @@ def update_params_ordinal_mallows(params):
         params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
     elif 'phi' not in params:
         params['phi'] = np.random.random()
-    # params['alpha'] = params['phi']
 
 
 def update_params_ordinal_norm_mallows(params, num_candidates):

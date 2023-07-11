@@ -27,23 +27,20 @@ from mapel.elections.other.winners import get_borda_points
 class OrdinalElection(Election):
 
     def __init__(self,
-                 experiment_id,
-                 election_id,
+                 experiment_id=None,
+                 election_id=None,
                  culture_id=None,
                  votes=None,
-                 with_matrix=False,
                  params=None,
                  label=None,
                  num_voters: int = None,
                  num_candidates: int = None,
-                 is_imported: bool = False,
-                 is_shifted: bool = False,
                  variable=None,
                  fast_import=False,
                  **kwargs):
 
-        super().__init__(experiment_id,
-                         election_id,
+        super().__init__(experiment_id=experiment_id,
+                         election_id=election_id,
                          culture_id=culture_id,
                          votes=votes,
                          label=label,
@@ -54,41 +51,42 @@ class OrdinalElection(Election):
 
         self.params = params
         self.variable = variable
-
         self.vectors = []
         self.matrix = []
-        self.borda_points = []
         self.potes = None
         self.condorcet = None
         self.points = {}
         self.alliances = {}
 
-        if is_imported and experiment_id != 'virtual':
+        self.import_ordinal_election()
+
+    def import_ordinal_election(self):
+        if self.is_imported and self.experiment_id != 'virtual':
             try:
-                if votes is not None:
-                    self.culture_id = culture_id
-                    if str(votes[0]) in LIST_OF_FAKE_MODELS:
+                if self.votes is not None:
+                    self.culture_id = self.culture_id
+                    if str(self.votes[0]) in LIST_OF_FAKE_MODELS:
                         self.fake = True
-                        self.votes = votes[0]
-                        self.num_candidates = votes[1]
-                        self.num_voters = votes[2]
+                        self.votes = self.votes[0]
+                        self.num_candidates = self.votes[1]
+                        self.num_voters = self.votes[2]
                     else:
-                        self.votes = votes
-                        self.num_candidates = len(votes[0])
-                        self.num_voters = len(votes)
+                        self.votes = self.votes
+                        self.num_candidates = len(self.votes[0])
+                        self.num_voters = len(self.votes)
                         self.compute_potes()
                 else:
-                    self.fake = imports.check_if_fake(experiment_id, election_id, 'soc')
+                    self.fake = imports.check_if_fake(self.experiment_id, self.election_id, 'soc')
                     if self.fake:
                         self.culture_id, self.params, self.num_voters, \
-                        self.num_candidates = imports.import_fake_soc_election(experiment_id,
-                                                                               election_id)
+                        self.num_candidates = imports.import_fake_soc_election(self.experiment_id,
+                                                                               self.election_id)
                     else:
 
                         self.votes, self.num_voters, self.num_candidates, self.params, \
                         self.culture_id, self.alliances, \
                         self.num_options, self.quantites = imports.import_real_soc_election(
-                            experiment_id, election_id, is_shifted)
+                            self.experiment_id, self.election_id, self.is_shifted)
 
                         try:
                             self.points['voters'] = self.import_ideal_points('voters')
@@ -106,12 +104,8 @@ class OrdinalElection(Election):
 
                 self.candidatelikeness_original_vectors = {}
 
-                if with_matrix:
-                    self.matrix = self.import_matrix()
-                    self.vectors = self.matrix.transpose()
-                else:
-                    if not fast_import:
-                        self.votes_to_positionwise_vectors()
+                if not self.fast_import:
+                    self.votes_to_positionwise_vectors()
             except:
                 self.is_correct = False
                 pass
@@ -262,20 +256,20 @@ class OrdinalElection(Election):
     def votes_to_voterlikeness_vectors(self) -> np.ndarray:
         return self.votes_to_voterlikeness_matrix()
 
-    def votes_to_voterlikeness_matrix(self) -> np.ndarray:
+    def votes_to_voterlikeness_matrix(self, vote_distance='swap') -> np.ndarray:
         """ convert VOTES to voter-likeness MATRIX """
         matrix = np.zeros([self.num_voters, self.num_voters])
         self.compute_potes()
 
         for v1 in range(self.num_voters):
             for v2 in range(self.num_voters):
-                matrix[v1][v2] = swap_distance_between_potes(self.potes[v1], self.potes[v2])
-                # matrix[v1][v2] = spearman_distance_between_potes(election.potes[v1], election.potes[v2])
+                if vote_distance == 'swap':
+                    matrix[v1][v2] = swap_distance_between_potes(self.potes[v1], self.potes[v2])
+                elif vote_distance == 'spearman':
+                    matrix[v1][v2] = spearman_distance_between_potes(self.potes[v1], self.potes[v2])
 
-        # VOTERLIKENESS IS SYMMETRIC
         for i in range(self.num_voters):
             for j in range(i + 1, self.num_voters):
-                # matrix[i][j] **= 0.5
                 matrix[j][i] = matrix[i][j]
 
         return matrix
@@ -314,9 +308,6 @@ class OrdinalElection(Election):
             self.winners = generate_winners(election=self, num_winners=num_winners)
 
     def prepare_instance(self, is_exported=None, is_aggregated=True):
-        # election.params['exp_id'] = election.experiment_id
-        # election.params['ele_id'] = election.election_id
-        # election.params['is_aggregated'] = is_aggregated
         if 'num_alliances' in self.params:
             self.votes, self.alliances = generate_ordinal_alliance_votes(
                 culture_id=self.culture_id,
@@ -434,6 +425,8 @@ class OrdinalElection(Election):
             length = self.num_voters
         elif object_type == 'candidate':
             length = self.num_candidates
+        else:
+            logging.warning(f'Incorrect object type: {object_type}')
 
         if object_type is None:
             object_type = self.object_type
@@ -463,7 +456,7 @@ class OrdinalElection(Election):
             else:
                 for i in range(len(X)):
                     plt.scatter(X[i], Y[i], color=color, alpha=alpha, marker=marker,
-                                s=self.quantites[i]*s)
+                                s=self.quantites[i] * s)
 
         elif object_type == 'candidate':
             for i in range(len(X)):
@@ -476,7 +469,7 @@ class OrdinalElection(Election):
         #     Xs = {}
         #     Ys = {}
         #     for i in range(length):
-        #         str_elem = str(self.votes[i])
+        #         str_elem = str(experiment_id.votes[i])
         #         if str_elem in weighted_points:
         #             weighted_points[str_elem] += 1
         #         else:
@@ -518,4 +511,4 @@ class OrdinalElection(Election):
 def convert_votes_to_potes(votes):
     """ Convert votes to positional votes (called potes) """
     return np.array([[list(vote).index(i) for i, _ in enumerate(vote)]
-                                   for vote in votes])
+                     for vote in votes])

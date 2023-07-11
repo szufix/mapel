@@ -5,8 +5,6 @@ from typing import Callable
 from tqdm import tqdm
 
 import copy
-import os
-import csv
 import numpy as np
 
 from mapel.elections.distances import main_approval_distances as mad
@@ -16,16 +14,13 @@ from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.core.objects.Experiment import Experiment
 
+import mapel.core.persistence.experiment_exports as exports
+
 
 registered_approval_distances = {
     'approvalwise': mad.compute_approvalwise,
 
     'hamming': mad.compute_hamming,  # unsupported distance
-    'flow': mad.compute_flow,  # unsupported distance
-    'coapproval_frequency': mad.compute_coapproval_frequency_vectors,  # unsupported distance
-    'pairwise': mad.compute_pairwise,  # unsupported distance
-    'voterlikeness': mad.compute_voterlikeness,  # unsupported distance
-    'candidatelikeness': mad.compute_candidatelikeness,  # unsupported distance
 }
 
 registered_ordinal_distances = {
@@ -174,22 +169,11 @@ def run_multiple_processes(exp: Experiment,
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
     if exp.is_exported:
-        _export_distances(exp, instances_ids, distances, times, t)
+        exports.export_distances_helper(exp, instances_ids, distances, times, t)
 
-
-def _export_distances(exp, instances_ids, distances, times, t):
-    """ Store distances to csv file """
-    file_name = f'{exp.distance_id}_p{t}.csv'
-    path = os.path.join(os.getcwd(), "experiments", exp.experiment_id, "distances", file_name)
-    with open(path, 'w', newline='') as csv_file:
-        writer = csv.writer(csv_file, delimiter=';')
-        writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
-        for election_id_1, election_id_2 in instances_ids:
-            distance = float(distances[election_id_1][election_id_2])
-            time_ = float(times[election_id_1][election_id_2])
-            writer.writerow([election_id_1, election_id_2, distance, time_])
 
 
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 17.08.2022 #
+# LAST CLEANUP ON: 11.07.2023 #
 # # # # # # # # # # # # # # # #
+

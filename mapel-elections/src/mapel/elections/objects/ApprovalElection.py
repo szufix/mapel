@@ -14,18 +14,16 @@ from mapel.elections.cultures.params import *
 class ApprovalElection(Election, ABC):
 
     def __init__(self,
-                 experiment_id,
-                 election_id,
+                 experiment_id=None,
+                 election_id=None,
                  culture_id=None,
                  num_candidates=None,
-                 is_imported: bool = False,
-                 is_shifted: bool = False,
                  params=None,
                  variable=None,
                  **kwargs):
 
-        super().__init__(experiment_id,
-                         election_id,
+        super().__init__(experiment_id=experiment_id,
+                         election_id=election_id,
                          culture_id=culture_id,
                          num_candidates=num_candidates,
                          **kwargs)
@@ -34,32 +32,29 @@ class ApprovalElection(Election, ABC):
         self.variable = variable
 
         self.approvalwise_vector = []
-        self.coapproval_frequency_vectors = []
-        self.voterlikeness_vectors = []
-        self.pairwise_matrix = []
-        self.candidatelikeness_original_vectors = []
-        self.candidatelikeness_sorted_vectors = []
-        self.hamming_candidates = []
         self.reverse_approvals = []
 
-        if is_imported and experiment_id != 'virtual':
+        self.import_approval_election()
+
+    def import_approval_election(self):
+        if self.is_imported and self.experiment_id is not None:
             try:
-                fake = imports.check_if_fake(experiment_id, election_id, 'app')
+                fake = imports.check_if_fake(self.experiment_id, self.election_id, 'app')
                 if fake:
                     self.culture_id, self.params, self.num_voters, self.num_candidates = \
-                        imports.import_fake_app_election(experiment_id, election_id)
+                        imports.import_fake_app_election(self.experiment_id, self.election_id)
                 else:
                     self.votes, self.num_voters, self.num_candidates, self.params, \
-                    self.culture_id = imports.import_real_app_election(experiment_id,
-                                                                       election_id,
-                                                                       is_shifted)
+                    self.culture_id = imports.import_real_app_election(self.experiment_id,
+                                                                       self.election_id,
+                                                                       self.is_shifted)
             except:
                 pass
 
         if self.params is None:
             self.params = {}
 
-        if culture_id is not None:
+        if self.culture_id is not None:
             self.params, self.printing_params = update_params_approval(self.params,
                                                                        self.printing_params,
                                                                        self.variable,
@@ -68,96 +63,16 @@ class ApprovalElection(Election, ABC):
 
     def votes_to_approvalwise_vector(self) -> None:
         """ Convert votes to approvalwise vectors """
-        approvalwise_vector = np.zeros([self.num_candidates])
-        for vote in self.votes:
-            for c in vote:
-                approvalwise_vector[c] += 1
+        vote_indices = np.concatenate(self.votes)
+        approvalwise_vector = np.bincount(vote_indices, minlength=self.num_candidates)
         approvalwise_vector = approvalwise_vector / self.num_voters
         self.approvalwise_vector = np.sort(approvalwise_vector)
 
-    def votes_to_coapproval_frequency_vectors(self, vector_type='A') -> None:
-        """ Convert votes to frequency vectors """
-        vectors = np.zeros([self.num_candidates, self.num_candidates * 2])
-        for vote in self.votes:
-            size = len(vote)
-            for c in range(self.num_candidates):
-                if c in vote:
-                    if vector_type in ['A', 'B']:
-                        vectors[c][size - 1] += 1
-                    elif vector_type == 'C':
-                        vectors[c][2 * size - 1] += 1
-                    elif vector_type in ['D', 'E']:
-                        vectors[c][self.num_candidates + size - 1] += 1
-                else:
-                    if vector_type == 'A':
-                        vectors[c][self.num_candidates + size] += 1
-                    elif vector_type == 'B':
-                        vectors[c][2 * self.num_candidates - size - 1] += 1
-                    elif vector_type == 'C':
-                        vectors[c][2 * size] += 1
-                    elif vector_type == 'D':
-                        vectors[c][size] += 1
-                    elif vector_type == 'E':
-                        vectors[c][self.num_candidates - size - 1] += 1
-        vectors = vectors / self.num_voters
-        self.coapproval_frequency_vectors = vectors
-
-    def votes_to_pairwise_matrix(self) -> None:
-        """ Convert votes to pairwise matrix """
-        matrix = np.zeros([self.num_candidates, self.num_candidates])
-
-        for c_1 in range(self.num_candidates):
-            for c_2 in range(self.num_candidates):
-                for vote in self.votes:
-                    if (c_1 in vote and c_2 in vote) or (c_1 not in vote and c_2 not in vote):
-                        matrix[c_1][c_2] += 1
-        matrix = matrix / self.num_voters
-        self.pairwise_matrix = matrix
-
-    def votes_to_candidatelikeness_original_vectors(self) -> None:
-        """ Convert votes to ... """
-        matrix = np.zeros([self.num_candidates, self.num_candidates])
-
-        for c_1 in range(self.num_candidates):
-            for c_2 in range(self.num_candidates):
-                for vote in self.votes:
-                    if (c_1 in vote and c_2 not in vote) or (c_1 not in vote and c_2 in vote):
-                        matrix[c_1][c_2] += 1
-        matrix = matrix / self.num_voters
-        self.candidatelikeness_original_vectors = matrix
-
-    def votes_to_candidatelikeness_sorted_vectors(self) -> None:
-        """ Convert votes to ... """
-        self.votes_to_candidatelikeness_original_vectors()
-        self.candidatelikeness_sorted_vectors = np.sort(self.candidatelikeness_original_vectors)
-
-    def votes_to_voterlikeness_vectors(self, vector_type='hamming') -> None:
-        """ Convert votes to ... """
-
-        vectors = np.zeros([self.num_voters, self.num_voters])
-
-        for i in range(self.num_voters):
-            for j in range(self.num_voters):
-                set_a = self.votes[i]
-                set_b = self.votes[j]
-                if vector_type == 'hamming':
-                    vectors[i][j] = hamming(set_a, set_b)
-                elif vector_type == 'to_be_deleted':
-                    vectors[i][j] = len(set_a.intersection(set_b)) - len(set_a)
-            vectors[i] = sorted(vectors[i])
-
-        self.voterlikeness_vectors = vectors
-
     def compute_reverse_approvals(self):
-        reverse_approvals = [set() for _ in range(self.num_candidates)]
-        for i, vote in enumerate(self.votes):
-            for c in vote:
-                reverse_approvals[int(c)].add(i)
-
-        self.reverse_approvals = reverse_approvals
+        self.reverse_approvals = [set(i for i, vote in enumerate(self.votes) if c in vote)
+                                  for c in range(self.num_candidates)]
 
     def prepare_instance(self, is_exported=None, is_aggregated=True):
-
         self.votes = generate_approval_votes(culture_id=self.culture_id,
                                              num_candidates=self.num_candidates,
                                              num_voters=self.num_voters,
@@ -187,7 +102,7 @@ class ApprovalElection(Election, ABC):
         return distances
 
     def compute_distances_between_candidates(self, distance_id='hamming'):
-        #
+
         distances = np.zeros([self.num_candidates, self.num_candidates])
         for c1 in range(self.num_candidates):
             for c2 in range(self.num_candidates):

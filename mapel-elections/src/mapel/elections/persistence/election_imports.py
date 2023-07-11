@@ -47,19 +47,16 @@ def import_real_soc_election(experiment_id: str, election_id: str, is_shifted=Fa
     it = 0
     quantites = []
     for j in range(num_options):
-        line = my_file.readline().rstrip("\n").split(',')
-        quantity = int(line[0])
+        line = list(map(int, my_file.readline().rstrip("\n").split(',')))
+        quantity = line[0]
         quantites.append(quantity)
 
         for k in range(quantity):
-            for el in range(num_candidates):
-                votes[it][el] = int(line[el + 1])
+            votes[it] = line[1:num_candidates + 1]
             it += 1
 
     if is_shifted:
-        for i in range(num_voters):
-            for j in range(num_candidates):
-                votes[i][j] -= 1
+        votes = [[vote - 1 for vote in voter] for voter in votes]
     my_file.close()
 
     return np.array(votes), num_voters, num_candidates, params, model_name, alliances, \
@@ -135,11 +132,7 @@ def import_real_app_election(experiment_id: str, election_id: str, is_shifted=Fa
         culture_id = rev_dict[culture_id]
 
     if is_shifted:
-        for i, vote in enumerate(votes):
-            new_vote = set()
-            for c in vote:
-                new_vote.add(c - 1)
-            votes[i] = new_vote
+        votes = [{c - 1 for c in vote} for vote in votes]
     my_file.close()
 
     return votes, num_voters, num_candidates, params, culture_id

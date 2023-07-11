@@ -98,6 +98,7 @@ def _run_over_tree(node):
         if a+b == 1.:
             node.value = None
 
+
 def _get_final_values_from_tree(node, values):
     if node.value is not None and node.election_id not in values:
         values[node.election_id] = int(node.value)

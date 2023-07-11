@@ -29,7 +29,7 @@ from mapel.elections.other import winners as win
 def highest_borda_score(election):
     """ Compute highest BORDA score of a given election """
     if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None'
+        return {'value': None}
     c = election.num_candidates
     vectors = election.get_vectors()
     borda = [sum([vectors[i][pos] * (c - pos - 1) for pos in range(c)])
@@ -40,15 +40,15 @@ def highest_borda_score(election):
 def highest_plurality_score(election):
     """ compute highest PLURALITY score of a given election"""
     if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None'
+        return {'value': None}
     first_pos = election.get_matrix()[0]
     return max(first_pos) * election.num_voters
 
 
-def highest_copeland_score(election) -> Union[int, str]:
+def highest_copeland_score(election):
     """ compute highest COPELAND score of a given election """
     if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None'
+        return {'value': None}
 
     election.compute_potes()
     scores = np.zeros([election.num_candidates])
@@ -73,7 +73,7 @@ def highest_copeland_score(election) -> Union[int, str]:
 def lowest_dodgson_score(election):
     """ compute lowest DODGSON score of a given election """
     if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None'
+        return {'value': None}
 
     min_score = math.inf
 
@@ -126,32 +126,32 @@ def lowest_dodgson_score(election):
 
 def highest_cc_score(election, committee_size=1):
     if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None', 'None'
+        return {'value': None, 'dissat': None}
     winners, total_time = win.generate_winners(election=election,
                                              num_winners=committee_size,
                                              ballot="ordinal",
                                              type='borda_owa', name='cc')
-    return get_cc_score(election, winners), get_cc_dissat(election, winners)
+    return {'value': get_cc_score(election, winners), 'dissat': get_cc_dissat(election, winners)}
 
 
 def highest_hb_score(election, committee_size=1):
     if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None', 'None'
+        return {'value': None, 'dissat': None}
     winners, total_time = win.generate_winners(election=election,
                                              num_winners=committee_size,
                                              ballot="ordinal",
                                              type='borda_owa', name='hb')
-    return get_hb_score(election, winners), get_hb_dissat(election, winners)
+    return {'value': get_hb_score(election, winners), 'dissat': get_hb_dissat(election, winners)}
 
 
 def highest_pav_score(election, committee_size=1):
     if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None', 'None'
+        return {'value': None, 'dissat': None}
     winners, total_time = win.generate_winners(election=election,
                                              num_winners=committee_size,
                                              ballot="ordinal",
                                              type='bloc_owa', name='hb')
-    return get_pav_score(election, winners), get_pav_dissat(election, winners)
+    return {'value': get_pav_score(election, winners), 'dissat': get_pav_dissat(election, winners)}
 
 
 # HELPER FUNCTIONS

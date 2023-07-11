@@ -12,4 +12,8 @@ class Instance:
         self.culture_id = culture_id
         self.features = {}
         self.printing_params = {}
-        self.is_correct = True
+
+
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 11.07.2023 #
+# # # # # # # # # # # # # # # #

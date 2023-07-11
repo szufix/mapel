@@ -183,33 +183,20 @@ class ApprovalElectionExperiment(ElectionExperiment, ABC):
                     results[model][rule] = avg_value
             all_results[f'{feature_id}_{column_id}'] = results
 
-        # print("\\toprule")
-        # print("rule", end=" ")
-        # for model in list_of_models:
-        #     # print(f'& {nice_model[model]}', end=" ")
-        #     print(f'& {model}', end=" ")
-        # # print("")
-        # print("\\\\ \\midrule")
-
         for rule in list_of_rules:
             print(rule, end=" ")
             for model in list_of_models:
                 print(f'&', end=" ")
                 for feature_id, column_id in zip(features_id, columns_id):
                     print(f'{all_results[f"{feature_id}_{column_id}"][model][rule]}', end=" \ ")
-            # print("")
             print("\\\\ \\midrule")
 
     def add_folders_to_experiment(self) -> None:
 
-        if not os.path.isdir("experiments/"):
-            os.mkdir(os.path.join(os.getcwd(), "experiments"))
-
-        if not os.path.isdir("images/"):
-            os.mkdir(os.path.join(os.getcwd(), "images"))
-
-        if not os.path.isdir("trash/"):
-            os.mkdir(os.path.join(os.getcwd(), "trash"))
+        dirs = ["experiments", "images", "trash"]
+        for dir in dirs:
+            if not os.path.isdir(dir):
+                os.mkdir(os.path.join(os.getcwd(), dir))
 
         if not os.path.isdir(os.path.join(os.getcwd(), "experiments", self.experiment_id)):
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))

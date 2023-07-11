@@ -39,14 +39,10 @@ class OrdinalElectionExperiment(ElectionExperiment, ABC):
 
     def add_folders_to_experiment(self) -> None:
 
-        if not os.path.isdir("experiments/"):
-            os.mkdir(os.path.join(os.getcwd(), "experiments"))
-
-        if not os.path.isdir("images/"):
-            os.mkdir(os.path.join(os.getcwd(), "images"))
-
-        if not os.path.isdir("trash/"):
-            os.mkdir(os.path.join(os.getcwd(), "trash"))
+        dirs = ["experiments", "images", "trash"]
+        for dir in dirs:
+            if not os.path.isdir(dir):
+                os.mkdir(os.path.join(os.getcwd(), dir))
 
         if not os.path.isdir(os.path.join(os.getcwd(), "experiments", self.experiment_id)):
             os.mkdir(os.path.join(os.getcwd(), "experiments", self.experiment_id))

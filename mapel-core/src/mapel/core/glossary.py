@@ -5,8 +5,6 @@ MAIN_GLOBAL_FEATUERS = ['distortion', 'monotonicity']
 ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans', 'distortion_from_all',
                             'id_vs_un', 'an_vs_st', }
 
-COLORS = ['blue', 'green', 'black', 'red', 'orange', 'purple', 'brown', 'lime', 'cyan', 'grey']
-
 RULE_NAME_MATRIX = {
     "av": "AV",
     "sav": "SAV",
@@ -168,9 +166,6 @@ LIST_OF_FAKE_MODELS = {'identity', 'uniformity', 'antagonism',
 PATHS = {'unid', 'stan', 'anid', 'stid', 'anun', 'stun',
          'mallows_matrix_path', 'walsh_path', 'conitzer_path', }
 
-PARTY_MODELS = {'2d_gaussian_party', '1d_gaussian_party', 'ic_party',
-                'walsh_party', 'conitzer_party', 'mallows_party'}
-
 APPROVAL_MODELS = {'impartial_culture', 'ic', 'resampling', 'id',
                    'empty', 'full', 'truncated_urn',
                    'urn', 'euclidean', 'noise',
@@ -190,18 +185,6 @@ NOT_ABCVOTING_RULES = {'borda_c4',
 
 EMBEDDING_RELATED_FEATURE = ['monotonicity_triplets', 'distortion_from_all']
 
-
-FEATURES_WITH_DISSAT = {'highest_cc_score',
-                        'highest_hb_score',
-                        'highest_pav_score',
-                        'greedy_approx_cc_score',
-                        'removal_approx_cc_score',
-                        'greedy_approx_hb_score',
-                        'removal_approx_hb_score',
-                        'greedy_approx_pav_score',
-                        'removal_approx_pav_score',
-                        'banzhaf_cc_score',
-                        'ranging_cc_score'}
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

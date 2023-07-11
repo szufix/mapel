@@ -4,21 +4,12 @@ import copy
 
 def generate_approval_resampling_votes(num_voters=None, num_candidates=None,
                                        phi=0.5, p=0.5):
-
     k = int(p * num_candidates)
     central_vote = {i for i in range(k)}
 
-    votes = [set() for _ in range(num_voters)]
-    for v in range(num_voters):
-        vote = set()
-        for c in range(num_candidates):
-            if np.random.random() <= phi:
-                if np.random.random() <= p:
-                    vote.add(c)
-            else:
-                if c in central_vote:
-                    vote.add(c)
-        votes[v] = vote
+    votes = [{c for c in range(num_candidates) if
+              (np.random.random() <= phi and np.random.random() <= p) or c in central_vote}
+             for _ in range(num_voters)]
 
     return votes
 

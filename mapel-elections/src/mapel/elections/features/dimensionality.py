@@ -9,7 +9,7 @@ except:
 
 def min_dim(election):
     if election.fake:
-        return 'None'
+        return None
 
     election.set_default_object_type('vote')
     election.compute_distances(distance_id='swap')

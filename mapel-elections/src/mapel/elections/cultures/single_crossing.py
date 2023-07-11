@@ -6,49 +6,24 @@ import numpy as np
 
 
 def generate_ordinal_single_crossing_votes(num_voters: int = None,
-                                           num_candidates: int = None,
-                                           domain_id: str = 'naive') -> np.ndarray:
+                                           num_candidates: int = None) -> np.ndarray:
     """ helper function: generate simple single-crossing elections"""
 
     votes = np.zeros([num_voters, num_candidates])
 
-    # GENERATE DOMAIN
-    if domain_id == 'naive':
+    domain_size = int(num_candidates * (num_candidates - 1) / 2 + 1)
+    domain = [list(range(num_candidates)) for _ in range(domain_size)]
 
-        domain_size = int(num_candidates * (num_candidates - 1) / 2 + 1)
+    for line in range(1, domain_size):
+        swap_candidates = [(i, i + 1) for i in range(num_candidates - 1) if
+                           domain[line - 1][i] < domain[line - 1][i + 1]]
+        swap_indices = swap_candidates[np.random.randint(0, len(swap_candidates))]
 
-        domain = [[i for i in range(num_candidates)] for _ in range(domain_size)]
-
-        for line in range(1, domain_size):
-
-            poss = []
-            for i in range(num_candidates - 1):
-                if domain[line - 1][i] < domain[line - 1][i + 1]:
-                    poss.append([domain[line - 1][i], domain[line - 1][i + 1]])
-
-            r = np.random.randint(0, len(poss))  # random swap
-
-            for i in range(num_candidates):
-
-                domain[line][i] = domain[line - 1][i]
-
-                if domain[line][i] == poss[r][0]:
-                    domain[line][i] = poss[r][1]
-
-                elif domain[line][i] == poss[r][1]:
-                    domain[line][i] = poss[r][0]
-
-    # elif domain_id == 'naive_pf':
-    #     domain = naive_sampler.sample()
-    elif domain_id == 'uniform':
-        return uniform_sampler.sampleElection()
-    else:
-        print('No such domain!')
-        domain = []
-
-    domain_size = len(domain)
-
-    # GENERATE VOTES
+        domain[line] = domain[line - 1].copy()
+        domain[line][swap_indices[0]], domain[line][swap_indices[1]] = domain[line][
+                                                                           swap_indices[1]], \
+                                                                       domain[line][
+                                                                           swap_indices[0]]
 
     for j in range(num_voters):
         r = np.random.randint(0, domain_size)
@@ -62,12 +37,11 @@ def get_single_crossing_matrix(num_candidates: int) -> np.ndarray:
 
 
 def get_single_crossing_vectors(num_candidates: int) -> np.ndarray:
-
     matrix = np.zeros([num_candidates, num_candidates])
 
     for i in range(num_candidates):
-        for j in range(num_candidates-i):
-            matrix[i][j] = i+j
+        for j in range(num_candidates - i):
+            matrix[i][j] = i + j
 
     for i in range(num_candidates):
         for j in range(i):
@@ -75,11 +49,11 @@ def get_single_crossing_vectors(num_candidates: int) -> np.ndarray:
 
     sums = [1]
     for i in range(num_candidates):
-        sums.append(sums[i]+i)
+        sums.append(sums[i] + i)
 
     for i in range(num_candidates):
         matrix[i][i] += sums[i]
-        matrix[i][num_candidates-i-1] -= i
+        matrix[i][num_candidates - i - 1] -= i
 
     for i in range(num_candidates):
         denominator = sum(matrix[i])
@@ -250,5 +224,3 @@ class scDomainNaiveSampler:
 
     def sample(self):
         return self.node.sample_domain_naive()
-
-

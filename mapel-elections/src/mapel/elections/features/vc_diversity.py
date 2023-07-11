@@ -1,17 +1,18 @@
-from mapel.core.glossary import LIST_OF_FAKE_MODELS
 import numpy as np
 
 
 def num_of_diff_votes(election):
     if election.fake:
-        return 'None'
+        return None
+
     str_votes = [str(vote) for vote in election.votes]
     return len(set(str_votes))
 
 
 def voterlikeness_sqrt(election):
     if election.fake:
-        return 'None'
+        return None
+
     vectors = election.votes_to_voterlikeness_vectors()
     score = 0.
     for vector in vectors:
@@ -22,7 +23,8 @@ def voterlikeness_sqrt(election):
 
 def voterlikeness_harmonic(election):
     if election.fake:
-        return 'None'
+        return None
+
     vectors = election.votes_to_voterlikeness_vectors()
     score = 0.
     for vector in vectors:
@@ -33,8 +35,8 @@ def voterlikeness_harmonic(election):
 
 
 def borda_diversity(election):
-    if election.culture_id in LIST_OF_FAKE_MODELS:
-        return 'None'
+    if election.fake:
+        return None
 
     vector = np.array(election.votes_to_bordawise_vector())
     return np.std(vector)

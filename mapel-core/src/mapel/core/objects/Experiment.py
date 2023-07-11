@@ -5,40 +5,21 @@ import logging
 import math
 import os
 from abc import ABCMeta, abstractmethod
+from time import time
+
+from scipy.stats import stats
 from tqdm import tqdm
 
 from PIL import Image
 from mapel.core.objects.Family import Family
 import mapel.core.printing as pr
 import matplotlib.pyplot as plt
-import networkx as nx
-import numpy as np
-from scipy.stats import stats
-import time
-
-from mapel.core.embedding.kamada_kawai.kamada_kawai import KamadaKawai
-from mapel.core.embedding.simulated_annealing.simulated_annealing import SimulatedAnnealing
 
 import mapel.core.persistence.experiment_imports as imports
 import mapel.core.persistence.experiment_exports as exports
+import mapel.core.embedding.embed as embed
 
 COLORS = []
-
-try:
-    from sklearn.manifold import MDS
-    from sklearn.manifold import TSNE
-    from sklearn.manifold import SpectralEmbedding
-    from sklearn.manifold import LocallyLinearEmbedding
-    from sklearn.manifold import Isomap
-    from sklearn.decomposition import PCA
-except ImportError as error:
-    MDS = None
-    TSNE = None
-    SpectralEmbedding = None
-    LocallyLinearEmbedding = None
-    Isomap = None
-    PCA = None
-    print(error)
 
 
 class Experiment:
@@ -60,80 +41,68 @@ class Experiment:
                  with_matrix=False):
 
         self.is_imported = is_imported
-        self.clean = clean
-        self.experiment_id = experiment_id
+        self.is_exported = is_exported
         self.fast_import = fast_import
         self.with_matrix = with_matrix
-        self.dim = 2
-
-        if clean:
-            self.clean_instances()
-
         self.distance_id = distance_id
         self.embedding_id = embedding_id
-
-        self.instances = None
-        self.distances = None
-        self.coordinates = None
+        self.clean = clean
+        self.dim = 2
         self.coordinates_lists = {}
-
         self.features = {}
         self.cultures = {}
-
         self.families = {}
         self.times = {}
         self.stds = {}
         self.matchings = {}
         self.coordinates_by_families = {}
-
+        self.experiment_id = None
+        self.instances = None
+        self.distances = None
+        self.coordinates = None
         self.num_families = None
         self.num_instances = None
         self.main_order = None
 
-        if experiment_id is None:
-            self.experiment_id = 'virtual'
-            self.is_exported = False
-        else:
-            self.is_exported = is_exported
+        if clean:
+            self.clean_instances()
+
+        if experiment_id is not None:
             self.experiment_id = experiment_id
             self.add_folders_to_experiment()
             self.families = self.import_controllers()
 
+            self.import_instances(instances)
+            self.import_distances(distances)
+            self.import_coordinates(coordinates, coordinates_names)
+
+    def import_instances(self, instances):
         if isinstance(instances, dict):
             self.instances = instances
-            # print('=== Omitting import! ===')
-        elif is_imported and self.experiment_id != 'virtual':
+        elif self.is_imported and self.experiment_id is not None:
 
             try:
                 self.instances = self.add_instances_to_experiment()
                 self.num_instances = len(self.instances)
-
-                # for instance in experiment.instances.values():
-                #     if instance.is_correct is None or instance.is_correct is False:
-                #         print('=== Instances not found! ===')
-                #         break
-                # else:
-                #     print('=== Instances imported successfully! ===')
-
             except FileNotFoundError:
-                # print('=== Instances not found! ===')
                 self.instances = {}
         else:
             self.instances = {}
 
+    def import_distances(self, distances):
         if isinstance(distances, dict):
             self.distances = distances
-            # print('=== Omitting import! ===')
-        elif is_imported and self.experiment_id != 'virtual':  # and fast_import == False:
+        elif self.is_imported and self.experiment_id is not None:
             self.distances, self.times, self.stds, self.mappings = \
                 imports.add_distances_to_experiment(self)
         else:
             self.distances = {}
 
+    def import_coordinates(self, coordinates, coordinates_names):
+
         if isinstance(coordinates, dict):
             self.coordinates = coordinates
-            # print('=== Omitting import! ===')
-        elif is_imported and self.experiment_id != 'virtual':
+        elif self.is_imported and self.experiment_id is not None:
             try:
                 if coordinates_names is not None:
                     for file_name in coordinates_names:
@@ -144,18 +113,10 @@ class Experiment:
                     self.coordinates = self.coordinates_lists[coordinates_names[0]]
                 else:
                     self.coordinates = imports.add_coordinates_to_experiment(self, dim=self.dim)
-                # print('=== Coordinates imported successfully! ===')
             except FileNotFoundError:
-                # print('=== Coordinates not found! ===')
                 pass
         else:
             self.coordinates = {}
-        # try:
-        #     for family_id in self.families:
-        #         for instance_id in self.families[family_id].instance_ids:
-        #             self.instances[instance_id].label = self.families[family_id].label
-        # finally:
-        #     pass
 
     @abstractmethod
     def prepare_instances(self):
@@ -190,141 +151,7 @@ class Experiment:
         pass
 
     def embed_2d(self, **kwargs) -> None:
-        self.embed(dim=2, **kwargs)
-
-    def embed(self,
-              embedding_id: str = None,
-              num_iterations: int = 1000,
-              radius: float = np.infty,
-              dim: int = 2,
-              num_neighbors: int = None,
-              method: str = 'standard',
-              zero_distance: float = 1.,
-              factor: float = 1.,
-              saveas: str = None,
-              init_pos: dict = None,
-              fixed=True,
-              attraction_factor=None,
-              **kwargs) -> None:
-
-        if attraction_factor is None:
-            attraction_factor = 1
-            if embedding_id == 'spring':
-                attraction_factor = 2
-
-        num_elections = len(self.distances)
-
-        x = np.zeros((num_elections, num_elections))
-
-        initial_positions = None
-
-        if init_pos is not None:
-            initial_positions = {}
-            for i, instance_id_1 in enumerate(self.distances):
-                if instance_id_1 in init_pos:
-                    initial_positions[i] = init_pos[instance_id_1]
-
-        for i, instance_id_1 in enumerate(self.distances):
-            for j, instance_id_2 in enumerate(self.distances):
-                if i < j:
-
-                    self.distances[instance_id_1][instance_id_2] *= factor
-                    if embedding_id in {'fr', 'spring'}:
-                        if self.distances[instance_id_1][instance_id_2] == 0.:
-                            self.distances[instance_id_1][instance_id_2] = zero_distance
-                            self.distances[instance_id_2][instance_id_1] = zero_distance
-                        normal = True
-                        if self.distances[instance_id_1][instance_id_2] > radius:
-                            x[i][j] = 0.
-                            normal = False
-                        if num_neighbors is not None:
-                            tmp = self.distances[instance_id_1]
-                            sorted_list_1 = list((dict(sorted(tmp.items(),
-                                                              key=lambda item: item[1]))).keys())
-                            tmp = self.distances[instance_id_2]
-                            sorted_list_2 = list((dict(sorted(tmp.items(),
-                                                              key=lambda item: item[1]))).keys())
-                            if (instance_id_1 not in sorted_list_2[0:num_neighbors]) and (
-                                    instance_id_2 not in sorted_list_1[0:num_neighbors]):
-                                x[i][j] = 0.
-                                normal = False
-                        if normal:
-                            x[i][j] = 1. / self.distances[instance_id_1][instance_id_2]
-                    else:
-                        x[i][j] = self.distances[instance_id_1][instance_id_2]
-                    x[i][j] = x[i][j] ** attraction_factor
-                    x[j][i] = x[i][j]
-
-        dt = [('weight', float)]
-        y = x.view(dt)
-        graph = nx.from_numpy_array(y)
-
-        if num_neighbors is None:
-            num_neighbors = 100
-
-        if embedding_id.lower() in {'fr', 'spring'}:
-            my_pos = nx.spring_layout(graph,
-                                      iterations=num_iterations,
-                                      dim=dim,
-                                      **kwargs)
-        elif embedding_id.lower() in {'mds'}:
-            my_pos = MDS(n_components=dim,
-                         dissimilarity='precomputed',
-                         max_iter=num_iterations,
-                         **kwargs
-                         ).fit_transform(x)
-        elif embedding_id.lower() in {'tsne'}:
-            my_pos = TSNE(n_components=dim,
-                          n_iter=num_iterations,
-                          **kwargs).fit_transform(x)
-        elif embedding_id.lower() in {'se'}:
-            my_pos = SpectralEmbedding(n_components=dim,
-                                       **kwargs).fit_transform(x)
-        elif embedding_id.lower() in {'isomap'}:
-            my_pos = Isomap(n_components=dim,
-                            n_neighbors=num_neighbors,
-                            **kwargs).fit_transform(x)
-        elif embedding_id.lower() in {'lle'}:
-            my_pos = LocallyLinearEmbedding(n_components=dim,
-                                            n_neighbors=num_neighbors,
-                                            max_iter=num_iterations,
-                                            method=method).fit_transform(x)
-        elif embedding_id.lower() in {'kk', 'kamada-kawai', 'kamada', 'kawai'}:
-            my_pos = KamadaKawai().embed(
-                distances=x, initial_positions=initial_positions,
-                fix_initial_positions=fixed
-            )
-        elif embedding_id.lower() in {'simulated-annealing'}:
-            my_pos = SimulatedAnnealing().embed(
-                distances=x,
-                initial_positions=initial_positions,
-                fix_initial_positions=fixed
-            )
-        elif embedding_id.lower() in {'geo'}:
-            f1 = self.import_feature('voterlikeness_sqrt')
-            f2 = self.import_feature('borda_diversity')
-            for f in f1:
-                if f1[f] is None:
-                    f1[f] = 0
-                if f2[f] is None:
-                    f2[f] = 0
-            my_pos = [[f1[e], f2[e]] for e in f1]
-        elif embedding_id.lower() in {'pca'}:
-            pca = PCA(n_components=2)
-            principalComponents = pca.fit_transform(x)
-            my_pos = principalComponents
-        else:
-            my_pos = []
-            logging.warning("Unknown method!")
-
-        self.coordinates = {}
-        for i, instance_id in enumerate(self.distances):
-            self.coordinates[instance_id] = [my_pos[i][d] for d in range(dim)]
-
-        pr.adjust_the_map(self)
-
-        if self.is_exported:
-            exports.export_embedding(self, embedding_id, saveas, dim, my_pos)
+        embed.embed(self, dim=2, **kwargs)
 
     def print_map_1d(self, **kwargs) -> None:
         pr.print_map_1d(self, **kwargs)
@@ -362,7 +189,7 @@ class Experiment:
             feature_dict['value'][instance_id] = value
             feature_dict['time'][instance_id] = total_time
         if self.is_exported:
-            exports.export_instance_feature(self, feature_id, feature_dict)
+            exports.export_feature_from_function_to_file(self, feature_id, feature_dict)
         self.features[feature_id] = feature_dict
         return feature_dict
 
@@ -505,11 +332,10 @@ class Experiment:
             else:
                 if f2[election_id] == 0:
                     f3[election_id] = 'Blank'
-                    # f3[election_id] = 1
                 else:
                     f3[election_id] = f1[election_id] / f2[election_id]
 
-        exports.export_feature(self, feature_dict=f3, saveas=saveas)
+        exports.export_normalized_feature_to_file(self, feature_dict=f3, saveas=saveas)
 
     def print_correlation_between_distances(self,
                                             distance_id_1=None,
@@ -530,8 +356,8 @@ class Experiment:
 
         all_distances = {}
 
-        all_distances[distance_id_1] = imports.import_distances(self, distance_id_1)
-        all_distances[distance_id_2] = imports.import_distances(self, distance_id_2)
+        all_distances[distance_id_1] = imports.import_distances_from_file(self, distance_id_1)
+        all_distances[distance_id_2] = imports.import_distances_from_file(self, distance_id_2)
 
         names = list(all_distances.keys())
 

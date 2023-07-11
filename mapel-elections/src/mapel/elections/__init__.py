@@ -80,43 +80,53 @@ def print_matrix(**kwargs):
     pr.print_matrix(**kwargs)
 
 
-
 ### WITHOUT EXPERIMENT ###
 def generate_election(**kwargs):
-    election = OrdinalElection("virtual", "virtual", **kwargs)
+    election = OrdinalElection(**kwargs)
     election.prepare_instance()
     return election
+
 
 def generate_ordinal_election(**kwargs):
-    election = OrdinalElection("virtual", "virtual", **kwargs)
+    election = OrdinalElection(**kwargs)
     election.prepare_instance()
     return election
+
 
 def generate_approval_election(**kwargs):
-    election = ApprovalElection("virtual", "virtual", **kwargs)
+    election = ApprovalElection(**kwargs)
     election.prepare_instance()
     return election
 
+
 def generate_election_from_votes(votes=None):
-    election = OrdinalElection("virtual", "virtual")
+    election = OrdinalElection()
     election.num_candidates = len(votes[0])
     election.num_voters = len(votes)
     election.votes = votes
     return election
+
 
 def generate_ordinal_election_from_votes(votes=None):
-    election = OrdinalElection("virtual", "virtual")
+    election = OrdinalElection()
     election.num_candidates = len(votes[0])
     election.num_voters = len(votes)
     election.votes = votes
     return election
 
+
 def generate_approval_election_from_votes(votes=None):
-    election = ApprovalElection("virtual", "virtual")
+    election = ApprovalElection()
     election.num_candidates = len(set().union(*votes))
     election.num_voters = len(votes)
     election.votes = votes
     return election
 
+
 def compute_distance(*args, **kwargs):
     return get_distance(*args, **kwargs)
+
+
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 11.07.2023 #
+# # # # # # # # # # # # # # # #

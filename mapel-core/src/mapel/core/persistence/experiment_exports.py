@@ -1,4 +1,3 @@
-
 import os
 import csv
 from mapel.core.glossary import *
@@ -6,32 +5,63 @@ from mapel.core.utils import make_folder_if_do_not_exist
 
 
 # Features
-def export_instance_feature(experiment, feature_id, feature_dict):
+def export_feature_to_file(experiment,
+                           feature_id,
+                           saveas,
+                           feature_dict):
+
     path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features")
     make_folder_if_do_not_exist(path_to_folder)
-    path_to_file = os.path.join(path_to_folder, f'{feature_id}_{experiment.embedding_id}.csv')
+
+    if feature_id in EMBEDDING_RELATED_FEATURE:
+        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
+                            "features", f'{feature_id}_{experiment.embedding_id}.csv')
+    else:
+        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
+                            "features", f'{saveas}.csv')
+
+    with open(path, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file, delimiter=';')
+        header = ['instance_id'] + list(feature_dict.keys())
+        writer.writerow(header)
+        for instance_id in feature_dict['instance_id']:
+            row = [instance_id] + [feature_dict[key][instance_id] for key in feature_dict.keys()]
+            writer.writerow(row)
+
+
+def export_feature_from_function_to_file(experiment, feature_id, feature_dict):
+    path_to_file = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features",
+                                f'{feature_id}_{experiment.embedding_id}.csv')
+
+    os.makedirs(os.path.dirname(path_to_file), exist_ok=True)
 
     with open(path_to_file, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
-        writer.writerow(["instance_id", "value", "time"])
-        for key in feature_dict['value']:
-            writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
+        header = ['instance_id'] + list(feature_dict.keys())
+        writer.writerow(header)
+        for instance_id in feature_dict['instance_id']:
+            row = [instance_id] + [feature_dict[key][instance_id] for key in feature_dict.keys()]
+            writer.writerow(row)
 
 
-def export_feature(experiment, feature_dict=None, saveas=None):
-    path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features")
-    make_folder_if_do_not_exist(path_to_folder)
-    path_to_file = os.path.join(path_to_folder, f'{saveas}.csv')
+def export_normalized_feature_to_file(experiment, feature_dict=None, saveas=None):
+    path_to_file = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features",
+                                f'{saveas}.csv')
+
+    os.makedirs(os.path.dirname(path_to_file), exist_ok=True)
 
     with open(path_to_file, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
-        writer.writerow(["instance_id", "value"])
-        for key in feature_dict:
-            writer.writerow([key, str(feature_dict[key])])
+        header = ['instance_id'] + list(feature_dict.keys())
+        writer.writerow(header)
+        for instance_id in feature_dict['instance_id']:
+            row = [instance_id] + [feature_dict[key][instance_id] for key in feature_dict.keys()]
+            writer.writerow(row)
 
 
 # Embeddings
-def export_embedding(experiment, embedding_id, saveas, dim, my_pos):
+def export_embedding_to_file(experiment, embedding_id, saveas, dim, my_pos):
+    """ Export coordinates of all instances to a file """
     if saveas is None:
         file_name = f'{embedding_id}_{experiment.distance_id}_{str(dim)}d.csv'
     else:
@@ -72,7 +102,7 @@ def export_distances_to_file(experiment,
                              distances,
                              times,
                              self_distances=False):
-
+    """ Export distances between each pair of instances to a file """
     path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances")
     make_folder_if_do_not_exist(path_to_folder)
     path = os.path.join(path_to_folder, f'{distance_id}.csv')
@@ -89,48 +119,19 @@ def export_distances_to_file(experiment,
                     writer.writerow([instance_1, instance_2, distance, time_])
 
 
-
-
-
-
-# Temporary
-def export_election_feature_to_file(experiment,
-                                    feature_id,
-                                    saveas,
-                                    feature_dict,):
-
-    path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features")
-    make_folder_if_do_not_exist(path_to_folder)
-
-    if feature_id in EMBEDDING_RELATED_FEATURE:
-        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-                            "features", f'{feature_id}_{experiment.embedding_id}.csv')
-    else:
-        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-                            "features", f'{saveas}.csv')
-
+def export_distances_helper(exp, instances_ids, distances, times, t):
+    """ Store distances to csv file """
+    file_name = f'{exp.distance_id}_p{t}.csv'
+    path = os.path.join(os.getcwd(), "experiments", exp.experiment_id, "distances", file_name)
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
-        if feature_id == 'ejr':
-            writer.writerow(["instance_id", "ejr", "pjr", "jr", "pareto", "time"])
-            for key in feature_dict['ejr']:
-                writer.writerow([key, feature_dict['ejr'][key],
-                                 feature_dict['pjr'][key],
-                                 feature_dict['jr'][key],
-                                 feature_dict['pareto'][key],
-                                 feature_dict['time'][key]])
-        elif feature_id in {'partylist'}:
-            writer.writerow(["instance_id", "value", "bound", "num_large_parties"])
-            for key in feature_dict:
-                writer.writerow([key, feature_dict[key][0], feature_dict[key][1],
-                                 feature_dict[key][2]])
-        elif feature_id in FEATURES_WITH_DISSAT:
-            writer.writerow(["instance_id", "value", 'time', 'dissat'])
-            for key in feature_dict['value']:
-                writer.writerow(
-                    [key, feature_dict['value'][key], feature_dict['time'][key],
-                     feature_dict['dissat'][key]])
-        else:
-            writer.writerow(["instance_id", "value", "time"])
-            for key in feature_dict['value']:
-                writer.writerow([key, feature_dict['value'][key], feature_dict['time'][key]])
+        writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
+        for election_id_1, election_id_2 in instances_ids:
+            distance = float(distances[election_id_1][election_id_2])
+            time_ = float(times[election_id_1][election_id_2])
+            writer.writerow([election_id_1, election_id_2, distance, time_])
+
+
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 11.07.2023 #
+# # # # # # # # # # # # # # # #

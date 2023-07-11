@@ -3,10 +3,8 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-try:
-    import cplex
-except ImportError:
-    cplex = None
+import gurobipy as gp
+from gurobipy import GRB
 
 
 def solve_matching_vectors(cost_table) -> (float, list):
@@ -18,18 +16,12 @@ def solve_matching_vectors(cost_table) -> (float, list):
 
 def solve_matching_matrices(matrix_1, matrix_2, length, inner_distance) -> float:
     """ Return: objective value"""
-    return _generate_lp_file_matching_matrix(matrix_1, matrix_2, length, inner_distance)
-
-
-def _generate_lp_file_matching_matrix(matrix_1, matrix_2, length, inner_distance):
-
-    cp = cplex.Cplex()
-    cp.parameters.threads.set(1)
-    cp.objective.set_sense(cp.objective.sense.minimize)
+    m = gp.Model()
+    m.setParam('Threads', 1)
+    m.ModelSense = GRB.MINIMIZE
 
     # OBJECTIVE FUNCTION
-    names = []
-    obj = []
+    variables = {}
     for k in range(length):
         for l in range(length):
             for i in range(length):
@@ -38,26 +30,19 @@ def _generate_lp_file_matching_matrix(matrix_1, matrix_2, length, inner_distance
                 for j in range(length):
                     if j == l:
                         continue
-
                     weight = inner_distance(np.array([matrix_1[k][i]]), np.array([matrix_2[l][j]]))
-
-                    names.append(f'Pk{k}l{l}i{i}j{j}')
-                    obj.append(weight)
-
-    types = [cp.variables.type.binary] * len(names)
-    cp.variables.add(obj=obj, names=names, types=types)
+                    name = f'Pk{k}l{l}i{i}j{j}'
+                    variables[name] = m.addVar(vtype=GRB.BINARY, name=name, obj=weight)
 
     # ADD MISSING VARIABLES
-    names = []
     for i in range(length):
         for j in range(length):
-            names.append(f'Mi{i}j{j}')
-    cp.variables.add(names=list(names),
-                     types=[cp.variables.type.binary] * len(names))
+            name = f'Mi{i}j{j}'
+            variables[name] = m.addVar(vtype=GRB.BINARY, name=name)
 
-    # FIRST GROUP OF CONSTRAINTS
-    lin_expr = []
-    rhs = []
+    m.update()
+
+    # CONSTRAINTS
     for k in range(length):
         for l in range(length):
             for i in range(length):
@@ -67,107 +52,41 @@ def _generate_lp_file_matching_matrix(matrix_1, matrix_2, length, inner_distance
                     if j == l:
                         continue
 
-                    ind = [f'Pk{k}l{l}i{i}j{j}', f'Mi{i}j{j}']
-                    val = [1., -1.]
-                    lin_expr.append(cplex.SparsePair(ind=ind, val=val))
-                    rhs.append(0)
+                    m.addConstr(variables[f'Pk{k}l{l}i{i}j{j}'] - variables[f'Mi{i}j{j}'] <= 0)
+                    m.addConstr(variables[f'Pk{k}l{l}i{i}j{j}'] - variables[f'Mi{k}j{l}'] <= 0)
 
-                    ind = [f'Pk{k}l{l}i{i}j{j}', f'Mi{k}j{l}']
-                    val = [1., -1.]
-                    lin_expr.append(cplex.SparsePair(ind=ind, val=val))
-                    rhs.append(0)
-
-    cp.linear_constraints.add(lin_expr=lin_expr,
-                              senses=['L'] * len(rhs),
-                              rhs=rhs,
-                              names=['C1_' + str(i) for i in range(len(rhs))])
-
-    # SECOND GROUP OF CONSTRAINTS
-    lin_expr = []
-    rhs = []
     for i in range(length):
-        ind = []
-        val = []
-        for j in range(length):
-            ind.append(f'Mi{i}j{j}')
-            val.append(1.)
-        lin_expr.append(cplex.SparsePair(ind=ind, val=val))
-        rhs.append(1.)
-    cp.linear_constraints.add(lin_expr=lin_expr,
-                              senses=['E'] * len(rhs),
-                              rhs=rhs,
-                              names=['C2_' + str(i) for i in range(len(rhs))])
+        m.addConstr(gp.quicksum(variables[f'Mi{i}j{j}'] for j in range(length)) == 1)
 
-    # THIRD GROUP OF CONSTRAINTS
-    lin_expr = []
-    rhs = []
     for j in range(length):
-        ind = []
-        val = []
-        for i in range(length):
-            ind.append(f'Mi{i}j{j}')
-            val.append(1.)
-        lin_expr.append(cplex.SparsePair(ind=ind, val=val))
-        rhs.append(1.)
-    cp.linear_constraints.add(lin_expr=lin_expr,
-                              senses=['E'] * len(rhs),
-                              rhs=rhs,
-                              names=['C3_' + str(i) for i in range(len(rhs))])
+        m.addConstr(gp.quicksum(variables[f'Mi{i}j{j}'] for i in range(length)) == 1)
 
-    # FORTH GROUP OF CONSTRAINTS
-    lin_expr = []
-    rhs = []
     for k in range(length):
         for i in range(length):
             if k == i:
                 continue
-            ind = []
-            val = []
-            for l in range(length):
-                for j in range(length):
-                    if l == j:
-                        continue
-                    ind.append(f'Pk{k}l{l}i{i}j{j}')
-                    val.append(1.)
-            lin_expr.append(cplex.SparsePair(ind=ind, val=val))
-            rhs.append(1.)
-    cp.linear_constraints.add(lin_expr=lin_expr,
-                              senses=['E'] * len(rhs),
-                              rhs=rhs,
-                              names=['C4_' + str(i) for i in range(len(rhs))])
+            m.addConstr(gp.quicksum(variables[f'Pk{k}l{l}i{i}j{j}']
+                                    for l in range(length)
+                                    for j in range(length) if l != j) == 1)
 
-    # FIFTH GROUP OF CONSTRAINTS
-    lin_expr = []
-    rhs = []
     for l in range(length):
         for j in range(length):
             if l == j:
                 continue
-            ind = []
-            val = []
-            for k in range(length):
-                for i in range(length):
-                    if k == i:
-                        continue
-                    ind.append(f'Pk{k}l{l}i{i}j{j}')
-                    val.append(1.)
-            lin_expr.append(cplex.SparsePair(ind=ind, val=val))
-            rhs.append(1.)
-    cp.linear_constraints.add(lin_expr=lin_expr,
-                              senses=['E'] * len(rhs),
-                              rhs=rhs,
-                              names=['C5_' + str(i) for i in range(len(rhs))])
+            m.addConstr(gp.quicksum(variables[f'Pk{k}l{l}i{i}j{j}']
+                                    for k in range(length)
+                                    for i in range(length) if k != i) == 1)
 
     # SOLVE THE ILP
-    cp.set_results_stream(None)
-    try:
-        cp.solve()
-    except:  # cplex.CplexSolverError:
-        print("Exception raised while solving")
-        return
+    m.setParam('OutputFlag', 0)
+    m.optimize()
 
-    objective_value = cp.solution.get_objective_value()
-    return objective_value
+    if m.status == GRB.OPTIMAL:
+        objective_value = m.objVal
+        return objective_value
+    else:
+        print("Exception raised while solving")
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 17.08.2022 #

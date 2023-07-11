@@ -8,7 +8,8 @@ from mapel.core.glossary import *
 
 
 # Distances
-def import_distances(experiment, distance_id):
+def import_distances_from_file(experiment, distance_id):
+    """ Import distances between each pair of instances from a file """
 
     distances = {}
 
@@ -51,10 +52,15 @@ def import_distances(experiment, distance_id):
 
 
 def add_distances_to_experiment(experiment) -> (dict, dict, dict):
-    """ Import precomputed distances between each pair of instances from a file """
+    """ Import precomputed distances between each pair of instances from a file
+        while preparing an experiment """
     try:
         file_name = f'{experiment.distance_id}.csv'
-        path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id, 'distances', file_name)
+        path = os.path.join(os.getcwd(),
+                            'experiments',
+                            experiment.experiment_id,
+                            'distances',
+                            file_name)
 
         distances = {}
         times = {}
@@ -130,11 +136,9 @@ def add_distances_to_experiment(experiment) -> (dict, dict, dict):
                 text = f'Possibly outdated distances are imported!'
                 logging.warning(text)
 
-        # print('=== Distances imported successfully! ===')
         return distances, times, stds, mappings
 
     except FileNotFoundError:
-        # print('=== Distances not found! ===')
         return None, None, None, None
 
 
@@ -144,40 +148,26 @@ def get_values_from_csv_file(experiment, feature_id, feature_long_id=None,
                              lower_limit=-np.infty,
                              column_id='value') -> dict:
     """ Import values for a feature_id from a .csv file """
-    if feature_long_id is None:
-        feature_long_id = feature_id
 
-    if feature_id in EMBEDDING_RELATED_FEATURE:
-        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-                            "features", f'{feature_long_id}.csv')
-    else:
-        path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
-                            "features", f'{feature_long_id}.csv')
+    feature_long_id = feature_id if feature_long_id is None else feature_long_id
+
+    path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features",
+                        f'{feature_long_id}.csv')
+
     values = {}
     with open(path, 'r', newline='') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=';')
 
         for row in reader:
-            try:
-                election_id = row['instance_id']
-            except:
-                try:
-                    election_id = row['election_id']
-                except:
-                    pass
+            election_id = row.get('instance_id', row.get('election_id'))
             value = row[column_id]
-            if value in {'None','Blank'} or value is None:
-                value = None
-            elif column_id == 'time' and float(value) == 0.:
-                value = None
-            else:
-                value = float(value)
-                if value >= upper_limit:
-                    value = upper_limit
-                if value <= lower_limit:
-                    value = lower_limit
 
-            values[election_id] = value
+            if value in {'None', 'Blank'} or column_id == 'time' and float(value) == 0.:
+                values[election_id] = None
+                continue
+
+            value = float(value)
+            values[election_id] = min(max(value, lower_limit), upper_limit)
 
     return values
 
@@ -185,16 +175,16 @@ def get_values_from_csv_file(experiment, feature_id, feature_long_id=None,
 # Coordinates
 def add_coordinates_to_experiment(experiment, dim=2, file_name=None) -> dict:
     """ Import from a file precomputed coordinates of all the points --
-    each point refer to one instance """
+        each point refer to one instance """
 
     coordinates = {}
     if file_name is None:
         file_name = f'{experiment.embedding_id}_{experiment.distance_id}_{dim}d.csv'
     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id,
                         "coordinates", file_name)
+
     with open(path, 'r', newline='') as csv_file:
 
-        # ORIGINAL
         reader = csv.DictReader(csv_file, delimiter=';')
 
         warn = False
@@ -223,3 +213,7 @@ def add_coordinates_to_experiment(experiment, dim=2, file_name=None) -> dict:
             logging.warning(text)
 
     return coordinates
+
+# # # # # # # # # # # # # # # #
+# LAST CLEANUP ON: 11.07.2023 #
+# # # # # # # # # # # # # # # #

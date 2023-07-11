@@ -411,7 +411,6 @@ class ElectionExperiment(Experiment):
         self.times = times
         self.matchings = matchings
 
-
     def get_election_id_from_model_name(self, culture_id: str) -> str:
         for family_id in self.families:
             if self.families[family_id].culture_id == culture_id:
@@ -538,8 +537,6 @@ class ElectionExperiment(Experiment):
 
         if feature_id == 'ejr':
             feature_dict = {'value': {}, 'time': {}, 'ejr': {}, 'pjr': {}, 'jr': {}, 'pareto': {}}
-        elif feature_id in FEATURES_WITH_DISSAT:
-            feature_dict = {'value': {}, 'time': {}, 'dissat': {}}
         else:
             feature_dict = {'value': {}, 'time': {}}
 
@@ -559,11 +556,11 @@ class ElectionExperiment(Experiment):
         else:
             feature = features.get_local_feature(feature_id)
 
-            for instance_id in tqdm(self.instances, desc='Computing feature'):
+            for instance_id in tqdm(self.instances):
                 instance = self.elections[instance_id]
 
                 start = time.time()
-
+                solution = None
                 for _ in range(num_iterations):
 
                     if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
@@ -576,46 +573,35 @@ class ElectionExperiment(Experiment):
                         value = feature(self, instance_id)
                     elif feature_id in ['ejr', 'core', 'pareto', 'priceability',
                                         'cohesiveness']:
-                        value = instance.get_feature(feature_id,
-                                                     feature_long_id,
-                                                     feature_params=feature_params,
-                                                     overwrite=overwrite)
+                        value = instance.get_feature(feature_id, feature_long_id,
+                                                     feature_params=feature_params)
                     else:
-                        value = instance.get_feature(feature_id, feature_long_id, **kwargs,
-                                                     overwrite=overwrite)
-
+                        solution = instance.get_feature(feature_id, feature_long_id,
+                                                        overwrite=overwrite, **kwargs)
                 total_time = time.time() - start
                 total_time /= num_iterations
 
-                if feature_id == 'ejr':
-                    feature_dict['ejr'][instance_id] = int(value['ejr'])
-                    feature_dict['pjr'][instance_id] = int(value['pjr'])
-                    feature_dict['jr'][instance_id] = int(value['jr'])
-                    feature_dict['pareto'][instance_id] = int(value['pareto'])
-                    feature_dict['time'][instance_id] = total_time
-
-                elif feature_id in FEATURES_WITH_DISSAT:
-                    feature_dict['value'][instance_id] = value[0]
-                    if value[0] is None:
-                        feature_dict['time'][instance_id] = None
+                if solution is not None:
+                    if type(solution) is dict:
+                        for key in solution:
+                            if key not in feature_dict:
+                                feature_dict[key] = {}
+                            feature_dict[key][instance_id] = solution[key]
                     else:
-                        feature_dict['time'][instance_id] = total_time
-                    feature_dict['dissat'][instance_id] = value[1]
+                        feature_dict['value'][instance_id] = solution
+                    feature_dict['time'][instance_id] = total_time
                 else:
                     feature_dict['value'][instance_id] = value
-                    if value is None:
-                        feature_dict['time'][instance_id] = None
-                    else:
-                        feature_dict['time'][instance_id] = total_time
+                    feature_dict['time'][instance_id] = total_time
 
         if saveas is None:
             saveas = feature_long_id
 
         if self.is_exported:
-            exports.export_election_feature_to_file(self,
-                                                    feature_id,
-                                                    saveas,
-                                                    feature_dict)
+            exports.export_feature_to_file(self,
+                                           feature_id,
+                                           saveas,
+                                           feature_dict)
 
         self.features[saveas] = feature_dict
         return feature_dict
