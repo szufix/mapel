@@ -5,7 +5,7 @@ import logging
 import math
 import os
 from abc import ABCMeta, abstractmethod
-from time import time
+import time
 
 from scipy.stats import stats
 from tqdm import tqdm
@@ -341,8 +341,6 @@ class Experiment:
                                             distance_id_1=None,
                                             distance_id_2=None,
                                             title=None,
-                                            all=False,
-                                            my_list=None,
                                             s=12,
                                             alpha=0.25,
                                             color='purple',
@@ -375,37 +373,19 @@ class Experiment:
                 'l1-pairwise': "$\ell_1$-Pairwise",
             }.get(name, name)
 
-        def normalize(name):
-            return {
-                'spearman': 1.,
-                'l1-mutual_attraction': 1.,
-                'emd-positionwise': 1.,
-            }.get(name)
-
         for name_1, name_2 in itertools.combinations(names, 2):
 
-            if all:
-                values_x = []
-                values_y = []
-                for e1, e2 in itertools.combinations(my_list, 2):
-                    for q in range(940):
-                        f1 = f'{e1}_{q}'
-                        f2 = f'{e2}_{q}'
-                        values_x.append(all_distances[name_1][f1][f2])
-                        values_y.append(all_distances[name_2][f1][f2])
-
-            else:
-                values_x = []
-                values_y = []
-                empty_x = []
-                empty_y = []
-                for e1, e2 in itertools.combinations(all_distances[name_1], 2):
-                    if e1 in ['AN', 'UN', 'ID', 'ST'] or e2 in ['AN', 'UN', 'ID', 'ST']:
-                        empty_x.append(all_distances[name_1][e1][e2])
-                        empty_y.append(all_distances[name_2][e1][e2])
-                    else:
-                        values_x.append(all_distances[name_1][e1][e2])
-                        values_y.append(all_distances[name_2][e1][e2])
+            values_x = []
+            values_y = []
+            empty_x = []
+            empty_y = []
+            for e1, e2 in itertools.combinations(all_distances[name_1], 2):
+                if e1 in ['AN', 'UN', 'ID', 'ST'] or e2 in ['AN', 'UN', 'ID', 'ST']:
+                    empty_x.append(all_distances[name_1][e1][e2])
+                    empty_y.append(all_distances[name_2][e1][e2])
+                else:
+                    values_x.append(all_distances[name_1][e1][e2])
+                    values_y.append(all_distances[name_2][e1][e2])
 
             fig = plt.figure(figsize=[6.4, 4.8])
             plt.gcf().subplots_adjust(left=0.2)
@@ -416,9 +396,6 @@ class Experiment:
 
             PCC = round(stats.pearsonr(values_x, values_y)[0], 3)
             print('PCC', PCC)
-            pear_text = f'PCC = {PCC}'
-            # plt.text(0.7, 0.1, pear_text, transform=ax.transAxes, size=14)
-
             SCC = round(stats.spearmanr(values_x, values_y)[0], 3)
             print('SCC', SCC)
 
