@@ -24,7 +24,8 @@ def export_feature_to_file(experiment,
         writer = csv.writer(csv_file, delimiter=';')
         header = ['instance_id'] + list(feature_dict.keys())
         writer.writerow(header)
-        for instance_id in feature_dict['instance_id']:
+        any_key = [key for key in feature_dict.keys()][0]
+        for instance_id in feature_dict[any_key]:
             row = [instance_id] + [feature_dict[key][instance_id] for key in feature_dict.keys()]
             writer.writerow(row)
 

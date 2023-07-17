@@ -75,6 +75,11 @@ class Experiment:
             self.import_instances(instances)
             self.import_distances(distances)
             self.import_coordinates(coordinates, coordinates_names)
+        else:
+            self.instances = {}
+            self.distances = {}
+            self.coordinates = {}
+
 
     def import_instances(self, instances):
         if isinstance(instances, dict):

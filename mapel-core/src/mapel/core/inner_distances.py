@@ -1,4 +1,4 @@
-import copy
+from copy import deepcopy
 import math
 import numpy as np
 import itertools
@@ -60,7 +60,7 @@ def hellinger(vector_1, vector_2):
 
 def emd(vector_1, vector_2):
     """ compute EMD metric """
-    vector_1 = copy.deepcopy(vector_1)
+    vector_1 = deepcopy(vector_1)
     dirt = 0.
     for i in range(len(vector_1) - 1):
         surplus = vector_1[i] - vector_2[i]
@@ -83,7 +83,7 @@ def vote_to_pote(vote: list) -> list:
 def swap_distance(vote_1: list, vote_2: list, matching=None) -> int:
     """ Return: Swap distance between two votes """
 
-    new_vote_2 = copy.deepcopy(vote_2)
+    new_vote_2 = deepcopy(vote_2)
     if matching is not None:
         for i in range(len(vote_2)):
             new_vote_2[i] = matching[vote_2[i]]

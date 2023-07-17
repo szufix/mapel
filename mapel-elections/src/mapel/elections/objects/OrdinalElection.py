@@ -319,12 +319,15 @@ class OrdinalElection(Election):
                                                 num_candidates=self.num_candidates,
                                                 num_voters=self.num_voters,
                                                 params=self.params)
-
-        c = Counter(map(tuple, self.votes))
-        counted_votes = [[count, list(row)] for row, count in c.items()]
-        counted_votes = sorted(counted_votes, reverse=True)
-        self.quantites = [a[0] for a in counted_votes]
-        self.num_options = len(counted_votes)
+        if not self.fake:
+            c = Counter(map(tuple, self.votes))
+            counted_votes = [[count, list(row)] for row, count in c.items()]
+            counted_votes = sorted(counted_votes, reverse=True)
+            self.quantites = [a[0] for a in counted_votes]
+            self.num_options = len(counted_votes)
+        else:
+            self.quantites = [self.num_voters]
+            self.num_options = 1
 
         if is_exported:
             exports.export_ordinal_election(self, is_aggregated=is_aggregated)

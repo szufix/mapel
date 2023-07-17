@@ -458,8 +458,7 @@ class RoommatesExperiment(Experiment):
                 file_csv.write(
                     "size;num_agents;culture_id;params;color;alpha;family_id;label;marker;show\n")
                 file_csv.write("10;20;roommates_ic;{};black;1;IC;IC;o;t\n")
-        except FileExistsError:
-            print("Experiment already exists!")
+
 
 
     def get_election_id_from_model_name(self, culture_id: str) -> str:

@@ -67,5 +67,4 @@ class OrdinalElectionExperiment(ElectionExperiment, ABC):
                     "size;num_candidates;num_voters;culture_id;params;color;alpha;"
                     "family_id;label;marker;show\n")
                 file_csv.write("3;10;100;ic;{};black;1;ic;Impartial Culture;o;t\n")
-        else:
-            print("Experiment already exists!")
+

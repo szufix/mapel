@@ -391,8 +391,6 @@ class MarriagesExperiment(Experiment):
                 file_csv.write(
                     "size;num_agents;culture_id;params;color;alpha;family_id;label;marker;show\n")
                 file_csv.write("10;16;ic;{};black;1;IC;IC;o;t\n")
-        except FileExistsError:
-            print("Experiment already exists!")
 
 
     def get_election_id_from_model_name(self, model_id: str) -> str:

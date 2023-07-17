@@ -106,17 +106,7 @@ def lowest_dodgson_score(election):
                     D[k] = threshold - diff
         D[target_id] = 0  # always winning
 
-        # file_name = f'{np.random.random()}.lp'
-        # file_name = 'tmp_old.lp'
-        # path = os.path.join(os.getcwd(), "trash", file_name)
-        # lp.generate_lp_file_dodgson_score_old(path, N=N, e=e, D=D)
-        # score, total_time = lp.solve_lp_dodgson_score(path)
-        # lp.remove_lp_file(path)
-
         score = lp.solve_lp_file_dodgson_score(election, N=N, e=e, D=D)
-
-        # if election.election_id == 'Impartial Culture_2' and target_id == 0:
-        #     exit()
 
         if score < min_score:
             min_score = score
