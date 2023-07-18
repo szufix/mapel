@@ -469,3 +469,8 @@ class Experiment:
         new_image.save(f'images/microscope/{name}.png', "PNG", quality=85)
         if show:
             new_image.show()
+
+    def get_instance_id_from_culture_id(self, culture_id: str):
+        for family_id in self.families:
+            if self.families[family_id].culture_id == culture_id:
+                return family_id

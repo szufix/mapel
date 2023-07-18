@@ -367,14 +367,10 @@ class MarriagesExperiment(Experiment):
 
     def create_structure(self) -> None:
 
-        if not os.path.isdir("election/"):
-            os.mkdir(os.path.join(os.getcwd(), "election"))
-
-        if not os.path.isdir("images/"):
-            os.mkdir(os.path.join(os.getcwd(), "images"))
-
-        if not os.path.isdir("trash/"):
-            os.mkdir(os.path.join(os.getcwd(), "trash"))
+        dirs = ["experiments", "images", "trash"]
+        for dir in dirs:
+            if not os.path.isdir(dir):
+                os.mkdir(os.path.join(os.getcwd(), dir))
 
         try:
             os.mkdir(os.path.join(os.getcwd(), "election", self.experiment_id))
@@ -388,12 +384,7 @@ class MarriagesExperiment(Experiment):
             path = os.path.join(os.getcwd(), "election", self.experiment_id, "map.csv")
 
             with open(path, 'w') as file_csv:
-                file_csv.write(
-                    "size;num_agents;culture_id;params;color;alpha;family_id;label;marker;show\n")
+                file_csv.write("size;num_agents;culture_id;params;color;alpha;family_id;label;marker;show\n")
                 file_csv.write("10;16;ic;{};black;1;IC;IC;o;t\n")
-
-
-    def get_election_id_from_model_name(self, model_id: str) -> str:
-        for family_id in self.families:
-            if self.families[family_id].culture_id == model_id:
-                return family_id
+        except:
+            pass

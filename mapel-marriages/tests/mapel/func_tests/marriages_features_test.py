@@ -5,17 +5,12 @@ import mapel.marriages as mapel
 
 
 registered_marriages_features_to_test = {
-    # 'summed_rank_minimal_matching',
-    # 'summed_rank_maximal_matching',
-    # 'minimal_rank_maximizing_matching',
-    # 'min_num_bps_matching',
-    # 'num_of_bps_min_weight',
-    # 'avg_num_of_bps_for_rand_matching',
-    # 'mutuality',
-    # 'dist_from_id_1',
-    # 'dist_from_id_2'
+    'summed_rank_minimal_matching',
+    'summed_rank_maximal_matching',
+    'minimal_rank_maximizing_matching',
+    'avg_num_of_bps_for_rand_matching',
+    'num_of_bps_min_weight',
 }
-
 
 class TestFeatures:
 

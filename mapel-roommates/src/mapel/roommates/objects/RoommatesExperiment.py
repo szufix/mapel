@@ -434,14 +434,10 @@ class RoommatesExperiment(Experiment):
 
     def create_structure(self) -> None:
 
-        if not os.path.isdir("election/"):
-            os.mkdir(os.path.join(os.getcwd(), "election"))
-
-        if not os.path.isdir("images/"):
-            os.mkdir(os.path.join(os.getcwd(), "images"))
-
-        if not os.path.isdir("trash/"):
-            os.mkdir(os.path.join(os.getcwd(), "trash"))
+        dirs = ["experiments", "images", "trash"]
+        for dir in dirs:
+            if not os.path.isdir(dir):
+                os.mkdir(os.path.join(os.getcwd(), dir))
 
         try:
             os.mkdir(os.path.join(os.getcwd(), "election", self.experiment_id))
@@ -458,12 +454,8 @@ class RoommatesExperiment(Experiment):
                 file_csv.write(
                     "size;num_agents;culture_id;params;color;alpha;family_id;label;marker;show\n")
                 file_csv.write("10;20;roommates_ic;{};black;1;IC;IC;o;t\n")
+        except:
+            pass
 
-
-
-    def get_election_id_from_model_name(self, culture_id: str) -> str:
-        for family_id in self.families:
-            if self.families[family_id].culture_id == culture_id:
-                return family_id
 
 

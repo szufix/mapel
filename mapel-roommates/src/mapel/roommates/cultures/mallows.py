@@ -41,7 +41,7 @@ def calculateZ(m, phi):
 def mallowsMatrix(num_candidates, lphi, pos, normalize=True):
     mat = np.zeros([num_candidates, num_candidates])
     if normalize:
-        phi = phi_from_relphi(num_candidates, lphi)
+        phi = ml.phi_from_normphi(num_candidates, lphi)
     else:
         phi = lphi
     Z = calculateZ(num_candidates, phi)
@@ -122,7 +122,7 @@ def generate_roommates_malasym_votes(num_agents: int = None,
     # if 'norm-phi' not in params:
     #     params['norm-phi'] = np.random.rand()
 
-    phi = phi_from_relphi(num_agents, relphi=normphi)
+    phi = ml.phi_from_normphi(num_agents, normphi=normphi)
     votes = mallows_votes(votes, phi)
 
     return convert(votes)

@@ -100,7 +100,7 @@ def summed_rank_maximal_matching(instance):
     try:
         val,matching= rank_matching(instance,True,True)
     except:
-        return 'None'
+        return None
     # if number_blockingPairs(instance,matching)>0:
     #     print('ERROR IN summed_rank_maximal_matching')
     #     exit(0)
@@ -110,7 +110,7 @@ def summed_rank_minimal_matching(instance):
     try:
         val,matching= rank_matching(instance,False,True)
     except:
-        return 'None'
+        return None
     # if number_blockingPairs(instance,matching)>0:
     #     print('ERROR IN summed_rank_minimal_matching')
     #     exit(0)
@@ -120,13 +120,14 @@ def minimal_rank_maximizing_matching(instance):
     try:
         val,matching=rank_matching(instance,True,False)
     except:
-        return 'None'
+        return None
     # if number_blockingPairs(instance,matching)>0:
     #     print('ERROR IN minimal_rank_maximizing_matching')
     #     exit(0)
     return val
 
 def avg_number_of_bps_for_random_matching(instance,iterations=100):
+    instance = instance.votes
     bps=[]
     num_agents=len(instance[0])
     for _ in range(iterations):
@@ -142,6 +143,7 @@ def avg_number_of_bps_for_random_matching(instance,iterations=100):
     return statistics.mean(bps), statistics.stdev(bps)
 
 def number_of_bps_maximumWeight(instance):
+    instance = instance.votes
     num_agents=len(instance[0])
     G = nx.Graph()
     for i in range(num_agents):

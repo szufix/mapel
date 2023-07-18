@@ -63,8 +63,10 @@ class ApprovalElection(Election, ABC):
 
     def votes_to_approvalwise_vector(self) -> None:
         """ Convert votes to approvalwise vectors """
-        vote_indices = np.concatenate(self.votes)
-        approvalwise_vector = np.bincount(vote_indices, minlength=self.num_candidates)
+        approvalwise_vector = np.zeros([self.num_candidates])
+        for vote in self.votes:
+            for c in vote:
+                approvalwise_vector[c] += 1
         approvalwise_vector = approvalwise_vector / self.num_voters
         self.approvalwise_vector = np.sort(approvalwise_vector)
 

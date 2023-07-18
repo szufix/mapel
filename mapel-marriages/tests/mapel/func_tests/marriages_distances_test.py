@@ -8,7 +8,7 @@ registered_marriages_distances_to_test = {
 }
 
 
-class TestRoommatesDistances:
+class TestMarriagesDistances:
 
     @pytest.mark.parametrize("distance_id", registered_marriages_distances_to_test)
     def test_marriages_distances(self, distance_id):

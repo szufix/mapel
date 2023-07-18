@@ -1551,15 +1551,15 @@ def adjust_the_map(experiment) -> None:
 
         # try:
         try:
-            left = experiment.get_election_id_from_model_name('uniformity')
-            right = experiment.get_election_id_from_model_name('identity')
-            down = experiment.get_election_id_from_model_name('stratification')
+            left = experiment.get_instance_id_from_culture_id('uniformity')
+            right = experiment.get_instance_id_from_culture_id('identity')
+            down = experiment.get_instance_id_from_culture_id('stratification')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
             try:
-                left = experiment.get_election_id_from_model_name('un_from_matrix')
-                right = experiment.get_election_id_from_model_name('real_identity')
-                up = experiment.get_election_id_from_model_name('real_antagonism')
+                left = experiment.get_instance_id_from_culture_id('un_from_matrix')
+                right = experiment.get_instance_id_from_culture_id('real_identity')
+                up = experiment.get_instance_id_from_culture_id('real_antagonism')
                 adjust_the_map_on_three_points(experiment, left, right, up, is_down=False)
             except Exception:
                 pass
@@ -1570,14 +1570,14 @@ def adjust_the_map(experiment) -> None:
             left = 'IC 0.5'
             right = 'ID 0.5'
             # up = election.get_election_id_from_model_name('approval_full')
-            down = experiment.get_election_id_from_model_name('approval_empty')
+            down = experiment.get_instance_id_from_culture_id('approval_empty')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
             try:
                 left = 'IC 0.25'
                 right = 'ID 0.25'
                 # up = election.get_election_id_from_model_name('approval_full')
-                down = experiment.get_election_id_from_model_name('approval_empty')
+                down = experiment.get_instance_id_from_culture_id('approval_empty')
                 adjust_the_map_on_three_points(experiment, left, right, down)
             except Exception:
                 pass
@@ -1600,10 +1600,10 @@ def adjust_the_map(experiment) -> None:
     elif experiment.instance_type == 'roommates':
 
         try:
-            left = experiment.get_election_id_from_model_name('roommates_asymmetric')
-            right = experiment.get_election_id_from_model_name('roommates_symmetric')
+            left = experiment.get_instance_id_from_culture_id('roommates_asymmetric')
+            right = experiment.get_instance_id_from_culture_id('roommates_symmetric')
             # up = election.get_election_id_from_model_name('antagonism')
-            down = experiment.get_election_id_from_model_name('roommates_id')
+            down = experiment.get_instance_id_from_culture_id('roommates_id')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
             pass
@@ -1612,10 +1612,10 @@ def adjust_the_map(experiment) -> None:
     elif experiment.instance_type == 'marriages':
 
         try:
-            left = experiment.get_election_id_from_model_name('asymmetric')
-            right = experiment.get_election_id_from_model_name('symmetric')
+            left = experiment.get_instance_id_from_culture_id('asymmetric')
+            right = experiment.get_instance_id_from_culture_id('symmetric')
             # up = election.get_election_id_from_model_name('antagonism')
-            down = experiment.get_election_id_from_model_name('id')
+            down = experiment.get_instance_id_from_culture_id('id')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
             pass
