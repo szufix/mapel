@@ -162,7 +162,7 @@ def get_values_from_csv_file(experiment, feature_id, feature_long_id=None,
             election_id = row.get('instance_id', row.get('election_id'))
             value = row[column_id]
 
-            if value in {'None', 'Blank'} or column_id == 'time' and float(value) == 0.:
+            if value is None or value in {'None', 'Blank', "''", '""', ''}:
                 values[election_id] = None
                 continue
 
