@@ -351,7 +351,6 @@ def _import_values_for_feature(experiment, feature_id=None, upper_limit=None,
                                marker_func=None, dim=2, column_id='value', omit=None,
                                scale='default'):
     """ Import values for a feature_id """
-    print(upper_limit)
     if isinstance(feature_id, str):
         if feature_id in experiment.features:
             values = experiment.features[feature_id][column_id]
@@ -625,15 +624,12 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
 
     vmin = 0
     vmax = 1
-    # strech=[1.0,2.0]
-    print(strech)
-    print(_min)
-    print(_max)
+
     if strech is not None:
         length = _max - _min
         vmin = 0 - (_min - strech[0]) / length
         vmax = 1 + (strech[1] - _max) / length
-    print(vmin, vmax)
+
 
     unique_markers = set(markers)
     images = []
