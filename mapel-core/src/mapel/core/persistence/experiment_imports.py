@@ -125,7 +125,8 @@ def add_distances_to_experiment(experiment) -> (dict, dict, dict):
 
                 try:
                     mappings[instance_id_1][instance_id_2] = ast.literal_eval(str(row['mapping']))
-                    mappings[instance_id_2][instance_id_1] = np.argsort(mappings[instance_id_1][instance_id_2])
+                    mappings[instance_id_2][instance_id_1] = np.argsort(
+                        mappings[instance_id_1][instance_id_2])
                 except:
                     pass
 
@@ -162,7 +163,8 @@ def get_values_from_csv_file(experiment, feature_id, feature_long_id=None,
             election_id = row.get('instance_id', row.get('election_id'))
             value = row[column_id]
 
-            if value is None or value in {'None', 'Blank', "''", '""', ''}:
+            if value is None or value in {'None', 'Blank', "''", '""', ''} or \
+                    (column_id == 'time' and float(value) == 0.):
                 values[election_id] = None
                 continue
 

@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 
+import os
+
 try:
     import tikzplotlib
 except ImportError:
@@ -55,7 +57,7 @@ def print_map_2d(experiment,
                  individual=False,
                  textual=None,
                  title=None,
-                 bbox_inches=None,
+                 bbox_inches='tight',
                  saveas=None,
                  show=True,
                  urn_orangered=True,
@@ -65,7 +67,9 @@ def print_map_2d(experiment,
                  dpi=250,
                  title_size=16,
                  textual_size=16,
-                 figsize=(6.4, 6.4)) -> None:
+                 figsize=(6.4, 6.4),
+                 pad_inches=None,
+                 mask=None) -> None:
   
     if textual is None:
         textual = []
@@ -80,6 +84,22 @@ def print_map_2d(experiment,
 
     if experiment.is_exported and update:
         experiment.update()
+
+    if mask is not None:
+
+        show = False
+
+        if mask == '10x50-fr-swap-color':
+            figsize = (6.4, 6.4)
+            pad_inches = 1
+
+        elif mask == '100x100-fr-emd-positionwise-color':
+            figsize=(6.4, 6.4)
+            pad_inches = 1
+
+        elif mask == '100x100-kk-emd-positionwise-color':
+            figsize=(6.9, 6.9)
+            pad_inches = 1.4
 
     fig = plt.figure(figsize=figsize)
 
@@ -99,10 +119,10 @@ def print_map_2d(experiment,
     else:
         basic_coloring(experiment=experiment, ax=ax, dim=2, textual=textual, ms=ms)
 
-    _basic_background(ax=ax, legend=legend,
+    _basic_background(ax=ax, legend=legend, pad_inches=pad_inches,
                       saveas=saveas, xlabel=xlabel, bbox_inches=bbox_inches,
                       title=title, legend_pos=legend_pos, title_size=title_size,
-                      title_pos=title_pos, dpi=dpi)
+                      title_pos=title_pos, dpi=dpi, mask=mask)
     
     if tex:
         _saveas_tex(saveas=saveas)
@@ -125,7 +145,7 @@ def print_map_2d_colored_by_feature(experiment,
                                     textual=None,
                                     scale='default',
                                     title=None,
-                                    bbox_inches=None,
+                                    bbox_inches='tight',
                                     saveas=None,
                                     show=True,
                                     ms=20,
@@ -142,12 +162,23 @@ def print_map_2d_colored_by_feature(experiment,
                                     textual_size=16,
                                     figsize=(6.4, 6.4),
                                     strech=None,
-                                    colors=None) -> None:
+                                    colors=None,
+                                    pad_inches=None,
+                                    mask=None) -> None:
     if textual is None:
         textual = []
 
     if omit is None:
         omit = []
+
+    if mask is not None:
+        show=False
+        if mask == '100x100-fr-emd-positionwise-black':
+            figsize=(7.5, 7.5)
+            pad_inches=0.6
+        elif mask == '10x50-fr-swap-black':
+            figsize = (7.7, 7.7)
+            pad_inches = 0.4
 
     experiment.compute_coordinates_by_families()
 
@@ -178,10 +209,10 @@ def print_map_2d_colored_by_feature(experiment,
                  shades_dict=shades_dict, cmap=cmap, column_id=column_id, feature_id=feature_id)
 
     # BACKGROUND
-    _basic_background(ax=ax, legend=False,
+    _basic_background(ax=ax, legend=False, mask=mask,
                       saveas=saveas, xlabel=xlabel, bbox_inches=bbox_inches,
                       title=title, legend_pos=legend_pos, title_size=title_size,
-                      title_pos=title_pos, dpi=dpi)
+                      title_pos=title_pos, dpi=dpi, pad_inches=pad_inches)
 
     if tex:
         _saveas_tex(saveas=saveas)
@@ -564,7 +595,7 @@ def _import_values_for_features(experiment,
 
 
 def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func):
-    path = os.path.join(os.getcwd(), "election", experiment_id, "controllers", "advanced",
+    path = os.path.join(os.getcwd(), "experiment", experiment_id, "controllers", "advanced",
                         str(values) + ".txt")
     _min = 0
     _max = 0
@@ -654,8 +685,7 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
         masks = (markers == um)
         if um == '.':
             images.append(ax.scatter(xx[masks], yy[masks],
-                                     vmin=vmin, vmax=vmax,
-                                     color='grey', alpha=0.6,
+                                     c='grey', alpha=0.6,
                                      marker=um, s=mses[masks]))
 
         elif dim == 2:
@@ -955,7 +985,10 @@ def basic_coloring_with_shading(experiment=None,
                 try:
                     alpha = experiment.instances[election_id].printing_params['alpha']
                 except:
-                    alpha = 1
+                    alpha = None
+
+                if alpha is None:
+                    alpha = family.alpha
 
                 color = family.color
 
@@ -1006,8 +1039,9 @@ def basic_coloring_with_shading(experiment=None,
 
 
 # BACKGROUNDS
-def _basic_background(ax=None, legend=None, saveas=None, xlabel=None, title=None,
-                      legend_pos=None, bbox_inches=None, title_size=16, title_pos=None, dpi=250):
+def _basic_background(ax=None, legend=None, saveas=None, xlabel=None, title=None, pad_inches=None,
+                      legend_pos=None, bbox_inches='tight', title_size=16, title_pos=None, dpi=250,
+                      mask=None):
     file_name = os.path.join(os.getcwd(), "images", str(saveas))
 
     if xlabel is not None:
@@ -1025,18 +1059,19 @@ def _basic_background(ax=None, legend=None, saveas=None, xlabel=None, title=None
             ax.legend()
 
     if saveas is not None:
-        print(saveas)
 
         try:
             os.mkdir(os.path.join(os.getcwd(), "images"))
         except FileExistsError:
             pass
 
-        if bbox_inches is None:
-            print(file_name)
-            plt.savefig(file_name, bbox_inches='tight', dpi=dpi)
-        else:
-            plt.savefig(file_name, bbox_inches=bbox_inches, dpi=dpi)
+        plt.savefig(file_name, bbox_inches=bbox_inches, dpi=dpi, pad_inches=pad_inches)
+
+        if mask:
+            path_1 = file_name + ".png"
+            path_2 = os.path.join(os.getcwd(), "images", "masks", mask + ".png")
+            path_3 = file_name + ".png"
+            overlay_images(path_1, path_2, path_3)
 
 
 # TEX
@@ -1616,6 +1651,16 @@ def adjust_the_map(experiment) -> None:
         except Exception:
             pass
 
+    elif experiment.instance_type == 'allocation':
+
+        try:
+            left = experiment.get_election_id_from_model_name('indifference')
+            right = experiment.get_election_id_from_model_name('separability')
+            up = experiment.get_election_id_from_model_name('contention')
+            adjust_the_map_on_three_points(experiment, left, right, up, is_down=False)
+        except Exception:
+            pass
+
 
 def centeroid(arr):
     length = arr.shape[0]
@@ -1665,6 +1710,21 @@ def print_approvals_histogram(election):
     plt.xlim([-1, election.num_candidates + 1])
     plt.savefig("images/histograms/" + election.election_id + ".png")
     plt.show()
+
+
+def overlay_images(background_path, overlay_path, output_path):
+    # Open the images
+    background = Image.open(background_path).convert("RGBA")
+    overlay = Image.open(overlay_path).convert("RGBA")
+
+    # Resize overlay image to the size of the background image
+    overlay = overlay.resize(background.size, Image.ANTIALIAS)
+
+    # Composite the images
+    combined = Image.alpha_composite(background, overlay)
+
+    # Save the result
+    combined.save(output_path, 'PNG')
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 12.10.2021 #

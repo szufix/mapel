@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.stats import gamma
 import random as rand
-import mapel.elections.cultures.mallows as mallows
+import mapel.core.features.mallows as mallows
 from mapel.core.glossary import *
 
 
@@ -17,7 +17,7 @@ def update_params_ordinal_mallows(params):
 def update_params_ordinal_norm_mallows(params, num_candidates):
     if 'normphi' not in params:
         params['normphi'] = np.random.random()
-    params['phi'] = mallows.phi_from_normphi(num_candidates, relphi=params['normphi'])
+    params['phi'] = mallows.phi_from_normphi(num_candidates, normphi=params['normphi'])
     if 'weight' not in params:
         params['weight'] = 0.
 
@@ -29,12 +29,12 @@ def update_params_ordinal_urn_model(params):
 
 def update_params_ordinal_mallows_matrix_path(params, num_candidates):
     params['normphi'] = params['alpha']
-    params['phi'] = mallows.phi_from_normphi(num_candidates, relphi=params['normphi'])
+    params['phi'] = mallows.phi_from_normphi(num_candidates, normphi=params['normphi'])
 
 
 def update_params_ordinal_mallows_triangle(params, num_candidates):
     params['normphi'] = 1 - np.sqrt(np.random.uniform())
-    params['phi'] = mallows.phi_from_normphi(num_candidates, relphi=params['normphi'])
+    params['phi'] = mallows.phi_from_normphi(num_candidates, normphi=params['normphi'])
     params['weight'] = np.random.uniform(0, 0.5)
     params['alpha'] = params['normphi']
     params['tint'] = params['weight']  # for tint on plots
@@ -42,7 +42,7 @@ def update_params_ordinal_mallows_triangle(params, num_candidates):
 
 def update_params_ordinal_alpha(printing_params):
     if 'alpha' not in printing_params:
-        printing_params['alpha'] = 1
+        printing_params['alpha'] = None
     elif type(printing_params['alpha']) is list:
         printing_params['alpha'] = np.random.uniform(low=printing_params['alpha'][0],
                                                      high=printing_params['alpha'][1])
@@ -121,10 +121,10 @@ def update_params_ordinal(params, printing_params, variable, culture_id, num_can
         if culture_id.lower() == 'mallows':
             update_params_ordinal_mallows(params)
             printing_params['alpha'] = params['phi']
-        elif culture_id.lower() == 'norm_mallows' or culture_id.lower() == 'norm-mallows':
+        elif 'norm_mallows' in culture_id.lower() or 'norm-mallows' in culture_id.lower():
             update_params_ordinal_norm_mallows(params, num_candidates)
             printing_params['alpha'] = params['normphi']
-        elif culture_id.lower() == 'urn' or culture_id.lower() == 'urn':
+        elif 'urn' in culture_id.lower():
             update_params_ordinal_urn_model(params)
             printing_params['alpha'] = params['alpha']
         elif culture_id.lower() == 'mallows_matrix_path':
@@ -153,12 +153,12 @@ def update_params_approval_p(params):
         params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
 
 
-def update_params_approval_resampling(params):
+def update_params_approval_resampling(params, printing_params):
     if 'phi' in params and type(params['phi']) is list:
         params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
     elif 'phi' not in params:
         params['phi'] = np.random.random()
-    params['alpha'] = params['phi']
+    printing_params['alpha'] = params['phi']
 
     if 'p' in params and type(params['p']) is list:
         params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
@@ -166,12 +166,12 @@ def update_params_approval_resampling(params):
         params['p'] = np.random.random()
 
 
-def update_params_approval_disjoint(params):
+def update_params_approval_disjoint(params, printing_params):
     if 'phi' in params and type(params['phi']) is list:
         params['phi'] = np.random.uniform(low=params['phi'][0], high=params['phi'][1])
     elif 'phi' not in params:
         params['phi'] = np.random.random()
-    params['alpha'] = params['phi']
+    printing_params['alpha'] = params['phi']
 
     if 'p' in params and type(params['p']) is list:
         params['p'] = np.random.uniform(low=params['p'][0], high=params['p'][1])
@@ -188,15 +188,16 @@ def update_params_approval(params, printing_params, variable, culture_id, num_ca
         printing_params['variable'] = variable
         del params['variable']
     else:
-        if culture_id in APPROVAL_MODELS:
-            update_params_approval_p(params)
-        elif culture_id.lower() == 'resampling':
-            update_params_approval_resampling(params)
+        if culture_id.lower() == 'resampling':
+            update_params_approval_resampling(params, printing_params)
         elif culture_id.lower() == 'disjoint':
-            update_params_approval_disjoint(params)
+            update_params_approval_disjoint(params, printing_params)
+        elif culture_id in APPROVAL_MODELS:
+            update_params_approval_p(params)
         update_params_approval_alpha(printing_params)
 
     return params, printing_params
+
 
 def get_params_for_crate(j):
     base = []

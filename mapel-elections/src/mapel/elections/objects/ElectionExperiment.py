@@ -532,8 +532,8 @@ class ElectionExperiment(Experiment):
             feature_long_id = feature_id
 
         num_iterations = 1
-        if 'num_interations' in feature_params:
-            num_iterations = feature_params['num_interations']
+        if 'num_iterations' in feature_params:
+            num_iterations = feature_params['num_iterations']
 
         if feature_id == 'ejr':
             feature_dict = {'value': {}, 'time': {}, 'ejr': {}, 'pjr': {}, 'jr': {}, 'pareto': {}}
@@ -578,6 +578,8 @@ class ElectionExperiment(Experiment):
                     else:
                         solution = instance.get_feature(feature_id, feature_long_id,
                                                         overwrite=overwrite, **kwargs)
+                        value = None
+
                 total_time = time.time() - start
                 total_time /= num_iterations
 
