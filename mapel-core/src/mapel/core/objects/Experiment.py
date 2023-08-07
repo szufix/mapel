@@ -80,7 +80,6 @@ class Experiment:
             self.distances = {}
             self.coordinates = {}
 
-
     def import_instances(self, instances):
         if isinstance(instances, dict):
             self.instances = instances
@@ -232,18 +231,25 @@ class Experiment:
                     coordinates_by_families[family_id][2].append(self.coordinates[family_id][2])
                 finally:
                     pass
+
         else:
 
             for family_id in self.families:
 
                 coordinates_by_families[family_id] = [[] for _ in range(3)]
 
-                if dim == 2:
+                if dim >= 1:
                     for instance_id in self.families[family_id].instance_ids:
                         coordinates_by_families[family_id][0].append(
                             self.coordinates[instance_id][0])
+                if dim >= 2:
+                    for instance_id in self.families[family_id].instance_ids:
                         coordinates_by_families[family_id][1].append(
                             self.coordinates[instance_id][1])
+                if dim >= 3:
+                    for instance_id in self.families[family_id].instance_ids:
+                        coordinates_by_families[family_id][2].append(
+                            self.coordinates[instance_id][2])
 
         self.coordinates_by_families = coordinates_by_families
 

@@ -93,6 +93,10 @@ def print_map_2d(experiment,
             figsize = (6.4, 6.4)
             pad_inches = 1
 
+        elif mask == '10x50-kk-swap-color':
+            figsize = (6.4, 6.4)
+            pad_inches = 0.8
+
         elif mask == '100x100-fr-emd-positionwise-color':
             figsize=(6.4, 6.4)
             pad_inches = 1
@@ -172,13 +176,19 @@ def print_map_2d_colored_by_feature(experiment,
         omit = []
 
     if mask is not None:
-        show=False
-        if mask == '100x100-fr-emd-positionwise-black':
-            figsize=(7.5, 7.5)
-            pad_inches=0.6
-        elif mask == '10x50-fr-swap-black':
+        show = False
+        if mask == '10x50-fr-swap-black':
             figsize = (7.7, 7.7)
             pad_inches = 0.4
+        elif mask == '10x50-kk-swap-black':
+            figsize = (7.2, 7.2)
+            pad_inches = 0.5
+        elif mask == '100x100-fr-emd-positionwise-black':
+            figsize = (7.5, 7.5)
+            pad_inches = 0.6
+        elif mask == '100x100-kk-emd-positionwise-black':
+            figsize = (7.6, 7.6)
+            pad_inches = 1.4
 
     experiment.compute_coordinates_by_families()
 
@@ -1718,7 +1728,7 @@ def overlay_images(background_path, overlay_path, output_path):
     overlay = Image.open(overlay_path).convert("RGBA")
 
     # Resize overlay image to the size of the background image
-    overlay = overlay.resize(background.size, Image.ANTIALIAS)
+    overlay = overlay.resize(background.size, Image.LANCZOS)
 
     # Composite the images
     combined = Image.alpha_composite(background, overlay)

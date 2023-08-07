@@ -157,8 +157,12 @@ class ElectionExperiment(Experiment):
                      size=1,
                      num_candidates=None,
                      num_voters=None,
-                     election_id=None):
+                     election_id=None,  # deprecated
+                     instance_id=None):
         """ Add election to the experiment """
+
+        if instance_id is None:
+            instance_id = election_id
 
         if num_candidates is None:
             num_candidates = self.default_num_candidates
@@ -175,7 +179,7 @@ class ElectionExperiment(Experiment):
                                show=show,
                                marker=marker,
                                starting_from=starting_from,
-                               family_id=election_id,
+                               family_id=instance_id,
                                num_candidates=num_candidates,
                                num_voters=num_voters,
                                single=True)

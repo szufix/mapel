@@ -43,9 +43,6 @@ def generate_approval_euclidean_votes(num_voters: int = None, num_candidates: in
                                       dim=2, space='uniform', radius=0, **kwargs) -> list:
     votes = [set() for _ in range(num_voters)]
 
-    name = f'{dim}d_{space}'
-
-    # if model == 'euclidean':
     if space == 'uniform':
         voters = np.random.rand(num_voters, dim)
         candidates = np.random.rand(num_candidates, dim)
