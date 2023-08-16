@@ -88,13 +88,13 @@ def generate_election(**kwargs):
 
 
 def generate_ordinal_election(**kwargs):
-    election = OrdinalElection(**kwargs)
+    election = OrdinalElection(**kwargs, is_exported=False)
     election.prepare_instance()
     return election
 
 
 def generate_approval_election(**kwargs):
-    election = ApprovalElection(**kwargs)
+    election = ApprovalElection(**kwargs, is_exported=False)
     election.prepare_instance()
     return election
 

@@ -38,7 +38,8 @@ class Experiment:
                  clean=False,
                  coordinates_names=None,
                  fast_import=False,
-                 with_matrix=False):
+                 with_matrix=False,
+                 instance_type=None):
 
         self.is_imported = is_imported
         self.is_exported = is_exported
@@ -63,6 +64,7 @@ class Experiment:
         self.num_families = None
         self.num_instances = None
         self.main_order = None
+        self.instance_type = instance_type
 
         if clean:
             self.clean_instances()

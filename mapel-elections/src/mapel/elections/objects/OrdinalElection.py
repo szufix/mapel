@@ -494,17 +494,20 @@ class OrdinalElection(Election):
             plt.ylim([avg_y - radius, avg_y + radius])
         # plt.title(election.label, size=38)
 
-        plt.title(self.texify_label(self.label), size=title_size)
+        # plt.title(self.texify_label(self.label), size=title_size) # tmp
 
         # plt.title(election.texify_label(election.label), size=38, y=0.94)
         # plt.title(election.label, size=title_size)
         plt.axis('off')
 
-        if saveas is None:
-            saveas = f'{self.label}_{object_type}'
+        if saveas is not None:
 
-        file_name = os.path.join(os.getcwd(), "images", name, f'{saveas}.png')
-        plt.savefig(file_name, bbox_inches='tight', dpi=100)
+            if saveas == 'default':
+
+                saveas = f'{self.label}_{object_type}'
+                file_name = os.path.join(os.getcwd(), "images", name, f'{saveas}.png')
+                plt.savefig(file_name, bbox_inches='tight', dpi=100)
+
         if show:
             plt.show()
         else:

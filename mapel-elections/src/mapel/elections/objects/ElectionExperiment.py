@@ -60,8 +60,7 @@ class ElectionExperiment(Experiment):
     def add_culture(self, name, function):
         pass
 
-    def __init__(self, is_shifted=False, instance_type=None, **kwargs):
-        self.instance_type = instance_type
+    def __init__(self, is_shifted=False, **kwargs):
         self.is_shifted = is_shifted
         self.default_num_candidates = 10
         self.default_num_voters = 100

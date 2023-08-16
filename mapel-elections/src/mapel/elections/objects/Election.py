@@ -40,6 +40,7 @@ class Election(Instance):
                  fast_import=False,
                  is_shifted=False,
                  is_imported=False,
+                 is_exported=True,
                  **kwargs):
 
         super().__init__(experiment_id=experiment_id,
@@ -53,7 +54,7 @@ class Election(Instance):
         self.num_voters = num_voters
         self.num_candidates = num_candidates
         self.votes = votes
-        self.is_exported = True
+        self.is_exported = is_exported
         self.winners = None
         self.alternative_winners = {}
         self.fake = culture_id in LIST_OF_FAKE_MODELS

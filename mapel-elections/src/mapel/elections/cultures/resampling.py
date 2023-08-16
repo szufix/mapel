@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 import random
+import logging
 
 
 def generate_approval_resampling_votes(num_voters=None, num_candidates=None,
@@ -26,6 +27,9 @@ def generate_approval_resampling_votes(num_voters=None, num_candidates=None,
 
 def generate_approval_disjoint_resampling_votes(num_voters=None, num_candidates=None,
                                                 phi=0.5, p=0.5, g=2):
+    if p*g > 1:
+        logging.warning(f'Disjoint resampling model is not well defined when p * g > 1')
+
     num_groups = g
     k = int(p * num_candidates)
 
