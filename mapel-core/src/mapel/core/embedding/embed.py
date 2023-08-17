@@ -43,7 +43,7 @@ def embed(experiment_id,
 
     if attraction_factor is None:
         attraction_factor = 1
-        if embedding_id == 'spring':
+        if embedding_id in {'fr', 'spring'}:
             attraction_factor = 2
 
     num_elections = len(experiment_id.distances)
