@@ -324,6 +324,7 @@ class OrdinalElection(Election):
             counted_votes = [[count, list(row)] for row, count in c.items()]
             counted_votes = sorted(counted_votes, reverse=True)
             self.quantites = [a[0] for a in counted_votes]
+            self.distinct_votes = [a[1] for a in counted_votes]
             self.num_options = len(counted_votes)
         else:
             self.quantites = [self.num_voters]
@@ -344,7 +345,7 @@ class OrdinalElection(Election):
         if object_type is None:
             object_type = self.object_type
 
-        self.distinct_votes = self.get_distinct_votes()
+        # self.distinct_votes = self.get_distinct_votes()
         self.distinct_potes = convert_votes_to_potes(self.distinct_votes)
         self.num_dist_votes = len(self.distinct_votes)
 
