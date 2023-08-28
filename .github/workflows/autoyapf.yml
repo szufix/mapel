@@ -12,9 +12,8 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: autoyapf
         id: autoyapf
-        uses: mritunjaysharma394/autoyapf@v2
-        with:
-          args: --recursive --in-place .
+        run: 
+          git diff -U0 --no-color --relative HEAD^ | yapf-diff -i --regex "*.py"
       - name: Check for modified files
         id: git-check
         run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
