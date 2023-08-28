@@ -186,5 +186,5 @@ EMBEDDING_RELATED_FEATURE = ['monotonicity_triplets', 'distortion_from_all']
 
 
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: TESTING it very well #
+# a LAST CLEANUP ON: TESTING it very well #
 # # # # # # # # # # # # # # # #
