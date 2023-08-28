@@ -9,8 +9,7 @@ RULE_NAME_MATRIX = {
     "av": "AV",
     "sav": "SAV",
     "pav": "PAV",
-    "slav": "SLAV",
-    "cc": "CC",
+    "slav": "SLAV", "cc": "CC",
     "seqpav": "seq-PAV",
     "revseqpav": "Rev.Gr.PAV",
     "seqslav": "seq-SLAV",
@@ -187,5 +186,5 @@ EMBEDDING_RELATED_FEATURE = ['monotonicity_triplets', 'distortion_from_all']
 
 
 # # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 12.10.2021 #
+# LAST CLEANUP ON: TESTING #
 # # # # # # # # # # # # # # # #
