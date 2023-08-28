@@ -2,8 +2,13 @@ MAIN_LOCAL_FEATUERS = []
 
 MAIN_GLOBAL_FEATUERS = ['distortion', 'monotonicity']
 
-ELECTION_GLOBAL_FEATURES = {'clustering22', 'clustering_kmeans', 'distortion_from_all',
-                            'id_vs_un', 'an_vs_st444', }
+ELECTION_GLOBAL_FEATURES = {
+    'clustering22',
+    'clustering_kmeans',
+    'distortion_from_all',
+    'id_vs_un',
+    'an_vs_st444',
+}
 
 RULE_NAME_MATRIX = {
     "av": "AV",
