@@ -14,10 +14,9 @@ jobs:
       - name: autoyapf
         id: autoyapf
         run: |
-          ls
           python -m pip install --upgrade pip
           pip install yapf
-          git diff -U0 --no-color --relative HEAD^ | yapf-diff -i --regex "*.py"
+          git diff -U0 --no-color --relative HEAD^ | yapf-diff -i --regex ".*[.]py"
       - name: Check for modified files
         id: git-check
         run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
