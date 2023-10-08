@@ -166,6 +166,7 @@ LIST_OF_ORDINAL_ALLIANCE_MODELS = {
     'ic': generate_ordinal_alliance_ic_votes,
     'urn': generate_ordinal_alliance_urn_votes,
     'euc': generate_ordinal_alliance_euclidean_votes,
+    'allied_euc': generate_ordinal_alliance_allied_euclidean_votes,
     'norm-mallows': generate_ordinal_alliance_norm_mallows_votes,
 }
 

@@ -117,7 +117,7 @@ class Election(Instance):
 
     def compute_potes(self, mapping=None):
         """ Convert votes to positional votes (called potes) """
-        if not self.fake and (self.potes is None or mapping is not None):
+        if not self.fake:
             if mapping is None:
                 self.potes = np.array([[list(vote).index(i) for i, _ in enumerate(vote)]
                                        for vote in self.votes])
