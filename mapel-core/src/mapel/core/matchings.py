@@ -1,23 +1,19 @@
-#!/usr/bin/env python
-
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-
 import gurobipy as gp
 from gurobipy import GRB
 
-
 def solve_matching_vectors(cost_table) -> (float, list):
-    """ Return: objective value, optimal matching """
-    cost_table = np.array(cost_table)
-    row_ind, col_ind = linear_sum_assignment(cost_table)
-    return cost_table[row_ind, col_ind].sum(), list(col_ind)
+  """ Return: objective value, optimal matching """
+  cost_table = np.array(cost_table)
+  row_ind, col_ind = linear_sum_assignment(cost_table)
+  return cost_table[row_ind, col_ind].sum(), list(col_ind)
 
 
 def solve_matching_matrices(matrix_1, matrix_2, length, inner_distance) -> float:
     """ Return: objective value"""
     m = gp.Model()
-    m.setParam('Threads', 1)
+#    m.setParam('Threads', 1)
     m.ModelSense = GRB.MINIMIZE
 
     # OBJECTIVE FUNCTION

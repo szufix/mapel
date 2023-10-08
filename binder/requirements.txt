@@ -1,0 +1,4 @@
+mapel-core
+mapel-elections
+mapel-roommates
+mapel-marriages

@@ -1,3 +1,5 @@
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/szufix/mapel/HEAD)
+
 # Mapel
 
 The repo of mapel and its plugins containing the code of
