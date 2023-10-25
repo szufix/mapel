@@ -1,7 +1,7 @@
-mapel-core==2.0.19
-mapel-elections==2.0.19
-mapel-roommates==2.0.19
-mapel-marriages==2.0.19
+mapel-core==2.0.20
+mapel-elections==2.0.20
+mapel-roommates==2.0.20
+mapel-marriages==2.0.20
 
 matplotlib~=3.7.2
 networkx~=3.1
@@ -19,4 +19,4 @@ gurobipy~=10.0.2
 pandas~=2.0.3
 cplex~=20.1.0.1
 setuptools~=68.0.0
-pabutools~=0.8
+pabutools~=1.0.2

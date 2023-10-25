@@ -437,6 +437,9 @@ class Experiment:
     def merge_election_images(self, size=250, name=None, show=False, ncol=1, nrow=1,
                               object_type=None):
 
+        if object_type is None:
+            logging.warning('Object type not defined!')
+
         images = []
         for i, election in enumerate(self.instances.values()):
             images.append(Image.open(f'images/{name}/{election.label}_{object_type}.png'))

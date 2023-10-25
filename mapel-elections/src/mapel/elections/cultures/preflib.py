@@ -18,7 +18,7 @@ def generate_preflib_election(experiment=None, model=None, name=None,
                                    num_voters=num_voters, num_candidates=num_candidates,
                                    folder=folder)
 
-    path = os.path.join("election", experiment.experiment_id, "elections", name + ".soc")
+    path = os.path.join("experiments", experiment.experiment_id, "elections", name + ".soc")
     file_ = open(path, 'w')
 
     file_.write(str(num_candidates) + "\n")
@@ -46,7 +46,7 @@ def generate_preflib_election(experiment=None, model=None, name=None,
 
 # REAL
 def generate_votes_preflib(model, num_candidates=None, num_voters=None,  folder=None,
-                           selection_method='borda'):
+                           selection_method='borda', original=False):
     """ Generate votes based on elections from Preflib """
 
     long_name = str(model)
@@ -69,7 +69,8 @@ def generate_votes_preflib(model, num_candidates=None, num_voters=None,  folder=
 
     file_votes.close()
     # print(model, len(original_votes), len(np.unique(original_votes, axis=0)))
-    return np.array(original_votes)
+    if original:
+        return np.array(original_votes)
 
     for j in range(num_voters):
         r = np.random.randint(0, original_num_voters - 1)
@@ -119,7 +120,7 @@ def generate_votes_preflib(model, num_candidates=None, num_voters=None,  folder=
 
 
 def import_freq(elections_model):
-    path = 'real_data/freq/' + elections_model + '.txt'
+    path = '_real_data/freq/' + elections_model + '.txt'
     with open(path, 'r', newline='') as txt_file:
         line = txt_file.readline().strip().split(',')
         line = line[0:len(line) - 1]

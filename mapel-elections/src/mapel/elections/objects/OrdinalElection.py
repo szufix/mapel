@@ -1,6 +1,8 @@
+import copy
 import logging
 from collections import Counter
 
+import itertools
 from matplotlib import pyplot as plt
 
 import csv
@@ -85,9 +87,9 @@ class OrdinalElection(Election):
 
                         self.votes, self.num_voters, self.num_candidates, self.params, \
                         self.culture_id, self.alliances, \
-                        self.num_options, self.quantites = imports.import_real_soc_election(
+                        self.num_options, self.quantites, \
+                            self.distinct_votes = imports.import_real_soc_election(
                             self.experiment_id, self.election_id, self.is_shifted)
-
                         try:
                             self.points['voters'] = self.import_ideal_points('voters')
                             self.points['candidates'] = self.import_ideal_points('candidates')
@@ -333,21 +335,14 @@ class OrdinalElection(Election):
         if is_exported:
             exports.export_ordinal_election(self, is_aggregated=is_aggregated)
 
-    def get_distinct_votes(self):
-        import itertools
-        votes = self.votes
-        votes = votes.tolist()
-        votes.sort()
-        return list(k for k, _ in itertools.groupby(votes))
-
     def compute_distances(self, distance_id='swap', object_type=None):
         """ Return: distances between votes """
         if object_type is None:
             object_type = self.object_type
 
-        # self.distinct_votes = self.get_distinct_votes()
         self.distinct_potes = convert_votes_to_potes(self.distinct_votes)
         self.num_dist_votes = len(self.distinct_votes)
+        self.num_options = self.num_dist_votes
 
         if object_type == 'vote':
             distances = np.zeros([self.num_dist_votes, self.num_dist_votes])
@@ -495,7 +490,7 @@ class OrdinalElection(Election):
             plt.ylim([avg_y - radius, avg_y + radius])
         # plt.title(election.label, size=38)
 
-        # plt.title(self.texify_label(self.label), size=title_size) # tmp
+        plt.title(self.texify_label(self.label), size=title_size) # tmp
 
         # plt.title(election.texify_label(election.label), size=38, y=0.94)
         # plt.title(election.label, size=title_size)
@@ -517,6 +512,8 @@ class OrdinalElection(Election):
             plt.show()
         else:
             plt.clf()
+
+        plt.close()
 
 
 def convert_votes_to_potes(votes):

@@ -121,7 +121,8 @@ def update_params_ordinal(params, printing_params, variable, culture_id, num_can
         if culture_id.lower() == 'mallows':
             update_params_ordinal_mallows(params)
             printing_params['alpha'] = params['phi']
-        elif 'norm_mallows' in culture_id.lower() or 'norm-mallows' in culture_id.lower():
+        elif 'norm_mallows' in culture_id.lower() or 'norm-mallows' in culture_id.lower() \
+                or 'mallows_urn' in culture_id.lower():
             update_params_ordinal_norm_mallows(params, num_candidates)
             printing_params['alpha'] = params['normphi']
         elif 'urn' in culture_id.lower():

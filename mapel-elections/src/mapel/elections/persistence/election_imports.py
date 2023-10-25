@@ -1,6 +1,7 @@
 import ast
 import csv
 import os
+from collections import Counter
 
 import numpy as np
 from mapel.core.glossary import *
@@ -55,12 +56,19 @@ def import_real_soc_election(experiment_id: str, election_id: str, is_shifted=Fa
             votes[it] = line[1:num_candidates + 1]
             it += 1
 
+    c = Counter(map(tuple, votes))
+    counted_votes = [[count, list(row)] for row, count in c.items()]
+    counted_votes = sorted(counted_votes, reverse=True)
+    quantites = [a[0] for a in counted_votes]
+    distinct_votes = [a[1] for a in counted_votes]
+    num_options = len(counted_votes)
+
     if is_shifted:
         votes = [[vote - 1 for vote in voter] for voter in votes]
     my_file.close()
 
     return np.array(votes), num_voters, num_candidates, params, model_name, alliances, \
-           num_options, quantites
+           num_options, quantites, distinct_votes
 
 
 def import_fake_soc_election(experiment_id, name):

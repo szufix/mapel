@@ -221,3 +221,5 @@ class ApprovalElection(Election, ABC):
             plt.show()
         else:
             plt.clf()
+
+        plt.close()
