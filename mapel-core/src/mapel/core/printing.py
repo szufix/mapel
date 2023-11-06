@@ -1210,10 +1210,13 @@ def print_matrix(experiment=None, scale=1., rounding=1,
                 if c >= threshold:
                     color = "white"
                 c = str(c)
-                if c[0] == '0':
-                    c = c[1:]
-                if c[-1] == '0' and c[-2] == '.':
-                    c = c[:-1]
+                try:
+                    if c[0] == '0':
+                        c = c[1:]
+                    if c[-1] == '0' and c[-2] == '.':
+                        c = c[:-1]
+                except:
+                    pass
                 ax.text(j, i, str(c), va='center', ha='center', color=color, size=ms)
 
     labels = []

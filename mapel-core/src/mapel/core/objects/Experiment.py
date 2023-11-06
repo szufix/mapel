@@ -124,6 +124,12 @@ class Experiment:
         else:
             self.coordinates = {}
 
+    def reset_cultures(self):
+        self.families = {}
+        self.num_families = 0
+        self.instances = {}
+        self.num_instances = 0
+
     @abstractmethod
     def prepare_instances(self):
         pass
@@ -382,6 +388,7 @@ class Experiment:
                 'swap': 'Swap',
                 'emd-bordawise': "EMD-Bordawise",
                 'emd-positionwise': 'EMD-Positionwise',
+                'emdinf-positionwise': 'EMDINF-Positionwise',
                 'l1-positionwise': "$\ell_1$-Positionwise",
                 'l1-pairwise': "$\ell_1$-Pairwise",
             }.get(name, name)

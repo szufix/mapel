@@ -63,7 +63,6 @@ def build_perms(matrix):
 
 
 # Models
-
 def generate_un_from_list(num_voters=None, num_candidates=None):
     id_perm = list(range(num_candidates))
     m_fac = math.factorial(num_candidates)
@@ -82,19 +81,20 @@ def generate_un_from_matrix_votes(num_voters=None, num_candidates=None):
     return draw_election(matrix)
 
 
-def generate_idan_part_votes(num_voters=None, num_candidates=None, params=None):
+def generate_idan_part_votes(num_voters=None, num_candidates=None, part_share=None, **kwargs):
     """ Generate real elections between (ID) and (AN) """
-    if params is None or not ('part_share' in params):
+    if part_share is None:
         print("IDAN_part generation : params None : random param generated")
         part_size = np.random.choice(range(num_voters))
     else:
-        part_size = params['part_share'] * (num_voters)
+        part_size = part_share * (num_voters)
     part_size = int(round(part_size))
     id_share = num_voters - (part_size // 2)
     op_share = part_size // 2
     votes = [[j for j in range(num_candidates)] for _ in range(id_share)]
     votes = votes + [[(num_candidates - j - 1) for j in range(num_candidates)] for _ in range(op_share)]
     return votes
+
 
 def generate_idun_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (ID) and (UN) """
@@ -109,6 +109,7 @@ def generate_idun_part_votes(num_voters=None, num_candidates=None, params=None):
     votes = [[j for j in range(num_candidates)] for _ in range(id_share)]
     votes = votes + draw_election(distribute_in_matrix(un_share,num_candidates))
     return votes
+
 
 def generate_idst_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (ID) and (ST) """
@@ -125,6 +126,7 @@ def generate_idst_part_votes(num_voters=None, num_candidates=None, params=None):
     votes_id = [[j for j in range(num_candidates)] for _ in range(id_share)]
     votes_st = draw_election(distribute_in_block_matrix(st_share,[topsize,bottomsize]))
     return votes_id + votes_st
+
 
 def generate_anun_part_votes(num_voters=None, num_candidates=None, params=None):
     """ Generate elections realizing linear combinations of pos-matrices between (AN) and (UN) """

@@ -61,7 +61,10 @@ def import_committees_from_file(experiment_id, rule_name):
         header = [h.strip() for h in csv_file.readline().split(';')]
         reader = csv.DictReader(csv_file, fieldnames=header, delimiter=';')
         for row in reader:
-            winning_committees = ast.literal_eval(row['committee'])
+            try:
+                winning_committees = ast.literal_eval(row['committee'])
+            except:
+                winning_committees = [set(row['committee'][2:-2].split(', '))]
             if len(winning_committees) == 0:
                 winning_committees = [set()]
             all_winning_committees[row['election_id']] = winning_committees

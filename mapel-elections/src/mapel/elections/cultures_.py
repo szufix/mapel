@@ -116,10 +116,17 @@ def generate_ordinal_votes(culture_id: str = None,
                            **kwargs) -> Union[list, np.ndarray]:
 
     if culture_id in LIST_OF_PREFLIB_MODELS:
-        return generate_preflib_votes(culture_id=culture_id,
-                                      num_candidates=num_candidates,
-                                      num_voters=num_voters,
-                                      params=params)
+        try:
+            votes = generate_preflib_votes(culture_id=culture_id,
+                                          num_candidates=num_candidates,
+                                          num_voters=num_voters,
+                                          params=params)
+        except:
+            votes = []
+            logging.warning(
+                f'You are trying to create an election based on Preflib '
+                f'without having the original source election. '
+                f'Please use different culture_id than: {culture_id}')
 
     elif culture_id in registered_ordinal_cultures:
         votes = registered_ordinal_cultures.get(culture_id)(num_voters=num_voters,
@@ -131,7 +138,9 @@ def generate_ordinal_votes(culture_id: str = None,
 
     else:
         votes = []
-        logging.warning(f'No such culture id: {culture_id}')
+        logging.warning(
+            f'No such culture id: {culture_id} \n'
+            f'If you are using your own instances then ignore this warning.')
 
     if culture_id not in LIST_OF_FAKE_MODELS:
         votes = [[int(x) for x in row] for row in votes]

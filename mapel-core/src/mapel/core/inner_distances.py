@@ -10,6 +10,7 @@ def map_str_to_func(name):
             'chebyshev': chebyshev,
             'hellinger': hellinger,
             'emd': emd,
+            'emdinf': emd_infty,
             'discrete': discrete,
             'wl1': wl1,
             }.get(name)
@@ -56,6 +57,37 @@ def hellinger(vector_1, vector_2):
                    for i in range(len(vector_1))])
     return math.sqrt(1 - (1 / math.sqrt(h1 * h2 * len(vector_1) * len(vector_1)))
                      * product)
+
+
+def stretch(xx, mult):
+    return [x for _ in range(mult) for x in xx]
+
+
+def emd_infty(xx, yy):
+    if len(xx) != len(yy):
+        xx = stretch(xx, math.lcm(len(xx), len(yy)))
+        yy = stretch(yy, math.lcm(len(xx), len(yy)))
+
+    m = len(xx)
+    cum_x = 0
+    cum_y = 0
+    res = 0
+    for x, y in zip(xx, yy):
+        cum_x_ = cum_x
+        cum_y_ = cum_y
+        cum_x += x
+        cum_y += y
+
+        if np.sign(cum_x_ - cum_y_) == np.sign(cum_x - cum_y):
+            # Trapezoid case
+            res += (abs(cum_x_ - cum_y_) + abs(cum_x - cum_y)) / m / 2
+        else:
+            # Two triangles case (works also for one triangle)
+            d_1 = abs(cum_x_ - cum_y_)
+            d_2 = abs(cum_x - cum_y)
+            res += (d_1 * d_1 + d_2 * d_2) / (d_1 + d_2) / m / 2
+
+    return res
 
 
 def emd(vector_1, vector_2):

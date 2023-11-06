@@ -47,7 +47,6 @@ def import_distances_from_file(experiment, distance_id):
                     instance_id_2]
             except KeyError:
                 pass
-
     return distances
 
 

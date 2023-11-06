@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import csv
+import logging
 import warnings
 from abc import ABCMeta, abstractmethod
 from multiprocessing import Process
@@ -257,7 +258,94 @@ class ElectionExperiment(Experiment):
 
         self.families[family_id].instance_ids = list(new_instances.keys())
 
+        self.update_map_csv()
+
         return list(new_instances.keys())
+
+    def add_existing_family_from_dir(self,
+                                     dir=None,
+                                     culture_id=None,
+                                     **kwargs) -> list:
+        """ Add family of elections to the experiment """
+        if dir is None:
+            logging.warning('dir not specified')
+        if culture_id is None:
+            logging.warning('culture_id not specified')
+
+        # Copy instances from dir to /elections
+
+        directory_in = dir
+        directory_out = os.path.join(os.getcwd(),
+                                     "experiments",
+                                     self.experiment_id,
+                                     'elections')
+
+        # List all files in the given directory
+        files = [f for f in os.listdir(directory_in) if
+                 os.path.isfile(os.path.join(directory_in, f))]
+
+        # Sort the files for consistency
+        files.sort()
+
+        # Rename each file
+        for idx, file_name in enumerate(files):
+            # Create the new file name
+            # new_file_name = f"{culture_id}_{idx}{os.path.splitext(file_name)[1]}"
+            new_file_name = f"{culture_id}_{idx}.soc"
+
+            # Form the full old and new paths
+            old_path = os.path.join(directory_in, file_name)
+            new_path = os.path.join(directory_out, new_file_name)
+
+            # Rename the file
+            os.rename(old_path, new_path)
+            print(f"Renaming: {file_name} -> {new_file_name}")
+
+        return self.add_family(culture_id=culture_id, **kwargs)
+
+    def update_map_csv(self):
+
+        """ Import controllers from a file """
+
+        families = {}
+
+        path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'map.csv')
+        with open(path, 'w', newline='') as csv_file:
+            writer = csv.writer(csv_file, delimiter=';')
+
+            all_fields = ['size',
+                          'num_candidates',
+                          'num_voters',
+                          'culture_id',
+                          'params',
+                          'family_id',
+                          'label',
+                          'color',
+                          'alpha',
+                          'marker',
+                          'ms',
+                          'path'
+                          ]
+
+            writer.writerow(all_fields)
+
+            for family in self.families.values():
+                all_values = [family.size,
+                              family.num_candidates,
+                              family.num_voters,
+                              family.culture_id,
+                              family.params,
+                              family.family_id,
+                              family.label,
+                              family.color,
+                              family.alpha,
+                              family.marker,
+                              family.ms,
+                              family.path]
+
+                writer.writerow(all_values)
+
+        return families
 
     def add_empty_family(self,
                          culture_id: str = "none",
