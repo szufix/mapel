@@ -1,7 +1,7 @@
-mapel-core==2.0.22
-mapel-elections==2.0.22
-mapel-roommates==2.0.20
-mapel-marriages==2.0.20
+mapel-core==2.0.23
+mapel-elections==2.0.23
+mapel-roommates==2.0.23
+mapel-marriages==2.0.23
 
 matplotlib~=3.7.2
 networkx~=3.1
