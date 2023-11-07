@@ -45,7 +45,7 @@ def generate_roommates_gs_ideal_votes(num_agents=None, params=None):
         for k in range(int(math.log(n, 2))):
             # print('k', k, int(n/2**(k+1)))
             for t in range(int(n/2**(k+1))):
-                # print('t', t)
+                # print('process_id', process_id)
                 EXT_SIG[i][ctr] = sig[k]
                 ctr += 1
                 # EXT_SIG[k][2*i] = sig[i]
@@ -105,7 +105,7 @@ def generate_roommates_revgs_ideal_votes(num_agents=None, params=None):
         for k in range(int(math.log(n, 2))):
             # print('k', k, int(n/2**(k+1)))
             for t in range(int(n/2**(k+1))):
-                # print('t', t)
+                # print('process_id', process_id)
                 EXT_SIG[i][ctr] = sig[k]
                 ctr += 1
                 # EXT_SIG[k][2*i] = sig[i]

@@ -1,5 +1,5 @@
-mapel-core==2.0.21
-mapel-elections==2.0.21
+mapel-core==2.0.22
+mapel-elections==2.0.22
 mapel-roommates==2.0.20
 mapel-marriages==2.0.20
 

@@ -66,5 +66,5 @@ class OrdinalElectionExperiment(ElectionExperiment, ABC):
                 file_csv.write(
                     "size;num_candidates;num_voters;culture_id;params;color;alpha;"
                     "family_id;label;marker;show\n")
-                file_csv.write("3;10;100;ic;{};black;1;ic;Impartial Culture;o;t\n")
+                file_csv.write("3;10;100;ic;{};black;1;ic;Impartial Culture;o;process_id\n")
 

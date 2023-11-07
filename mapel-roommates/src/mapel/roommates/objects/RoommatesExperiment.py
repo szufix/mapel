@@ -270,7 +270,7 @@ class RoommatesExperiment(Experiment):
                 path = ast.literal_eval(str(row['path']))
 
             if 'show' in row.keys():
-                show = row['show'].strip() == 't'
+                show = row['show'].strip() == 'process_id'
 
             single_instance = size == 1
 
@@ -453,7 +453,7 @@ class RoommatesExperiment(Experiment):
             with open(path, 'w') as file_csv:
                 file_csv.write(
                     "size;num_agents;culture_id;params;color;alpha;family_id;label;marker;show\n")
-                file_csv.write("10;20;roommates_ic;{};black;1;IC;IC;o;t\n")
+                file_csv.write("10;20;roommates_ic;{};black;1;IC;IC;o;process_id\n")
         except:
             pass
 

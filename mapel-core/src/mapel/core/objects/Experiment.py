@@ -191,20 +191,6 @@ class Experiment:
     def print_matrix(self, **kwargs):
         pr.print_matrix(experiment=self, **kwargs)
 
-    def compute_feature_from_function(self, function, feature_id='my_feature'):
-        feature_dict = {'value': {}, 'time': {}}
-        for instance_id in tqdm(self.instances):
-            start = time.time()
-            instance = self.instances[instance_id]
-            value = function(instance)
-            total_time = time.time() - start
-            feature_dict['value'][instance_id] = value
-            feature_dict['time'][instance_id] = total_time
-        if self.is_exported:
-            exports.export_feature_from_function_to_file(self, feature_id, feature_dict)
-        self.features[feature_id] = feature_dict
-        return feature_dict
-
     def compute_coordinates_by_families(self, dim=2) -> None:
         """ Group all points by their families """
 

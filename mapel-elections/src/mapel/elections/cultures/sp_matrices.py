@@ -15,7 +15,7 @@ def f(i, j):
 
 
 def probW(m, i, t):
-    # probability that c_i is ranked t among m candidates
+    # probability that c_i is ranked process_id among m candidates
     return 0.5 * f(i - 1, m - t - (i - 1)) + 0.5 * f(i - t, m - i)
 
 
@@ -68,7 +68,7 @@ def g(m, i, j):
 
 
 def probC(m, i, t):
-    # probability that c_i is ranked t among m candidates
+    # probability that c_i is ranked process_id among m candidates
     p = 0.0
     if t == 1: return 1.0 / m
 

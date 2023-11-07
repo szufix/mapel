@@ -1,29 +1,27 @@
 #!/usr/bin/env python
 
+import logging
 from typing import Union
 
-import logging
-
+import mapel.elections.cultures.didi as didi
 import mapel.elections.cultures.euclidean as euclidean
+import mapel.elections.cultures.field_experiment as fe
 import mapel.elections.cultures.group_separable as group_separable
 import mapel.elections.cultures.guardians as guardians
 import mapel.elections.cultures.guardians_plus as guardians_plus
 import mapel.elections.cultures.impartial as impartial
 import mapel.elections.cultures.mallows as mallows
+import mapel.elections.cultures.noise as noise
+import mapel.elections.cultures.partylist as partylist
+import mapel.elections.cultures.resampling as resampling
 import mapel.elections.cultures.single_crossing as single_crossing
 import mapel.elections.cultures.single_peaked as single_peaked
-import mapel.elections.cultures.urn as urn
-import mapel.elections.cultures.partylist as partylist
-from mapel.core.glossary import *
-from mapel.elections.cultures.preflib import generate_preflib_votes
-import mapel.elections.cultures.field_experiment as fe
-import mapel.elections.cultures.didi as didi
-import mapel.elections.cultures.unused as unused
 import mapel.elections.cultures.sp_matrices as sp_matrices
-import mapel.elections.cultures.resampling as resampling
-import mapel.elections.cultures.noise as noise
-
+import mapel.elections.cultures.unused as unused
+import mapel.elections.cultures.urn as urn
+from mapel.core.glossary import *
 from mapel.elections.cultures.alliances import *
+from mapel.elections.cultures.preflib import generate_preflib_votes
 
 registered_approval_cultures = {
     'ic': impartial.generate_approval_ic_votes,
@@ -91,7 +89,7 @@ registered_ordinal_cultures = {
     'real_stratification': guardians.generate_real_stratification_votes,  # unsupported culture
     'un_from_matrix': guardians_plus.generate_un_from_matrix_votes,  # unsupported culture
     'un_from_list': guardians_plus.generate_un_from_list,  # unsupported culture
-  
+
     'impartial_culture': impartial.generate_ordinal_ic_votes,  # deprecated name
     'urn_model': urn.generate_urn_votes,  # deprecated name
 }
@@ -101,6 +99,15 @@ def generate_approval_votes(culture_id: str = None,
                             num_voters: int = None,
                             num_candidates: int = None,
                             params: dict = None) -> Union[list, np.ndarray]:
+    """
+    Generates approval votes according to the given culture id.
+
+    :param culture_id: name of the culture.
+    :param num_voters: number of the voters.
+    :param num_candidates: number of the candidates.
+    :param params: culture parameters.
+    :return: a list of sets of approved candidates.
+    """
     if culture_id in registered_approval_cultures:
         return registered_approval_cultures.get(culture_id)(num_voters, num_candidates, **params)
 
@@ -114,13 +121,23 @@ def generate_ordinal_votes(culture_id: str = None,
                            num_voters: int = None,
                            params: dict = None,
                            **kwargs) -> Union[list, np.ndarray]:
+    """
+    Generates approval votes according to the given culture id.
+
+    :param culture_id: name of the culture.
+    :param num_voters: number of the voters.
+    :param num_candidates: number of the candidates.
+    :param params: culture parameters.
+    :param kwargs: additional arguments.
+    :return: array of ordinal votes.
+    """
 
     if culture_id in LIST_OF_PREFLIB_MODELS:
         try:
             votes = generate_preflib_votes(culture_id=culture_id,
-                                          num_candidates=num_candidates,
-                                          num_voters=num_voters,
-                                          params=params)
+                                           num_candidates=num_candidates,
+                                           num_voters=num_voters,
+                                           params=params)
         except:
             votes = []
             logging.warning(
@@ -163,7 +180,9 @@ def approval_votes_to_vectors(votes, num_candidates=None, num_voters=None):
     return vectors
 
 
-def from_approval(num_candidates=None, num_voters=None, params=None):
+def from_approval(num_candidates: int = None,
+                  num_voters: int = None,
+                  params: dict = None):
     votes = generate_approval_votes(culture_id=params['culture_id'],
                                     num_candidates=num_candidates, num_voters=num_voters,
                                     params=params)
@@ -198,12 +217,22 @@ def generate_ordinal_alliance_votes(culture_id: str = None,
 
 
 def add_approval_culture(name, function):
+    """
+    Adds a new approval culture to the list of available approval cultures.
+
+    :param name: name of the culture.
+    :param function: function that generates the votes.
+    :return: None.
+    """
     registered_approval_cultures[name] = function
 
 
 def add_ordinal_culture(name, function):
-    registered_ordinal_cultures[name] = function
+    """
+    Adds a new ordinal culture to the list of available ordinal cultures.
 
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 16.05.2022 #
-# # # # # # # # # # # # # # # #
+    :param name: name of the culture.
+    :param function: function that generates the votes.
+    :return: None.
+    """
+    registered_ordinal_cultures[name] = function

@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 
-import mapel.elections.features.partylist as partylist
-import mapel.elections.features.cohesive as cohesive
-import mapel.elections.features.proportionality_degree as prop_deg
-import mapel.elections.features.scores as scores
 import mapel.elections.features.approx as approx
 import mapel.elections.features.banzhaf_cc as banzhaf_cc
-import mapel.elections.features.ranging_cc as ranging_cc
-import mapel.elections.features.vc_diversity as vcd
-import mapel.elections.features.diversity as diversity
 import mapel.elections.features.clustering as clustering
-import mapel.elections.features.distortion as distortion
-import mapel.elections.features.other as other
-import mapel.elections.features.justified_representation as jr
+import mapel.elections.features.cohesive as cohesive
 import mapel.elections.features.dimensionality as dimensionality
-
-from mapel.core.glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
+import mapel.elections.features.distortion as distortion
+import mapel.elections.features.diversity as diversity
+import mapel.elections.features.justified_representation as jr
+import mapel.elections.features.other as other
+import mapel.elections.features.partylist as partylist
+import mapel.elections.features.proportionality_degree as prop_deg
+import mapel.elections.features.ranging_cc as ranging_cc
+import mapel.elections.features.scores as scores
+import mapel.elections.features.vc_diversity as vcd
 from mapel.core.features_main import get_main_local_feature, get_main_global_feature
+from mapel.core.glossary import MAIN_LOCAL_FEATUERS, MAIN_GLOBAL_FEATUERS
 
 registered_approval_features = {
     'max_approval_score': other.max_approval_score,
@@ -102,7 +101,6 @@ registered_ordinal_features = {
 }
 
 
-
 def get_global_feature(feature_id):
     """ Global feature depends on all instances """
     if feature_id in MAIN_GLOBAL_FEATUERS:
@@ -130,12 +128,22 @@ def get_local_feature(feature_id):
 
 
 def add_approval_feature(name, function):
+    """
+    Adds a new approval feature to the list of available approval features.
+
+    :param name: name of the feature.
+    :param function: function that calculates the feature.
+    :return: None.
+    """
     registered_approval_features[name] = function
 
 
 def add_ordinal_feature(name, function):
-    registered_ordinal_features[name] = function
+    """
+    Adds a new approval feature to the list of available approval features.
 
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 11.07.2023 #
-# # # # # # # # # # # # # # # #
+    :param name: name of the feature.
+    :param function: function that calculates the feature.
+    :return: None.
+    """
+    registered_ordinal_features[name] = function

@@ -29,7 +29,7 @@ class SimulatedAnnealing:
 
         :param distances: matrix nxn
         :param initial_positions: optional dictionary {node_index: (x, y)}
-        :param fix_initial_positions: if true, initial positions won't change
+        :param fix_initial_positions: if true, initial positions won'process_id change
         :return: list of positions for each vertex [(x1, y1), ...]
         """
 

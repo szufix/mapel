@@ -10,7 +10,13 @@ import numpy as np
 ###########
 def generate_ordinal_ic_votes(num_voters: int = None,
                               num_candidates: int = None) -> np.ndarray:
-    """ Return: ordinal votes from impartial culture """
+    """
+    Generates ordinal votes from impartial culture.
+
+    :param num_voters: number of the voters
+    :param num_candidates: number of the candidates
+    :return: array of ordinal votes.
+    """
     votes = np.zeros([num_voters, num_candidates], dtype=int)
     for j in range(num_voters):
         votes[j] = np.random.permutation(num_candidates)
@@ -19,7 +25,13 @@ def generate_ordinal_ic_votes(num_voters: int = None,
 
 def generate_impartial_anonymous_culture_election(num_voters: int = None,
                                                   num_candidates: int = None) -> np.ndarray:
-    """ Return: ordinal votes from impartial anonymous culture """
+    """
+    Generates ordinal votes from impartial anonymous culture.
+
+    :param num_voters: number of the voters
+    :param num_candidates: number of the candidates
+    :return: array of ordinal votes.
+    """
     alpha = 1. / math.factorial(num_candidates)
 
     votes = [list() for _ in range(num_voters)]
@@ -81,7 +93,3 @@ def generate_approval_empty_votes(num_voters: int = None,
     """ Return: approval votes where each vote is empty """
     return [set() for _ in range(num_voters)]
 
-
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 14.04.2023 #
-# # # # # # # # # # # # # # # #

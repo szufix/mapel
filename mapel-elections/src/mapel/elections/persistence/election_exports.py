@@ -15,7 +15,7 @@ def export_votes_to_file(election,
                          votes=None,
                          is_aggregated=True,
                          alliances=None):
-    """ Store votes in a file """
+    """ Exports votes to a file """
 
     if votes is None:
         votes = election.votes
@@ -24,18 +24,12 @@ def export_votes_to_file(election,
         params = {}
 
     with open(path, 'w') as file_:
-        if culture_id in NICE_NAME:
-            file_.write("# " + NICE_NAME[culture_id] + " " + str(params) + "\n")
-        else:
-            file_.write("# " + culture_id + " " + str(params) + "\n")
-
-        file_.write(str(num_candidates) + "\n")
-        if alliances is not None and len(alliances) > 0:
-            for i in range(num_candidates):
-                file_.write(f'{str(i)}, c{str(i)}, {str(alliances[i])} \n')
-        else:
-            for i in range(num_candidates):
-                file_.write(str(i) + ', c' + str(i) + "\n")
+        file_.write(f'# FILE NAME: {election.election_id}.soc\n')
+        file_.write(f'# DATA TYPE: soc \n')
+        file_.write(f'# CULTURE ID: {culture_id} \n')
+        file_.write(f'# PARAMS: {str(params)} \n')
+        file_.write(f'# NUMBER ALTERNATIVES: {num_candidates} \n')
+        file_.write(f'# NUMBER VOTERS: {num_voters} \n')
 
         if is_aggregated:
 
@@ -43,12 +37,9 @@ def export_votes_to_file(election,
             counted_votes = [[count, list(row)] for row, count in c.items()]
             counted_votes = sorted(counted_votes, reverse=True)
 
-            file_.write(str(num_voters) + ', ' + str(num_voters) + ', ' +
-                        str(len(counted_votes)) + "\n")
-
             if ballot_type == 'approval':
                 for i in range(len(counted_votes)):
-                    file_.write(str(counted_votes[i][0]) + ', {')
+                    file_.write(str(counted_votes[i][0]) + ': {')
                     for j in range(len(counted_votes[i][1])):
                         file_.write(str(int(counted_votes[i][1][j])))
                         if j < len(counted_votes[i][1]) - 1:
@@ -57,7 +48,7 @@ def export_votes_to_file(election,
 
             elif ballot_type == 'ordinal':
                 for i in range(len(counted_votes)):
-                    file_.write(str(counted_votes[i][0]) + ', ')
+                    file_.write(str(counted_votes[i][0]) + ': ')
                     for j in range(len(counted_votes[i][1])):
                         file_.write(str(int(counted_votes[i][1][j])))
                         if j < len(counted_votes[i][1]) - 1:
@@ -70,7 +61,7 @@ def export_votes_to_file(election,
 
             if ballot_type == 'approval':
                 for i in range(len(votes)):
-                    file_.write('1, {')
+                    file_.write('1: {')
                     for j in range(len(votes[i])):
                         file_.write(str(int(list(votes[i])[j])))
                         if j < len(votes[i]) - 1:
@@ -79,7 +70,7 @@ def export_votes_to_file(election,
 
             elif ballot_type == 'ordinal':
                 for i in range(len(votes)):
-                    file_.write('1, ')
+                    file_.write('1: ')
                     for j in range(len(votes[i])):
                         file_.write(str(int(votes[i][j])))
                         if j < len(votes[i]) - 1:
@@ -114,7 +105,7 @@ def export_approval_election(election, is_aggregated=True):
 
 
 def export_ordinal_election(election, is_aggregated=True):
-    """ Store ordinal election in a .soc file """
+    """ Exports ordinal election to a .soc file """
 
     path_to_folder = os.path.join(os.getcwd(), "experiments", election.experiment_id, "elections")
     make_folder_if_do_not_exist(path_to_folder)

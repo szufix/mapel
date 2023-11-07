@@ -247,7 +247,7 @@ def generate_approval_exp_partylist_votes(num_voters=None, num_candidates=None, 
         params = {}
 
     num_groups = params.get('g', 5)
-    exp = params.get('exp', 2.)
+    exp = params.get('experiment', 2.)
 
     sizes = np.array([1./exp**(i+1) for i in range(num_groups)])
     sizes = sizes / np.sum(sizes)

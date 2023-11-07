@@ -1,28 +1,25 @@
-import copy
+import csv
 import logging
 from collections import Counter
 
-import itertools
 from matplotlib import pyplot as plt
 
-import csv
-
+import mapel.elections.persistence.election_exports as exports
+import mapel.elections.persistence.election_imports as imports
+from mapel.core.inner_distances import swap_distance_between_potes, \
+    spearman_distance_between_potes
+from mapel.core.utils import *
+from mapel.elections.cultures.fake import *
 from mapel.elections.cultures.group_separable import get_gs_caterpillar_vectors
 from mapel.elections.cultures.preflib import get_sushi_vectors
 from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
 from mapel.elections.cultures_ import generate_ordinal_votes, \
     from_approval, generate_ordinal_alliance_votes
+from mapel.elections.features.other import is_condorcet
 from mapel.elections.objects.Election import Election
 from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
     compute_stv_winners
 from mapel.elections.other.winners import generate_winners
-from mapel.core.inner_distances import swap_distance_between_potes, \
-    spearman_distance_between_potes
-from mapel.elections.features.other import is_condorcet
-from mapel.core.utils import *
-import mapel.elections.persistence.election_exports as exports
-import mapel.elections.persistence.election_imports as imports
-from mapel.elections.cultures.fake import *
 from mapel.elections.other.winners import get_borda_points
 
 
@@ -78,18 +75,24 @@ class OrdinalElection(Election):
                         self.num_voters = len(self.votes)
                         self.compute_potes()
                 else:
-                    self.fake = imports.check_if_fake(self.experiment_id, self.election_id, 'soc')
+                    try:
+                        self.fake = imports.check_if_fake(self.experiment_id, self.election_id,
+                                                          'soc')
+                    except:
+                        self.fake = False
+
                     if self.fake:
                         self.culture_id, self.params, self.num_voters, \
                         self.num_candidates = imports.import_fake_soc_election(self.experiment_id,
                                                                                self.election_id)
                     else:
-
                         self.votes, self.num_voters, self.num_candidates, self.params, \
                         self.culture_id, self.alliances, \
                         self.num_options, self.quantites, \
-                            self.distinct_votes = imports.import_real_soc_election(
-                            self.experiment_id, self.election_id, self.is_shifted)
+                        self.distinct_votes = imports.import_real_soc_election(
+                            experiment_id=self.experiment_id,
+                            election_id=self.election_id,
+                            is_shifted=self.is_shifted)
                         try:
                             self.points['voters'] = self.import_ideal_points('voters')
                             self.points['candidates'] = self.import_ideal_points('candidates')
@@ -102,7 +105,6 @@ class OrdinalElection(Election):
                                 self.alpha = self.params['alpha']
                         except KeyError:
                             print("Error")
-                            pass
 
                 self.candidatelikeness_original_vectors = {}
 
@@ -110,7 +112,6 @@ class OrdinalElection(Election):
                     self.votes_to_positionwise_vectors()
             except:
                 self.is_correct = False
-                pass
 
         if self.params is None:
             self.params = {}
@@ -490,7 +491,7 @@ class OrdinalElection(Election):
             plt.ylim([avg_y - radius, avg_y + radius])
         # plt.title(election.label, size=38)
 
-        plt.title(self.texify_label(self.label), size=title_size) # tmp
+        plt.title(self.texify_label(self.label), size=title_size)  # tmp
 
         # plt.title(election.texify_label(election.label), size=38, y=0.94)
         # plt.title(election.label, size=title_size)
@@ -516,7 +517,7 @@ class OrdinalElection(Election):
         plt.close()
 
 
-def convert_votes_to_potes(votes):
+def convert_votes_to_potes(votes) -> np.array:
     """ Convert votes to positional votes (called potes) """
     return np.array([[list(vote).index(i) for i, _ in enumerate(vote)]
                      for vote in votes])

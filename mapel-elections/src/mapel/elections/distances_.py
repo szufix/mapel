@@ -1,21 +1,19 @@
 #!/usr/bin/env python
+import copy
 import logging
 from time import time
 from typing import Callable
+
+import numpy as np
 from tqdm import tqdm
 
-import copy
-import numpy as np
-
+import mapel.core.persistence.experiment_exports as exports
+from mapel.core.inner_distances import map_str_to_func
+from mapel.core.objects.Experiment import Experiment
 from mapel.elections.distances import main_approval_distances as mad
 from mapel.elections.distances import main_ordinal_distances as mod
-from mapel.core.inner_distances import map_str_to_func
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.OrdinalElection import OrdinalElection
-from mapel.core.objects.Experiment import Experiment
-
-import mapel.core.persistence.experiment_exports as exports
-
 
 registered_approval_distances = {
     'approvalwise': mad.compute_approvalwise,
@@ -43,17 +41,38 @@ registered_ordinal_distances = {
 
 
 def add_approval_distance(name, function):
+    """
+    Adds a new approval distance to the list of approval distances.
+
+    :param name: name of the distance.
+    :param function: function that computes the distance.
+    :return: None.
+    """
     registered_approval_distances[name] = function
 
 
 def add_ordinal_distance(name, function):
+    """
+    Adds a new ordinal distance to the list of ordinal distances.
+
+    :param name: name of the distance.
+    :param function: function that computes the distance.
+    :return: None.
+    """
     registered_ordinal_distances[name] = function
 
 
 def get_distance(election_1,
                  election_2,
                  distance_id: str = None) -> float or (float, list):
-    """ Return: distance between elections, (if applicable) optimal matching """
+    """
+    Computes distance between elections, (if applicable) optimal matching.
+
+    :param election_1: first election.
+    :param election_2: second election.
+    :param distance_id: name of the distance.
+    :return: distances, matching (if applicable).
+    """
     if type(election_1) is ApprovalElection and type(election_2) is ApprovalElection:
         return get_approval_distance(election_1, election_2, distance_id=distance_id)
     elif type(election_1) is OrdinalElection and type(election_2) is OrdinalElection:
@@ -64,7 +83,15 @@ def get_distance(election_1,
 
 def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElection,
                           distance_id: str = None, **kwargs) -> (float, list):
-    """ Return: distance between approval elections, (if applicable) optimal matching """
+    """
+    Computes distance between approval elections, (if applicable) optimal matching.
+
+    :param election_1: first election.
+    :param election_2: second election.
+    :param distance_id: name of the distance.
+    :param kwargs: additional arguments.
+    :return: distances, matching (if applicable).
+    """
 
     inner_distance, main_distance = _extract_distance_id(distance_id)
 
@@ -80,12 +107,20 @@ def get_approval_distance(election_1: ApprovalElection, election_2: ApprovalElec
                                                                     **kwargs)
 
     else:
-        logging.warning("No such distance!")
+        logging.warning(f'No such distance as: {main_distance}!')
 
 
 def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElection,
                          distance_id: str = None, **kwargs) -> float or (float, list):
-    """ Return: distance between ordinal elections, (if applicable) optimal matching """
+    """
+    Computes distance between ordinal elections, (if applicable) optimal matching.
+
+    :param election_1: first election.
+    :param election_2: second election.
+    :param distance_id: name of the distance.
+    :param kwargs: additional arguments.
+    :return: distances, matching (if applicable).
+    """
 
     inner_distance, main_distance = _extract_distance_id(distance_id)
 
@@ -101,7 +136,7 @@ def get_ordinal_distance(election_1: OrdinalElection, election_2: OrdinalElectio
                                                                    **kwargs)
 
     else:
-        logging.warning("No such distance!")
+        logging.warning(f'No such distance as: {main_distance}!')
 
 
 def _extract_distance_id(distance_id: str) -> (Callable, str):
@@ -144,20 +179,20 @@ def run_single_process(exp: Experiment,
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
 
-def run_multiple_processes(exp: Experiment,
+def run_multiple_processes(experiment: Experiment,
                            instances_ids: list,
                            distances: dict,
                            times: dict,
                            matchings: dict,
-                           t) -> None:
+                           process_id) -> None:
     """ Single process for computing distances """
 
     for instance_id_1, instance_id_2 in tqdm(instances_ids,
-                                             desc=f'Computing distances of thread {t}'):
+                                             desc=f'Computing distances of thread {process_id}'):
         start_time = time()
-        distance = get_distance(copy.deepcopy(exp.instances[instance_id_1]),
-                                copy.deepcopy(exp.instances[instance_id_2]),
-                                distance_id=copy.deepcopy(exp.distance_id))
+        distance = get_distance(copy.deepcopy(experiment.instances[instance_id_1]),
+                                copy.deepcopy(experiment.instances[instance_id_2]),
+                                distance_id=copy.deepcopy(experiment.distance_id))
         if type(distance) is tuple:
             distance, matching = distance
             matching = np.array(matching)
@@ -168,12 +203,9 @@ def run_multiple_processes(exp: Experiment,
         times[instance_id_1][instance_id_2] = time() - start_time
         times[instance_id_2][instance_id_1] = times[instance_id_1][instance_id_2]
 
-    if exp.is_exported:
-        exports.export_distances_helper(exp, instances_ids, distances, times, t)
-
-
-
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 11.07.2023 #
-# # # # # # # # # # # # # # # #
-
+    if experiment.is_exported:
+        exports.export_distances_multiple_processes(experiment,
+                                                    instances_ids,
+                                                    distances,
+                                                    times,
+                                                    process_id)

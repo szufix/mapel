@@ -258,7 +258,8 @@ class ElectionExperiment(Experiment):
 
         self.families[family_id].instance_ids = list(new_instances.keys())
 
-        self.update_map_csv()
+        if self.is_exported:
+            self.update_map_csv()
 
         return list(new_instances.keys())
 
@@ -455,11 +456,11 @@ class ElectionExperiment(Experiment):
 
         else:
             processes = []
-            for t in range(num_processes):
-                print(f'Starting process: {t}')
+            for process_id in range(num_processes):
+                print(f'Starting process: {process_id}')
                 sleep(0.1)
-                start = int(t * num_distances / num_processes)
-                stop = int((t + 1) * num_distances / num_processes)
+                start = int(process_id * num_distances / num_processes)
+                stop = int((process_id + 1) * num_distances / num_processes)
                 instances_ids = ids[start:stop]
 
                 process = Process(target=metr.run_multiple_processes, args=(self,
@@ -467,7 +468,7 @@ class ElectionExperiment(Experiment):
                                                                             distances,
                                                                             times,
                                                                             matchings,
-                                                                            t))
+                                                                            process_id))
                 process.start()
                 processes.append(process)
 
@@ -477,9 +478,9 @@ class ElectionExperiment(Experiment):
             distances = {instance_id: {} for instance_id in self.instances}
             times = {instance_id: {} for instance_id in self.instances}
 
-            for t in range(num_processes):
+            for process_id in range(num_processes):
 
-                file_name = f'{distance_id}_p{t}.csv'
+                file_name = f'{distance_id}_p{process_id}.csv'
                 path = os.path.join(os.getcwd(),
                                     "experiments",
                                     self.experiment_id,
@@ -537,7 +538,8 @@ class ElectionExperiment(Experiment):
                 num_candidates = None
                 num_voters = None
                 family_id = None
-                show = True
+                ms = None
+
 
                 if 'culture_id' in row.keys():
                     culture_id = str(row['culture_id']).strip()
@@ -563,6 +565,9 @@ class ElectionExperiment(Experiment):
                 if 'marker' in row.keys():
                     marker = str(row['marker']).strip()
 
+                if 'ms' in row.keys():
+                    ms = int(row['ms'])
+
                 if 'num_candidates' in row.keys():
                     num_candidates = int(row['num_candidates'])
 
@@ -572,9 +577,6 @@ class ElectionExperiment(Experiment):
                 if 'path' in row.keys():
                     path = ast.literal_eval(str(row['path']))
 
-                if 'show' in row.keys():
-                    show = row['show'].strip() == 't'
-
                 single = size == 1
 
                 families[family_id] = ElectionFamily(culture_id=culture_id,
@@ -583,7 +585,7 @@ class ElectionExperiment(Experiment):
                                                      label=label,
                                                      color=color,
                                                      alpha=alpha,
-                                                     show=show,
+                                                     ms=ms,
                                                      size=size,
                                                      marker=marker,
                                                      starting_from=starting_from,

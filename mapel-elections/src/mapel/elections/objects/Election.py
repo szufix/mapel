@@ -13,15 +13,14 @@ import numpy as np
 import numpy.linalg as la
 from sklearn.manifold import MDS
 
-from mapel.elections.features_ import get_local_feature
-from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
-    compute_stv_winners
+import mapel.elections.persistence.election_exports as exports
+import mapel.elections.persistence.election_imports as imports
 from mapel.core.glossary import *
 from mapel.core.inner_distances import l2
 from mapel.core.objects.Instance import Instance
-
-import mapel.elections.persistence.election_exports as exports
-import mapel.elections.persistence.election_imports as imports
+from mapel.elections.features_ import get_local_feature
+from mapel.elections.other.winners import compute_sntv_winners, compute_borda_winners, \
+    compute_stv_winners
 
 OBJECT_TYPES = ['vote', 'candidate']
 
@@ -70,6 +69,11 @@ class Election(Instance):
         self.import_coordinates()
 
     def import_distances(self):
+        """
+        Import distances from a .csv file.
+
+        :return: None
+        """
         self.distances = {}
         if not self.fast_import:
             for object_type in OBJECT_TYPES:
@@ -79,6 +83,11 @@ class Election(Instance):
                     pass
 
     def import_coordinates(self):
+        """
+        Import coordinates from a .csv file.
+
+        :return: None
+        """
         self.coordinates = {}
         for object_type in OBJECT_TYPES:
             try:

@@ -218,7 +218,7 @@ class ApprovalElectionExperiment(ElectionExperiment, ABC):
             with open(path, 'w') as file_csv:
                 file_csv.write("size;num_candidates;num_voters;culture_id;params;color;alpha;"
                                "label;marker;show;path")
-                file_csv.write("1;50;200;ic;{'p': 0.5};black;0.75;IC 0.5;*;t;{}")
+                file_csv.write("1;50;200;ic;{'p': 0.5};black;0.75;IC 0.5;*;process_id;{}")
 
 
     def convert_pb_to_app(self, **kwargs):
