@@ -1613,15 +1613,13 @@ def adjust_the_map(experiment) -> None:
         try:
             left = 'IC 0.5'
             right = 'ID 0.5'
-            # up = election.get_election_id_from_model_name('approval_full')
-            down = experiment.get_instance_id_from_culture_id('approval_empty')
+            down = experiment.get_instance_id_from_culture_id('empty')
             adjust_the_map_on_three_points(experiment, left, right, down)
         except Exception:
             try:
                 left = 'IC 0.25'
                 right = 'ID 0.25'
-                # up = election.get_election_id_from_model_name('approval_full')
-                down = experiment.get_instance_id_from_culture_id('approval_empty')
+                down = experiment.get_instance_id_from_culture_id('empty')
                 adjust_the_map_on_three_points(experiment, left, right, down)
             except Exception:
                 pass
