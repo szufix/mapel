@@ -7,72 +7,6 @@ import numpy as np
 from scipy.special import binom
 
 
-def _decompose_tree(num_leaves, num_internal_nodes):
-    """ Algorithm from: Uniform generation of a Schroder tree"""
-
-    num_nodes = num_leaves + num_internal_nodes
-
-    patterns = _generate_patterns(num_nodes, num_internal_nodes)
-    seq, sizes = _generate_tree(num_nodes, num_internal_nodes, patterns)
-
-    seq = cycle_lemma(seq)
-
-    tree = _turn_pattern_into_tree(seq)
-
-    return tree
-
-
-def generate_ordinal_group_separable_votes(num_voters=None, num_candidates=None,
-                                           tree: str = 'random'):
-    """ Algorithm from: The Complexity of Election Problems
-    with Group-Separable Preferences"""
-
-    while True:
-        m = num_candidates
-        n = num_voters
-
-        if tree == 'random':
-            func = lambda m, r: 1./(m-1) * binom(m - 1, r) * \
-                                binom(m - 1 + r, m)
-            buckets = [func(m, r) for r in range(1, m)]
-
-            denominator = sum(buckets)
-            buckets = [buckets[i]/denominator for i in range(len(buckets))]
-
-            num_internal_nodes = \
-                np.random.choice(len(buckets), 1, p=buckets)[0]+1
-
-            decomposition_tree = \
-                _decompose_tree(num_candidates, num_internal_nodes)
-
-        elif tree == 'caterpillar':
-            decomposition_tree = _caterpillar(m)
-
-        elif tree == 'balanced':
-            decomposition_tree = _balanced(m)
-
-        all_inner_nodes = get_all_inner_nodes(decomposition_tree)
-
-        votes = []
-        for _ in range(n):
-
-            signature = [np.random.choice([0, 1])
-                         for _ in range(len(all_inner_nodes))]
-
-            for i, node in enumerate(all_inner_nodes):
-                node.reverse = signature[i]
-
-            raw_vote = sample_a_vote(decomposition_tree)
-            vote = [int(candidate.replace('x', '')) for candidate in raw_vote]
-            votes.append(vote)
-
-            for i, node in enumerate(all_inner_nodes):
-                node.reverse = False
-
-        return votes
-
-REVERSE = {}
-
 
 def get_all_leaves_names(node):
     if node.leaf:
@@ -119,21 +53,6 @@ def get_all_inner_nodes(node):
     output = [[node]]
     for i in range(len(node.children)):
         output.append(get_all_inner_nodes(node.children[i]))
-    return list(chain.from_iterable(output))
-
-
-def sample_a_vote(node, reverse=False):
-    if node.leaf:
-        return [node.election_id]
-    output = []
-    if reverse == node.reverse:
-        for i in range(len(node.children)):
-            output.append(sample_a_vote(node.children[i]))
-    else:
-        for i in range(len(node.children)):
-            output.append(sample_a_vote(node.children[len(node.children)-1-i],
-                                        reverse=True))
-
     return list(chain.from_iterable(output))
 
 
@@ -455,25 +374,3 @@ def get_frequency_matrix_from_tree(root):
         vectors.append(f[name])
     return np.array(vectors)
 
-
-# num_voters = 1000
-# num_candidates = 5
-# votes, tree = generate_group_separable_election(num_voters=num_voters,
-#                                       num_candidates=num_candidates)
-#
-# print(get_frequency_matrix_from_tree(tree))
-#
-# vectors = np.zeros([num_candidates, num_candidates])
-#
-# for i in range(num_voters):
-#     pos = 0
-#     for j in range(num_candidates):
-#         vote = votes[i][j]
-#         if vote == -1:
-#             continue
-#         vectors[vote][pos] += 1
-#         pos += 1
-# for i in range(num_candidates):
-#     for j in range(num_candidates):
-#         vectors[i][j] /= float(num_voters)
-#

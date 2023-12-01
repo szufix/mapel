@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
-import math
-from typing import Callable, List
+from typing import Callable
 
 import os
-import networkx as nx
 
 from mapel.core.matchings import *
 from mapel.elections.objects.ApprovalElection import ApprovalElection

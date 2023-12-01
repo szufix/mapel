@@ -3,7 +3,6 @@
 import math
 import os
 import sys
-from typing import Union
 
 import numpy as np
 try:
@@ -26,27 +25,63 @@ from mapel.elections.other import winners as win
 
 
 # MAIN FUNCTIONS
-def highest_borda_score(election):
-    """ Compute highest BORDA score of a given election """
+def highest_borda_score(election) -> dict:
+    """
+    Computes the highest Borda score of a given election
+
+        Parameters
+        ----------
+        election : OrdinalElection
+
+        Returns
+        -------
+        dict
+            'value': highest Borda score
+
+    """
     if election.culture_id in LIST_OF_FAKE_MODELS:
         return {'value': None}
     c = election.num_candidates
     vectors = election.get_vectors()
     borda = [sum([vectors[i][pos] * (c - pos - 1) for pos in range(c)])
              for i in range(c)]
-    return max(borda) * election.num_voters
+    return {'value': max(borda) * election.num_voters}
 
 
-def highest_plurality_score(election):
-    """ compute highest PLURALITY score of a given election"""
+def highest_plurality_score(election) -> dict:
+    """
+    Computes the highest Plurality score of a given election
+
+        Parameters
+        ----------
+        election : OrdinalElection
+
+        Returns
+        -------
+        dict
+            'value': highest Plurality score
+
+    """
     if election.culture_id in LIST_OF_FAKE_MODELS:
         return {'value': None}
     first_pos = election.get_matrix()[0]
-    return max(first_pos) * election.num_voters
+    return {'value': max(first_pos) * election.num_voters}
 
 
-def highest_copeland_score(election):
-    """ compute highest COPELAND score of a given election """
+def highest_copeland_score(election) -> dict:
+    """
+    Computes the highest Copeland score of a given election
+
+        Parameters
+        ----------
+        election : OrdinalElection
+
+        Returns
+        -------
+        dict
+            'value': highest Copeland score
+
+    """
     if election.culture_id in LIST_OF_FAKE_MODELS:
         return {'value': None}
 
@@ -67,11 +102,23 @@ def highest_copeland_score(election):
                 scores[i] += 0.5
                 scores[j] += 0.5
 
-    return max(scores)
+    return {'value': max(scores)}
 
 
 def lowest_dodgson_score(election):
-    """ compute lowest DODGSON score of a given election """
+    """
+    Computes the lowest Dodgson score of a given election
+
+        Parameters
+        ----------
+        election : OrdinalElection
+
+        Returns
+        -------
+        dict
+            'value': lowest Dodgson score
+
+    """
     if election.culture_id in LIST_OF_FAKE_MODELS:
         return {'value': None}
 

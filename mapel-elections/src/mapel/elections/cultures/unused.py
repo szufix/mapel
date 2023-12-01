@@ -1,5 +1,7 @@
 import numpy as np
-from mapel.elections.cultures.single_peaked import generate_ordinal_sp_conitzer_votes, generate_ordinal_sp_walsh_votes
+from mapel.elections.cultures.matrices.single_peaked \
+    import generate_ordinal_sp_conitzer_votes, \
+    generate_ordinal_sp_walsh_votes
 
 
 def generate_ic_party(num_voters: int = None, params: dict = None) -> list:
@@ -28,8 +30,8 @@ def generate_weighted_stratification_votes(num_voters: int = None, num_candidate
 
     w = params.get('w', 0.5)
 
-    return [list(np.random.permutation(int(w*num_candidates))) +
-             list(np.random.permutation([j for j in range(int(w*num_candidates), num_candidates)]))
+    return [list(np.random.permutation(int(w * num_candidates))) +
+            list(np.random.permutation([j for j in range(int(w * num_candidates), num_candidates)]))
             for _ in range(num_voters)]
 
 
@@ -57,7 +59,6 @@ def generate_sp_party(model=None, num_voters=None, num_candidates=None, params=N
     return votes
 
 
-
 def generate_approval_urn_votes(num_voters: int = None,
                                 num_candidates: int = None,
                                 params: dict = None) -> list:
@@ -81,62 +82,62 @@ def generate_approval_urn_votes(num_voters: int = None,
 
 
 def generate_approval_simplex_resampling_votes(num_voters=None, num_candidates=None,
-                                                    params=None):
-        if 'phi' not in params:
-            phi = np.random.random()
-        else:
-            phi = params['phi']
+                                               params=None):
+    if 'phi' not in params:
+        phi = np.random.random()
+    else:
+        phi = params['phi']
 
-        if 'g' not in params:
-            num_groups = 2
-        else:
-            num_groups = params['g']
+    if 'g' not in params:
+        num_groups = 2
+    else:
+        num_groups = params['g']
 
-        if 'max_range' not in params:
-            params['max_range'] = 1.
+    if 'max_range' not in params:
+        params['max_range'] = 1.
 
-        sizes_c = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
-        # sizes_c = runif_in_simplex(num_groups)
-        sizes_c = np.concatenate(([0], sizes_c))
-        sizes_c = np.cumsum(sizes_c)
-        print(sizes_c)
+    sizes_c = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+    # sizes_c = runif_in_simplex(num_groups)
+    sizes_c = np.concatenate(([0], sizes_c))
+    sizes_c = np.cumsum(sizes_c)
+    print(sizes_c)
 
-        sum = 71 + 5*8
+    sum = 71 + 5 * 8
 
-        sizes_v = [71/sum, 8/sum, 8/sum, 8/sum, 8/sum, 8/sum]
-        # sizes_v = runif_in_simplex(num_groups)
-        sizes_v = np.concatenate(([0], sizes_v))
-        sizes_v = np.cumsum(sizes_v)
-        print(sizes_v)
+    sizes_v = [71 / sum, 8 / sum, 8 / sum, 8 / sum, 8 / sum, 8 / sum]
+    # sizes_v = runif_in_simplex(num_groups)
+    sizes_v = np.concatenate(([0], sizes_v))
+    sizes_v = np.cumsum(sizes_v)
+    print(sizes_v)
 
-        votes = [set() for _ in range(num_voters)]
+    votes = [set() for _ in range(num_voters)]
 
-        for g in range(num_groups):
+    for g in range(num_groups):
 
-            central_vote = {i for i in range(int(sizes_c[g] * num_candidates),
-                                             int(sizes_c[g+1] * num_candidates))}
+        central_vote = {i for i in range(int(sizes_c[g] * num_candidates),
+                                         int(sizes_c[g + 1] * num_candidates))}
 
-            for v in range(int(sizes_v[g] * num_voters), int(sizes_v[g + 1] * num_voters)):
-                vote = set()
-                for c in range(num_candidates):
-                    if np.random.random() <= phi:
-                        if np.random.random() <= params['p']:
-                            vote.add(c)
-                    else:
-                        if c in central_vote:
-                            vote.add(c)
-                votes[v] = vote
+        for v in range(int(sizes_v[g] * num_voters), int(sizes_v[g + 1] * num_voters)):
+            vote = set()
+            for c in range(num_candidates):
+                if np.random.random() <= phi:
+                    if np.random.random() <= params['p']:
+                        vote.add(c)
+                else:
+                    if c in central_vote:
+                        vote.add(c)
+            votes[v] = vote
 
-            # sum_p = sum([sum(vote) for vote in votes])
-            # avg_p = sum_p / (num_voters * num_candidates)
-            # print(avg_p, params['max_range'])
-            # if avg_p < params['max_range']:
-            #     break
+        # sum_p = sum([sum(vote) for vote in votes])
+        # avg_p = sum_p / (num_voters * num_candidates)
+        # print(avg_p, params['max_range'])
+        # if avg_p < params['max_range']:
+        #     break
 
-        return votes
+    return votes
+
 
 def approval_anti_pjr_votes(num_voters=None, num_candidates=None, params=None):
-
     if 'p' not in params:
         p = np.random.random()
     else:
@@ -152,8 +153,8 @@ def approval_anti_pjr_votes(num_voters=None, num_candidates=None, params=None):
     else:
         num_groups = params['g']
 
-    c_group_size = int(num_candidates/num_groups)
-    v_group_size = int(num_voters/num_groups)
+    c_group_size = int(num_candidates / num_groups)
+    v_group_size = int(num_voters / num_groups)
     size = int(p * num_candidates)
 
     votes = []
@@ -165,7 +166,7 @@ def approval_anti_pjr_votes(num_voters=None, num_candidates=None, params=None):
         if size <= c_group_size:
             central_vote = set(np.random.choice(list(core), size=size))
         else:
-            central_vote = set(np.random.choice(list(rest), size=size-c_group_size))
+            central_vote = set(np.random.choice(list(rest), size=size - c_group_size))
             central_vote = central_vote.union(core)
 
         for v in range(v_group_size):
@@ -183,7 +184,6 @@ def approval_anti_pjr_votes(num_voters=None, num_candidates=None, params=None):
 
 
 def approval_partylist_votes_old(num_voters=None, num_candidates=None, params=None):
-
     if 'g' not in params:
         num_groups = 2
     else:
@@ -199,8 +199,8 @@ def approval_partylist_votes_old(num_voters=None, num_candidates=None, params=No
     else:
         m = params['m']
 
-    c_group_size = int(num_candidates/num_groups)
-    v_group_size = int(num_voters/num_groups)
+    c_group_size = int(num_candidates / num_groups)
+    v_group_size = int(num_voters / num_groups)
 
     votes = []
     if not shift:
@@ -208,29 +208,29 @@ def approval_partylist_votes_old(num_voters=None, num_candidates=None, params=No
             for v in range(v_group_size):
                 vote = set()
                 for c in range(c_group_size):
-                    c += g*c_group_size
+                    c += g * c_group_size
                     vote.add(c)
                 for _ in range(m):
                     el = random.sample(vote, 1)[0]
                     vote.remove(el)
                 votes.append(vote)
     else:
-        shift = int(c_group_size/2)
+        shift = int(c_group_size / 2)
         for g in range(num_groups):
-            for v in range(int(v_group_size/2)):
+            for v in range(int(v_group_size / 2)):
                 vote = set()
                 for c in range(c_group_size):
-                    c += g*c_group_size
+                    c += g * c_group_size
                     vote.add(c)
                 for _ in range(m):
                     el = random.sample(vote, 1)[0]
                     vote.remove(el)
                 votes.append(vote)
 
-            for v in range(int(v_group_size/2), v_group_size):
+            for v in range(int(v_group_size / 2), v_group_size):
                 vote = set()
                 for c in range(c_group_size):
-                    c += g*c_group_size + shift
+                    c += g * c_group_size + shift
                     c %= num_candidates
                     vote.add(c)
                 for _ in range(m):
@@ -242,23 +242,22 @@ def approval_partylist_votes_old(num_voters=None, num_candidates=None, params=No
 
 
 def generate_approval_exp_partylist_votes(num_voters=None, num_candidates=None, params=None):
-
     if params is None:
         params = {}
 
     num_groups = params.get('g', 5)
     exp = params.get('experiment', 2.)
 
-    sizes = np.array([1./exp**(i+1) for i in range(num_groups)])
+    sizes = np.array([1. / exp ** (i + 1) for i in range(num_groups)])
     sizes = sizes / np.sum(sizes)
     party_votes = np.random.choice([i for i in range(num_groups)], num_voters, p=sizes)
 
-    party_size = int(num_candidates/num_groups)
+    party_size = int(num_candidates / num_groups)
     votes = []
 
     for i in range(num_voters):
-        shift = party_votes[i]*party_size
-        vote = set([int(c+shift) for c in range(party_size)])
+        shift = party_votes[i] * party_size
+        vote = set([int(c + shift) for c in range(party_size)])
         votes.append(vote)
 
     return votes

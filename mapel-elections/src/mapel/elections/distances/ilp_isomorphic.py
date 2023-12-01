@@ -2,7 +2,6 @@
 
 import os
 from contextlib import suppress
-import numpy as np
 import scipy.special
 
 try:

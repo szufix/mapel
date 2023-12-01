@@ -3,62 +3,72 @@
 import logging
 from typing import Union
 
+
+import mapel.elections.cultures.to_be_removed.euclidean as euclidean
+import mapel.elections.cultures.to_be_removed.group_separable as group_separable
+import mapel.elections.cultures.to_be_removed.impartial as impartial
+
 import mapel.elections.cultures.didi as didi
-import mapel.elections.cultures.euclidean as euclidean
 import mapel.elections.cultures.field_experiment as fe
-import mapel.elections.cultures.group_separable as group_separable
 import mapel.elections.cultures.guardians as guardians
 import mapel.elections.cultures.guardians_plus as guardians_plus
-import mapel.elections.cultures.impartial as impartial
 import mapel.elections.cultures.mallows as mallows
-import mapel.elections.cultures.noise as noise
 import mapel.elections.cultures.partylist as partylist
-import mapel.elections.cultures.resampling as resampling
-import mapel.elections.cultures.single_crossing as single_crossing
-import mapel.elections.cultures.single_peaked as single_peaked
-import mapel.elections.cultures.sp_matrices as sp_matrices
+import mapel.elections.cultures.matrices.single_peaked_matrices as sp_matrices
 import mapel.elections.cultures.unused as unused
 import mapel.elections.cultures.urn as urn
 from mapel.core.glossary import *
 from mapel.elections.cultures.alliances import *
 from mapel.elections.cultures.preflib import generate_preflib_votes
 
+import prefsampling.ordinal as pref_ordinal
+import prefsampling.approval as pref_approval
+
 registered_approval_cultures = {
-    'ic': impartial.generate_approval_ic_votes,
-    'id': impartial.generate_approval_id_votes,
-    'resampling': resampling.generate_approval_resampling_votes,
-    'disjoint_resampling': resampling.generate_approval_disjoint_resampling_votes,
-    'moving_resampling': resampling.generate_approval_moving_resampling_votes,
-    'noise': noise.generate_approval_noise_model_votes,
-    'euclidean': euclidean.generate_approval_euclidean_votes,
-    'truncated_urn': urn.generate_approval_truncated_urn_votes,
-    'urn_partylist': partylist.generate_approval_urn_partylist_votes,
+    'impartial': pref_approval.impartial,
+    'impartial_culture': pref_approval.impartial,
+    'ic': pref_approval.impartial,
+    'id': pref_approval.identity,
+    'resampling': pref_approval.resampling,
+    'disjoint_resampling': pref_approval.disjoint_resampling,
+    'moving_resampling': pref_approval.moving_resampling,
+    'noise': pref_approval.noise,
+    'euclidean': pref_approval.euclidean,
+
     'full': impartial.generate_approval_full_votes,
     'empty': impartial.generate_approval_empty_votes,
+
+    'truncated_urn': urn.generate_approval_truncated_urn_votes,
+    'urn_partylist': partylist.generate_approval_urn_partylist_votes,
 
     'vcr': euclidean.generate_approval_vcr_votes,  # unsupported culture
     'field': fe.generate_approval_field_votes,  # unsupported culture
     'truncated_mallows': mallows.generate_approval_truncated_mallows_votes,  # unsupported culture
 
-    'impartial_culture': impartial.generate_approval_ic_votes,  # deprecated name
     'approval_full': impartial.generate_approval_full_votes,  # deprecated name
     'approval_empty': impartial.generate_approval_empty_votes,  # deprecated name
 }
 
 registered_ordinal_cultures = {
-    'ic': impartial.generate_ordinal_ic_votes,
-    'iac': impartial.generate_impartial_anonymous_culture_election,
-    'euclidean': euclidean.generate_ordinal_euclidean_votes,
-    'urn': urn.generate_urn_votes,
-    'group-separable': group_separable.generate_ordinal_group_separable_votes,
-    'single-crossing': single_crossing.generate_ordinal_single_crossing_votes,
-    'weighted_stratification': unused.generate_weighted_stratification_votes,
-    'mallows': mallows.generate_mallows_votes,
+
+    'impartial': pref_ordinal.impartial,
+    'impartial_culture': pref_ordinal.impartial,
+    'ic': pref_ordinal.impartial,
+    'iac': pref_ordinal.impartial_anonymous,
+    'euclidean': pref_ordinal.euclidean,
+    'urn': pref_ordinal.urn,
+    'single-crossing': pref_ordinal.single_crossing,
+    'conitzer': pref_ordinal.single_peaked_conitzer,
+    'walsh': pref_ordinal.single_peaked_walsh,
+    'spoc': pref_ordinal.single_peaked_circle,
+    'weighted_stratification': pref_ordinal.stratification,
+    'stratification': pref_ordinal.stratification,
+    'mallows': pref_ordinal.mallows,
+
     'norm-mallows': mallows.generate_mallows_votes,
-    'conitzer': single_peaked.generate_ordinal_sp_conitzer_votes,
-    'spoc_conitzer': single_peaked.generate_ordinal_spoc_conitzer_votes,
-    'walsh': single_peaked.generate_ordinal_sp_walsh_votes,
     'real_identity': guardians.generate_real_identity_votes,
+
+    'group-separable': group_separable.generate_ordinal_group_separable_votes,
 
     'mallows_urn': urn.generate_mallows_urn_votes,
     'idan_part': guardians_plus.generate_idan_part_votes,  # unsupported culture
@@ -90,8 +100,7 @@ registered_ordinal_cultures = {
     'un_from_matrix': guardians_plus.generate_un_from_matrix_votes,  # unsupported culture
     'un_from_list': guardians_plus.generate_un_from_list,  # unsupported culture
 
-    'impartial_culture': impartial.generate_ordinal_ic_votes,  # deprecated name
-    'urn_model': urn.generate_urn_votes,  # deprecated name
+    'urn_model': pref_ordinal.urn,  # deprecated name
 }
 
 

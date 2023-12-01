@@ -5,32 +5,6 @@ from random import *
 import numpy as np
 
 
-def generate_ordinal_single_crossing_votes(num_voters: int = None,
-                                           num_candidates: int = None) -> np.ndarray:
-    """ helper function: generate simple single-crossing elections"""
-
-    votes = np.zeros([num_voters, num_candidates])
-
-    domain_size = int(num_candidates * (num_candidates - 1) / 2 + 1)
-    domain = [list(range(num_candidates)) for _ in range(domain_size)]
-
-    for line in range(1, domain_size):
-        swap_candidates = [(i, i + 1) for i in range(num_candidates - 1) if
-                           domain[line - 1][i] < domain[line - 1][i + 1]]
-        swap_indices = swap_candidates[np.random.randint(0, len(swap_candidates))]
-
-        domain[line] = domain[line - 1].copy()
-        domain[line][swap_indices[0]], domain[line][swap_indices[1]] = domain[line][
-                                                                           swap_indices[1]], \
-                                                                       domain[line][
-                                                                           swap_indices[0]]
-
-    for j in range(num_voters):
-        r = np.random.randint(0, domain_size)
-        votes[j] = list(domain[r])
-
-    return votes
-
 
 def get_single_crossing_matrix(num_candidates: int) -> np.ndarray:
     return get_single_crossing_vectors(num_candidates).transpose()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from mapel.elections.cultures.group_separable import get_gs_caterpillar_vectors
-from mapel.elections.cultures.sp_matrices import get_walsh_vectors, \
+from mapel.elections.cultures.single_peaked_matrices import get_walsh_vectors, \
     get_conitzer_vectors
 from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
 

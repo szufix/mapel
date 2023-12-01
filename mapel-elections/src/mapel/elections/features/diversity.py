@@ -3,6 +3,7 @@ import math
 import numpy as np
 import itertools
 
+
 def kemeny_ranking(election):
     m = election.num_candidates
     wmg = election.votes_to_pairwise_matrix()
@@ -95,94 +96,85 @@ def calculate_vote_swap_dist(election):
 
 # DIVERSITY INDICES
 
-def borda_gini(election):
+def borda_gini(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     all_scores = calculate_borda_scores(election)
-    return gini_coef(all_scores)
+    return {'value': gini_coef(all_scores)}
 
 
-def borda_meandev(election):
+def borda_meandev(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     all_scores = calculate_borda_scores(election)
     all_scores = np.abs(all_scores - all_scores.mean())
-    return all_scores.mean()
+    return {'value': all_scores.mean()}
 
 
-def borda_std(election):
+def borda_std(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     all_scores = calculate_borda_scores(election)
-    return all_scores.std()
+    return {'value': all_scores.std()}
 
 
-# FROM other.py
-# def borda_std(election):
-#     all_scores = np.zeros(election.num_candidates)
-#     vectors = election.votes_to_positionwise_matrix()
-#     for i in range(election.num_candidates):
-#         for j in range(election.num_candidates):
-#             all_scores[i] += vectors[i][j] * (election.num_candidates - j - 1)
-#     return np.std(all_scores)
-
-def borda_range(election):
+def borda_range(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     all_scores = calculate_borda_scores(election)
     return (np.max(all_scores) - np.min(all_scores))
 
 
-def cand_dom_dist_mean(election):
+def cand_dom_dist_mean(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_cand_dom_dist(election)
-    return distances.sum() / (election.num_candidates - 1) / election.num_candidates * 2
+    return {'value': distances.sum() / (election.num_candidates - 1) / election.num_candidates * 2}
 
 
-def agreement_index(election):
+def agreement_index(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_cand_dom_dist(election)
-    return distances.sum() / (election.num_candidates - 1) / election.num_candidates * 2
+    return {'value': distances.sum() / (election.num_candidates - 1) / election.num_candidates * 2}
 
 
-def cand_dom_dist_std(election):
+def cand_dom_dist_std(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_cand_dom_dist(election)
     distances = remove_diag(distances)
-    return distances.std()
+    return {'value': distances.std()}
 
 
-def cand_pos_dist_std(election):
+def cand_pos_dist_std(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_cand_pos_dist(election)
     distances = remove_diag(distances)
-    return distances.std()
+    return {'value': distances.std()}
 
 
-def cand_pos_dist_meandev(election):
+def cand_pos_dist_meandev(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_cand_pos_dist(election)
     distances = remove_diag(distances)
     distances = np.abs(distances - distances.mean())
-    return distances.mean()
+    return {'value': distances.mean()}
 
 
-def cand_pos_dist_gini(election):
+def cand_pos_dist_gini(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_cand_pos_dist(election)
     distances = remove_diag(distances)
-    return gini_coef(distances)
+    return {'value': gini_coef(distances)}
 
 
-def med_cands_summed(election):
+def med_cands_summed(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     m = election.num_candidates
     distances = calculate_cand_pos_dist(election)
     res = [0] * m
@@ -200,89 +192,77 @@ def med_cands_summed(election):
             if d_total < best_d:
                 best_d = d_total
         res[i] = best_d
-    return sum(res)
+    return {'value': sum(res)}
 
 
-def vote_dist_mean(election):
+def vote_dist_mean(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_vote_swap_dist(election)
-    return distances.sum() / election.num_voters / (election.num_voters - 1)
+    return {'value': distances.sum() / election.num_voters / (election.num_voters - 1)}
 
 
-def vote_dist_max(election):
+def vote_dist_max(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_vote_swap_dist(election)
-    return distances.max()
+    return {'value': distances.max()}
 
 
-def vote_dist_med(election):
+def vote_dist_med(election) -> dict:
     if election.fake:
-        return None
-    distances = calculate_vote_swap_dist(election)
-    distances = remove_diag(distances)
-    return np.median(distances)
-
-
-def vote_dist_gini(election):
-    if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_vote_swap_dist(election)
     distances = remove_diag(distances)
-    return gini_coef(distances)
+    return {'value': np.median(distances)}
 
 
-def vote_sqr_dist_mean(election):
+def vote_dist_gini(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_vote_swap_dist(election)
     distances = remove_diag(distances)
-    distances = np.sqrt(distances)
-    return distances.mean()
+    return {'value': gini_coef(distances)}
 
 
-def vote_sqr_dist_med(election):
+def vote_sqr_dist_mean(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_vote_swap_dist(election)
     distances = remove_diag(distances)
     distances = np.sqrt(distances)
-    return np.median(distances)
+    return {'value': distances.mean()}
+
+
+def vote_sqr_dist_med(election) -> dict:
+    if election.fake:
+        return {'value': None}
+    distances = calculate_vote_swap_dist(election)
+    distances = remove_diag(distances)
+    distances = np.sqrt(distances)
+    return {'value': np.median(distances)}
 
 
 def vote_diversity_Karpov(election):
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_vote_swap_dist(election)
     distances = remove_diag(distances)
     distances = distances + 0.5
     distances[distances == 0.5] = 1
-    return geom_mean(distances)
-
-
-def dist_sqr_to_Kemeny_mean(election):
-    if election.fake:
-        return None
-    return None
+    return {'value': geom_mean(distances)}
 
 
 def dist_to_Kemeny_mean(election):
     if election.fake:
-        return None
+        return {'value': None}
     _, dist = kemeny_ranking(election)
     return dist / election.num_voters
 
 
-def dist_to_Kemeny_med(election):
+def dist_to_Borda_mean(election) -> dict:
     if election.fake:
-        return None
-    return None
-
-
-def dist_to_Borda_mean(election):
-    if election.fake:
-        return None
+        return {'value': None}
     m = election.num_candidates
     borda = calculate_borda_scores(election)
     ranking = np.argsort(-borda)
@@ -291,18 +271,18 @@ def dist_to_Borda_mean(election):
     for i in range(m):
         for j in range(i + 1, m):
             dist = dist + wmg[ranking[j], ranking[i]]
-    return dist / election.num_voters
+    return {'value': dist / election.num_voters}
 
 
 def lexi_diversity(election):
     if election.fake:
-        return None
-    return None
+        return {'value': None}
+    return {'value': None}
 
 
-def greedy_kKemenys_summed(election):
+def greedy_kKemenys_summed(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     res = [0] * election.num_voters
     distances = calculate_vote_swap_dist(election)
     best = np.argmin(distances.sum(axis=1))
@@ -320,7 +300,7 @@ def greedy_kKemenys_summed(election):
 
     return sum(res)
     max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
-    return sum(res) / election.num_voters / max_dist
+    return {'value': sum(res) / election.num_voters / max_dist}
 
 
 def restore_order(x):
@@ -357,7 +337,7 @@ def find_improvement(distances, d, starting, rest, n, k, l):
     return starting, d, False
 
 
-def local_search_kKemeny_single_k(election, k, l, starting=None):
+def local_search_kKemeny_single_k(election, k, l, starting=None) -> dict:
     if starting is None:
         starting = list(range(k))
     distances = calculate_vote_swap_dist(election)
@@ -379,10 +359,10 @@ def local_search_kKemeny_single_k(election, k, l, starting=None):
             if check:
                 break
         # print()
-    return d
+    return {'value': d}
 
 
-def local_search_kKemeny(election, l, starting=None):
+def local_search_kKemeny(election, l, starting=None) -> dict:
     max_dist = election.num_candidates * (election.num_candidates - 1) / 2
     res = []
     for k in range(1, election.num_voters):
@@ -399,12 +379,12 @@ def local_search_kKemeny(election, l, starting=None):
     for k in range(len(res), election.num_voters):
         res.append(0)
 
-    return res
+    return {'value': res}
 
 
-def diversity_index(election):
+def diversity_index(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     max_dist = election.num_candidates * (election.num_candidates - 1) / 2
     res = [0] * election.num_voters
     chosen_votes = []
@@ -430,12 +410,12 @@ def diversity_index(election):
     res_2 = local_search_kKemeny(election, 1)
     res = [min(d_1, d_2) for d_1, d_2 in zip(res_1, res_2)]
 
-    return sum([x / (i + 1) for i, x in enumerate(res)])
+    return {'value': sum([x / (i + 1) for i, x in enumerate(res)])}
 
 
-def greedy_kKemenys_divk_summed(election):
+def greedy_kKemenys_divk_summed(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     res = [0] * election.num_voters
     distances = calculate_vote_swap_dist(election)
     best = np.argmin(distances.sum(axis=1))
@@ -453,12 +433,12 @@ def greedy_kKemenys_divk_summed(election):
 
     # res[0] = 0 # for disregarding one Kemeny (AN = ID)
     max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
-    return sum(res) / election.num_voters / max_dist
+    return {'value': sum(res) / election.num_voters / max_dist}
 
 
-def greedy_2kKemenys_summed(election):
+def greedy_2kKemenys_summed(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     res = []
     distances = calculate_vote_swap_dist(election)
     best = np.argmin(distances.sum(axis=1))
@@ -479,12 +459,12 @@ def greedy_2kKemenys_summed(election):
 
     # res[0] = 0 # for disregarding one Kemeny (AN = ID)
     max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
-    return sum(res) / election.num_voters / max_dist / 2
+    return {'value': sum(res) / election.num_voters / max_dist / 2}
 
 
-def polarization_1by2Kemenys(election):
+def polarization_1by2Kemenys(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_vote_swap_dist(election)
     best = np.argmin(distances.sum(axis=1))
     best_vec = distances[best]
@@ -498,12 +478,12 @@ def polarization_1by2Kemenys(election):
     second_kemeny = best_vec.sum()
 
     max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
-    return (first_kemeny - second_kemeny) / election.num_voters / max_dist
+    return {'value': (first_kemeny - second_kemeny) / election.num_voters / max_dist}
 
 
-def polarization_index(election):
+def polarization_index(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     distances = calculate_vote_swap_dist(election)
     best_1 = np.argmin(distances.sum(axis=1))
     best_vec = distances[best_1]
@@ -525,12 +505,12 @@ def polarization_index(election):
     second_kemeny = min(second_kemeny_1, second_kemeny_2)
 
     max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
-    return 2 * (first_kemeny - second_kemeny) / election.num_voters / max_dist
+    return {'value': 2 * (first_kemeny - second_kemeny) / election.num_voters / max_dist}
 
 
-def greedy_kmeans_summed(election):
+def greedy_kmeans_summed(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     res = [0] * election.num_voters
     distances = calculate_vote_swap_dist(election)
     distances = distances * distances
@@ -547,12 +527,12 @@ def greedy_kmeans_summed(election):
         res[i] = best_vec.sum()
         distances = np.vstack((distances[:best], distances[best + 1:]))
 
-    return sum(res)
+    return {'value': sum(res)}
 
 
-def support_diversity(election, tuple_len):
+def support_diversity(election, tuple_len) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     m = election.num_candidates
     res = 0
     for subset in itertools.combinations(range(m), tuple_len):
@@ -565,32 +545,12 @@ def support_diversity(election, tuple_len):
             if not (trimmed_v in support):
                 support.append(trimmed_v)
         res = res + len(support)
-    return res
+    return {'value': res}
 
 
-def support_diversity_normed(election, tuple_len):
+def support_diversity_normed(election, tuple_len) -> dict:
     if election.fake:
-        return None
-    m = election.num_candidates
-    res = 0
-    count = 0
-    for subset in itertools.combinations(range(m), tuple_len):
-        count = count + 1
-        support = []
-        for v in election.votes:
-            trimmed_v = []
-            for c in v:
-                if c in subset:
-                    trimmed_v.append(c)
-            if not (trimmed_v in support):
-                support.append(trimmed_v)
-        res = res + len(support)
-    return res / count
-
-
-def support_diversity_normed2(election, tuple_len):
-    if election.fake:
-        return None
+        return {'value': None}
     m = election.num_candidates
     res = 0
     count = 0
@@ -605,12 +565,32 @@ def support_diversity_normed2(election, tuple_len):
             if not (trimmed_v in support):
                 support.append(trimmed_v)
         res = res + len(support)
-    return res / count / math.factorial(tuple_len)
+    return {'value': res / count}
 
 
-def support_diversity_normed3(election, tuple_len):
+def support_diversity_normed2(election, tuple_len) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
+    m = election.num_candidates
+    res = 0
+    count = 0
+    for subset in itertools.combinations(range(m), tuple_len):
+        count = count + 1
+        support = []
+        for v in election.votes:
+            trimmed_v = []
+            for c in v:
+                if c in subset:
+                    trimmed_v.append(c)
+            if not (trimmed_v in support):
+                support.append(trimmed_v)
+        res = res + len(support)
+    return {'value': res / count / math.factorial(tuple_len)}
+
+
+def support_diversity_normed3(election, tuple_len) -> dict:
+    if election.fake:
+        return {'value': None}
     m = election.num_candidates
     res = 0
     count = 0
@@ -626,7 +606,7 @@ def support_diversity_normed3(election, tuple_len):
                 support.append(trimmed_v)
         res = res + len(support)
     max_times = min(math.factorial(tuple_len), election.num_voters)
-    return res / count / max_times
+    return {'value': res / count / max_times}
 
 
 def support_pairs(election):
@@ -637,48 +617,48 @@ def support_triplets(election):
     return support_diversity(election, 3)
 
 
-def support_votes(election):
+def support_votes(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     m = election.num_candidates
-    return support_diversity(election, m)
+    return {'value': support_diversity(election, m)}
 
 
-def support_diversity_summed(election):
+def support_diversity_summed(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     m = election.num_candidates
     res = 0
     for i in range(2, m + 1):
         res = res + support_diversity(election, i)
-    return res
+    return {'value': res}
 
 
-def support_diversity_normed_summed(election):
+def support_diversity_normed_summed(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     m = election.num_candidates
     res = 0
     for i in range(2, m + 1):
-        res = res + support_diversity_normed(election, i)
-    return res
+        res = res + support_diversity_normed(election, i)['value']
+    return {'value': res}
 
 
-def support_diversity_normed2_summed(election):
+def support_diversity_normed2_summed(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     m = election.num_candidates
     res = 0
     for i in range(2, m + 1):
-        res = res + support_diversity_normed2(election, i)
-    return res
+        res = res + support_diversity_normed2(election, i)['value']
+    return {'value': res}
 
 
-def support_diversity_normed3_summed(election):
+def support_diversity_normed3_summed(election) -> dict:
     if election.fake:
-        return None
+        return {'value': None}
     m = election.num_candidates
     res = 0
     for i in range(2, m + 1):
-        res = res + support_diversity_normed3(election, i)
-    return res
+        res = res + support_diversity_normed3(election, i)['value']
+    return {'value': res}

@@ -17,8 +17,11 @@ def get_range(params):
         return params['p_dist']
 
 
-def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = None,
-                                dim=None, space=None, params=None) -> list:
+def generate_approval_vcr_votes(num_voters: int = None,
+                                num_candidates: int = None,
+                                dim: int = None,
+                                space: str = None,
+                                params=None) -> list:
 
     votes = [set() for _ in range(num_voters)]
 
@@ -39,8 +42,35 @@ def generate_approval_vcr_votes(num_voters: int = None, num_candidates: int = No
     return votes
 
 
-def generate_approval_euclidean_votes(num_voters: int = None, num_candidates: int = None,
-                                      dim=2, space='uniform', radius=0, **kwargs) -> list:
+def generate_approval_euclidean_votes(num_voters: int = None,
+                                      num_candidates: int = None,
+                                      dim: int = 2,
+                                      space: str = 'uniform',
+                                      radius: float = 0,
+                                      **kwargs) -> list:
+    """
+    Generates approval votes from euclidean model.
+
+        Parameters
+        ----------
+        num_voters : int
+            Number of voters.
+        num_candidates : int
+            Number of candidates.
+        dim : int
+            Number of dimensions.
+        space : int
+            Type of distribution for voters and candidates.
+            {'uniform', 'gaussian', 'sphere'}
+        radius : float
+            The radius.
+
+        Returns
+        -------
+        list[set]
+            Approval votes.
+
+    """
 
     votes = [set() for _ in range(num_voters)]
 

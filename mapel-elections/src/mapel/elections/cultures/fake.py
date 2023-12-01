@@ -1,6 +1,7 @@
 
 from mapel.elections.cultures.mallows import get_mallows_vectors
-from mapel.elections.cultures.sp_matrices import get_walsh_vectors, get_conitzer_vectors
+from mapel.elections.cultures.matrices.single_peaked_matrices \
+    import get_walsh_vectors, get_conitzer_vectors
 from mapel.elections.cultures.params import *
 
 
