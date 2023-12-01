@@ -2,8 +2,6 @@ import math
 import numpy as np
 import mapel.elections.cultures.mallows as mallows
 import itertools as it
-import copy
-import random
 import mapel.elections.cultures.sampling.samplemat as smpl
 
 

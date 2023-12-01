@@ -592,7 +592,7 @@ def solve_ilp_distance_swap(path, votes_1, votes_2, params):
     try:
         cp_lp.solve()
 
-    except cplex.CplexSolverError:
+    except:
         print("Exception raised during solve")
         return
 

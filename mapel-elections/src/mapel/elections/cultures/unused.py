@@ -1,7 +1,8 @@
+import random
 import numpy as np
-from mapel.elections.cultures.matrices.single_peaked \
-    import generate_ordinal_sp_conitzer_votes, \
-    generate_ordinal_sp_walsh_votes
+
+from prefsampling.ordinal import single_peaked_conitzer as generate_ordinal_sp_conitzer_votes
+from prefsampling.ordinal import single_peaked_walsh as generate_ordinal_sp_walsh_votes
 
 
 def generate_ic_party(num_voters: int = None, params: dict = None) -> list:

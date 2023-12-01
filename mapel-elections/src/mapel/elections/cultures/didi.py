@@ -1,11 +1,6 @@
 
-import random as rand
 import numpy as np
-import math
-import os
-from collections import Counter
-from scipy.stats import gamma
-from numpy import number
+
 from mapel.core.utils import get_vector
 
 

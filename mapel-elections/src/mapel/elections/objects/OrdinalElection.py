@@ -10,9 +10,9 @@ from mapel.core.inner_distances import swap_distance_between_potes, \
     spearman_distance_between_potes
 from mapel.core.utils import *
 from mapel.elections.cultures.fake import *
-from mapel.elections.cultures.group_separable import get_gs_caterpillar_vectors
+from mapel.elections.cultures.matrices.group_separable_matrices import get_gs_caterpillar_vectors
 from mapel.elections.cultures.preflib import get_sushi_vectors
-from mapel.elections.cultures.single_crossing import get_single_crossing_vectors
+from mapel.elections.cultures.matrices.single_crossing_matrices import get_single_crossing_vectors
 from mapel.elections.cultures_ import generate_ordinal_votes, \
     from_approval, generate_ordinal_alliance_votes
 from mapel.elections.features.other import is_condorcet

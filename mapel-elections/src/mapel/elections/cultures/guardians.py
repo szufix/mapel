@@ -1,6 +1,6 @@
 import numpy as np
 
-from mapel.elections.cultures.impartial import generate_ordinal_ic_votes
+from prefsampling.ordinal import impartial as generate_ordinal_ic_votes
 
 
 def generate_real_identity_votes(num_voters=None, num_candidates=None):

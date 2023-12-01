@@ -368,9 +368,9 @@ def local_search_kKemeny(election, l, starting=None) -> dict:
     for k in range(1, election.num_voters):
         # print(k)
         if starting is None:
-            d = local_search_kKemeny_single_k(election, k, l)
+            d = local_search_kKemeny_single_k(election, k, l)['value']
         else:
-            d = local_search_kKemeny_single_k(election, k, l, starting[:k])
+            d = local_search_kKemeny_single_k(election, k, l, starting[:k])['value']
         d = d / max_dist / election.num_voters
         if d > 0:
             res.append(d)
@@ -406,8 +406,8 @@ def diversity_index(election) -> dict:
 
     chosen_votes = restore_order(chosen_votes)
 
-    res_1 = local_search_kKemeny(election, 1, chosen_votes)
-    res_2 = local_search_kKemeny(election, 1)
+    res_1 = local_search_kKemeny(election, 1, chosen_votes)['value']
+    res_2 = local_search_kKemeny(election, 1)['value']
     res = [min(d_1, d_2) for d_1, d_2 in zip(res_1, res_2)]
 
     return {'value': sum([x / (i + 1) for i, x in enumerate(res)])}
@@ -500,8 +500,8 @@ def polarization_index(election) -> dict:
     chosen = [best_1, best_2]
     chosen.sort()
 
-    second_kemeny_1 = local_search_kKemeny_single_k(election, 2, 1, starting=chosen)
-    second_kemeny_2 = local_search_kKemeny_single_k(election, 2, 1)
+    second_kemeny_1 = local_search_kKemeny_single_k(election, 2, 1, starting=chosen)['value']
+    second_kemeny_2 = local_search_kKemeny_single_k(election, 2, 1)['value']
     second_kemeny = min(second_kemeny_1, second_kemeny_2)
 
     max_dist = (election.num_candidates) * (election.num_candidates - 1) / 2
@@ -630,7 +630,7 @@ def support_diversity_summed(election) -> dict:
     m = election.num_candidates
     res = 0
     for i in range(2, m + 1):
-        res = res + support_diversity(election, i)
+        res = res + support_diversity(election, i)['value']
     return {'value': res}
 
 

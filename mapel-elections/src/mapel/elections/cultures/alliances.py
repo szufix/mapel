@@ -1,10 +1,9 @@
 import numpy as np
 
-from mapel.elections.cultures.impartial import generate_ordinal_ic_votes
+from prefsampling.ordinal import impartial as generate_ordinal_ic_votes
 from mapel.elections.cultures.urn import generate_urn_votes
 from mapel.core.features.mallows import generate_mallows_votes, phi_from_normphi
 
-import random
 
 
 def get_alliances(num_candidates, num_alliances):
