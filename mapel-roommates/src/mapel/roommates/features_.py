@@ -33,6 +33,7 @@ def get_global_feature(feature_id):
 
     return {'monotonicity': monotonicity,
             'distortion_from_all': distortion_from_all,
+            'max_distortion_from_all': max_distortion_from_all,
             }.get(feature_id)
 
 # TMP FUNCS
@@ -75,5 +76,29 @@ def distortion_from_all(experiment, election):
             ratio = max(embedded_distance, true_distance) / min(embedded_distance, true_distance)
 
             values = np.append(values, ratio)
-
+    print(np.max(values))
     return np.mean(values)
+
+
+def max_distortion_from_all(experiment, election):
+    values = np.array([])
+    one_side_values = np.array([])
+    election_id_1 = election.instance_id
+
+    for election_id_2 in experiment.instances:
+        if election_id_1 != election_id_2:
+            true_distance = experiment.distances[election_id_1][election_id_2]
+            true_distance /= experiment.distances['MD']['MA']
+            embedded_distance = l2(np.array(experiment.coordinates[election_id_1]),
+                                   np.array(experiment.coordinates[election_id_2]))
+
+            embedded_distance /= \
+                l2(np.array(experiment.coordinates['MD']),
+                   np.array(experiment.coordinates['MA']))
+            one_side_ratio = embedded_distance / true_distance
+            one_side_values = np.append(one_side_values, one_side_ratio)
+
+            ratio = max(embedded_distance, true_distance) / min(embedded_distance, true_distance)
+
+            values = np.append(values, ratio)
+    return np.max(values)

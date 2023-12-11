@@ -451,13 +451,12 @@ def _import_values_for_feature(experiment, feature_id=None, upper_limit=None,
             if scale == 'log':
                 if election_id not in omit and my_shade[election_id] is not None:
                     my_shade[election_id] = math.log(my_shade[election_id] + 1)
+                    # pass
             elif scale == 'sqrt':
                 if election_id not in omit and my_shade[election_id] is not None:
                     my_shade[election_id] = my_shade[election_id] ** 0.5
-
     local_min = min(x for x in my_shade.values() if x is not None)
     local_max = max(x for x in my_shade.values() if x is not None)
-
     if feature_id == 'jr':
         local_min = 0.75
 
@@ -471,10 +470,10 @@ def _import_values_for_feature(experiment, feature_id=None, upper_limit=None,
                     election_id = family_id
                 else:
                     election_id = family_id + '_' + str(k)
-                shade = values[election_id]
+                shade = my_shade[election_id]
             except:
                 election_id = family_id + '_' + str(k)
-                shade = values[election_id]
+                shade = my_shade[election_id]
 
             if shade is None:
                 blank_xx.append(experiment.coordinates[election_id][0])
@@ -665,12 +664,12 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
 
     vmin = 0
     vmax = 1
-
+    # print(_min, _max)
     if strech is not None:
         length = _max - _min
         vmin = 0 - (_min - strech[0]) / length
         vmax = 1 + (strech[1] - _max) / length
-
+    # print(vmin, vmax)
 
     unique_markers = set(markers)
     images = []
@@ -745,7 +744,8 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
         xticklabels[0] = '-' + xticklabels[0]
 
     cb = fig.colorbar(images[0], orientation="horizontal", pad=0.1, shrink=0.55,
-                      ticks=ticks)
+                      ticks=ticks,
+                      )
 
     cb.ax.locator_params(nbins=len(xticklabels), tight=True)
     cb.ax.tick_params(labelsize=feature_labelsize)

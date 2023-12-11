@@ -3,22 +3,23 @@
 import logging
 from typing import Union
 
+from mapel.core.glossary import *
 
 import mapel.elections.cultures.to_be_removed.euclidean as euclidean
 import mapel.elections.cultures.to_be_removed.group_separable as group_separable
 import mapel.elections.cultures.to_be_removed.impartial as impartial
+import mapel.elections.cultures.to_be_removed.urn as urn
+import mapel.elections.cultures.to_be_removed.partylist as partylist
+import mapel.elections.cultures.to_be_removed.didi as didi
 
-import mapel.elections.cultures.didi as didi
-import mapel.elections.cultures.field_experiment as fe
 import mapel.elections.cultures.guardians as guardians
 import mapel.elections.cultures.guardians_plus as guardians_plus
 import mapel.elections.cultures.mallows as mallows
-import mapel.elections.cultures.partylist as partylist
 import mapel.elections.cultures.matrices.single_peaked_matrices as sp_matrices
 import mapel.elections.cultures.unused as unused
-import mapel.elections.cultures.urn as urn
-from mapel.core.glossary import *
-from mapel.elections.cultures.alliances import *
+
+from mapel.elections.cultures.nonstandard.alliances import *
+import mapel.elections.cultures.nonstandard.field_experiment as fe
 from mapel.elections.cultures.preflib import generate_preflib_votes
 
 import prefsampling.ordinal as pref_ordinal

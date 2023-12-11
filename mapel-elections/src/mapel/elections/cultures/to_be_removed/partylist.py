@@ -3,25 +3,6 @@ import numpy as np
 from mapel.core.utils import get_vector
 
 
-def generate_approval_partylist_votes(num_voters=None, num_candidates=None, g=5):
-
-    num_groups = g
-
-    alphas = get_vector('linear', num_groups)
-    sizes = np.random.dirichlet(alphas)
-    cumv = np.cumsum(sizes)
-    cumv = np.insert(cumv, 0, 0)
-
-    votes = []
-
-    for a in range(1, num_groups+1):
-        vote = set()
-        for i in range(int(num_candidates*cumv[a-1]), int(num_candidates*cumv[a])):
-            vote.add(i)
-        for i in range(int(num_candidates * cumv[a - 1]), int(num_candidates * cumv[a])):
-            votes.append(vote)
-    return votes
-
 
 def generate_approval_urn_partylist_votes(num_voters=None, num_candidates=None, g=5, alpha=0.1):
     num_groups = g

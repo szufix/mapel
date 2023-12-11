@@ -89,7 +89,8 @@ def get_mallows_matrix(num_candidates, params, normalize=True):
         path = os.path.join(os.getcwd(), 'mapel', 'elections', 'cultures',
                             'mallows_positionmatrices',
                             str(num_candidates) + "_matrix.txt")
-        with open(path, "r") as file:
+        print(path)
+        with open(path, "rb") as file:
             pos = pickle.load(file)
     except FileNotFoundError:
         print("Mallows matrix only supported for up to 30 candidates")

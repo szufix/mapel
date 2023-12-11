@@ -355,7 +355,7 @@ class RoommatesExperiment(Experiment):
                 feature_dict['value'][instance_id] = values[instance_id]
                 feature_dict['time'][instance_id] = 0
 
-        elif feature_id == 'distortion_from_all':
+        elif feature_id in ['distortion_from_all', 'max_distortion_from_all']:
             feature = features.get_global_feature(feature_id)
             for instance_id in self.instances:
                 values = feature(self, self.instances[instance_id])
@@ -409,7 +409,7 @@ class RoommatesExperiment(Experiment):
 
         if self.is_exported:
 
-            path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id,
+            path_to_folder = os.path.join(os.getcwd(), "experiments", self.experiment_id,
                                           "features")
             make_folder_if_do_not_exist(path_to_folder)
             path_to_file = os.path.join(path_to_folder, f'{feature_id}.csv')
