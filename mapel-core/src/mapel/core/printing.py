@@ -1674,7 +1674,6 @@ def adjust_the_map(experiment) -> None:
         except Exception:
             pass
 
-
 def centeroid(arr):
     length = arr.shape[0]
     sum_x = np.sum(arr[:, 0])

@@ -23,7 +23,7 @@ def process_soc_line(line: str, votes: list):
     tokens = line.split(':')
     nr_this_vote = int(tokens[0])
     vote = [int(x) for x in tokens[1].split(',')]
-    vote = np.array([x-1 for x in vote])
+    vote = np.array([x for x in vote])
     for i in range(0, nr_this_vote):
         votes.append(vote)
     pass
