@@ -39,7 +39,8 @@ class Experiment:
                  coordinates_names=None,
                  fast_import=False,
                  with_matrix=False,
-                 instance_type=None):
+                 instance_type=None,
+                 dim=2):
 
         self.is_imported = is_imported
         self.is_exported = is_exported
@@ -48,7 +49,7 @@ class Experiment:
         self.distance_id = distance_id
         self.embedding_id = embedding_id
         self.clean = clean
-        self.dim = 2
+        self.dim = dim
         self.coordinates_lists = {}
         self.features = {}
         self.cultures = {}
@@ -104,7 +105,9 @@ class Experiment:
         else:
             self.distances = {}
 
-    def import_coordinates(self, coordinates, coordinates_names):
+    def import_coordinates(self, coordinates, coordinates_names, dim=None):
+        if dim is None:
+            dim = self.dim
 
         if isinstance(coordinates, dict):
             self.coordinates = coordinates
@@ -114,11 +117,11 @@ class Experiment:
                     for file_name in coordinates_names:
                         self.coordinates_lists[file_name] = \
                             imports.add_coordinates_to_experiment(self,
-                                                                  dim=self.dim,
+                                                                  dim=dim,
                                                                   file_name=file_name)
                     self.coordinates = self.coordinates_lists[coordinates_names[0]]
                 else:
-                    self.coordinates = imports.add_coordinates_to_experiment(self, dim=self.dim)
+                    self.coordinates = imports.add_coordinates_to_experiment(self, dim=dim)
             except FileNotFoundError:
                 pass
         else:
@@ -164,6 +167,9 @@ class Experiment:
 
     def embed_2d(self, **kwargs) -> None:
         embed.embed(self, dim=2, **kwargs)
+
+    def embed_3d(self, **kwargs) -> None:
+        embed.embed(self, dim=3, **kwargs)
 
     def print_map_1d(self, **kwargs) -> None:
         pr.print_map_1d(self, **kwargs)

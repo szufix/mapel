@@ -38,7 +38,8 @@ def prepare_experiment(experiment_id=None,
                        coordinates_names=None,
                        embedding_id=None,
                        fast_import=False,
-                       with_matrix=False):
+                       with_matrix=False,
+                       dim=2):
     if instance_type == 'ordinal':
         return OrdinalElectionExperiment(experiment_id=experiment_id,
                                          is_shifted=is_shifted,
@@ -52,7 +53,8 @@ def prepare_experiment(experiment_id=None,
                                          embedding_id=embedding_id,
                                          fast_import=fast_import,
                                          with_matrix=with_matrix,
-                                         instance_type=instance_type)
+                                         instance_type=instance_type,
+                                         dim=dim)
     elif instance_type in ['approval', 'rule']:
         return ApprovalElectionExperiment(experiment_id=experiment_id,
                                           is_shifted=is_shifted,
@@ -65,7 +67,8 @@ def prepare_experiment(experiment_id=None,
                                           coordinates_names=coordinates_names,
                                           embedding_id=embedding_id,
                                           fast_import=fast_import,
-                                          instance_type=instance_type)
+                                          instance_type=instance_type,
+                                          dim=dim)
 
 
 def print_approvals_histogram(*args):

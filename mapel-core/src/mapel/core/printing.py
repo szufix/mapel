@@ -323,7 +323,8 @@ def print_map_3d(experiment,
                  xlabel=None,
                  feature_id=None,
                  axis=False,
-                 ticks=None, dim=3,
+                 ticks=None,
+                 dim=3,
                  title=None,
                  shading=False,
                  saveas="map_3d",
@@ -337,7 +338,7 @@ def print_map_3d(experiment,
                  legend=True,
                  title_pos=None):
     """ This function is not updated """
-    experiment.compute_coordinates_by_families()
+    experiment.compute_coordinates_by_families(dim=dim)
 
     if cmap is None:
         cmap = custom_div_cmap()
@@ -936,6 +937,7 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
 
 # COLORING
 def basic_coloring(experiment=None, ax=None, dim=2, textual=None, ms=20):
+
     if textual is None:
         textual = []
     for family in experiment.families.values():
