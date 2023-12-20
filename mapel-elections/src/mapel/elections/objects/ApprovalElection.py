@@ -18,7 +18,6 @@ class ApprovalElection(Election, ABC):
                  election_id=None,
                  culture_id=None,
                  num_candidates=None,
-                 params=None,
                  variable=None,
                  **kwargs):
 
@@ -28,7 +27,6 @@ class ApprovalElection(Election, ABC):
                          num_candidates=num_candidates,
                          **kwargs)
 
-        self.params = params
         self.variable = variable
 
         self.approvalwise_vector = []
@@ -75,6 +73,7 @@ class ApprovalElection(Election, ABC):
                                   for c in range(self.num_candidates)]
 
     def prepare_instance(self, is_exported=None, is_aggregated=True):
+        print(self.params)
         self.votes = generate_approval_votes(culture_id=self.culture_id,
                                              num_candidates=self.num_candidates,
                                              num_voters=self.num_voters,

@@ -12,6 +12,7 @@ class Instance:
         self.culture_id = culture_id
         self.features = {}
         self.printing_params = {}
+        self.params = kwargs
 
 
 # # # # # # # # # # # # # # # #

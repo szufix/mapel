@@ -36,6 +36,7 @@ def generate_ordinal_alliance_urn_votes(num_voters: int = None,
 def generate_ordinal_alliance_norm_mallows_votes(num_voters: int = None,
                                                  num_candidates: int = None,
                                                  params: dict = None):
+
     params['phi'] = phi_from_normphi(num_candidates, params['normphi'])
     votes = generate_mallows_votes(num_voters, num_candidates, **params)
 

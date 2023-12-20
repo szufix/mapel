@@ -6,11 +6,7 @@ from typing import Union
 from mapel.core.glossary import *
 
 import mapel.elections.cultures.to_be_removed.euclidean as euclidean
-import mapel.elections.cultures.to_be_removed.group_separable as group_separable
-import mapel.elections.cultures.to_be_removed.impartial as impartial
 import mapel.elections.cultures.to_be_removed.urn as urn
-import mapel.elections.cultures.to_be_removed.partylist as partylist
-import mapel.elections.cultures.to_be_removed.didi as didi
 
 import mapel.elections.cultures.guardians as guardians
 import mapel.elections.cultures.guardians_plus as guardians_plus
@@ -35,19 +31,17 @@ registered_approval_cultures = {
     'moving_resampling': pref_approval.moving_resampling,
     'noise': pref_approval.noise,
     'euclidean': pref_approval.euclidean,
-
-    'full': impartial.generate_approval_full_votes,
-    'empty': impartial.generate_approval_empty_votes,
-
-    'truncated_urn': urn.generate_approval_truncated_urn_votes,
-    'urn_partylist': partylist.generate_approval_urn_partylist_votes,
+    'full': pref_approval.full,
+    'empty': pref_approval.empty,
+    'truncated_urn': pref_approval.truncated_urn,
+    'urn_partylist': pref_approval.urn_partylist,
 
     'vcr': euclidean.generate_approval_vcr_votes,  # unsupported culture
     'field': fe.generate_approval_field_votes,  # unsupported culture
     'truncated_mallows': mallows.generate_approval_truncated_mallows_votes,  # unsupported culture
 
-    'approval_full': impartial.generate_approval_full_votes,  # deprecated name
-    'approval_empty': impartial.generate_approval_empty_votes,  # deprecated name
+    'approval_full':  pref_approval.full,  # deprecated name
+    'approval_empty': pref_approval.empty,  # deprecated name
 }
 
 registered_ordinal_cultures = {
@@ -65,11 +59,11 @@ registered_ordinal_cultures = {
     'weighted_stratification': pref_ordinal.stratification,
     'stratification': pref_ordinal.stratification,
     'mallows': pref_ordinal.mallows,
+    'didi': pref_ordinal.didi,
+    'group-separable': pref_ordinal.group_separable,
 
     'norm-mallows': mallows.generate_mallows_votes,
     'real_identity': guardians.generate_real_identity_votes,
-
-    'group-separable': group_separable.generate_ordinal_group_separable_votes,
 
     'mallows_urn': urn.generate_mallows_urn_votes,
     'idan_part': guardians_plus.generate_idan_part_votes,  # unsupported culture
@@ -84,7 +78,6 @@ registered_ordinal_cultures = {
     'unst_mallows': guardians_plus.generate_unst_mallows_votes,  # unsupported culture
     'unst_topsize': guardians_plus.generate_unst_topsize_votes,  # unsupported culture
     'idst_blocks': guardians_plus.generate_idst_blocks_votes,
-    'didi': didi.generate_didi_votes,  # unsupported culture
     'norm-mallows_mixture': mallows.generate_norm_mallows_mixture_votes,  # unsupported culture
     'walsh_mallows': sp_matrices.generate_walsh_mallows_votes,  # unsupported culture
     'conitzer_mallows': sp_matrices.generate_conitzer_mallows_votes,  # unsupported culture
