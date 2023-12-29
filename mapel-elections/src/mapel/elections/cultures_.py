@@ -18,6 +18,8 @@ from mapel.elections.cultures.nonstandard.alliances import *
 import mapel.elections.cultures.nonstandard.field_experiment as fe
 from mapel.elections.cultures.preflib import generate_preflib_votes
 
+import mapel.elections.cultures.group_separable as group_separable
+
 import prefsampling.ordinal as pref_ordinal
 import prefsampling.approval as pref_approval
 
@@ -59,7 +61,8 @@ registered_ordinal_cultures = {
     'stratification': pref_ordinal.stratification,
     'mallows': pref_ordinal.mallows,
     'didi': pref_ordinal.didi,
-    'group-separable': pref_ordinal.group_separable,
+
+    'group-separable': group_separable.gs_mask,
 
     'norm-mallows': mallows.generate_mallows_votes,
     'real_identity': guardians.generate_real_identity_votes,
