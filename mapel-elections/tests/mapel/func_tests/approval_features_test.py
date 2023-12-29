@@ -22,8 +22,9 @@ class TestFeatures:
         num_voters = np.random.randint(10, 20)
         num_candidates = np.random.randint(5, 10)
 
-        election = mapel.generate_approval_election(culture_id='ic', p=0.5,
+        election = mapel.generate_approval_election(culture_id='ic',
                                                     num_voters=num_voters,
-                                                    num_candidates=num_candidates)
+                                                    num_candidates=num_candidates,
+                                                    p=0.5,)
 
         election.compute_feature(feature_id)

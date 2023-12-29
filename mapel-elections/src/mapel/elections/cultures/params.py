@@ -197,6 +197,12 @@ def update_params_approval(params, printing_params, variable, culture_id, num_ca
             update_params_approval_p(params)
         update_params_approval_alpha(printing_params)
 
+    if 'p' in params and culture_id in ['empty',
+                                        'full',
+                                        'euclidean',
+                                        'urn_partylist']:
+        del params['p']
+
     return params, printing_params
 
 

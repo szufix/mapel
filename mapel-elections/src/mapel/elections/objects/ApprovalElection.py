@@ -73,7 +73,6 @@ class ApprovalElection(Election, ABC):
                                   for c in range(self.num_candidates)]
 
     def prepare_instance(self, is_exported=None, is_aggregated=True):
-        print(self.params)
         self.votes = generate_approval_votes(culture_id=self.culture_id,
                                              num_candidates=self.num_candidates,
                                              num_voters=self.num_voters,

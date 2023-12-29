@@ -30,7 +30,6 @@ class OrdinalElection(Election):
                  election_id=None,
                  culture_id=None,
                  votes=None,
-                 params=None,
                  label=None,
                  num_voters: int = None,
                  num_candidates: int = None,
@@ -48,7 +47,6 @@ class OrdinalElection(Election):
                          fast_import=fast_import,
                          **kwargs)
 
-        self.params = params
         self.variable = variable
         self.vectors = []
         self.matrix = []

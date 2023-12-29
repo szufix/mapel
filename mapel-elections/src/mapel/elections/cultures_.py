@@ -56,7 +56,6 @@ registered_ordinal_cultures = {
     'conitzer': pref_ordinal.single_peaked_conitzer,
     'walsh': pref_ordinal.single_peaked_walsh,
     'spoc': pref_ordinal.single_peaked_circle,
-    'weighted_stratification': pref_ordinal.stratification,
     'stratification': pref_ordinal.stratification,
     'mallows': pref_ordinal.mallows,
     'didi': pref_ordinal.didi,
@@ -95,6 +94,7 @@ registered_ordinal_cultures = {
     'un_from_list': guardians_plus.generate_un_from_list,  # unsupported culture
 
     'urn_model': pref_ordinal.urn,  # deprecated name
+    'weighted_stratification': pref_ordinal.stratification,  # deprecated name
 }
 
 
