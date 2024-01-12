@@ -151,7 +151,6 @@ def print_map_2d_colored_by_feature(experiment,
                                     bbox_inches='tight',
                                     saveas=None,
                                     show=True,
-                                    ms=20,
                                     normalizing_func=None,
                                     xticklabels=None,
                                     cmap=None,
@@ -208,7 +207,7 @@ def print_map_2d_colored_by_feature(experiment,
                                               upper_limit=upper_limit,
                                               lower_limit=lower_limit,
                                               scale=scale,
-                                              xticklabels=xticklabels, ms=ms, cmap=cmap,
+                                              xticklabels=xticklabels, cmap=cmap,
                                               omit=omit,
                                               ticks=ticks, column_id=column_id,
                                               feature_labelsize=feature_labelsize,
@@ -422,6 +421,7 @@ def _import_values_for_feature(experiment, feature_id=None, upper_limit=None,
     yy = []
     zz = []
     markers = []
+    mses = []
     none_xx, none_yy = [], []
     blank_xx, blank_yy = [], []
 
@@ -487,6 +487,8 @@ def _import_values_for_feature(experiment, feature_id=None, upper_limit=None,
             shades.append(shade)
             names.append(election_id)
 
+            mses.append(experiment.families[family_id].ms)
+
             marker = experiment.families[family_id].marker
             if marker_func is not None:
                 marker = marker_func(shade)
@@ -506,24 +508,12 @@ def _import_values_for_feature(experiment, feature_id=None, upper_limit=None,
 
     shades = np.asarray(shades)
     markers = np.asarray(markers)
-    if feature_id == 'partylist' and column_id == 'value':
-        mses = np.asarray(
-            [1. + 20. * (b / (v + 1)) for b, v in zip(bounds.values(), values.values())])
-    else:
-        mses = None
-
-    # # RESCALE (2D)
-    # new_min = 1.0
-    # new_max = 2.0
-    #
-    #
-    #
-    # for i in range(len(xx)):
-    #
-    #     xx[i] =
-    #
-    # local_min = new_min
-    # local_max = new_max
+    mses = np.asarray(mses)
+    # if feature_id == 'partylist' and column_id == 'value':
+    #     mses = np.asarray(
+    #         [1. + 20. * (b / (v + 1)) for b, v in zip(bounds.values(), values.values())])
+    # else:
+    #     mses = None
 
     return xx, yy, zz, shades, markers, mses, local_min, local_max, blank_xx, blank_yy, names
 
@@ -652,7 +642,7 @@ def get_values_from_file_3d(experiment, experiment_id, values, normalizing_func)
 
 def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
                           upper_limit=np.infty, lower_limit=-np.infty,
-                          normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
+                          normalizing_func=None, marker_func=None, xticklabels=None, ms=20,
                           cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
                           feature_labelsize=14, ticks_pos=None, omit=None, scale='default',
                           strech=None, colors=None):
@@ -674,8 +664,8 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
     unique_markers = set(markers)
     images = []
 
-    if mses is None:
-        mses = np.asarray([ms for _ in range(len(shades))])
+    print(markers)
+    print(mses)
 
     if cmap is None:
         if rounding == 0:
