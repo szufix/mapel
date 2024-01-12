@@ -328,7 +328,6 @@ int getInvCount(int arr[], int arr2[], int n, bool swap)
         for (int i = 0; i < n ; i++)
             inv_count=inv_count+abs(arr[i]-arr2[i]);
     }
-
     return inv_count;
 }
 

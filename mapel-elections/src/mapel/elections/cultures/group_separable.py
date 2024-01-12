@@ -1,5 +1,6 @@
 import prefsampling.ordinal as pref_ordinal
 
+
 def gs_mask(num_voters=None,
             num_candidates=None,
             tree_sampler=None,

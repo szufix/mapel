@@ -61,7 +61,6 @@ def print_map_2d(experiment,
                  saveas=None,
                  show=True,
                  urn_orangered=True,
-                 ms=20,
                  tex=False,
                  legend=True,
                  dpi=250,
@@ -117,11 +116,11 @@ def print_map_2d(experiment,
     _add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size)
 
     if shading:
-        basic_coloring_with_shading(experiment=experiment, ax=ax, ms=ms, urn_orangered=urn_orangered)
+        basic_coloring_with_shading(experiment=experiment, ax=ax, urn_orangered=urn_orangered)
     elif individual:
         basic_coloring_with_individual(experiment=experiment, ax=ax, individual=individual)
     else:
-        basic_coloring(experiment=experiment, ax=ax, dim=2, textual=textual, ms=ms)
+        basic_coloring(experiment=experiment, ax=ax, dim=2, textual=textual)
 
     _basic_background(ax=ax, legend=legend, pad_inches=pad_inches,
                       saveas=saveas, xlabel=xlabel, bbox_inches=bbox_inches,
@@ -682,7 +681,7 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
         if rounding == 0:
             num_colors = int(min(_max - _min + 1, 101))
             if num_colors < 10:
-                xticklabels = [str(q) for q in range(num_colors)]
+                xticklabels = [str(q) for q in range(int(_min), int(_max)+1)]
                 ticks_pos = [(2 * q + 1) / num_colors / 2 for q in range(num_colors)]
             if colors is None:
                 cmap = custom_div_cmap(num_colors=num_colors)
@@ -936,7 +935,7 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
 
 
 # COLORING
-def basic_coloring(experiment=None, ax=None, dim=2, textual=None, ms=20):
+def basic_coloring(experiment=None, ax=None, dim=2, textual=None):
 
     if textual is None:
         textual = []
@@ -954,8 +953,7 @@ def basic_coloring(experiment=None, ax=None, dim=2, textual=None, ms=20):
                            color=family.color,
                            label=label,
                            alpha=family.alpha,
-                           # s=family.ms,
-                           s=ms,
+                           s=family.ms,
                            marker=family.marker)
             elif dim == 3:
                 ax.scatter(experiment.coordinates_by_families[family.family_id][0],
@@ -964,8 +962,7 @@ def basic_coloring(experiment=None, ax=None, dim=2, textual=None, ms=20):
                            color=family.color,
                            label=family.label,
                            alpha=family.alpha,
-                           # s=family.ms,
-                           s=ms,
+                           s=family.ms,
                            marker=family.marker)
 
 
@@ -986,7 +983,6 @@ def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
 
 def basic_coloring_with_shading(experiment=None,
                                 ax=None,
-                                ms=20,
                                 urn_orangered=False):
     for family in experiment.families.values():
         if family.show:
@@ -1002,6 +998,7 @@ def basic_coloring_with_shading(experiment=None,
                 if alpha is None:
                     alpha = family.alpha
 
+                ms = family.ms
                 color = family.color
 
                 if 'Mallows (triangle)' in label:
