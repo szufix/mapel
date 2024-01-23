@@ -1582,7 +1582,6 @@ def adjust_the_map_on_three_points(experiment, left, right, down, is_down=True) 
 def adjust_the_map(experiment) -> None:
     if experiment.instance_type == 'ordinal':
 
-        # try:
         try:
             left = experiment.get_instance_id_from_culture_id('uniformity')
             right = experiment.get_instance_id_from_culture_id('identity')
@@ -1595,6 +1594,13 @@ def adjust_the_map(experiment) -> None:
                 up = experiment.get_instance_id_from_culture_id('real_antagonism')
                 adjust_the_map_on_three_points(experiment, left, right, up, is_down=False)
             except Exception:
+                try:
+                    left = 'UN_0'
+                    right = 'ID'
+                    up ='AN'
+                    adjust_the_map_on_three_points(experiment, left, right, up, is_down=False)
+                except Exception:
+                    pass
                 pass
             pass
 

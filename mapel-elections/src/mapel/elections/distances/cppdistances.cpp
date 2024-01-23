@@ -10,6 +10,7 @@
 #include <utility>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <iostream>
 
 using namespace std;
 
@@ -403,6 +404,19 @@ uint8_t getIvCount(int* arr, int n)
     return inv_count;
 }
 
+uint8_t getIvCountTrunc(int* arr, int n)
+{
+    uint8_t inv_count = 0;
+    for (int i = 0; i < n - 1; i++)
+        for (int j = i + 1; j < n; j++)
+            if (arr[i] <= 3  or arr[j] <= 3){
+                if (arr[i] > arr[j])
+                    inv_count++;
+               }
+    inv_count += 3*96;
+    return inv_count;
+}
+
 int swapDistance_election(int n,int m, const std::vector<std::vector<int>> &el1,
 const std::vector<std::vector<int>> &el2, uint8_t* lookup){
     int min_dist=2*m*m*n;
@@ -482,6 +496,113 @@ const std::vector<std::vector<int>> &el2, uint8_t* lookup){
     return min_dist;
 }
 
+int tswapDistance_election(int n, int m, const std::vector<std::vector<int>> &el1,
+    const std::vector<std::vector<int>> &el2, uint8_t* lookup, uint8_t* lookup_trunc){
+    // e1 should be smaller, e2 should be larger
+    int min_dist=2*m*m*n;
+    int* mapping = new int [m];
+    col *rowsol;
+    row *colsol;
+    cost *u;
+    cost *v;
+    rowsol = new col[n];
+    colsol = new row[n];
+    u = new cost[n];
+    v = new cost[n];
+    int** costMatrix;
+    costMatrix = new int*[n];
+    for(int t=0;t<n;t++){
+        costMatrix[t]  =  new int[n];
+    }
+    int** e1mapped_reversed;
+    int** e2;
+    e1mapped_reversed = new int*[n];
+    e2 = new int*[n];
+    int votecomb = 0;
+    for(int t=0;t<n;t++){
+        e1mapped_reversed[t]  =  new int[m];
+        e2[t]  =  new int[m];
+    }
+    std::vector<std::vector<int>> el1_ext(n, std::vector<int>(8, 0));
+
+    for(int t=0; t<n; t++) {
+        for (int j = 0; j < 4; j++) {
+            el1_ext[t][j] = el1[t][j];
+        }
+        for (int j = 4; j < 8; j++) {
+            el1_ext[t][j] = j;
+        }
+    }
+
+    for(int i=0; i<m; i++){mapping[i]=i;}
+    do {
+        for(int t=0; t<n; t++) {
+            for (int j = 0; j < m; j++) {
+                e1mapped_reversed[t][mapping[el1_ext[t][j]]] = j;
+                e2[t][j]=el2[t][j];
+            }
+        }
+//
+
+//    for(int t=0; t<el1[0].size(); t++){
+//        cout << el1[0][t] << ' ';
+//    } cout << endl;
+//
+//    for(int t=0; t<el1_ext[0].size(); t++){
+//        cout << el1_ext[0][t] << ' ';
+//    } cout << endl;
+//
+//    for(int t=0; t<el2[0].size(); t++){
+//        cout << el2[0][t]  << ' ';
+//    } cout << endl;
+
+        for(int t=0; t<n; t++){
+            for(int j=0; j<n; j++){
+                switch (m) {
+                    case 10: votecomb=e1mapped_reversed[t][e2[j][0]]*100000000+e1mapped_reversed[t][e2[j][1]]*10000000+e1mapped_reversed[t][e2[j][2]]*1000000+
+                                      e1mapped_reversed[t][e2[j][3]]*100000+e1mapped_reversed[t][e2[j][4]]*10000+e1mapped_reversed[t][e2[j][5]]*1000+e1mapped_reversed[t][e2[j][6]]*100+e1mapped_reversed[t][e2[j][7]]*10+e1mapped_reversed[t][e2[j][8]];break;
+                    case 9: votecomb=e1mapped_reversed[t][e2[j][0]]*10000000+e1mapped_reversed[t][e2[j][1]]*1000000+e1mapped_reversed[t][e2[j][2]]*100000+
+                                     e1mapped_reversed[t][e2[j][3]]*10000+e1mapped_reversed[t][e2[j][4]]*1000+e1mapped_reversed[t][e2[j][5]]*100+e1mapped_reversed[t][e2[j][6]]*10+e1mapped_reversed[t][e2[j][7]];break;      //execution starts at this case label
+                    case 8: votecomb=e1mapped_reversed[t][e2[j][0]]*1000000+e1mapped_reversed[t][e2[j][1]]*100000+e1mapped_reversed[t][e2[j][2]]*10000+
+                                     e1mapped_reversed[t][e2[j][3]]*1000+e1mapped_reversed[t][e2[j][4]]*100+e1mapped_reversed[t][e2[j][5]]*10+e1mapped_reversed[t][e2[j][6]];break;
+                    case 7: votecomb=e1mapped_reversed[t][e2[j][0]]*100000+e1mapped_reversed[t][e2[j][1]]*10000+e1mapped_reversed[t][e2[j][2]]*1000+
+                                    e1mapped_reversed[t][e2[j][3]]*100+e1mapped_reversed[t][e2[j][4]]*10+e1mapped_reversed[t][e2[j][5]];break;
+                    case 6: votecomb=e1mapped_reversed[t][e2[j][0]]*10000+e1mapped_reversed[t][e2[j][1]]*1000+e1mapped_reversed[t][e2[j][2]]*100+
+                                     e1mapped_reversed[t][e2[j][3]]*10+e1mapped_reversed[t][e2[j][4]];break;
+                    case 5: votecomb=e1mapped_reversed[t][e2[j][0]]*1000+e1mapped_reversed[t][e2[j][1]]*100+e1mapped_reversed[t][e2[j][2]]*10+
+                                     e1mapped_reversed[t][e2[j][3]];break;
+                    case 4: votecomb=e1mapped_reversed[t][e2[j][0]]*100+e1mapped_reversed[t][e2[j][1]]*10+e1mapped_reversed[t][e2[j][2]];break;
+                    case 3: votecomb=e1mapped_reversed[t][e2[j][0]]*10+e1mapped_reversed[t][e2[j][1]];break;
+                }
+
+                costMatrix[t][j]=lookup_trunc[votecomb];
+
+
+            }
+        }
+
+        int dist = lap(n,costMatrix, rowsol, colsol, u, v);
+        if(dist<min_dist){min_dist=dist;}
+    } while ( std::next_permutation(mapping,mapping+m) );
+    delete[] mapping;
+    delete[] rowsol;
+    delete[] colsol;
+    delete[] u;
+    delete[] v;
+    for( int i = 0 ; i < n ; i++ )
+    {
+        delete[] costMatrix[i];
+        delete[] e1mapped_reversed[i];
+        delete[] e2[i];
+    }
+    delete[] costMatrix;
+    delete[] e1mapped_reversed;
+    delete[] e2;
+
+    return min_dist;
+}
+
+
 uint8_t* prec_map(int m){
     uint8_t* swap_lookup = new uint8_t[999999999];
     int* mapping = new int [m];
@@ -498,13 +619,44 @@ uint8_t* prec_map(int m){
     return swap_lookup;
 }
 
+uint8_t* prec_map_trunc(int m){
+    uint8_t* swap_lookup = new uint8_t[999999999];
+
+    int* mapping = new int [m];
+    for(int i=0; i<m; i++){mapping[i]=i;}
+    do {
+        uint32_t id=0;
+        for(int t=0; t<m-1; t++) {
+            id=id+mapping[t]*pow(10,m-t-2);
+        }
+       swap_lookup[id]=getIvCountTrunc(mapping, m);
+    } while ( std::next_permutation(mapping,mapping+m) );
+    delete mapping;
+
+    return swap_lookup;
+}
+
 int compute_swap(const std::vector<std::vector<int>>  & elc1, const
 std::vector<std::vector<int>> & elc2){
-  int mm = elc1[0].size();
+
+  int mm = elc2[0].size();
   int nn = elc1.size();
   uint8_t* sswap_look=prec_map(mm);
   int ddistance;
   ddistance=swapDistance_election(nn, mm, elc1, elc2, sswap_look);
+  delete sswap_look;
+  return ddistance;
+}
+
+int compute_tswap(const std::vector<std::vector<int>>  & elc1, const
+std::vector<std::vector<int>> & elc2){
+
+  int mm = elc2[0].size();
+  int nn = elc1.size();
+  uint8_t* sswap_look=prec_map(8);
+  uint8_t* sswap_look_trunc=prec_map_trunc(8);
+  int ddistance;
+  ddistance=tswapDistance_election(nn, mm, elc1, elc2, sswap_look, sswap_look_trunc);
   delete sswap_look;
   return ddistance;
 }
@@ -521,5 +673,6 @@ std::vector<std::vector<int>> & elc2){
 PYBIND11_MODULE(cppdistances, m) {
     m.doc() = "C++ extension computing the swap and the Spearman distances";
     m.def("swapd", &compute_swap, "Computes the swap distance between two elections.");
+    m.def("tswapd", &compute_tswap, "Computes the truncated swap distance between two elections.");
     m.def("speard", &compute_spear, "Computes the Spearman distance between two elections.");
 }

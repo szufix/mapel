@@ -72,7 +72,7 @@ def compute_voterlikeness_distance(election_1: OrdinalElection, election_2: Ordi
 # DEPRECATED
 def compute_swap_distance_bf(election_1: OrdinalElection,
                              election_2: OrdinalElection) -> (int, list):
-    """ Compute Swap distance between elections (using brute force) """
+    """ Compute swap distance between elections (using brute force) """
     obj_values = []
     for mapping in permutations(range(election_1.num_candidates)):
         cost_table = get_matching_cost_swap_bf(election_1, election_2, mapping)
@@ -82,12 +82,30 @@ def compute_swap_distance_bf(election_1: OrdinalElection,
 
 def compute_swap_distance(election_1: OrdinalElection,
                           election_2: OrdinalElection) -> (int, list):
-    """ Compute Swap distance between elections (using the C++ extension) """
+    """ Compute swap distance between elections (using the C++ extension) """
     if not utils.is_module_loaded("mapel.elections.distances.cppdistances"):
         return compute_swap_distance_ilp_py(election_1, election_2), None
-    swapd = cppd.swapd(election_1.votes.tolist(),
-                       election_2.votes.tolist())
+    if election_1.num_candidates < election_2.num_candidates:
+        swapd = cppd.tswapd(election_1.votes.tolist(),
+                           election_2.votes.tolist())
+    elif election_1.num_candidates > election_2.num_candidates:
+        swapd = cppd.tswapd(election_2.votes.tolist(),
+                           election_1.votes.tolist())
+    else:
+        swapd = cppd.swapd(election_1.votes.tolist(),
+                           election_2.votes.tolist())
+
     return swapd, None
+
+
+def compute_truncated_swap_distance(election_1: OrdinalElection,
+                          election_2: OrdinalElection) -> (int, list):
+    """ Compute truncated swap distance between elections """
+    obj_values = []
+    for mapping in permutations(range(election_1.num_candidates)):
+        cost_table = get_matching_cost_truncated_swap_bf(election_1, election_2, mapping)
+        obj_values.append(solve_matching_vectors(cost_table)[0])
+    return min(obj_values), None
 
 
 def compute_spearman_distance(election_1: OrdinalElection,
@@ -180,6 +198,9 @@ def get_matching_cost_swap_bf(election_1: OrdinalElection, election_2: OrdinalEl
     """ Return: Cost table """
     cost_table = np.zeros([election_1.num_voters, election_1.num_voters])
 
+    election_1.get_potes()
+    election_2.get_potes()
+
     for v1 in range(election_1.num_voters):
         for v2 in range(election_2.num_voters):
             swap_distance = 0
@@ -191,6 +212,33 @@ def get_matching_cost_swap_bf(election_1: OrdinalElection, election_2: OrdinalEl
                     swap_distance += 1
             cost_table[v1][v2] = swap_distance
     return cost_table
+
+
+def get_matching_cost_truncated_swap_bf(election_1: OrdinalElection,
+                                        election_2: OrdinalElection,
+                                        mapping):
+    """ Return: Cost table """
+    cost_table = np.zeros([election_1.num_voters, election_1.num_voters])
+
+    election_1.get_potes()
+    election_2.get_potes()
+
+    for v1 in range(election_1.num_voters):
+        for v2 in range(election_2.num_voters):
+            swap_distance = 0
+            for i, j in combinations(election_1.potes[0], 2):
+                if (election_1.potes[v1][i] > election_1.potes[v1][j] and
+                    election_2.potes[v2][mapping[i]] < election_2.potes[v2][mapping[j]]) or \
+                        (election_1.potes[v1][i] < election_1.potes[v1][j] and
+                         election_2.potes[v2][mapping[i]] > election_2.potes[v2][mapping[j]]):
+                    swap_distance += 1
+            cost_table[v1][v2] = swap_distance
+    return cost_table
+
+###
+def compute_blank_distance(election_1: OrdinalElection,
+                                        election_2: OrdinalElection) -> (int, list):
+    return 1, None
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 17.03.2022 #

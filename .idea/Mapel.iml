@@ -17,7 +17,9 @@
       <sourceFolder url="file://$MODULE_DIR$/mapel-roommates/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mapel-roommates/tests" isTestSource="true" />
     </content>
-    <content url="file://$MODULE_DIR$/projects" />
+    <content url="file://$MODULE_DIR$/projects">
+      <excludeFolder url="file://$MODULE_DIR$/projects" />
+    </content>
     <orderEntry type="jdk" jdkName="Python 3.10 (mapel10)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

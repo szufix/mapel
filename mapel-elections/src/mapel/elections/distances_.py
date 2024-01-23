@@ -30,6 +30,8 @@ registered_ordinal_distances = {
     'swap': mod.compute_swap_distance,
     'spearman': mod.compute_spearman_distance,
 
+    'blank': mod.compute_blank_distance,
+
     'ilp_spearman': mod.compute_spearman_distance_ilp_py,  # unsupported distance
     'ilp_swap': mod.compute_swap_distance_ilp_py,  # unsupported distance
     'voterlikeness': mod.compute_voterlikeness_distance,  # unsupported distance
