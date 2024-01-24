@@ -654,18 +654,14 @@ def _color_map_by_feature(experiment=None, fig=None, ax=None, feature_id=None,
 
     vmin = 0
     vmax = 1
-    # print(_min, _max)
     if strech is not None:
         length = _max - _min
         vmin = 0 - (_min - strech[0]) / length
         vmax = 1 + (strech[1] - _max) / length
-    # print(vmin, vmax)
 
     unique_markers = set(markers)
     images = []
 
-    print(markers)
-    print(mses)
 
     if cmap is None:
         if rounding == 0:
