@@ -85,6 +85,7 @@ def compute_swap_distance(election_1: OrdinalElection,
     """ Compute swap distance between elections (using the C++ extension) """
     if not utils.is_module_loaded("mapel.elections.distances.cppdistances"):
         return compute_swap_distance_ilp_py(election_1, election_2), None
+    print(election_1.num_candidates, election_2.num_candidates)
     if election_1.num_candidates < election_2.num_candidates:
         swapd = cppd.tswapd(election_1.votes.tolist(),
                            election_2.votes.tolist())

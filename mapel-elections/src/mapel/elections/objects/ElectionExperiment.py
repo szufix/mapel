@@ -419,6 +419,7 @@ class ElectionExperiment(Experiment):
                           distance_id: str = None,
                           num_processes: int = 1,
                           self_distances: bool = False,
+                          ids = None,
                           **kwargs) -> None:
         """ Compute distances between elections (using processes) """
 
@@ -447,11 +448,12 @@ class ElectionExperiment(Experiment):
         distances = {election_id: {} for election_id in self.elections}
         times = {election_id: {} for election_id in self.elections}
 
-        ids = []
-        for i, election_1 in enumerate(self.elections):
-            for j, election_2 in enumerate(self.elections):
-                if i < j or (i == j and self_distances):
-                    ids.append((election_1, election_2))
+        if ids is None:
+            ids = []
+            for i, election_1 in enumerate(self.elections):
+                for j, election_2 in enumerate(self.elections):
+                    if i < j or (i == j and self_distances):
+                        ids.append((election_1, election_2))
 
         num_distances = len(ids)
 
@@ -501,7 +503,12 @@ class ElectionExperiment(Experiment):
                             float(row['time'])
 
         if self.is_exported:
-            exports.export_distances_to_file(self, distance_id, distances, times, self_distances)
+            exports.export_distances_to_file(self,
+                                             distance_id,
+                                             distances,
+                                             times,
+                                             self_distances,
+                                             ids=ids)
 
         self.distances = distances
         self.times = times

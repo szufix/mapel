@@ -14,7 +14,6 @@ class Instance:
         self.printing_params = {}
         self.params = kwargs
 
-
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 11.07.2023 #
 # # # # # # # # # # # # # # # #

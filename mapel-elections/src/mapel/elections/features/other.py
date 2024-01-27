@@ -66,6 +66,7 @@ def max_approval_score(election):
 
 def is_condorcet(election):
     """ Check if election witness Condorcet winner"""
+    potes = election.get_potes() # get positional votes
     for i in range(election.num_candidates):
 
         condocret_winner = True
@@ -74,7 +75,7 @@ def is_condorcet(election):
             diff = 0
             for k in range(election.num_voters):
 
-                if election.potes[k][i] <= election.potes[k][j]:
+                if potes[k][i] <= potes[k][j]:
                     diff += 1
 
             if diff < math.ceil((election.num_voters + 1) / 2.):

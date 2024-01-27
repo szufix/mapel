@@ -11,8 +11,8 @@ from mapel.core.features.mallows import mallows_votes
 ###########
 def generate_mallows_urn_votes(num_voters: int = None,
                        num_candidates: int = None,
-                       alpha: float = 0.1,
-                       phi: float = 0.25,
+                       alpha: float = None,
+                       phi: float = None,
                        **kwargs) -> np.ndarray:
 
     if alpha < 0:

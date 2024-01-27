@@ -91,15 +91,15 @@ class ElectionFamily(Family):
                     params = {**params, **new_params}
 
                 election_id = get_instance_id(self.single, self.family_id, j)
-
                 election = OrdinalElection(experiment_id, election_id,
                                            culture_id=self.culture_id,
                                            num_voters=self.num_voters,
                                            label=self.label,
                                            num_candidates=self.num_candidates,
-                                           params=copy.deepcopy(params),
+                                           # params=copy.deepcopy(params),
                                            variable=variable,
                                            is_imported=False,
+                                           **params
                                            )
 
                 election.prepare_instance(is_exported=is_exported, is_aggregated=is_aggregated)

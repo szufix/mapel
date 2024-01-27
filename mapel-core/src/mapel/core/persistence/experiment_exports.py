@@ -120,7 +120,8 @@ def export_distances_to_file(experiment,
                              distance_id,
                              distances,
                              times,
-                             self_distances=False):
+                             self_distances=False,
+                             ids=None):
     """
     Exports distances between each pair of instances to a .csv file.
 
@@ -139,12 +140,14 @@ def export_distances_to_file(experiment,
         writer = csv.writer(csv_file, delimiter=';')
         writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
 
-        for i, instance_1 in enumerate(experiment.elections):
-            for j, instance_2 in enumerate(experiment.elections):
-                if i < j or (i == j and self_distances):
-                    distance = str(distances[instance_1][instance_2])
-                    time_ = str(times[instance_1][instance_2])
-                    writer.writerow([instance_1, instance_2, distance, time_])
+        # for i, instance_1 in enumerate(experiment.elections):
+        #     for j, instance_2 in enumerate(experiment.elections):
+        #         if i < j or (i == j and self_distances) and \
+        for pair in ids:
+            instance_1, instance_2 = pair
+            distance = str(distances[instance_1][instance_2])
+            time_ = str(times[instance_1][instance_2])
+            writer.writerow([instance_1, instance_2, distance, time_])
 
 
 def export_distances_multiple_processes(experiment, instances_ids, distances, times, process_id):
