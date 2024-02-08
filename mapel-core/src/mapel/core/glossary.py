@@ -184,8 +184,3 @@ NOT_ABCVOTING_RULES = {'borda_c4',
                        'random'}
 
 EMBEDDING_RELATED_FEATURE = ['monotonicity_triplets', 'distortion_from_all']
-
-
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 12.10.2021 #
-# # # # # # # # # # # # # # # #

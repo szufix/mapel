@@ -58,7 +58,9 @@ class OrdinalElection(Election):
         self.import_ordinal_election()
 
     def import_ordinal_election(self):
+
         if self.is_imported and self.experiment_id != 'virtual':
+
             try:
                 if self.votes is not None:
                     self.culture_id = self.culture_id
@@ -73,6 +75,7 @@ class OrdinalElection(Election):
                         self.num_voters = len(self.votes)
                         self.compute_potes()
                 else:
+
                     try:
                         self.fake = imports.check_if_fake(self.experiment_id, self.election_id,
                                                           'soc')

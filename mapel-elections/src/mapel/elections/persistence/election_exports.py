@@ -6,17 +6,38 @@ from mapel.core.utils import *
 
 
 def export_votes_to_file(election,
-                         culture_id,
-                         num_candidates,
-                         num_voters,
-                         params,
+                         culture_id: str,
+                         num_candidates: int,
+                         num_voters: int,
+                         params: dict,
                          path,
                          ballot_type,
                          votes=None,
-                         is_aggregated=True,
-                         alliances=None):
-    """ Exports votes to a file """
+                         is_aggregated=True):
+    """
+    Exports votes to a file.
 
+    Parameters
+    ----------
+        election
+            Election.
+        culture_id: str
+            Culture id.
+        num_candidates : int
+            Number of Candidates
+        num_voters : int
+            Number of Voters
+        params : int
+            Model params to be exported.
+        path:
+            Path to the place in which the file should be stored.
+        ballot_type:
+            Ballot type.
+        votes:
+            Votes.
+        is_aggregated : bool
+            If True then votes are stored in aggregated way.
+    """
     if votes is None:
         votes = election.votes
 
@@ -78,9 +99,18 @@ def export_votes_to_file(election,
                     file_.write("\n")
 
 
-def export_approval_election(election, is_aggregated=True):
-    """ Store approval election in an .app file """
+def export_approval_election(election,
+                             is_aggregated: bool = True):
+    """
+    Exports approval election in an .app file
 
+    Parameters
+    ----------
+        election
+            Election.
+        is_aggregated : bool
+            If True then votes are stored in aggregated way.
+    """
     path_to_folder = os.path.join(os.getcwd(), "experiments", election.experiment_id, "elections")
     make_folder_if_do_not_exist(path_to_folder)
     path_to_file = os.path.join(path_to_folder, f'{election.election_id}.app')
@@ -104,8 +134,18 @@ def export_approval_election(election, is_aggregated=True):
                              is_aggregated=is_aggregated)
 
 
-def export_ordinal_election(election, is_aggregated=True):
-    """ Exports ordinal election to a .soc file """
+def export_ordinal_election(election,
+                            is_aggregated: bool = True):
+    """
+    Exports ordinal election to a .soc file
+
+    Parameters
+    ----------
+        election
+            Election.
+        is_aggregated : bool
+            If True then votes are stored in aggregated way.
+    """
 
     path_to_folder = os.path.join(os.getcwd(), "experiments", election.experiment_id, "elections")
     make_folder_if_do_not_exist(path_to_folder)
@@ -126,13 +166,28 @@ def export_ordinal_election(election, is_aggregated=True):
                              path_to_file,
                              ballot_type='ordinal',
                              votes=election.votes,
-                             is_aggregated=is_aggregated,
-                             alliances=election.alliances)
+                             is_aggregated=is_aggregated)
 
 
-def export_distances(experiment, object_type='vote', length=None):
+def export_distances(experiment,
+                     object_type: str = 'vote',
+                     length: int = None):
+    """
+    Exports distances to a csv file.
+
+    Parameters
+    ----------
+        experiment
+            Experiment.
+        object_type : str
+            Object type.
+        length : int
+            Number of elections.
+    """
+
     file_name = f'{experiment.election_id}_{object_type}.csv'
-    path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances", file_name)
+    path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances",
+                        file_name)
     with open(path, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file, delimiter=';')
         writer.writerow(["v1", "v2", "distance"])
@@ -142,7 +197,22 @@ def export_distances(experiment, object_type='vote', length=None):
                 writer.writerow([v1, v2, distance])
 
 
-def export_coordinates(experiment, object_type='vote', length=None):
+def export_coordinates(experiment,
+                       object_type: str = 'vote',
+                       length: int = None):
+    """
+    Exports coordinates to a csv file.
+
+    Parameters
+    ----------
+        experiment
+            Experiment.
+        object_type : str
+            Object type.
+        length : int
+            Number of elections.
+    """
+
     file_name = f'{experiment.election_id}_{object_type}.csv'
     path = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "coordinates",
                         file_name)
@@ -153,4 +223,3 @@ def export_coordinates(experiment, object_type='vote', length=None):
             x = str(experiment.coordinates[object_type][vote_id][0])
             y = str(experiment.coordinates[object_type][vote_id][1])
             writer.writerow([vote_id, x, y])
-

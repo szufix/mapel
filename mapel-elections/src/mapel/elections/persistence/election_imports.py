@@ -19,6 +19,68 @@ regex_number_categories = r"# NUMBER CATEGORIES:"
 regex_culture_id = r"# CULTURE ID:"
 regex_params = r"# PARAMS:"
 
+
+def import_distances(experiment,
+                     object_type: str = 'vote'):
+    """
+    Imports distances from a csv file.
+
+    Parameters
+    ----------
+        experiment
+            Experiment.
+        object_type : str
+            Object type.
+    """
+
+    file_name = f'{experiment.election_id}_{object_type}.csv'
+    path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id, 'distances',
+                        file_name)
+
+    with open(path, 'r', newline='') as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=';')
+        length = int(len(list(reader)) ** 0.5)
+
+    with open(path, 'r', newline='') as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=';')
+        distances = np.zeros([length, length])
+        for row in reader:
+            distances[int(row['v1'])][int(row['v2'])] = float(row['distance'])
+            distances[int(row['v2'])][int(row['v1'])] = float(row['distance'])
+
+    return distances
+
+
+def import_coordinates(experiment,
+                       object_type: str = 'vote'):
+    """
+    Imports coordinates from a csv file.
+
+    Parameters
+    ----------
+        experiment
+            Experiment.
+        object_type : str
+            Object type.
+    """
+
+    file_name = f'{experiment.election_id}_{object_type}.csv'
+    path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id, 'coordinates',
+                        file_name)
+
+    with open(path, 'r', newline='') as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=';')
+        length = len(list(reader))
+
+    with open(path, 'r', newline='') as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=';')
+        coordinates = np.zeros([length, 2])
+        for row in reader:
+            coordinates[int(row['vote_id'])] = [float(row['x']), float(row['y'])]
+
+    return coordinates
+
+
 def process_soc_line(line: str, votes: list):
     tokens = line.split(':')
     nr_this_vote = int(tokens[0])
@@ -46,6 +108,7 @@ def import_real_new_soc_election(experiment_id: str = None,
                                  is_shifted=False,
                                  file_ending=4):
     """ Import real ordinal election form .soc file """
+
     file_name = f'{election_id}.soc'
     print(file_name)
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
@@ -100,7 +163,6 @@ def import_real_new_soc_election(experiment_id: str = None,
                 params = ast.literal_eval(" ".join(line[2:]))
         # print(culture_id)
     # print('ok')
-
     # print(num_voters, num_candidates, nr_unique, culture_id, params)
     # print(from_file_data_type)
 
@@ -136,7 +198,7 @@ def import_real_new_soc_election(experiment_id: str = None,
         votes = [[vote - 1 for vote in voter] for voter in votes]
 
     return np.array(votes), \
-           num_voters, \
+           len(votes), \
            num_candidates, \
            params, \
            culture_id, \
@@ -341,40 +403,3 @@ def _old_name_extractor(first_line):
     else:
         model_name = 'noname'
     return model_name
-
-
-def import_distances(experiment, object_type='vote'):
-
-    file_name = f'{experiment.election_id}_{object_type}.csv'
-    path = os.path.join(os.getcwd(), 'experiments', experiment.experiment_id, 'distances',
-                        file_name)
-
-    with open(path, 'r', newline='') as csv_file:
-        reader = csv.DictReader(csv_file, delimiter=';')
-        length = int(len(list(reader))**0.5)
-
-    with open(path, 'r', newline='') as csv_file:
-        reader = csv.DictReader(csv_file, delimiter=';')
-        distances = np.zeros([length, length])
-        for row in reader:
-            distances[int(row['v1'])][int(row['v2'])] = float(row['distance'])
-            distances[int(row['v2'])][int(row['v1'])] = float(row['distance'])
-
-    return distances
-
-
-def import_coordinates(self, object_type='vote'):
-    file_name = f'{self.election_id}_{object_type}.csv'
-    path = os.path.join(os.getcwd(), 'experiments', self.experiment_id, 'coordinates',
-                        file_name)
-    with open(path, 'r', newline='') as csv_file:
-        reader = csv.DictReader(csv_file, delimiter=';')
-        length = len(list(reader))
-
-    with open(path, 'r', newline='') as csv_file:
-        reader = csv.DictReader(csv_file, delimiter=';')
-        coordinates = np.zeros([length, 2])
-        for row in reader:
-            coordinates[int(row['vote_id'])] = [float(row['x']), float(row['y'])]
-
-    return coordinates

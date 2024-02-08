@@ -5,7 +5,6 @@ from typing import Union
 
 from mapel.core.glossary import *
 
-import mapel.elections.cultures.to_be_removed.euclidean as euclidean
 import mapel.elections.cultures.to_be_removed.urn as urn
 
 import mapel.elections.cultures.guardians as guardians
@@ -19,6 +18,7 @@ import mapel.elections.cultures.nonstandard.field_experiment as fe
 from mapel.elections.cultures.preflib import generate_preflib_votes
 
 import mapel.elections.cultures.group_separable as group_separable
+import mapel.elections.cultures.euclidean as euclidean
 
 import prefsampling.ordinal as pref_ordinal
 import prefsampling.approval as pref_approval
@@ -38,21 +38,19 @@ registered_approval_cultures = {
     'truncated_urn': pref_approval.truncated_urn,
     'urn_partylist': pref_approval.urn_partylist,
 
-    'vcr': euclidean.generate_approval_vcr_votes,  # unsupported culture
     'field': fe.generate_approval_field_votes,  # unsupported culture
     'truncated_mallows': mallows.generate_approval_truncated_mallows_votes,  # unsupported culture
 
-    'approval_full':  pref_approval.full,  # deprecated name
+    'approval_full': pref_approval.full,  # deprecated name
     'approval_empty': pref_approval.empty,  # deprecated name
 }
 
 registered_ordinal_cultures = {
-
     'impartial': pref_ordinal.impartial,
     'impartial_culture': pref_ordinal.impartial,
     'ic': pref_ordinal.impartial,
     'iac': pref_ordinal.impartial_anonymous,
-    'euclidean': pref_ordinal.euclidean,
+
     'urn': pref_ordinal.urn,
     'single-crossing': pref_ordinal.single_crossing,
     'conitzer': pref_ordinal.single_peaked_conitzer,
@@ -63,9 +61,12 @@ registered_ordinal_cultures = {
     'didi': pref_ordinal.didi,
 
     'group-separable': group_separable.gs_mask,
+    'euclidean': euclidean.euclidean_mask,
 
     'norm-mallows': mallows.generate_mallows_votes,
     'real_identity': guardians.generate_real_identity_votes,
+
+    'plackett-luce': pref_ordinal.plackett_luce,
 
     'mallows_urn': urn.generate_mallows_urn_votes,
     'idan_part': guardians_plus.generate_idan_part_votes,  # unsupported culture
@@ -84,8 +85,6 @@ registered_ordinal_cultures = {
     'walsh_mallows': sp_matrices.generate_walsh_mallows_votes,  # unsupported culture
     'conitzer_mallows': sp_matrices.generate_conitzer_mallows_votes,  # unsupported culture
     'mallows_triangle': mallows.generate_mallows_votes,  # unsupported culture
-    '1d_gaussian_party': euclidean.generate_1d_gaussian_party,  # unsupported culture
-    '2d_gaussian_party': euclidean.generate_2d_gaussian_party,  # unsupported culture
     'walsh_party': unused.generate_sp_party,  # unsupported culture
     'conitzer_party': unused.generate_sp_party,  # unsupported culture
     'mallows_party': mallows.generate_mallows_party,  # unsupported culture
@@ -101,18 +100,25 @@ registered_ordinal_cultures = {
 }
 
 
-def generate_approval_votes(culture_id: str = None,
-                            num_voters: int = None,
-                            num_candidates: int = None,
-                            params: dict = None) -> Union[list, np.ndarray]:
+def generate_approval_votes(
+        culture_id: str = None,
+        num_voters: int = None,
+        num_candidates: int = None,
+        params: dict = None
+) -> Union[list, np.ndarray]:
     """
     Generates approval votes according to the given culture id.
 
-    :param culture_id: name of the culture.
-    :param num_voters: number of the voters.
-    :param num_candidates: number of the candidates.
-    :param params: culture parameters.
-    :return: a list of sets of approved candidates.
+    Parameters
+    ----------
+        culture_id : str
+            Name of the culture.
+        num_voters : int
+            Number of Voters.
+        num_candidates : int
+            Number of Candidates
+        params : dict
+            Culture parameters.
     """
     if culture_id in registered_approval_cultures:
         return registered_approval_cultures.get(culture_id)(num_voters, num_candidates, **params)
@@ -122,20 +128,26 @@ def generate_approval_votes(culture_id: str = None,
         return []
 
 
-def generate_ordinal_votes(culture_id: str = None,
-                           num_candidates: int = None,
-                           num_voters: int = None,
-                           params: dict = None,
-                           **kwargs) -> Union[list, np.ndarray]:
+def generate_ordinal_votes(
+        culture_id: str = None,
+        num_candidates: int = None,
+        num_voters: int = None,
+        params: dict = None,
+        **kwargs
+) -> Union[list, np.ndarray]:
     """
     Generates approval votes according to the given culture id.
 
-    :param culture_id: name of the culture.
-    :param num_voters: number of the voters.
-    :param num_candidates: number of the candidates.
-    :param params: culture parameters.
-    :param kwargs: additional arguments.
-    :return: array of ordinal votes.
+    Parameters
+    ----------
+        culture_id : str
+            Name of the culture.
+        num_voters : int
+            Number of Voters.
+        num_candidates : int
+            Number of Candidates
+        params : dict
+            Culture parameters.
     """
 
     if culture_id in LIST_OF_PREFLIB_MODELS:
@@ -226,9 +238,12 @@ def add_approval_culture(name, function):
     """
     Adds a new approval culture to the list of available approval cultures.
 
-    :param name: name of the culture.
-    :param function: function that generates the votes.
-    :return: None.
+    Parameters
+    ----------
+        name:
+            Name of the culture, which will be used as culture id.
+        function : str
+            Function that generates the votes.
     """
     registered_approval_cultures[name] = function
 
@@ -237,8 +252,11 @@ def add_ordinal_culture(name, function):
     """
     Adds a new ordinal culture to the list of available ordinal cultures.
 
-    :param name: name of the culture.
-    :param function: function that generates the votes.
-    :return: None.
+    Parameters
+    ----------
+        name:
+            Name of the culture, which will be used as culture id.
+        function : str
+            Function that generates the votes.
     """
     registered_ordinal_cultures[name] = function

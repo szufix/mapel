@@ -85,7 +85,7 @@ def compute_swap_distance(election_1: OrdinalElection,
     """ Compute swap distance between elections (using the C++ extension) """
     if not utils.is_module_loaded("mapel.elections.distances.cppdistances"):
         return compute_swap_distance_ilp_py(election_1, election_2), None
-    print(election_1.num_candidates, election_2.num_candidates)
+
     if election_1.num_candidates < election_2.num_candidates:
         swapd = cppd.tswapd(election_1.votes.tolist(),
                            election_2.votes.tolist())
@@ -124,7 +124,8 @@ def compute_spearman_distance_ilp_py(election_1: OrdinalElection,
     """ Compute Spearman distance between elections """
     votes_1 = election_1.votes
     votes_2 = election_2.votes
-    params = {'voters': election_1.num_voters, 'candidates': election_1.num_candidates}
+    params = {'voters': election_1.num_voters,
+              'candidates': election_1.num_candidates}
 
     file_name = f'{np.random.random()}.lp'
     path = os.path.join(os.getcwd(), "trash", file_name)
@@ -140,12 +141,12 @@ def compute_swap_distance_ilp_py(election_1: OrdinalElection,
     """ Compute Spearman distance between elections """
     votes_1 = election_1.votes
     votes_2 = election_2.votes
-    params = {'voters': election_1.num_voters, 'candidates': election_1.num_candidates}
+    params = {'voters': election_1.num_voters,
+              'candidates': election_1.num_candidates}
 
     file_name = f'{np.random.random()}.lp'
-    path = os.path.join(os.getcwd(), "trash", file_name)
+    path = os.path.join(os.getcwd(), 'trash', file_name)
     ilp_iso.generate_ilp_swap_distance(path, votes_1, votes_2, params)
-    # objective_value = ilp_iso.solve_ilp_distance(path)
     objective_value = ilp_iso.solve_ilp_distance_swap(path, votes_1, votes_2, params)
     ilp_iso.remove_lp_file(path)
     objective_value = int(round(objective_value, 0))
@@ -166,7 +167,7 @@ def compute_voter_subelection(election_1: OrdinalElection, election_2: OrdinalEl
 
 def compute_candidate_subelection(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Candidate-Subelection """
-    file_name = str(np.random.random()) + '.lp'
+    file_name = f'{np.random.random()}.lp'
     path = os.path.join(os.getcwd(), 'trash', file_name)
     objective_value = lp.solve_lp_candidate_subelections(path, election_1, election_2)
     lp.remove_lp_file(path)
@@ -236,11 +237,7 @@ def get_matching_cost_truncated_swap_bf(election_1: OrdinalElection,
             cost_table[v1][v2] = swap_distance
     return cost_table
 
-###
-def compute_blank_distance(election_1: OrdinalElection,
-                                        election_2: OrdinalElection) -> (int, list):
-    return 1, None
 
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 17.03.2022 #
-# # # # # # # # # # # # # # # #
+def compute_blank_distance(election_1: OrdinalElection,
+                           election_2: OrdinalElection) -> (int, list):
+    return 1, None
