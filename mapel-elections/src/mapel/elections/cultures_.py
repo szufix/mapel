@@ -46,6 +46,7 @@ registered_approval_cultures = {
 }
 
 registered_ordinal_cultures = {
+    'id': pref_ordinal.identity,
     'impartial': pref_ordinal.impartial,
     'impartial_culture': pref_ordinal.impartial,
     'ic': pref_ordinal.impartial,

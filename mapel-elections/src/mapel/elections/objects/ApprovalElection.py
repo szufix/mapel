@@ -201,9 +201,6 @@ class ApprovalElection(Election, ABC):
         if radius:
             plt.xlim([avg_x - radius, avg_x + radius])
             plt.ylim([avg_y - radius, avg_y + radius])
-        # plt.title(election.label, size=38)
-
-        # plt.title(self.texify_label(self.label), size=title_size) # tmp
 
         plt.axis('off')
 

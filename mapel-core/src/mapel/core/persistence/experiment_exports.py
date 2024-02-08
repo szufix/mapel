@@ -5,19 +5,23 @@ from mapel.core.glossary import *
 from mapel.core.utils import make_folder_if_do_not_exist
 
 
-# Features
 def export_feature_to_file(experiment,
                            feature_id,
-                           saveas,
-                           feature_dict):
+                           feature_dict,
+                           saveas):
     """
     Exports feature to .csv file.
 
-    :param experiment: experiment within which the feature was calculated.
-    :param feature_id: name of the feature.
-    :param saveas: name of the file to save the feature to.
-    :param feature_dict: dictionary with feature values.
-    :return: None.
+    Parameters
+    ----------
+        experiment : Experiment
+           Experiment object.
+        feature_id : str
+            Name of the feature.
+        feature_dict : dict
+            Dictionary with feature values.
+        saveas : str
+            Name of the file to save the feature to.
     """
 
     path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features")
@@ -46,11 +50,16 @@ def export_normalized_feature_to_file(experiment,
     """
     Exports normalized feature to .csv file.
 
-    :param experiment: experiment within which the feature was calculated.
-    :param saveas: name of the file to save the feature to.
-    :param feature_dict: dictionary with feature values.
-    :return: None.
+    Parameters
+    ----------
+        experiment : Experiment
+           Experiment object.
+        feature_dict : dict
+            Dictionary with feature values.
+        saveas : str
+            Name of the file to save the feature to.
     """
+
     path_to_file = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "features",
                                 f'{saveas}.csv')
 
@@ -67,20 +76,27 @@ def export_normalized_feature_to_file(experiment,
 
 # Embeddings
 def export_embedding_to_file(experiment,
-                             embedding_id,
-                             saveas,
-                             dim,
+                             embedding_id: str,
+                             saveas: str,
+                             dim: int,
                              my_pos):
     """
     Exports coordinates of all instances to a .csv file.
 
-    :param experiment: experiment within which the coordinates were calculated.
-    :param embedding_id: name of the embedding.
-    :param saveas: name of the file to save the feature to.
-    :param dim: dimension of the embedding.
-    :param my_pos: list of coordinates.
-    :return: None.
+    Parameters
+    ----------
+        experiment : Experiment
+           Experiment object.
+        embedding_id : str
+            Name of the embedding.
+        saveas : str
+            Name of the file to save the feature to.
+        dim : int
+            Dimension of the embedding.
+        my_pos:
+            list of coordinates
     """
+
     if saveas is None:
         file_name = f'{embedding_id}_{experiment.distance_id}_{str(dim)}d.csv'
     else:
@@ -125,13 +141,22 @@ def export_distances_to_file(experiment,
     """
     Exports distances between each pair of instances to a .csv file.
 
-    :param experiment: experiment within which the distances were calculated.
-    :param distance_id: name of the distance.
-    :param distances: dictionary with distances between each pair of instances.
-    :param times: dictionary with time of calculation of each distance.
-    :param self_distances: flag indicating whether to export self-distances.
-    :return: None.
+    Parameters
+    ----------
+        experiment : Experiment
+           Experiment object.
+        distance_id : str
+            Name of the distance.
+        distances :  dict
+            Dictionary with distances between each pair of instances
+        times : dict
+            Dictionary with time of calculation of each distance.
+        self_distances : bool
+            Flag indicating whether to export self-distances.
+        ids:
+            List of the Ids.
     """
+
     path_to_folder = os.path.join(os.getcwd(), "experiments", experiment.experiment_id, "distances")
     make_folder_if_do_not_exist(path_to_folder)
     path = os.path.join(path_to_folder, f'{distance_id}.csv')
@@ -140,9 +165,6 @@ def export_distances_to_file(experiment,
         writer = csv.writer(csv_file, delimiter=';')
         writer.writerow(["instance_id_1", "instance_id_2", "distance", "time"])
 
-        # for i, instance_1 in enumerate(experiment.elections):
-        #     for j, instance_2 in enumerate(experiment.elections):
-        #         if i < j or (i == j and self_distances) and \
         for pair in ids:
             instance_1, instance_2 = pair
             distance = str(distances[instance_1][instance_2])
@@ -150,17 +172,30 @@ def export_distances_to_file(experiment,
             writer.writerow([instance_1, instance_2, distance, time_])
 
 
-def export_distances_multiple_processes(experiment, instances_ids, distances, times, process_id):
+def export_distances_multiple_processes(
+        experiment,
+        instances_ids,
+        distances,
+        times,
+        process_id
+):
     """
     Exports distances between each pair of instances to a .csv file.
 
-    :param experiment: experiment within which the distances were calculated.
-    :param instances_ids: list of pairs of instances.
-    :param distances: dictionary with distances between each pair of instances.
-    :param times: dictionary with time of calculation of each distance.
-    :param process_id: id of the process.
-    :return: None.
+    Parameters
+    ----------
+        experiment : Experiment
+           Experiment object.
+        instances_ids:
+            List of the Ids.
+        distances :  dict
+            Dictionary with distances between each pair of instances
+        times : dict
+            Dictionary with time of calculation of each distance.
+        process_id : bool
+            Id of the process.
     """
+
     file_name = f'{experiment.distance_id}_p{process_id}.csv'
     path = os.path.join(os.getcwd(),
                         "experiments",

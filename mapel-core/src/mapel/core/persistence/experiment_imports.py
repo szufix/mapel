@@ -4,12 +4,24 @@ import logging
 import os
 
 import numpy as np
-from mapel.core.glossary import *
 
 
-# Distances
-def import_distances_from_file(experiment, distance_id):
-    """ Import distances between each pair of instances from a file """
+def import_distances_from_file(experiment, distance_id) -> dict:
+    """
+    Imports distances between each pair of instances from a file.
+
+    Parameters
+    ----------
+        experiment : Experiment
+            Experiment object.
+        distance_id : str
+            Name of the distance.
+
+    Returns
+    -------
+        dict
+            Distances.
+    """
 
     distances = {}
 
@@ -50,9 +62,22 @@ def import_distances_from_file(experiment, distance_id):
     return distances
 
 
-def add_distances_to_experiment(experiment) -> (dict, dict, dict):
-    """ Import precomputed distances between each pair of instances from a file
-        while preparing an experiment """
+def add_distances_to_experiment(experiment) -> (dict, dict, dict, dict):
+    """
+    Imports precomputed distances between each pair of instances
+    from a file while preparing an experiment
+
+    Parameters
+    ----------
+        experiment : Experiment
+            Experiment object.
+
+    Returns
+    -------
+        (dict, dict, dict, dict)
+            distances, times, stds, mappings
+    """
+
     try:
         file_name = f'{experiment.distance_id}.csv'
         path = os.path.join(os.getcwd(),
@@ -142,12 +167,26 @@ def add_distances_to_experiment(experiment) -> (dict, dict, dict):
         return None, None, None, None
 
 
-# Features
-def get_values_from_csv_file(experiment, feature_id, feature_long_id=None,
+def get_values_from_csv_file(experiment,
+                             feature_id,
+                             feature_long_id=None,
                              upper_limit=np.infty,
                              lower_limit=-np.infty,
                              column_id='value') -> dict:
-    """ Import values for a feature_id from a .csv file """
+
+    """
+    Imports values for a feature_id from a .csv file
+
+    Parameters
+    ----------
+        experiment : Experiment
+            Experiment object.
+
+    Returns
+    -------
+        dict
+            Feature dictionary.
+    """
 
     feature_long_id = feature_id if feature_long_id is None else feature_long_id
 
@@ -173,11 +212,27 @@ def get_values_from_csv_file(experiment, feature_id, feature_long_id=None,
     return values
 
 
-# Coordinates
-def add_coordinates_to_experiment(experiment, dim=2, file_name=None) -> dict:
-    """ Import from a file precomputed coordinates of all the points --
-        each point refer to one instance """
+def add_coordinates_to_experiment(experiment,
+                                  dim: int = 2,
+                                  file_name: str = None) -> dict:
+    """
+    Import from a file precomputed coordinates of all the points,
+    where each point refer to one instance
 
+    Parameters
+    ----------
+        experiment : Experiment
+           Experiment object.
+        dim : int
+            Dimension.
+        file_name : str
+           Name of file in which the coordinates are stored.
+
+    Returns
+    -------
+        dict
+            Coordinates.
+    """
     coordinates = {}
     if file_name is None:
         file_name = f'{experiment.embedding_id}_{experiment.distance_id}_{dim}d.csv'
@@ -214,7 +269,3 @@ def add_coordinates_to_experiment(experiment, dim=2, file_name=None) -> dict:
             logging.warning(text)
 
     return coordinates
-
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 11.07.2023 #
-# # # # # # # # # # # # # # # #

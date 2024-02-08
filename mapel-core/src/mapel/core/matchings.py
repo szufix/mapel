@@ -5,16 +5,50 @@ from scipy.optimize import linear_sum_assignment
 
 
 def solve_matching_vectors(cost_table) -> (float, list):
-    """ Return: objective value, optimal matching """
+    """
+    Computes linear sum assignment.
+
+    Parameters
+    ----------
+        cost_table
+           Cost table.
+    Returns
+    -------
+        (float, list)
+            Objective value, Optimal matching
+    """
+
     cost_table = np.array(cost_table)
     row_ind, col_ind = linear_sum_assignment(cost_table)
     return cost_table[row_ind, col_ind].sum(), list(col_ind)
 
 
-def solve_matching_matrices(matrix_1, matrix_2, length, inner_distance) -> float:
-    """ Return: objective value"""
+def solve_matching_matrices(
+        matrix_1,
+        matrix_2,
+        length,
+        inner_distance
+) -> float:
+    """
+    Computes the minimal distance between two matrices.
+
+    Parameters
+    ----------
+        matrix_1
+           First square matrix.
+        matrix_2
+            Second square matrix.
+        length
+            Length of the matrix.
+        inner_distance
+            The inner distance (like L1 or L2).
+    Returns
+    -------
+        float
+            Objective value
+    """
+
     m = gp.Model()
-    #    m.setParam('Threads', 1)
     m.ModelSense = GRB.MINIMIZE
 
     # OBJECTIVE FUNCTION
@@ -83,7 +117,3 @@ def solve_matching_matrices(matrix_1, matrix_2, length, inner_distance) -> float
         return objective_value
     else:
         print("Exception raised while solving")
-
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 17.08.2022 #
-# # # # # # # # # # # # # # # #

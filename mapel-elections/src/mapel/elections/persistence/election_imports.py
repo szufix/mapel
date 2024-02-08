@@ -1,13 +1,12 @@
 import ast
 import csv
 import os
+import re
 from collections import Counter
 
 import numpy as np
+
 from mapel.core.glossary import *
-# from mapel.elections.other.parser import *
-import re
-import numpy as np
 
 regex_file_name = r'# FILE NAME:'
 regex_title = r'# TITLE:'
@@ -269,7 +268,6 @@ def import_real_old_soc_election(experiment_id: str = None,
     if is_shifted:
         votes = [[vote - 1 for vote in voter] for voter in votes]
     my_file.close()
-
 
     return np.array(votes), \
            num_voters, \

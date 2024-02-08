@@ -5,19 +5,16 @@ import logging
 import math
 import os
 from abc import ABCMeta, abstractmethod
-import time
 
-from scipy.stats import stats
-from tqdm import tqdm
-
-from PIL import Image
-from mapel.core.objects.Family import Family
-import mapel.core.printing as pr
 import matplotlib.pyplot as plt
+from PIL import Image
+from scipy.stats import stats
 
-import mapel.core.persistence.experiment_imports as imports
-import mapel.core.persistence.experiment_exports as exports
 import mapel.core.embedding.embed as embed
+import mapel.core.persistence.experiment_exports as exports
+import mapel.core.persistence.experiment_imports as imports
+import mapel.core.printing as pr
+from mapel.core.objects.Family import Family
 
 COLORS = []
 
@@ -27,20 +24,20 @@ class Experiment:
     """Abstract set of instances."""
 
     def __init__(self,
-                 experiment_id=None,
-                 instances=None,
-                 distances=None,
-                 coordinates=None,
-                 distance_id=None,
-                 embedding_id=None,
-                 is_exported=True,
-                 is_imported=True,
-                 clean=False,
+                 experiment_id: str = None,
+                 instances: dict = None,
+                 distances: dict = None,
+                 coordinates: dict = None,
+                 distance_id: str = None,
+                 embedding_id: str = None,
+                 is_exported: bool = True,
+                 is_imported: bool = True,
+                 clean: bool = False,
                  coordinates_names=None,
-                 fast_import=False,
-                 with_matrix=False,
-                 instance_type=None,
-                 dim=2):
+                 fast_import: bool = False,
+                 with_matrix: bool = False,
+                 instance_type: str = None,
+                 dim: int = 2):
 
         self.is_imported = is_imported
         self.is_exported = is_exported
@@ -48,8 +45,10 @@ class Experiment:
         self.with_matrix = with_matrix
         self.distance_id = distance_id
         self.embedding_id = embedding_id
+        self.instance_type = instance_type
         self.clean = clean
         self.dim = dim
+
         self.coordinates_lists = {}
         self.features = {}
         self.cultures = {}
@@ -58,6 +57,7 @@ class Experiment:
         self.stds = {}
         self.matchings = {}
         self.coordinates_by_families = {}
+
         self.experiment_id = None
         self.instances = None
         self.distances = None
@@ -65,7 +65,6 @@ class Experiment:
         self.num_families = None
         self.num_instances = None
         self.main_order = None
-        self.instance_type = instance_type
 
         if clean:
             self.clean_instances()
@@ -314,12 +313,7 @@ class Experiment:
             os.remove(os.path.join(path, file_name))
 
     def get_feature(self, feature_id, column_id='value'):
-
-        # if feature_id not in election.features:
-        #     election.features[feature_id] = election.import_feature(feature_id)
-
         self.features[feature_id] = self.import_feature(feature_id, column_id=column_id)
-
         return self.features[feature_id]
 
     def import_feature(self, feature_id, column_id='value', rule=None):
@@ -331,8 +325,13 @@ class Experiment:
                                                 column_id=column_id,
                                                 feature_long_id=feature_long_id)
 
-    def normalize_feature_by_feature(self, nom=None, denom=None, saveas=None, column_id='value'):
-
+    def normalize_feature_by_feature(
+            self,
+            nom=None,
+            denom=None,
+            saveas=None,
+            column_id='value'
+    ):
         f1 = self.get_feature(nom, column_id=column_id)
         f2 = self.get_feature(denom, column_id=column_id)
         f3 = {}
@@ -348,16 +347,18 @@ class Experiment:
 
         exports.export_normalized_feature_to_file(self, feature_dict=f3, saveas=saveas)
 
-    def print_correlation_between_distances(self,
-                                            distance_id_1=None,
-                                            distance_id_2=None,
-                                            title=None,
-                                            s=12,
-                                            alpha=0.25,
-                                            color='purple',
-                                            title_size=24,
-                                            label_size=20,
-                                            ticks_size=10):
+    def print_correlation_between_distances(
+            self,
+            distance_id_1=None,
+            distance_id_2=None,
+            title=None,
+            s=12,
+            alpha=0.25,
+            color='purple',
+            title_size=24,
+            label_size=20,
+            ticks_size=10
+    ):
         if distance_id_1 is None:
             logging.warning('distance_id_1 is not defined')
         if distance_id_2 is None:
@@ -433,9 +434,15 @@ class Experiment:
             plt.savefig(saveas, pad_inches=1)
             plt.show()
 
-    def merge_election_images(self, size=250, name=None, show=False, ncol=1, nrow=1,
-                              object_type=None):
-
+    def merge_election_images(
+            self,
+            size: int = 250,
+            name: str = None,
+            show: bool = False,
+            ncol: int = 1,
+            nrow: int = 1,
+            object_type: str = None
+    ):
         if object_type is None:
             logging.warning('Object type not defined!')
 
@@ -456,13 +463,15 @@ class Experiment:
         if show:
             new_image.show()
 
-    def merge_election_images_in_parts(self, size=250, name=None, show=False, ncol=1, nrow=1,
-                                       distance_id='hamming'):
-        pass
-
-    def merge_election_images_double(self, size=250, name=None,
-                                     distance_ids=None,
-                                     show=False, ncol=1, nrow=1):
+    def merge_election_images_double(
+            self,
+            size: int = 250,
+            name: str = None,
+            distance_ids=None,
+            show: bool = False,
+            ncol: int = 1,
+            nrow: int = 1
+    ):
         images = []
         for i, election in enumerate(self.instances.values()):
             images.append(Image.open(f'images/{name}/{election.label}_{distance_ids[0]}.png'))
@@ -480,7 +489,7 @@ class Experiment:
         if show:
             new_image.show()
 
-    def get_instance_id_from_culture_id(self, culture_id: str):
+    def get_instance_id_from_culture_id(self, culture_id: str) -> str:
         for family_id in self.families:
             if self.families[family_id].culture_id == culture_id:
                 return family_id

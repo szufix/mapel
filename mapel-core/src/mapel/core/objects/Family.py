@@ -44,8 +44,3 @@ class Family:
         self.single = single
         self.path = path
         self.instance_ids = instance_ids
-
-
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 11.07.2023 #
-# # # # # # # # # # # # # # # #

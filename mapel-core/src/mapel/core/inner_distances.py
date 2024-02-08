@@ -16,16 +16,42 @@ def map_str_to_func(name):
             }.get(name)
 
 
-def discrete(vector_1, vector_2):
-    """ compute DISCRETE metric """
+def discrete(vector_1, vector_2) -> int:
+    """
+    Computes the discrete distance.
+
+    Parameters
+    ----------
+        vector_1
+            First vector.
+        vector_2
+            Second vector.
+    Returns
+    -------
+        int
+            Discrete distance.
+    """
     for i in range(len(vector_1)):
         if vector_1[i] != vector_2[i]:
             return 1
     return 0
 
 
-def single_l1(value_1, value_2):
-    """ compute L1 metric """
+def single_l1(value_1, value_2) -> float:
+    """
+    Computes the L1 distance between two values.
+
+    Parameters
+    ----------
+        value_1
+            First value.
+        value_2
+            Second values.
+    Returns
+    -------
+        float
+            L1 distance.
+    """
     return abs(value_1 - value_2)
 
 
@@ -35,22 +61,74 @@ def wl1(vector_1: np.ndarray, vector_2: np.ndarray) -> float:
 
 
 def l1(vector_1: np.ndarray, vector_2: np.ndarray) -> float:
-    """ Return: L1 distance """
+    """
+    Computes the L1 distance.
+
+    Parameters
+    ----------
+        vector_1
+            First vector.
+        vector_2
+            Second vector.
+    Returns
+    -------
+        float
+            L1 distance.
+    """
     return np.linalg.norm(vector_1 - vector_2, ord=1)
 
 
 def l2(vector_1: np.ndarray, vector_2: np.ndarray) -> float:
-    """ Return: L2 distance """
+    """
+    Computes the L2 distance.
+
+    Parameters
+    ----------
+        vector_1
+            First vector.
+        vector_2
+            Second vector.
+    Returns
+    -------
+        float
+            L2 distance.
+    """
     return np.linalg.norm(vector_1 - vector_2, ord=2)
 
 
-def chebyshev(vector_1, vector_2):
-    """ compute CHEBYSHEV metric """
+def chebyshev(vector_1, vector_2) -> float:
+    """
+    Computes the Chebyshev distance.
+
+    Parameters
+    ----------
+        vector_1
+            First vector.
+        vector_2
+            Second vector.
+    Returns
+    -------
+        float
+            Chebyshev distance.
+    """
     return max([abs(vector_1[i] - vector_2[i]) for i in range(len(vector_1))])
 
 
-def hellinger(vector_1, vector_2):
-    """ compute HELLINGER metric """
+def hellinger(vector_1, vector_2) -> float:
+    """
+    Computes the Hellinger distance.
+
+    Parameters
+    ----------
+        vector_1
+            First vector.
+        vector_2
+            Second vector.
+    Returns
+    -------
+        float
+            Hellinger distance.
+    """
     h1 = np.average(vector_1)
     h2 = np.average(vector_2)
     product = sum([math.sqrt(vector_1[i] * vector_2[i])
@@ -90,8 +168,21 @@ def emd_infty(xx, yy):
     return res
 
 
-def emd(vector_1, vector_2):
-    """ compute EMD metric """
+def emd(vector_1, vector_2) -> float:
+    """
+    Computes the EMD distance.
+
+    Parameters
+    ----------
+        vector_1
+            First vector.
+        vector_2
+            Second vector.
+    Returns
+    -------
+        float
+            EMD distance.
+    """
     vector_1 = deepcopy(vector_1)
     dirt = 0.
     for i in range(len(vector_1) - 1):
@@ -101,8 +192,21 @@ def emd(vector_1, vector_2):
     return dirt
 
 
-def hamming(set_1: set, set_2: set) -> float:
-    """ Return: HAMMING distance """
+def hamming(set_1: set, set_2: set) -> int:
+    """
+    Computes the Hamming distance.
+
+    Parameters
+    ----------
+        vector_1
+            First vector.
+        vector_2
+            Second vector.
+    Returns
+    -------
+        int
+            Hamming distance.
+    """
     return len(set_1.symmetric_difference(set_2))
 
 

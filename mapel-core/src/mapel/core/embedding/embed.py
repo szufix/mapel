@@ -3,11 +3,10 @@ import logging
 import networkx as nx
 import numpy as np
 
+import mapel.core.persistence.experiment_exports as exports
+import mapel.core.printing as pr
 from mapel.core.embedding.kamada_kawai.kamada_kawai import KamadaKawai
 from mapel.core.embedding.simulated_annealing.simulated_annealing import SimulatedAnnealing
-
-import mapel.core.printing as pr
-import mapel.core.persistence.experiment_exports as exports
 
 try:
     from sklearn.manifold import MDS
