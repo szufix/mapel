@@ -2,8 +2,11 @@ MAIN_LOCAL_FEATUERS = []
 
 MAIN_GLOBAL_FEATUERS = ['distortion', 'monotonicity']
 
-ELECTION_GLOBAL_FEATURES = {'clustering', 'clustering_kmeans', 'distortion_from_all',
-                            'id_vs_un', 'an_vs_st', }
+ELECTION_GLOBAL_FEATURES = {'clustering',
+                            'clustering_kmeans',
+                            'distortion_from_all',
+                            'id_vs_un',
+                            'an_vs_st', }
 
 RULE_NAME_MATRIX = {
     "av": "AV",
@@ -127,10 +130,6 @@ SHORT_NICE_NAME = {
 'SP by Walsh': 'SP (Wal.)',
 'SPOC': 'SPOC',
 'Single-Crossing': 'SC',
-# '1D Interval': '1D',
-# '2D Disc': '2D',
-# '3D Cube': '3D',
-# '2D Sphere': 'Sphere',
 'Interval': 'Interval',
 'Disc': 'Disc',
 'Cube': 'Cube',

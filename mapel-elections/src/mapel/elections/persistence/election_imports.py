@@ -84,7 +84,16 @@ def process_soc_line(line: str, votes: list):
     tokens = line.split(':')
     nr_this_vote = int(tokens[0])
     vote = [int(x) for x in tokens[1].split(',')]
-    vote = np.array([x for x in vote])
+    vote = np.array(vote)
+    for i in range(0, nr_this_vote):
+        votes.append(vote)
+    pass
+
+
+def process_app_line(line: str, votes: list):
+    tokens = line.split(':')
+    nr_this_vote = int(tokens[0])
+    vote = set(ast.literal_eval(" ".join(tokens[1])))
     for i in range(0, nr_this_vote):
         votes.append(vote)
     pass
@@ -109,7 +118,6 @@ def import_real_new_soc_election(experiment_id: str = None,
     """ Import real ordinal election form .soc file """
 
     file_name = f'{election_id}.soc'
-    print(file_name)
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     file = open(path, 'r')
 
@@ -125,18 +133,9 @@ def import_real_new_soc_election(experiment_id: str = None,
     from_file_data_type = ''
     # read metadata
     for line in file:
-        # print(line)
         if line[-1] == '\n':
             line = line[:-1]
         if line[0] != '#':
-            if from_file_data_type == 'soc':
-                process_soc_line(line, votes)
-            elif from_file_data_type == 'soi':
-                process_soi_line(line, votes)
-            elif from_file_data_type == 'toc':
-                process_toc_line(line, votes)
-            elif from_file_data_type == 'toi':
-                process_toi_line(line, votes)
             break
         elif re.search(regex_file_name, line):
             from_file_file_name = line.split(':')[1][1:-file_ending]
@@ -154,16 +153,10 @@ def import_real_new_soc_election(experiment_id: str = None,
             culture_id = str(line.split(':')[1])
         elif re.search(regex_params, line):
             line = line.strip().split()
-            # print(line)
-            # print(len(line))
             if len(line) <= 2:
                 params = {}
             else:
                 params = ast.literal_eval(" ".join(line[2:]))
-        # print(culture_id)
-    # print('ok')
-    # print(num_voters, num_candidates, nr_unique, culture_id, params)
-    # print(from_file_data_type)
 
     # label = from_file_title + "_" + from_file_file_name
     # read votes
@@ -310,7 +303,80 @@ def import_fake_soc_election(experiment_id, name):
     return model_name, params, num_voters, num_candidates
 
 
-def import_real_app_election(experiment_id: str, election_id: str, is_shifted=False):
+def import_real_new_app_election(experiment_id: str = None,
+                                 election_id: str = None,
+                                 is_shifted: bool = False,
+                                 file_ending=4):
+    """ Import real approval election form .app file """
+
+    file_name = f'{election_id}.app'
+    path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
+    file = open(path, 'r')
+
+    params = None
+    culture_id = None
+    votes = []
+    num_candidates = 0
+    nr_votes = 0
+    nr_unique = 0
+    alternative_names = list()
+    from_file_file_name = ''
+    from_file_title = ''
+    from_file_data_type = ''
+    # read metadata
+    for line in file:
+        if line[-1] == '\n':
+            line = line[:-1]
+        if line[0] != '#':
+            break
+        elif re.search(regex_file_name, line):
+            from_file_file_name = line.split(':')[1][1:-file_ending]
+        elif re.search(regex_title, line):
+            from_file_title = line.split(':')[1].replace(" ", "")
+        elif re.search(regex_data_type, line):
+            from_file_data_type = line.split(':')[1].replace(" ", "")
+        elif re.search(regex_number_alternatives, line):
+            num_candidates = int(line.split(':')[1])
+        elif re.search(regex_number_voters, line):
+            num_voters = int(line.split(':')[1])
+        elif re.search(regex_number_unique_orders, line):
+            nr_unique = int(line.split(':')[1])
+        elif re.search(regex_culture_id, line):
+            culture_id = str(line.split(':')[1])
+        elif re.search(regex_params, line):
+            line = line.strip().split()
+
+            if len(line) <= 2:
+                params = {}
+            else:
+                params = ast.literal_eval(" ".join(line[2:]))
+
+    # label = from_file_title + "_" + from_file_file_name
+    # read votes
+    if from_file_data_type == 'app':
+        for line in file:
+            process_app_line(line, votes)
+    else:
+        print("Unknown data format.")
+
+    file.close()
+
+    alliances = None
+
+    c = Counter(map(tuple, votes))
+    counted_votes = [[count, list(row)] for row, count in c.items()]
+    counted_votes = sorted(counted_votes, reverse=True)
+    quantites = [a[0] for a in counted_votes]
+    distinct_votes = [a[1] for a in counted_votes]
+    num_options = len(counted_votes)
+
+    if is_shifted:
+        votes = [[vote - 1 for vote in voter] for voter in votes]
+
+    return votes, len(votes), num_candidates, params, culture_id
+
+
+def import_real_old_app_election(experiment_id: str, election_id: str, is_shifted=False):
     """ Import real approval election from .app file """
 
     file_name = f'{election_id}.app'
@@ -360,6 +426,13 @@ def import_real_app_election(experiment_id: str, election_id: str, is_shifted=Fa
     my_file.close()
 
     return votes, num_voters, num_candidates, params, culture_id
+
+
+def import_real_app_election(**kwargs):
+    try:
+        return import_real_old_app_election(**kwargs)
+    except:
+        return import_real_new_app_election(**kwargs)
 
 
 def import_fake_app_election(experiment_id: str, name: str):

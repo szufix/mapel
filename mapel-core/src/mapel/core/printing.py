@@ -1,11 +1,10 @@
-import os
+
 import math
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-
-import os
 
 try:
     import tikzplotlib
@@ -16,53 +15,24 @@ from mapel.core.glossary import *
 import mapel.core.persistence.experiment_imports as imports
 
 
-# New 1d map printing
-def print_map_1d(experiment, saveas=None):
-    experiment.compute_coordinates_by_families()
-    all_values = [0]
-    for family in experiment.families.values():
-        x = float(experiment.coordinates_by_families[family.family_id][0][0])
-        all_values.append(x)
-    min_ = min(all_values)
-    max_ = max(all_values)
-
-    fig, ax = plt.subplots(figsize=(3, 8))
-    for family in experiment.families.values():
-        x = float(experiment.coordinates_by_families[family.family_id][0][0])
-        x = (x - min_) / (max_ - min_)
-        # x = x**0.5
-        x = 1 - x
-
-        # ax.scatter(x, 0)
-        # ax.annotate(family.family_id, (x,0), rotation=90,)
-        ax.scatter(0, x)
-        ax.annotate(family.family_id, (0, x), rotation=0, size=10)
-    ax.get_xaxis().set_visible(False)
-    # plt.axis("off")
-    if saveas:
-        plt.savefig(saveas)
-    plt.show()
-
-
-# Main functions
 def print_map_2d(experiment,
                  xlabel=None,
-                 shading=False,
+                 shading: bool = False,
                  legend_pos=None,
                  title_pos=None,
                  angle=0,
-                 reverse=False,
-                 update=False,
+                 reverse: bool = False,
+                 update: bool = False,
                  axis=False,
-                 individual=False,
-                 textual=None,
-                 title=None,
+                 individual: bool = False,
+                 textual: list[str] = None,
+                 title: str = None,
                  bbox_inches='tight',
-                 saveas=None,
-                 show=True,
-                 urn_orangered=True,
-                 tex=False,
-                 legend=True,
+                 saveas: str = None,
+                 show: bool = True,
+                 urn_orangered: bool = False,
+                 tex: bool = False,
+                 legend: bool = True,
                  dpi=250,
                  title_size=16,
                  textual_size=16,
@@ -290,31 +260,6 @@ def print_map_2d_colored_by_features(experiment,
         plt.show()
 
 
-def print_map_1d(experiment, saveas=None):
-    """ This function is not updated """
-    experiment.compute_coordinates_by_families()
-    all_values = [0]
-    for family in experiment.families.values():
-        x = float(experiment.coordinates_by_families[family.family_id][0][0])
-        all_values.append(x)
-    min_ = min(all_values)
-    max_ = max(all_values)
-
-    fig, ax = plt.subplots(figsize=(3, 8))
-    for family in experiment.families.values():
-        x = float(experiment.coordinates_by_families[family.family_id][0][0])
-        x = (x - min_) / (max_ - min_)
-        # x = x**0.5
-        x = 1 - x
-
-        # ax.scatter(x, 0)
-        # ax.annotate(family.family_id, (x,0), rotation=90,)
-        ax.scatter(0, x)
-        ax.annotate(family.family_id, (0, x), rotation=0, size=10)
-    ax.get_xaxis().set_visible(False)
-    if saveas:
-        plt.savefig(saveas)
-    plt.show()
 
 
 def print_map_3d(experiment,
@@ -1066,7 +1011,7 @@ def _basic_background(ax=None, legend=None, saveas=None, xlabel=None, title=None
             path_1 = file_name + ".png"
             path_2 = os.path.join(os.getcwd(), "images", "masks", mask + ".png")
             path_3 = file_name + ".png"
-            overlay_images(path_1, path_2, path_3)
+            _overlay_images(path_1, path_2, path_3)
 
 
 # TEX
@@ -1713,7 +1658,7 @@ def print_approvals_histogram(election):
     plt.show()
 
 
-def overlay_images(background_path, overlay_path, output_path):
+def _overlay_images(background_path, overlay_path, output_path):
     # Open the images
     background = Image.open(background_path).convert("RGBA")
     overlay = Image.open(overlay_path).convert("RGBA")
@@ -1727,6 +1672,24 @@ def overlay_images(background_path, overlay_path, output_path):
     # Save the result
     combined.save(output_path, 'PNG')
 
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 12.10.2021 #
-# # # # # # # # # # # # # # # #
+
+def print_map_1d(experiment, saveas=None):
+    experiment.compute_coordinates_by_families()
+    all_values = [0]
+    for family in experiment.families.values():
+        x = float(experiment.coordinates_by_families[family.family_id][0][0])
+        all_values.append(x)
+    min_ = min(all_values)
+    max_ = max(all_values)
+
+    fig, ax = plt.subplots(figsize=(3, 8))
+    for family in experiment.families.values():
+        x = float(experiment.coordinates_by_families[family.family_id][0][0])
+        x = (x - min_) / (max_ - min_)
+        x = 1 - x
+        ax.scatter(0, x)
+        ax.annotate(family.family_id, (0, x), rotation=0, size=10)
+    ax.get_xaxis().set_visible(False)
+    if saveas:
+        plt.savefig(saveas)
+    plt.show()

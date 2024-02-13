@@ -399,28 +399,44 @@ class OrdinalElection(Election):
                 points.append([float(row['x']), float(row['y'])])
         return points
 
+
     @staticmethod
     def texify_label(name):
         return name.replace('phi', '$\phi$'). \
             replace('alpha', '$\\ \\alpha$'). \
             replace('omega', '$\\ \\omega$'). \
-            replace('§', '\n', 1)
-        # replace('0.005', '$\\frac{1}{200}$'). \
-        # replace('0.025', '$\\frac{1}{40}$'). \
-        # replace('0.75', '$\\frac{3}{4}$'). \
-        # replace('0.25', '$\\frac{1}{4}$'). \
-        # replace('0.01', '$\\frac{1}{100}$'). \
-        # replace('0.05', '$\\frac{1}{20}$'). \
-        # replace('0.5', '$\\frac{1}{2}$'). \
-        # replace('0.1', '$\\frac{1}{10}$'). \
-        # replace('0.2', '$\\frac{1}{5}$'). \
-        # replace('0.4', '$\\frac{2}{5}$'). \
-        # replace('0.8', '$\\frac{4}{5}$'). \
-        # replace(' ', '\n', 1)
+            replace('§', '\n', 1). \
+            replace('0.005', '$\\frac{1}{200}$'). \
+            replace('0.025', '$\\frac{1}{40}$'). \
+            replace('0.75', '$\\frac{3}{4}$'). \
+            replace('0.25', '$\\frac{1}{4}$'). \
+            replace('0.01', '$\\frac{1}{100}$'). \
+            replace('0.05', '$\\frac{1}{20}$'). \
+            replace('0.5', '$\\frac{1}{2}$'). \
+            replace('0.1', '$\\frac{1}{10}$'). \
+            replace('0.2', '$\\frac{1}{5}$'). \
+            replace('0.4', '$\\frac{2}{5}$'). \
+            replace('0.8', '$\\frac{4}{5}$'). \
+            replace(' ', '\n', 1)
 
-    def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
-                  object_type=None, double_gradient=False, saveas=None, color='blue',
-                  marker='o', title_size=20):
+    def print_map(
+            self,
+            show=True,
+            radius=None,
+            name=None,
+            alpha=0.1,
+            s=30,
+            circles=False,
+            object_type=None,
+            double_gradient=False,
+            saveas=None,
+            color='blue',
+            marker='o',
+            title_size=20
+    ):
+
+        if object_type is None:
+            object_type = self.object_type
 
         if object_type == 'vote':
             length = self.num_voters
@@ -428,9 +444,7 @@ class OrdinalElection(Election):
             length = self.num_candidates
         else:
             logging.warning(f'Incorrect object type: {object_type}')
-
-        if object_type is None:
-            object_type = self.object_type
+            length = 0
 
         plt.figure(figsize=(6.4, 6.4))
 
@@ -464,26 +478,6 @@ class OrdinalElection(Election):
                 plt.scatter(X[i], Y[i], color=color, alpha=alpha, marker=marker,
                             s=s)
 
-        #
-        # if circles:  # works only for votes
-        #     weighted_points = {}
-        #     Xs = {}
-        #     Ys = {}
-        #     for i in range(length):
-        #         str_elem = str(experiment_id.votes[i])
-        #         if str_elem in weighted_points:
-        #             weighted_points[str_elem] += 1
-        #         else:
-        #             weighted_points[str_elem] = 1
-        #             Xs[str_elem] = X[i]
-        #             Ys[str_elem] = Y[i]
-        #     for str_elem in weighted_points:
-        #         if weighted_points[str_elem] > 10 and str_elem != 'set()':
-        #             plt.scatter(Xs[str_elem], Ys[str_elem],
-        #                         color='purple',
-        #                         s=10 * weighted_points[str_elem],
-        #                         alpha=0.2)
-
         avg_x = np.mean(X)
         avg_y = np.mean(Y)
 
@@ -492,7 +486,10 @@ class OrdinalElection(Election):
             plt.ylim([avg_y - radius, avg_y + radius])
         # plt.title(election.label, size=38)
 
-        plt.title(self.texify_label(self.label), size=title_size)  # tmp
+        try:
+            plt.title(self.texify_label(self.label), size=title_size)  # tmp
+        except:
+            pass
 
         # plt.title(election.texify_label(election.label), size=38, y=0.94)
         # plt.title(election.label, size=title_size)
@@ -516,6 +513,7 @@ class OrdinalElection(Election):
             plt.clf()
 
         plt.close()
+
 
 
 def convert_votes_to_potes(votes) -> np.array:

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import logging
 from abc import ABC
 
 from matplotlib import pyplot as plt
@@ -43,9 +44,10 @@ class ApprovalElection(Election, ABC):
                         imports.import_fake_app_election(self.experiment_id, self.election_id)
                 else:
                     self.votes, self.num_voters, self.num_candidates, self.params, \
-                    self.culture_id = imports.import_real_app_election(self.experiment_id,
-                                                                       self.election_id,
-                                                                       self.is_shifted)
+                        self.culture_id = imports.import_real_app_election(
+                            experiment_id=self.experiment_id,
+                            election_id=self.election_id,
+                            is_shifted=self.is_shifted)
             except:
                 pass
 
@@ -123,9 +125,22 @@ class ApprovalElection(Election, ABC):
         if self.is_exported:
             exports.export_distances(self, object_type='candidate')
 
-    def print_map(self, show=True, radius=None, name=None, alpha=0.1, s=30, circles=False,
-                  object_type=None, double_gradient=False, saveas=None, color='blue',
-                  marker='o', title_size=20, annotate=False):
+    def print_map(
+            self,
+            show=True,
+            radius=None,
+            name=None,
+            alpha=0.1,
+            s=30,
+            circles=False,
+            object_type=None,
+            double_gradient=False,
+            saveas=None,
+            color='blue',
+            marker='o',
+            title_size=20,
+            annotate=False
+    ):
 
         if object_type == 'vote':
             length = self.num_voters
@@ -134,6 +149,9 @@ class ApprovalElection(Election, ABC):
             length = self.num_candidates
             self.compute_reverse_approvals()
             votes = self.reverse_approvals
+        else:
+            logging.warning(f'Incorrect object type: {object_type}')
+            length = 0
 
         if object_type is None:
             object_type = self.object_type
@@ -153,35 +171,6 @@ class ApprovalElection(Election, ABC):
                         s=1000,
                         alpha=1,
                         marker='X')
-
-        if circles:  # works only for votes
-            weighted_points = {}
-            Xs = {}
-            Ys = {}
-            for i in range(length):
-                str_elem = str(votes[i])
-                if str_elem in weighted_points:
-                    weighted_points[str_elem] += 1
-                else:
-                    weighted_points[str_elem] = 1
-                    Xs[str_elem] = X[i]
-                    Ys[str_elem] = Y[i]
-
-            for str_elem in weighted_points:
-                if object_type == 'vote':
-                    if weighted_points[str_elem] > 10 and str_elem != 'set()':
-                        print(str_elem)
-                        plt.scatter(Xs[str_elem], Ys[str_elem],
-                                    color='purple',
-                                    s=10 * weighted_points[str_elem],
-                                    alpha=0.2)
-                if object_type == 'candidate':
-                    if weighted_points[str_elem] > 5 and str_elem != 'set()':
-                        print(str_elem)
-                        plt.scatter(Xs[str_elem], Ys[str_elem],
-                                    color='purple',
-                                    s=50 * weighted_points[str_elem],
-                                    alpha=0.2)
 
         if double_gradient:
             for i in range(length):

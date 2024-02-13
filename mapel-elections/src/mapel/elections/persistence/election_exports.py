@@ -45,8 +45,12 @@ def export_votes_to_file(election,
         params = {}
 
     with open(path, 'w') as file_:
-        file_.write(f'# FILE NAME: {election.election_id}.soc\n')
-        file_.write(f'# DATA TYPE: soc \n')
+        if ballot_type == 'ordinal':
+            file_.write(f'# FILE NAME: {election.election_id}.soc\n')
+            file_.write(f'# DATA TYPE: soc \n')
+        elif ballot_type == 'approval':
+            file_.write(f'# FILE NAME: {election.election_id}.app\n')
+            file_.write(f'# DATA TYPE: app \n')
         file_.write(f'# CULTURE ID: {culture_id} \n')
         file_.write(f'# PARAMS: {str(params)} \n')
         file_.write(f'# NUMBER ALTERNATIVES: {num_candidates} \n')

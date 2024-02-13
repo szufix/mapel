@@ -57,6 +57,7 @@ class Experiment:
         self.stds = {}
         self.matchings = {}
         self.coordinates_by_families = {}
+        self.mappings = {}
 
         self.experiment_id = None
         self.instances = None
@@ -203,13 +204,13 @@ class Experiment:
 
         if self.families is None:
             self.families = {}
+
             for i, instance_id in enumerate(self.instances):
                 ele = self.instances[instance_id]
                 model = ele.culture_id
                 family_id = model
                 label = instance_id
                 color = COLORS[int(i % len(COLORS))]
-
                 alpha = 1.
 
                 self.families[instance_id] = Family(
@@ -221,6 +222,7 @@ class Experiment:
 
                 coordinates_by_families[family_id] = [[] for _ in range(dim)]
                 coordinates_by_families[family_id][0].append(self.coordinates[family_id][0])
+
                 try:
                     coordinates_by_families[family_id][1].append(self.coordinates[family_id][1])
                 finally:
@@ -457,7 +459,8 @@ class Experiment:
 
         for i in range(ncol):
             for j in range(nrow):
-                new_image.paste(images[i + j * ncol], (image1_size[0] * i, image1_size[1] * j))
+                if i + j * ncol < self.num_instances:
+                    new_image.paste(images[i + j * ncol], (image1_size[0] * i, image1_size[1] * j))
 
         new_image.save(f'images/{name}_{object_type}.png', "PNG", quality=85)
         if show:

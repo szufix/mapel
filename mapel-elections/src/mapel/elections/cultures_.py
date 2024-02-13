@@ -5,7 +5,7 @@ from typing import Union
 
 from mapel.core.glossary import *
 
-import mapel.elections.cultures.to_be_removed.urn as urn
+import mapel.elections.cultures.to_be_removed.mallows_urn as mallows_urn
 
 import mapel.elections.cultures.guardians as guardians
 import mapel.elections.cultures.guardians_plus as guardians_plus
@@ -19,6 +19,7 @@ from mapel.elections.cultures.preflib import generate_preflib_votes
 
 import mapel.elections.cultures.group_separable as group_separable
 import mapel.elections.cultures.euclidean as euclidean
+import mapel.elections.cultures.urn as urn
 
 import prefsampling.ordinal as pref_ordinal
 import prefsampling.approval as pref_approval
@@ -35,7 +36,7 @@ registered_approval_cultures = {
     'euclidean': pref_approval.euclidean,
     'full': pref_approval.full,
     'empty': pref_approval.empty,
-    'truncated_urn': pref_approval.truncated_urn,
+    'truncated_urn': urn.truncated_urn_mask,
     'urn_partylist': pref_approval.urn_partylist,
 
     'field': fe.generate_approval_field_votes,  # unsupported culture
@@ -69,7 +70,7 @@ registered_ordinal_cultures = {
 
     'plackett-luce': pref_ordinal.plackett_luce,
 
-    'mallows_urn': urn.generate_mallows_urn_votes,
+    'mallows_urn': mallows_urn.generate_mallows_urn_votes,
     'idan_part': guardians_plus.generate_idan_part_votes,  # unsupported culture
     'idun_part': guardians_plus.generate_idun_part_votes,  # unsupported culture
     'idst_part': guardians_plus.generate_idst_part_votes,  # unsupported culture

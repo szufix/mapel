@@ -216,11 +216,12 @@ class Election(Instance):
         if object_type is None:
             object_type = self.object_type
 
-        MDS_object = MDS(n_components=2, dissimilarity='precomputed',
-
-            # max_iter=1000,
-            # n_init=20,
-            # eps=1e-6,
+        MDS_object = MDS(n_components=2,
+                         dissimilarity='precomputed',
+                         normalized_stress='auto',
+                # max_iter=1000,
+                # n_init=20,
+                # eps=1e-6,
             )
 
         #DIV-MERGE

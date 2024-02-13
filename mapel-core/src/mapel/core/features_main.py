@@ -15,7 +15,3 @@ def get_main_global_feature(feature_id):
         # 'calculate_monotonicity': calculate_monotonicity, # needs update
         'monotonicity': calculate_monotonicity_naive,
             }.get(feature_id)
-
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 17.08.2022 #
-# # # # # # # # # # # # # # # #

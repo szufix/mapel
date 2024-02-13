@@ -67,8 +67,11 @@ class ElectionFamily(Family):
         else:
             self.__dict__[name] = value
 
-    def prepare_family(self, experiment_id=None, is_exported=True,
-                       store_points=False, is_aggregated=True,
+    def prepare_family(self,
+                       experiment_id=None,
+                       is_exported=True,
+                       store_points=False,
+                       is_aggregated=True,
                        instance_type=None):
 
         if instance_type is not None:
@@ -96,7 +99,6 @@ class ElectionFamily(Family):
                                            num_voters=self.num_voters,
                                            label=self.label,
                                            num_candidates=self.num_candidates,
-                                           # params=copy.deepcopy(params),
                                            variable=variable,
                                            is_imported=False,
                                            **params
@@ -148,10 +150,10 @@ class ElectionFamily(Family):
                                             num_voters=self.num_voters,
                                             label=self.label,
                                             num_candidates=self.num_candidates,
-                                            params=copy.deepcopy(params),
                                             ballot_type=self.instance_type,
                                             variable=variable,
-                                            is_imported=False
+                                            is_imported=False,
+                                            **params
                                             )
                 election.prepare_instance(is_exported=is_exported, is_aggregated=is_aggregated)
 
