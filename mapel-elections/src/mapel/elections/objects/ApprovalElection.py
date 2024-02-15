@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import logging
 from abc import ABC
+from collections import Counter
 
 from matplotlib import pyplot as plt
 from mapel.elections.cultures_ import generate_approval_votes
@@ -44,7 +45,8 @@ class ApprovalElection(Election, ABC):
                         imports.import_fake_app_election(self.experiment_id, self.election_id)
                 else:
                     self.votes, self.num_voters, self.num_candidates, self.params, \
-                        self.culture_id = imports.import_real_app_election(
+                        self.culture_id, self.num_options, self.quantites, self.distinct_votes \
+                        = imports.import_real_app_election(
                             experiment_id=self.experiment_id,
                             election_id=self.election_id,
                             is_shifted=self.is_shifted)
@@ -79,10 +81,21 @@ class ApprovalElection(Election, ABC):
                                              num_candidates=self.num_candidates,
                                              num_voters=self.num_voters,
                                              params=self.params)
+        if not self.fake:
+            c = Counter(map(tuple, self.votes))
+            counted_votes = [[count, list(row)] for row, count in c.items()]
+            counted_votes = sorted(counted_votes, reverse=True)
+            self.quantites = [a[0] for a in counted_votes]
+            self.distinct_votes = [a[1] for a in counted_votes]
+            self.num_options = len(counted_votes)
+        else:
+            self.quantites = [self.num_voters]
+            self.num_options = 1
+
         if is_exported:
             exports.export_approval_election(self, is_aggregated=is_aggregated)
 
-    def compute_distances_between_votes(self, distance_id='hamming'):
+    def _compute_distances_between_votes(self, distance_id='hamming'):
         distances = np.zeros([self.num_voters, self.num_voters])
         for v1 in range(self.num_voters):
             for v2 in range(self.num_voters):
@@ -103,7 +116,7 @@ class ApprovalElection(Election, ABC):
 
         return distances
 
-    def compute_distances_between_candidates(self, distance_id='hamming'):
+    def _compute_distances_between_candidates(self, distance_id='hamming'):
 
         distances = np.zeros([self.num_candidates, self.num_candidates])
         for c1 in range(self.num_candidates):
@@ -125,6 +138,14 @@ class ApprovalElection(Election, ABC):
         if self.is_exported:
             exports.export_distances(self, object_type='candidate')
 
+        return distances
+
+    def compute_distances(self, object_type=None, distance_id='hamming'):
+        if object_type == 'vote':
+            return self._compute_distances_between_votes(distance_id=distance_id)
+        elif object_type == 'candidate':
+            return self._compute_distances_between_candidates(distance_id=distance_id)
+
     def print_map(
             self,
             show=True,
@@ -132,7 +153,6 @@ class ApprovalElection(Election, ABC):
             name=None,
             alpha=0.1,
             s=30,
-            circles=False,
             object_type=None,
             double_gradient=False,
             saveas=None,

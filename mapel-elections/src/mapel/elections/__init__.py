@@ -1,3 +1,5 @@
+from collections import Counter
+
 from .distances_ import get_distance
 import mapel.core.printing as pr
 from .objects.ApprovalElectionExperiment import ApprovalElectionExperiment
@@ -115,21 +117,33 @@ def generate_ordinal_election_from_votes(votes=None):
     election.num_candidates = len(votes[0])
     election.num_voters = len(votes)
     election.votes = votes
+    election.is_exported = False
+    c = Counter(map(tuple, votes))
+    counted_votes = [[count, list(row)] for row, count in c.items()]
+    counted_votes = sorted(counted_votes, reverse=True)
+    election.quantites = [a[0] for a in counted_votes]
+    election.distinct_votes = [a[1] for a in counted_votes]
+    election.num_options = len(counted_votes)
     return election
 
 
-def generate_approval_election_from_votes(votes=None):
+def generate_approval_election_from_votes(votes=None, num_candidates=None):
     election = ApprovalElection()
-    election.num_candidates = len(set().union(*votes))
+    if num_candidates is None:
+        election.num_candidates = len(set().union(*votes))
+    else:
+        election.num_candidates = num_candidates
     election.num_voters = len(votes)
     election.votes = votes
+    election.is_exported = False
+    c = Counter(map(tuple, votes))
+    counted_votes = [[count, list(row)] for row, count in c.items()]
+    counted_votes = sorted(counted_votes, reverse=True)
+    election.quantites = [a[0] for a in counted_votes]
+    election.distinct_votes = [a[1] for a in counted_votes]
+    election.num_options = len(counted_votes)
     return election
 
 
 def compute_distance(*args, **kwargs):
     return get_distance(*args, **kwargs)
-
-
-# # # # # # # # # # # # # # # #
-# LAST CLEANUP ON: 11.07.2023 #
-# # # # # # # # # # # # # # # #

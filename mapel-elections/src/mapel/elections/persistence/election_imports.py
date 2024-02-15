@@ -213,14 +213,14 @@ def import_real_old_soc_election(experiment_id: str = None,
     first_line = my_file.readline()
 
     if first_line[0] != '#':
-        model_name = 'empty'
+        culture_id = 'empty'
         num_candidates = int(first_line)
     else:
         first_line = first_line.strip().split()
-        model_name = first_line[1]
+        culture_id = first_line[1]
         if experiment_id == 'original_ordinal_map':
             params = {}
-            model_name = _old_name_extractor(first_line)
+            culture_id = _old_name_extractor(first_line)
         else:
             if len(first_line) <= 2:
                 params = {}
@@ -266,7 +266,7 @@ def import_real_old_soc_election(experiment_id: str = None,
            num_voters, \
            num_candidates, \
            params, \
-           model_name, \
+           culture_id, \
            alliances, \
            num_options, \
            quantites, \
@@ -289,7 +289,7 @@ def import_fake_soc_election(experiment_id, name):
 
     first_line = my_file.readline()
     first_line = first_line.strip().split()
-    model_name = first_line[1]
+    culture_id = first_line[1]
     if len(first_line) <= 2:
         params = {}
     else:
@@ -300,7 +300,7 @@ def import_fake_soc_election(experiment_id, name):
 
     my_file.close()
 
-    return model_name, params, num_voters, num_candidates
+    return culture_id, params, num_voters, num_candidates
 
 
 def import_real_new_app_election(experiment_id: str = None,
@@ -361,8 +361,6 @@ def import_real_new_app_election(experiment_id: str = None,
 
     file.close()
 
-    alliances = None
-
     c = Counter(map(tuple, votes))
     counted_votes = [[count, list(row)] for row, count in c.items()]
     counted_votes = sorted(counted_votes, reverse=True)
@@ -373,7 +371,16 @@ def import_real_new_app_election(experiment_id: str = None,
     if is_shifted:
         votes = [[vote - 1 for vote in voter] for voter in votes]
 
-    return votes, len(votes), num_candidates, params, culture_id
+    num_voters = len(votes)
+
+    return votes, \
+           num_voters, \
+           num_candidates, \
+           params, \
+           culture_id, \
+           num_options, \
+           quantites, \
+           distinct_votes
 
 
 def import_real_old_app_election(experiment_id: str, election_id: str, is_shifted=False):
@@ -425,7 +432,21 @@ def import_real_old_app_election(experiment_id: str, election_id: str, is_shifte
         votes = [{c - 1 for c in vote} for vote in votes]
     my_file.close()
 
-    return votes, num_voters, num_candidates, params, culture_id
+    c = Counter(map(tuple, votes))
+    counted_votes = [[count, list(row)] for row, count in c.items()]
+    counted_votes = sorted(counted_votes, reverse=True)
+    quantites = [a[0] for a in counted_votes]
+    distinct_votes = [a[1] for a in counted_votes]
+    num_options = len(counted_votes)
+
+    return votes, \
+           num_voters, \
+           num_candidates, \
+           params, \
+           culture_id, \
+           num_options, \
+           quantites, \
+           distinct_votes
 
 
 def import_real_app_election(**kwargs):
@@ -443,7 +464,7 @@ def import_fake_app_election(experiment_id: str, name: str):
     my_file = open(path, 'r')
     first_line = my_file.readline()
     first_line = first_line.strip().split()
-    fake_model_name = first_line[1]
+    fake_culture_id = first_line[1]
     if len(first_line) <= 2:
         params = {}
     else:
@@ -452,7 +473,7 @@ def import_fake_app_election(experiment_id: str, name: str):
     num_candidates = int(my_file.readline().strip())
     num_voters = int(my_file.readline().strip())
 
-    return fake_model_name, params, num_voters, num_candidates
+    return fake_culture_id, params, num_voters, num_candidates
 
 
 def check_if_fake(experiment_id, name, extention):
@@ -466,11 +487,11 @@ def check_if_fake(experiment_id, name, extention):
 
 def _old_name_extractor(first_line):
     if len(first_line) == 4:
-        model_name = f'{first_line[1]} {first_line[2]} {first_line[3]}'
+        culture_id = f'{first_line[1]} {first_line[2]} {first_line[3]}'
     elif len(first_line) == 3:
-        model_name = f'{first_line[1]} {first_line[2]}'
+        culture_id = f'{first_line[1]} {first_line[2]}'
     elif len(first_line) == 2:
-        model_name = first_line[1]
+        culture_id = first_line[1]
     else:
-        model_name = 'noname'
-    return model_name
+        culture_id = 'noname'
+    return culture_id
