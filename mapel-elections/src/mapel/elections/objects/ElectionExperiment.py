@@ -540,26 +540,16 @@ class ElectionExperiment(Experiment):
             for row in reader:
 
                 culture_id = None
-                color = None
-                label = None
                 params = None
-                alpha = None
                 size = None
-                marker = None
                 num_candidates = None
                 num_voters = None
                 family_id = None
-                ms = None
 
+                print_params = {}
 
                 if 'culture_id' in row.keys():
                     culture_id = str(row['culture_id']).strip()
-
-                if 'color' in row.keys():
-                    color = str(row['color']).strip()
-
-                if 'label' in row.keys():
-                    label = str(row['label'])
 
                 if 'family_id' in row.keys():
                     family_id = str(row['family_id'])
@@ -567,17 +557,8 @@ class ElectionExperiment(Experiment):
                 if 'params' in row.keys():
                     params = ast.literal_eval(str(row['params']))
 
-                if 'alpha' in row.keys():
-                    alpha = float(row['alpha'])
-
                 if 'size' in row.keys():
                     size = int(row['size'])
-
-                if 'marker' in row.keys():
-                    marker = str(row['marker']).strip()
-
-                if 'ms' in row.keys():
-                    ms = int(row['ms'])
 
                 if 'num_candidates' in row.keys():
                     num_candidates = int(row['num_candidates'])
@@ -588,22 +569,30 @@ class ElectionExperiment(Experiment):
                 if 'path' in row.keys():
                     path = ast.literal_eval(str(row['path']))
 
+                if 'label' in row.keys():
+                    print_params['label'] = str(row['label'])
+                if 'alpha' in row.keys():
+                    print_params['alpha'] = float(row['alpha'])
+                if 'marker' in row.keys():
+                    print_params['marker'] = str(row['marker']).strip()
+                if 'ms' in row.keys():
+                    print_params['ms'] = int(row['ms'])
+                if 'color' in row.keys():
+                    print_params['color'] = str(row['color']).strip()
+
                 single = size == 1
 
                 families[family_id] = ElectionFamily(culture_id=culture_id,
                                                      family_id=family_id,
                                                      params=params,
-                                                     label=label,
-                                                     color=color,
-                                                     alpha=alpha,
-                                                     ms=ms,
                                                      size=size,
-                                                     marker=marker,
                                                      starting_from=starting_from,
                                                      num_candidates=num_candidates,
                                                      num_voters=num_voters,
                                                      path=path,
-                                                     single=single)
+                                                     single=single,
+                                                     **print_params
+                                                     )
                 starting_from += size
 
                 all_num_candidates.append(num_candidates)
@@ -667,7 +656,8 @@ class ElectionExperiment(Experiment):
                 solution = None
                 for _ in range(num_iterations):
 
-                    if feature_id in ['monotonicity_1', 'monotonicity_triplets']:
+                    if feature_id in ['monotonicity_1',
+                                      'monotonicity_triplets']:
                         value = feature(self, instance)
 
                     elif feature_id in {'avg_distortion_from_guardians',
@@ -675,7 +665,10 @@ class ElectionExperiment(Experiment):
                                         'distortion_from_all',
                                         'distortion_from_top_100'}:
                         value = feature(self, instance_id)
-                    elif feature_id in ['ejr', 'core', 'pareto', 'priceability',
+                    elif feature_id in ['ejr',
+                                        'core',
+                                        'pareto',
+                                        'priceability',
                                         'cohesiveness']:
                         value = instance.get_feature(feature_id, feature_long_id,
                                                      feature_params=feature_params)
@@ -705,9 +698,9 @@ class ElectionExperiment(Experiment):
 
         if self.is_exported:
             exports.export_feature_to_file(self,
-                                           feature_id,
-                                           saveas,
-                                           feature_dict)
+                                           feature_id=feature_id,
+                                           feature_dict=feature_dict,
+                                           saveas=saveas)
 
         self.features[saveas] = feature_dict
         return feature_dict

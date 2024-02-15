@@ -63,7 +63,7 @@ def print_map_2d(
         angle=0,
         reverse: bool = False,
         update: bool = False,
-        axis=False,
+        axis: bool = False,
         individual: bool = False,
         textual: list[str] = None,
         textual_size: int = 16,
@@ -103,8 +103,10 @@ def print_map_2d(
             If True then reverse the map.
         update : bool
             If True then the points coordinates are exported.
-        axis
-        individual
+        axis : bool
+            Deprecated param.
+        individual : bool
+            Deprecated param.
         textual : list[str]
             Print thext over the points with names from the list.
         textual_size
@@ -118,6 +120,7 @@ def print_map_2d(
         show : bool
             If true show the map on screen.
         urn_orangered : bool
+            Deprecated param.
         tex : bool
             If True save image in tex format.
         legend
@@ -205,33 +208,33 @@ def print_map_2d_colored_by_feature(
         xlabel=None,
         legend_pos=None,
         title_pos=None,
-        axis=False,
-        rounding=1,
-        upper_limit=np.infty,
-        lower_limit=-np.infty,
+        axis: bool = False,
+        rounding: int = 1,
+        upper_limit: float = np.infty,
+        lower_limit: float = -np.infty,
         ticks=None,
-        textual=None,
+        textual: list[str] = None,
         scale='default',
         title=None,
         bbox_inches='tight',
         saveas=None,
-        show=True,
+        show: bool = True,
         normalizing_func=None,
         xticklabels=None,
         cmap=None,
         marker_func=None,
-        tex=False,
-        feature_labelsize=14,
-        dpi=250,
-        title_size=16,
+        tex: bool = False,
+        feature_labelsize: int = 14,
+        dpi: int = 250,
+        title_size: int = 16,
         ticks_pos=None,
-        omit=None,
-        textual_size=16,
+        omit: list = None,
+        textual_size: int = 16,
         figsize=(6.4, 6.4),
         strech=None,
         colors=None,
         pad_inches=None,
-        mask=None
+        mask: str = None
 ):
     if textual is None:
         textual = []
@@ -254,17 +257,22 @@ def print_map_2d_colored_by_feature(
     if not axis:
         plt.axis('off')
 
-    shades_dict, cmap = _color_map_by_feature(experiment=experiment, fig=fig, ax=ax,
-                                              feature_id=feature_id, rounding=rounding,
+    shades_dict, cmap = _color_map_by_feature(experiment=experiment,
+                                              fig=fig,
+                                              ax=ax,
+                                              feature_id=feature_id,
+                                              rounding=rounding,
                                               normalizing_func=normalizing_func,
                                               ticks_pos=ticks_pos,
                                               marker_func=marker_func,
                                               upper_limit=upper_limit,
                                               lower_limit=lower_limit,
                                               scale=scale,
-                                              xticklabels=xticklabels, cmap=cmap,
+                                              xticklabels=xticklabels,
+                                              cmap=cmap,
                                               omit=omit,
-                                              ticks=ticks, column_id=column_id,
+                                              ticks=ticks,
+                                              column_id=column_id,
                                               feature_labelsize=feature_labelsize,
                                               strech=strech,
                                               colors=colors)
@@ -324,13 +332,13 @@ def print_map_2d_colored_by_features(
         xticklabels=None,
         cmap=None,
         marker_func=None,
-        tex=False,
-        feature_labelsize=14,
-        dpi=250,
-        column_id='value',
-        title_size=16,
+        tex: bool = False,
+        feature_labelsize: int = 14,
+        dpi: int = 250,
+        column_id: str = 'value',
+        title_size: int = 16,
         ticks_pos=None,
-        textual_size=16,
+        textual_size: int = 16,
         figsize=(6.4, 6.4)
 ) -> None:
     if textual is None:
@@ -757,18 +765,32 @@ def _color_map_by_feature(experiment=None,
     for um in unique_markers:
         masks = (markers == um)
         if um == '.':
-            images.append(ax.scatter(xx[masks], yy[masks],
-                                     c='grey', alpha=0.6,
-                                     marker=um, s=mses[masks]))
+            images.append(ax.scatter(xx[masks],
+                                     yy[masks],
+                                     c='grey',
+                                     alpha=0.6,
+                                     marker=um,
+                                     s=mses[masks]))
 
         elif dim == 2:
-            images.append(ax.scatter(xx[masks], yy[masks], c=shades[masks],
-                                     vmin=vmin, vmax=vmax,
-                                     cmap=cmap, marker=um, s=mses[masks]))
+            images.append(ax.scatter(xx[masks],
+                                     yy[masks],
+                                     c=shades[masks],
+                                     vmin=vmin,
+                                     vmax=vmax,
+                                     cmap=cmap,
+                                     marker=um,
+                                     s=mses[masks]))
         elif dim == 3:
-            images.append(ax.scatter(xx[masks], yy[masks], zz[masks], c=shades[masks],
-                                     vmin=vmin, vmax=vmax,
-                                     cmap=cmap, marker=um, s=ms))
+            images.append(ax.scatter(xx[masks],
+                                     yy[masks],
+                                     zz[masks],
+                                     c=shades[masks],
+                                     vmin=vmin,
+                                     vmax=vmax,
+                                     cmap=cmap,
+                                     marker=um,
+                                     s=ms))
 
     images.append(ax.scatter(blank_xx, blank_yy, marker='.', alpha=0.1))
 
@@ -817,7 +839,6 @@ def _color_map_by_feature(experiment=None,
     if ticks_pos is None:
         # ticks_pos = [0, 0.2, 0.4, 0.6, 0.8, 1]
         ticks_pos = np.linspace(vmin, vmax, 6)
-    # print(ticks_pos)
 
     cb.ax.xaxis.set_ticks(ticks_pos)
 
@@ -848,8 +869,6 @@ def _color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None,
     mask_4 = [False] * len(shades_1)
     mask_5 = [False] * len(shades_1)
     mask_6 = [False] * len(shades_1)
-
-    # print(max(shades_1), max(shades_2))
 
     for i in range(len(shades_1)):
         # print(shades_1[i]-shades_2[i])
@@ -884,7 +903,6 @@ def _color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None,
     shades_1 = np.array([x / div for x in shades_1])
     shades_2 = np.array([x / div for x in shades_2])
     _max = _min + (_max - _min) * div
-    print(_max)
 
     images = []
 
@@ -916,8 +934,6 @@ def _color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None,
     images.append(ax.scatter(blank_xx_1, blank_yy_1, marker='.', alpha=0.1))
 
     if dim == 2:
-        print(rounding)
-
         if xticklabels is None:
             if normalizing_func is None:
                 lin = np.linspace(_min, _max, 6)
@@ -1684,15 +1700,15 @@ def adjust_the_map(experiment) -> None:
             pass
 
 
-def centeroid(arr):
-    length = arr.shape[0]
-    sum_x = np.sum(arr[:, 0])
-    sum_y = np.sum(arr[:, 1])
+def _centroid(array) -> (float, float):
+    length = array.shape[0]
+    sum_x = np.sum(array[:, 0])
+    sum_y = np.sum(array[:, 1])
     return sum_x / length, sum_y / length
 
 
 def adjust_the_map_on_one_point(experiment) -> None:
-    xc, yc = centeroid(np.array(list(experiment.coordinates.values())))
+    xc, yc = _centroid(np.array(list(experiment.coordinates.values())))
     d_x = experiment.coordinates['all_0'][0] - xc
     d_y = experiment.coordinates['all_0'][1] - yc
     try:
