@@ -159,7 +159,8 @@ class ElectionExperiment(Experiment):
                      num_candidates=None,
                      num_voters=None,
                      election_id=None,  # deprecated
-                     instance_id=None):
+                     instance_id=None,
+                     **kwargs):
         """ Add election to the experiment """
 
         if instance_id is None:
@@ -172,7 +173,7 @@ class ElectionExperiment(Experiment):
             num_voters = self.default_num_voters
 
         return self.add_family(culture_id=culture_id,
-                               params=params,
+                               params=kwargs,
                                size=size,
                                label=label,
                                color=color,
@@ -184,7 +185,8 @@ class ElectionExperiment(Experiment):
                                family_id=instance_id,
                                num_candidates=num_candidates,
                                num_voters=num_voters,
-                               single=True)
+                               single=True,
+                               **kwargs)
 
     def add_family(self,
                    culture_id: str = "none",
@@ -232,7 +234,7 @@ class ElectionExperiment(Experiment):
             label = family_id
         self.families[family_id] = ElectionFamily(culture_id=culture_id,
                                                   family_id=family_id,
-                                                  params=params,
+                                                  params=kwargs,
                                                   label=label,
                                                   color=color,
                                                   alpha=alpha,
