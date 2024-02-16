@@ -38,6 +38,10 @@ def embed(experiment_id,
           init_pos: dict = None,
           fixed=True,
           attraction_factor=None,
+          left=None,
+          up=None,
+          right=None,
+          down=None,
           **kwargs) -> None:
 
     if attraction_factor is None:
@@ -154,7 +158,7 @@ def embed(experiment_id,
     for i, instance_id in enumerate(experiment_id.distances):
         experiment_id.coordinates[instance_id] = [my_pos[i][d] for d in range(dim)]
 
-    pr.adjust_the_map(experiment_id)
+    pr.adjust_the_map(experiment_id, left=left, up=up, right=right, down=down)
 
     if experiment_id.is_exported:
         exports.export_embedding_to_file(experiment_id, embedding_id, saveas, dim, my_pos)

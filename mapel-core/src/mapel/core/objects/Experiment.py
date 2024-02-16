@@ -273,13 +273,15 @@ class Experiment:
 
         self.compute_coordinates_by_families()
 
-    def reverse(self) -> None:
+    def reverse(self, axis=0) -> None:
         """ Reverse all the points"""
 
-        for instance_id in self.instances:
-            self.coordinates[instance_id][0] = self.coordinates[instance_id][0]
-            self.coordinates[instance_id][1] = -self.coordinates[instance_id][1]
-
+        if axis == 0:
+            for instance_id in self.instances:
+                self.coordinates[instance_id][1] = -self.coordinates[instance_id][1]
+        elif axis == 1:
+            for instance_id in self.instances:
+                self.coordinates[instance_id][0] = -self.coordinates[instance_id][0]
         self.compute_coordinates_by_families()
 
     def update(self) -> None:

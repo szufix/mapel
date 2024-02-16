@@ -1592,7 +1592,7 @@ def get_values_from_file_old(experiment, experiment_id, values,
         return xx, yy, shades, markers, _min, _max
 
 
-def adjust_the_map_on_three_points(experiment, left, right, down, is_down=True) -> None:
+def _adjust_the_map_on_three_points_horizontal(experiment, left, right, down, is_down=True) -> None:
     try:
         d_x = experiment.coordinates[right][0] - experiment.coordinates[left][0]
         d_y = experiment.coordinates[right][1] - experiment.coordinates[left][1]
@@ -1605,99 +1605,152 @@ def adjust_the_map_on_three_points(experiment, left, right, down, is_down=True) 
 
     if is_down:
         if experiment.coordinates[left][1] < experiment.coordinates[down][1]:
-            experiment.reverse()
+            experiment.reverse(axis=0)
     else:
         if experiment.coordinates[left][1] > experiment.coordinates[down][1]:
-            experiment.reverse()
+            experiment.reverse(axis=0)
 
 
-def adjust_the_map(experiment) -> None:
-    if experiment.instance_type == 'ordinal':
+def _adjust_the_map_on_three_points_vertical(experiment, down, up, left, is_left=True) -> None:
 
-        try:
-            left = experiment.get_instance_id_from_culture_id('uniformity')
-            right = experiment.get_instance_id_from_culture_id('identity')
-            down = experiment.get_instance_id_from_culture_id('stratification')
-            adjust_the_map_on_three_points(experiment, left, right, down)
-        except Exception:
+    try:
+        d_x = experiment.coordinates[down][0] - experiment.coordinates[up][0]
+        d_y = experiment.coordinates[down][1] - experiment.coordinates[up][1]
+        alpha = math.atan(d_x / d_y)
+        experiment.rotate(alpha)
+        if experiment.coordinates[down][1] > experiment.coordinates[up][1]:
+            experiment.rotate(math.pi)
+    except Exception:
+        pass
+    #
+    if is_left:
+        if experiment.coordinates[down][0] < experiment.coordinates[left][0]:
+            experiment.reverse(axis=1)
+    else:
+        if experiment.coordinates[down][0] > experiment.coordinates[left][0]:
+            experiment.reverse(axis=1)
+
+
+
+
+def _adjust_the_map_on_three_points_without_down(experiment, left, right, up):
+    _adjust_the_map_on_three_points_horizontal(experiment, left, right, up, is_down=False)
+
+
+def _adjust_the_map_on_three_points_without_left(experiment, down, up, right):
+    _adjust_the_map_on_three_points_vertical(experiment, down, up, right, is_left=False)
+
+
+def _adjust_the_map_on_three_points_without_up(experiment, left, right, down):
+    _adjust_the_map_on_three_points_horizontal(experiment, left, right, down, is_down=True)
+
+
+def _adjust_the_map_on_three_points_without_right(experiment, down, up, left):
+    _adjust_the_map_on_three_points_vertical(experiment, down, up, left, is_left=True)
+
+
+
+def adjust_the_map(experiment, left=None, up=None, right=None, down=None) -> None:
+
+    # NEW CODE
+    try:
+        if left is not None and right is not None and up is not None:
+            _adjust_the_map_on_three_points_without_down(experiment, left, right, up)
+        elif right is not None and down is not None and left is not None:
+            _adjust_the_map_on_three_points_without_up(experiment, left, right, down)
+        elif up is not None and right is not None and down is not None:
+            _adjust_the_map_on_three_points_without_left(experiment, down, up, right)
+        elif down is not None and left is not None and up is not None:
+            _adjust_the_map_on_three_points_without_right(experiment, down, up, left)
+
+    # OLD CODE
+    except:
+        if experiment.instance_type == 'ordinal':
+
             try:
-                left = experiment.get_instance_id_from_culture_id('un_from_matrix')
-                right = experiment.get_instance_id_from_culture_id('real_identity')
-                up = experiment.get_instance_id_from_culture_id('real_antagonism')
-                adjust_the_map_on_three_points(experiment, left, right, up, is_down=False)
+                left = experiment.get_instance_id_from_culture_id('uniformity')
+                right = experiment.get_instance_id_from_culture_id('identity')
+                down = experiment.get_instance_id_from_culture_id('stratification')
+                _adjust_the_map_on_three_points_without_up(experiment, left, right, down)
             except Exception:
                 try:
-                    left = 'UN_0'
-                    right = 'ID'
-                    up = 'AN'
-                    adjust_the_map_on_three_points(experiment, left, right, up, is_down=False)
+                    left = experiment.get_instance_id_from_culture_id('un_from_matrix')
+                    right = experiment.get_instance_id_from_culture_id('real_identity')
+                    up = experiment.get_instance_id_from_culture_id('real_antagonism')
+                    _adjust_the_map_on_three_points_without_down(experiment, left, right, up)
                 except Exception:
+                    try:
+                        left = 'UN_0'
+                        right = 'ID'
+                        up = 'AN'
+                        _adjust_the_map_on_three_points_horizontal(experiment, left, right, up, is_down=False)
+                    except Exception:
+                        pass
                     pass
                 pass
-            pass
 
-    elif experiment.instance_type == 'approval':
-        try:
-            left = 'IC 0.5'
-            right = 'ID 0.5'
-            down = experiment.get_instance_id_from_culture_id('empty')
-            adjust_the_map_on_three_points(experiment, left, right, down)
-        except Exception:
+        elif experiment.instance_type == 'approval':
             try:
-                left = 'IC 0.25'
-                right = 'ID 0.25'
+                left = 'IC 0.5'
+                right = 'ID 0.5'
                 down = experiment.get_instance_id_from_culture_id('empty')
-                adjust_the_map_on_three_points(experiment, left, right, down)
+                _adjust_the_map_on_three_points_horizontal(experiment, left, right, down)
             except Exception:
-                pass
+                try:
+                    left = 'IC 0.25'
+                    right = 'ID 0.25'
+                    down = experiment.get_instance_id_from_culture_id('empty')
+                    _adjust_the_map_on_three_points_horizontal(experiment, left, right, down)
+                except Exception:
+                    pass
 
-    elif experiment.instance_type == 'rule':
-        try:
-            left = 'cc'
-            right = 'av'
-            down = 'minimaxav'
-            adjust_the_map_on_three_points(experiment, left, right, down)
-        except Exception:
+        elif experiment.instance_type == 'rule':
             try:
-                left = 'seqcc'
+                left = 'cc'
                 right = 'av'
                 down = 'minimaxav'
-                adjust_the_map_on_three_points(experiment, left, right, down)
+                _adjust_the_map_on_three_points_horizontal(experiment, left, right, down)
+            except Exception:
+                try:
+                    left = 'seqcc'
+                    right = 'av'
+                    down = 'minimaxav'
+                    _adjust_the_map_on_three_points_horizontal(experiment, left, right, down)
+                except Exception:
+                    pass
+
+        elif experiment.instance_type == 'roommates':
+
+            try:
+                left = experiment.get_instance_id_from_culture_id('roommates_asymmetric')
+                right = experiment.get_instance_id_from_culture_id('roommates_symmetric')
+                # up = election.get_election_id_from_model_name('antagonism')
+                down = experiment.get_instance_id_from_culture_id('roommates_id')
+                _adjust_the_map_on_three_points_horizontal(experiment, left, right, down)
             except Exception:
                 pass
 
-    elif experiment.instance_type == 'roommates':
 
-        try:
-            left = experiment.get_instance_id_from_culture_id('roommates_asymmetric')
-            right = experiment.get_instance_id_from_culture_id('roommates_symmetric')
-            # up = election.get_election_id_from_model_name('antagonism')
-            down = experiment.get_instance_id_from_culture_id('roommates_id')
-            adjust_the_map_on_three_points(experiment, left, right, down)
-        except Exception:
-            pass
+        elif experiment.instance_type == 'marriages':
 
+            try:
+                left = experiment.get_instance_id_from_culture_id('asymmetric')
+                right = experiment.get_instance_id_from_culture_id('symmetric')
+                # up = election.get_election_id_from_model_name('antagonism')
+                down = experiment.get_instance_id_from_culture_id('id')
+                _adjust_the_map_on_three_points_horizontal(experiment, left, right, down)
+            except Exception:
+                pass
 
-    elif experiment.instance_type == 'marriages':
+        elif experiment.instance_type == 'allocation':
 
-        try:
-            left = experiment.get_instance_id_from_culture_id('asymmetric')
-            right = experiment.get_instance_id_from_culture_id('symmetric')
-            # up = election.get_election_id_from_model_name('antagonism')
-            down = experiment.get_instance_id_from_culture_id('id')
-            adjust_the_map_on_three_points(experiment, left, right, down)
-        except Exception:
-            pass
-
-    elif experiment.instance_type == 'allocation':
-
-        try:
-            left = experiment.get_election_id_from_model_name('indifference')
-            right = experiment.get_election_id_from_model_name('separability')
-            up = experiment.get_election_id_from_model_name('contention')
-            adjust_the_map_on_three_points(experiment, left, right, up, is_down=False)
-        except Exception:
-            pass
+            try:
+                left = experiment.get_election_id_from_model_name('indifference')
+                right = experiment.get_election_id_from_model_name('separability')
+                up = experiment.get_election_id_from_model_name('contention')
+                _adjust_the_map_on_three_points_horizontal(experiment, left, right, up, is_down=False)
+            except Exception:
+                pass
 
 
 def _centroid(array) -> (float, float):
