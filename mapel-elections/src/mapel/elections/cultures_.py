@@ -47,11 +47,15 @@ registered_approval_cultures = {
 }
 
 registered_ordinal_cultures = {
+    'identity': pref_ordinal.identity,
     'id': pref_ordinal.identity,
-    'impartial': pref_ordinal.impartial,
     'impartial_culture': pref_ordinal.impartial,
+    'impartial': pref_ordinal.impartial,
     'ic': pref_ordinal.impartial,
     'iac': pref_ordinal.impartial_anonymous,
+    'real_antagonism': guardians.generate_real_antagonism_votes,  # unsupported culture
+    'antagonism': guardians.generate_real_antagonism_votes,  # unsupported culture
+    'an': guardians.generate_real_antagonism_votes,  # unsupported culture
 
     'urn': pref_ordinal.urn,
     'single-crossing': pref_ordinal.single_crossing,
@@ -92,7 +96,6 @@ registered_ordinal_cultures = {
     'mallows_party': mallows.generate_mallows_party,  # unsupported culture
     'ic_party': unused.generate_ic_party,  # unsupported culture
     'real_uniformity': guardians.generate_real_uniformity_votes,  # unsupported culture
-    'real_antagonism': guardians.generate_real_antagonism_votes,  # unsupported culture
     'real_stratification': guardians.generate_real_stratification_votes,  # unsupported culture
     'un_from_matrix': guardians_plus.generate_un_from_matrix_votes,  # unsupported culture
     'un_from_list': guardians_plus.generate_un_from_list,  # unsupported culture

@@ -219,12 +219,8 @@ class Election(Instance):
         MDS_object = MDS(n_components=2,
                          dissimilarity='precomputed',
                          normalized_stress='auto',
-                # max_iter=1000,
-                # n_init=20,
-                # eps=1e-6,
             )
 
-        #DIV-MERGE
         if algorithm == 'PCA':
             self.coordinates[object_type] = pca(self.distances[object_type])
         else:
@@ -232,9 +228,6 @@ class Election(Instance):
 
         if object_type == 'vote':
             length = self.num_options
-        elif object_type == 'candidate':
-            # length = experiment_id.num_candidates
-            pass
         else:
             logging.warning('No such type of object!')
             length = None

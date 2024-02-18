@@ -1622,7 +1622,7 @@ def _adjust_the_map_on_three_points_vertical(experiment, down, up, left, is_left
             experiment.rotate(math.pi)
     except Exception:
         pass
-    #
+
     if is_left:
         if experiment.coordinates[down][0] < experiment.coordinates[left][0]:
             experiment.reverse(axis=1)
@@ -1631,6 +1631,29 @@ def _adjust_the_map_on_three_points_vertical(experiment, down, up, left, is_left
             experiment.reverse(axis=1)
 
 
+def _adjust_the_map_on_two_points_horizontal(experiment, left, right) -> None:
+    try:
+        d_x = experiment.coordinates[right][0] - experiment.coordinates[left][0]
+        d_y = experiment.coordinates[right][1] - experiment.coordinates[left][1]
+        alpha = math.atan(d_x / d_y)
+        experiment.rotate(alpha - math.pi / 2.)
+        if experiment.coordinates[left][0] > experiment.coordinates[right][0]:
+            experiment.rotate(math.pi)
+    except Exception:
+        pass
+
+
+def _adjust_the_map_on_two_points_vertical(experiment, down, up) -> None:
+
+    try:
+        d_x = experiment.coordinates[down][0] - experiment.coordinates[up][0]
+        d_y = experiment.coordinates[down][1] - experiment.coordinates[up][1]
+        alpha = math.atan(d_x / d_y)
+        experiment.rotate(alpha)
+        if experiment.coordinates[down][1] > experiment.coordinates[up][1]:
+            experiment.rotate(math.pi)
+    except Exception:
+        pass
 
 
 def _adjust_the_map_on_three_points_without_down(experiment, left, right, up):
@@ -1649,11 +1672,11 @@ def _adjust_the_map_on_three_points_without_right(experiment, down, up, left):
     _adjust_the_map_on_three_points_vertical(experiment, down, up, left, is_left=True)
 
 
-
 def adjust_the_map(experiment, left=None, up=None, right=None, down=None) -> None:
 
     # NEW CODE
     try:
+
         if left is not None and right is not None and up is not None:
             _adjust_the_map_on_three_points_without_down(experiment, left, right, up)
         elif right is not None and down is not None and left is not None:
@@ -1662,6 +1685,11 @@ def adjust_the_map(experiment, left=None, up=None, right=None, down=None) -> Non
             _adjust_the_map_on_three_points_without_left(experiment, down, up, right)
         elif down is not None and left is not None and up is not None:
             _adjust_the_map_on_three_points_without_right(experiment, down, up, left)
+
+        elif left is not None and right is not None:
+            _adjust_the_map_on_two_points_horizontal(experiment, left, right)
+        elif down is not None and up is not None:
+            _adjust_the_map_on_two_points_vertical(experiment, down, up)
 
     # OLD CODE
     except:

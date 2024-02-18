@@ -117,7 +117,7 @@ class ApprovalElection(Election, ABC):
         return distances
 
     def _compute_distances_between_candidates(self, distance_id='hamming'):
-
+        self.compute_reverse_approvals()
         distances = np.zeros([self.num_candidates, self.num_candidates])
         for c1 in range(self.num_candidates):
             for c2 in range(self.num_candidates):
