@@ -108,6 +108,7 @@ def embed(experiment_id,
         my_pos = MDS(n_components=dim,
                      dissimilarity='precomputed',
                      max_iter=num_iterations,
+                     normalized_stress='auto',
                      **kwargs
                      ).fit_transform(x)
     elif embedding_id.lower() in {'tsne'}:

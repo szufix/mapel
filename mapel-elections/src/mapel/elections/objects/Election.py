@@ -228,6 +228,8 @@ class Election(Instance):
 
         if object_type == 'vote':
             length = self.num_options
+        elif object_type == 'candidate':
+            pass
         else:
             logging.warning('No such type of object!')
             length = None
