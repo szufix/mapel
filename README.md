@@ -10,7 +10,9 @@ the mapel ecosystem:
 1. [mapel-marriages](https://pypi.org/project/mapel-marriages/)
 
 See the documentation of the above (on pypi) for further information on the
-whole ecosystem.
+whole ecosystem. You can also consult the materials from the 
+[AAAI'24 tutorial](https://home.agh.edu.pl/~pragma/tutorials/aaai24/)
+about using mapel.
 
 To install all packages listed above follow the instructions below.
 
