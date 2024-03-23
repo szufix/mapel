@@ -728,6 +728,7 @@ class ElectionExperiment(Experiment):
                 experiment_id=self.experiment_id, rule_name=rule_name)
 
     def add_election_to_family(self, election=None, family_id=None):
+        election.instance_id = f'{self.families[family_id]}_{self.families[family_id].size}'
         self.instances[election.instance_id] = election
         self.families[family_id].add_election(election)
 
