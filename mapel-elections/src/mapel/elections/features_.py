@@ -7,6 +7,8 @@ import mapel.elections.features.cohesive as cohesive
 import mapel.elections.features.dimensionality as dimensionality
 import mapel.elections.features.distortion as distortion
 import mapel.elections.features.diversity as diversity
+import mapel.elections.features.entropy as entropy
+import mapel.elections.features.dap_approximate as dap_approx
 import mapel.elections.features.justified_representation as jr
 import mapel.elections.features.other as other
 import mapel.elections.features.partylist as partylist
@@ -82,10 +84,13 @@ registered_ordinal_features = {
     'dist_to_Borda_mean': diversity.dist_to_Borda_mean,
     'dist_to_Kemeny_mean': diversity.dist_to_Kemeny_mean,
     'borda_spread': scores.borda_spread,
+    'Entropy': entropy.entropy,
     'Agreement': diversity.agreement_index,
     'Diversity': diversity.diversity_index,
     'Polarization': diversity.polarization_index,
-
+    'AgreementApprox': dap_approx.agreement_index,
+    'DiversityApprox': dap_approx.diversity_index,
+    'PolarizationApprox': dap_approx.polarization_index,
     'avg_distortion_from_guardians': distortion.avg_distortion_from_guardians,
     # unsupported feature
     'worst_distortion_from_guardians': distortion.worst_distortion_from_guardians,
