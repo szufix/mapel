@@ -92,6 +92,7 @@ class ElectionFamily(Family):
                     if params is None:
                         params = {}
                     params = {**params, **new_params}
+                    params['variable'] = variable
 
                 election_id = get_instance_id(self.single, self.family_id, j)
                 election = OrdinalElection(experiment_id, election_id,
@@ -99,7 +100,6 @@ class ElectionFamily(Family):
                                            num_voters=self.num_voters,
                                            label=self.label,
                                            num_candidates=self.num_candidates,
-                                           variable=variable,
                                            is_imported=False,
                                            **params
                                            )
