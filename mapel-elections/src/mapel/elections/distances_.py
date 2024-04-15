@@ -12,6 +12,8 @@ from mapel.core.inner_distances import map_str_to_func
 from mapel.core.objects.Experiment import Experiment
 from mapel.elections.distances import main_approval_distances as mad
 from mapel.elections.distances import main_ordinal_distances as mod
+from mapel.elections.distances import positionwise_infty
+from mapel.elections.distances import feature_distance
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 
@@ -22,6 +24,9 @@ registered_approval_distances = {
 }
 
 registered_ordinal_distances = {
+    'positionwise_infty': positionwise_infty.positionwise_size_independent,
+    'feature_l1': feature_distance.features_vector_l1,
+    'feature_l2': feature_distance.features_vector_l2,
     'positionwise': mod.compute_positionwise_distance,
     'bordawise': mod.compute_bordawise_distance,
     'pairwise': mod.compute_pairwise_distance,

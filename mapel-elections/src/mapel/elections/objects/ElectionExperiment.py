@@ -9,6 +9,7 @@ import ast
 import time
 from tqdm import tqdm
 
+from mapel.elections.objects.ElectionFeatures import ST_KEY, AN_KEY, ID_KEY, UN_KEY
 from mapel.elections.objects.ElectionFamily import ElectionFamily
 from mapel.elections.objects.OrdinalElection import OrdinalElection
 from mapel.elections.objects.ApprovalElection import ApprovalElection
@@ -732,11 +733,70 @@ class ElectionExperiment(Experiment):
         self.instances[election.instance_id] = election
         self.families[family_id].add_election(election)
 
+    def prepare_election_features(self):
+        for election in self.instances.items():
+            election[1].election_features.votes = election[1].votes
+            election[1].election_features.num_candidates = election[1].num_candidates
+            election[1].election_features.num_voters = election[1].num_voters
+            election[1].election_features.calculate_all()
+
+    def prepare_compass_dictionary(self):
+        for election in self.instances.items():
+            election[1].election_features.votes = election[1].votes
+            election[1].election_features.num_candidates = election[1].num_candidates
+            election[1].election_features.num_voters = election[1].num_voters
+            election[1].election_features.compass_points['ST'] = self.instances[
+                ST_KEY + str(election[1].num_candidates)]
+            election[1].election_features.compass_points['AN'] = self.instances[
+                AN_KEY + str(election[1].num_candidates)]
+            election[1].election_features.compass_points['ID'] = self.instances[
+                ID_KEY + str(election[1].num_candidates)]
+            election[1].election_features.compass_points['UN'] = self.instances[
+                UN_KEY + str(election[1].num_candidates)]
+
+    def calculate_dap(self, id):
+        dap = list()
+        dap.append(self.features['Diversity'][id])
+        dap.append(self.features['Agreement'][id])
+        dap.append(self.features['Polarization'][id])
+        return dap
+
+    def calculate_features_vector(self, id, features_list: list):
+        vector = list()
+        if 'd' in features_list:
+            vector.append(self.features['Diversity'][id])
+        if 'a' in features_list:
+            vector.append(self.features['Agreement'][id])
+        if 'p' in features_list:
+            vector.append(self.features['Polarization'][id])
+        if 'e' in features_list:
+            vector.append(self.features['Entropy'][id])
+        if 'e2' in features_list:
+            vector.append(self.features['Entropy'][id] * self.features['Entropy'][id])
+        if 'cds' in features_list:
+            vector.append(self.features['CandidateDistanceStd'][id])
+        return vector
+
+    def prepare_election_sizes(self):
+        for election in self.instances.items():
+            self.election_sizes.add(election[1].num_candidates)
+
+    def prepare_feature_vectors(self, features: list):
+        for election in self.instances.items():
+            election[1].election_features.votes = election[1].votes
+            election[1].election_features.num_candidates = election[1].num_candidates
+            election[1].election_features.num_voters = election[1].num_voters
+            election[1].election_features.features_vector = self.calculate_features_vector(election[1].election_id,
+                                                                                           features)
+
 
 def check_if_all_equal(values, subject):
     if any(x != values[0] for x in values):
         text = f'Not all {subject} values are equal!'
         warnings.warn(text)
+
+
+
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON: 22.10.2021 #

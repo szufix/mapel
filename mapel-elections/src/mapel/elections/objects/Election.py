@@ -13,6 +13,7 @@ import numpy as np
 import numpy.linalg as la
 from sklearn.manifold import MDS
 
+from mapel.elections.objects.ElectionFeatures import ElectionFeatures
 import mapel.elections.persistence.election_exports as exports
 import mapel.elections.persistence.election_imports as imports
 from mapel.core.glossary import *
@@ -64,6 +65,7 @@ class Election(Instance):
         self.is_shifted = is_shifted
         self.is_imported = is_imported
         self.fast_import = fast_import
+        self.election_features = ElectionFeatures(election_id)
 
         self.import_distances()
         self.import_coordinates()

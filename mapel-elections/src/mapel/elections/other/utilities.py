@@ -22,6 +22,7 @@ Optional parameters (bools by default true unless stated otherwise):
 
 """
 
+
 def generate_mapcsv_contents(*args, **kwargs):
     candidates = [8, 9, 10, 11, 12]
     alphas = [0.2, 0.4, 0.6, 0.8, 1]
@@ -29,7 +30,7 @@ def generate_mapcsv_contents(*args, **kwargs):
     urn_family_size = 10
     mallows_family_size = 10
     num_voters = 100
-    file_name = "map.txt"
+    file_name = "map.csv"
     incl_ic = True
     incl_iac = False
     incl_urn = True
@@ -43,6 +44,7 @@ def generate_mapcsv_contents(*args, **kwargs):
     mallows_params_colors = None
     incl_euclidean = True
     incl_extremes = True
+    incl_group_separable = True
 
     for key, val in kwargs.items():
         if key == "candidates":
@@ -80,6 +82,8 @@ def generate_mapcsv_contents(*args, **kwargs):
             incl_euclidean = val
         elif key == "incl_extremes":
             incl_extremes = val
+        elif key == "incl_group_separable":
+            incl_group_separable = val
         else:
             print("Optional argument \"", key, "\" does not exist.")
 
@@ -108,8 +112,10 @@ def generate_mapcsv_contents(*args, **kwargs):
             urn_alpha_color = ['palegoldenrod', 'yellow', 'gold', 'orange', 'red']
             for j in range(0, len(urn_alpha)):
                 urn_string = str(urn_family_size) + ";" + str(candidates[i]) + ";" + str(
-                num_voters) + ";" + "urn" + ";" + "{'alpha': " + str(urn_alpha[j]) + "}" + ";" + str(urn_alpha_color[j]) + ";" + str(
-                alphas[i]) + ";" + "urn" + str(candidates[i]) + '-' + str(urn_alpha[j]) + ";" + "o" + ";" + "{}" + ";" + "Urn-" + str(urn_alpha[j]) + "\n"
+                    num_voters) + ";" + "urn" + ";" + "{'alpha': " + str(urn_alpha[j]) + "}" + ";" + str(
+                    urn_alpha_color[j]) + ";" + str(
+                    alphas[i]) + ";" + "urn" + str(candidates[i]) + '-' + str(
+                    urn_alpha[j]) + ";" + "o" + ";" + "{}" + ";" + "Urn-" + str(urn_alpha[j]) + "\n"
                 file.write(urn_string)
 
         if incl_conitzer:
@@ -138,53 +144,56 @@ def generate_mapcsv_contents(*args, **kwargs):
             phis_colors = ['paleturquoise', 'skyblue', 'dodgerblue', 'cornflowerblue', 'blue', 'navy']
             for j in range(0, len(phis)):
                 mallows_string = str(mallows_family_size) + ";" + str(candidates[i]) + ";" + str(
-                num_voters) + ";" + "norm-mallows" + ";" + "{'normphi':" + str(phis[j]) + "}" + ";" + phis_colors[j] + ";" + str(
-                alphas[i]) + ";" + "norm-mallows-" + str(candidates[i]) + '-' + str(phis[j]) + ";" + "o" + ";" + "{}" + ";" + "Norm-Mallows-" + str(phis[j]) + "\n"
+                    num_voters) + ";" + "norm-mallows" + ";" + "{'normphi':" + str(phis[j]) + "}" + ";" + phis_colors[
+                                     j] + ";" + str(
+                    alphas[i]) + ";" + "norm-mallows-" + str(candidates[i]) + '-' + str(
+                    phis[j]) + ";" + "o" + ";" + "{}" + ";" + "Norm-Mallows-" + str(phis[j]) + "\n"
                 file.write(mallows_string)
 
         if incl_mallows_custom:
             for j in range(0, len(mallows_params_phi)):
                 mallows_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
-                    num_voters) + ";" + "norm-mallows" + ";" + "{'normphi': " + str(mallows_params_phi[j]) +"}" + ";" + mallows_params_colors[j] + ";" + str(
+                    num_voters) + ";" + "norm-mallows" + ";" + "{'normphi': " + str(mallows_params_phi[j]) + "}" + ";" + \
+                                 mallows_params_colors[j] + ";" + str(
                     alphas[i]) + ";" + "norm-mallows" + str(candidates[i]) + str(
-                    mallows_params_phi[j]) + ";" + "x" + ";" + "{}" + ";" + "Norm-Mallows-" +str(mallows_params_phi[j]) +"\n"
+                    mallows_params_phi[j]) + ";" + "x" + ";" + "{}" + ";" + "Norm-Mallows-" + str(
+                    mallows_params_phi[j]) + "\n"
                 file.write(mallows_string)
 
         if incl_spoc:
             spoc_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
-                num_voters) + ";" + "spoc_conitzer" + ";" + "{}" + ";" + "firebrick" + ";" + str(
-                alphas[i]) + ";" + "spoc_conitzer" + str(
+                num_voters) + ";" + "spoc" + ";" + "{}" + ";" + "firebrick" + ";" + str(
+                alphas[i]) + ";" + "spoc" + str(
                 candidates[i]) + ";" + "o" + ";" + "{}" + ";" + "SPOC \n"
             file.write(spoc_string)
 
-
         if incl_euclidean:
             euclidean_1_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
-                num_voters) + ";" + "euclidean" + ";" + "{'dim': 1, 'space': 'uniform'}" + ";" + "lime" + ";" + str(
+                num_voters) + ";" + "euclidean" + ";" + "{'dimension': 1, 'space': 'uniform'}" + ";" + "lime" + ";" + str(
                 alphas[i]) + ";" + "Interval" + str(
                 candidates[i]) + ";" + "o" + ";" + "{}" + ";" + "1D Interval \n"
             euclidean_2_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
-                num_voters) + ";" + "euclidean" + ";" + "{'dim': 2, 'space': 'uniform'}" + ";" + "green" + ";" + str(
+                num_voters) + ";" + "euclidean" + ";" + "{'dimension': 2, 'space': 'uniform'}" + ";" + "green" + ";" + str(
                 alphas[i]) + ";" + "Square" + str(
                 candidates[i]) + ";" + "o" + ";" + "{}" + ";" + "Square \n"
             euclidean_3_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
-                num_voters) + ";" + "euclidean" + ";" + "{'dim': 3, 'space': 'uniform'}" + ";" + "forestgreen" + ";" + str(
+                num_voters) + ";" + "euclidean" + ";" + "{'dimension': 3, 'space': 'uniform'}" + ";" + "forestgreen" + ";" + str(
                 alphas[i]) + ";" + "Cube" + str(
                 candidates[i]) + ";" + "o" + ";" + "{}" + ";" + "3-Cube \n"
             euclidean_5_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
-                num_voters) + ";" + "euclidean" + ";" + "{'dim': 5, 'space': 'uniform'}" + ";" + "palegreen" + ";" + str(
+                num_voters) + ";" + "euclidean" + ";" + "{'dimension': 5, 'space': 'uniform'}" + ";" + "palegreen" + ";" + str(
                 alphas[i]) + ";" + "5-Cube" + str(
                 candidates[i]) + ";" + "o" + ";" + "{}" + ";" + "5-Cube \n"
             euclidean_10_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
-                num_voters) + ";" + "euclidean" + ";" + "{'dim': 10, 'space': 'uniform'}" + ";" + "yellowgreen" + ";" + str(
+                num_voters) + ";" + "euclidean" + ";" + "{'dimension': 10, 'space': 'uniform'}" + ";" + "yellowgreen" + ";" + str(
                 alphas[i]) + ";" + "10-Cube" + str(
                 candidates[i]) + ";" + "o" + ";" + "{}" + ";" + "10-Cube \n"
             euclidean_2_sphere_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
-                num_voters) + ";" + "euclidean" + ";" + "{'dim': 2, 'space': 'sphere'}" + ";" + "deeppink" + ";" + str(
+                num_voters) + ";" + "euclidean" + ";" + "{'dimension': 2, 'space': 'sphere'}" + ";" + "deeppink" + ";" + str(
                 alphas[i]) + ";" + "Circle" + str(
                 candidates[i]) + ";" + "o" + ";" + "{}" + ";" + "Circle \n"
             euclidean_3_sphere_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
-                num_voters) + ";" + "euclidean" + ";" + "{'dim': 3, 'space': 'sphere'}" + ";" + "lightpink" + ";" + str(
+                num_voters) + ";" + "euclidean" + ";" + "{'dimension': 3, 'space': 'sphere'}" + ";" + "lightpink" + ";" + str(
                 alphas[i]) + ";" + "Sphere" + str(
                 candidates[i]) + ";" + "o" + ";" + "{}" + ";" + "Sphere \n"
             file.write(euclidean_1_string)
@@ -195,20 +204,33 @@ def generate_mapcsv_contents(*args, **kwargs):
             file.write(euclidean_2_sphere_string)
             file.write(euclidean_3_sphere_string)
 
+        if incl_group_separable:
+            balanced_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
+                num_voters) + ";" + "group-separable" + ";" + "{\'tree_sampler\' : \'balanced\'}" + ";" + "purple" + ";" + str(
+                alphas[i]) + ";" + "group-separable" + str(
+                candidates[i]) + ";" + "o" + ";" + "{}" + ";" + "GS-Balanced \n"
+            caterpillar_string = str(family_size) + ";" + str(candidates[i]) + ";" + str(
+                num_voters) + ";" + "group-separable" + ";" + "{\'tree_sampler\' : \'caterpillar\'}" + ";" + "violet" + ";" + str(
+                alphas[i]) + ";" + "group-separable" + str(
+                candidates[i]) + ";" + "o" + ";" + "{}" + ";" + "GS-Caterpillar \n"
+            file.write(balanced_string)
+            file.write(caterpillar_string)
+
     if incl_extremes:
         st_string = '1' + ';' + str(15) + ';' + '50' + ';real_stratification;{};black;' + str(1) + ';ST;x;{};ST \n'
         un_string = '1' + ';' + str(15) + ';' + '50' + ';un_from_matrix;{};black;' + str(1) + ';UN;x;{};UN \n'
         id_string = '1' + ';' + str(15) + ';' + '50' + ';real_identity;{};rosybrown;' + str(1) + ';ID;x;{};ID \n'
         an_string = '1' + ';' + str(15) + ';' + '50' + ';real_antagonism;{};royalblue;' + str(1) + ';AN;x;{};AN \n'
-        idan_string = '4' + ';' + str(15) + ';' + '50' + ';idan_part;{};midnightblue;' + str(1) + ';IDAN;x;{\'variable\' : \'part_share\'};IDAN \n'
+        idan_string = '4' + ';' + str(15) + ';' + '50' + ';idan_part;{};midnightblue;' + str(
+            1) + ';IDAN;x;{\'variable\' : \'part_share\'};IDAN \n'
         file.write(st_string)
         file.write(un_string)
         file.write(id_string)
         file.write(an_string)
-        file.write(idan_string)
+        # file.write(idan_string)
 
     file.close()
 
 
 if __name__ == "__main__":
-    generate_mapcsv_contents()
+    generate_mapcsv_contents(file_name="mymap.csv")
