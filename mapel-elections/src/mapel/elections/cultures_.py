@@ -20,6 +20,7 @@ from mapel.elections.cultures.preflib import generate_preflib_votes
 import mapel.elections.cultures.group_separable as group_separable
 import mapel.elections.cultures.euclidean as euclidean
 import mapel.elections.cultures.urn as urn
+import mapel.elections.cultures.identity as identity
 
 import prefsampling.ordinal as pref_ordinal
 import prefsampling.approval as pref_approval
@@ -28,12 +29,13 @@ registered_approval_cultures = {
     'impartial': pref_approval.impartial,
     'impartial_culture': pref_approval.impartial,
     'ic': pref_approval.impartial,
-    'id': pref_approval.identity,
+    'id': identity.identity_mask,
+
     'resampling': pref_approval.resampling,
     'disjoint_resampling': pref_approval.disjoint_resampling,
     'moving_resampling': pref_approval.moving_resampling,
     'noise': pref_approval.noise,
-    'euclidean': pref_approval.euclidean,
+    'euclidean': euclidean.euclidean_app_mask,
     'full': pref_approval.full,
     'empty': pref_approval.empty,
     'truncated_urn': urn.truncated_urn_mask,
@@ -67,7 +69,7 @@ registered_ordinal_cultures = {
     'didi': pref_ordinal.didi,
 
     'group-separable': group_separable.gs_mask,
-    'euclidean': euclidean.euclidean_mask,
+    'euclidean': euclidean.euclidean_ord_mask,
 
     'norm-mallows': mallows.generate_mallows_votes,
     'real_identity': guardians.generate_real_identity_votes,

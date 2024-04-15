@@ -9,6 +9,7 @@ def truncated_urn_mask(num_voters=None,
                        **kwargs):
     return pref_approval.truncated_ordinal(num_voters=num_voters,
                                            num_candidates=num_candidates,
-                                           p=p,
+                                           rel_num_approvals=p,
                                            ordinal_sampler=pref_ordinal.urn,
-                                           ordinal_sampler_parameters={'alpha': alpha})
+                                           ordinal_sampler_parameters={'alpha': alpha},
+                                           **kwargs)
