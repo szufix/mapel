@@ -120,7 +120,6 @@ def import_real_new_soc_election(experiment_id: str = None,
     file_name = f'{election_id}.soc'
     path = os.path.join(os.getcwd(), "experiments", experiment_id, "elections", file_name)
     file = open(path, 'r')
-
     params = None
     culture_id = None
     votes = []
@@ -136,6 +135,16 @@ def import_real_new_soc_election(experiment_id: str = None,
         if line[-1] == '\n':
             line = line[:-1]
         if line[0] != '#':
+            if from_file_data_type == 'soc':
+                process_soc_line(line, votes)
+            elif from_file_data_type == 'soi':
+                process_soi_line(line, votes)
+            elif from_file_data_type == 'toc':
+                process_toc_line(line, votes)
+            elif from_file_data_type == 'toi':
+                process_toi_line(line, votes)
+            else:
+                print("Unknown data format.")
             break
         elif re.search(regex_file_name, line):
             from_file_file_name = line.split(':')[1][1:-file_ending]
@@ -158,8 +167,6 @@ def import_real_new_soc_election(experiment_id: str = None,
             else:
                 params = ast.literal_eval(" ".join(line[2:]))
 
-    # label = from_file_title + "_" + from_file_file_name
-    # read votes
     if from_file_data_type == 'soc':
         for line in file:
             process_soc_line(line, votes)
