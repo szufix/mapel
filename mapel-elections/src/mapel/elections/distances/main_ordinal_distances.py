@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Callable, List
+from typing import Callable, List, Union
 from itertools import combinations, permutations
 
 from mapel.core.matchings import *
@@ -118,6 +118,61 @@ def compute_spearman_distance(election_1: OrdinalElection,
     speard = cppd.speard(election_1.votes.tolist(),
                          election_2.votes.tolist())
     return speard, None
+
+
+def compute_spearman_distance_fastmap(
+    election_1: OrdinalElection, election_2: OrdinalElection, method: str = "bf"
+) -> tuple[int, Union[list, None]]:
+    """Computes Isomorphic Spearman distance between elections using `fastmap` library.
+
+    Args:
+        election_1: First ordinal election. election_2: Second ordinal election. method: Method used
+        to compute the distance. Should be one of the
+                `"bf"` - uses brute-force to solve the equivalent Bilinear Assignment Problem (BAP).
+                    Generates all permutations σ of the set {0,..,min(nv-1,nc-1)} using Heap's
+                    algorithm and for each generated permutation σ solves the Linear Assignment
+                    Problem (LAP) to obtain the optimal permutation v of {0,..,max(nv-1,nc-1)}. Time
+                    complexity of this method is O(min(nv,nc)! * max(nv,nc)**3)
+
+                    NOTE: This method returns exact value but if one of the nv, nc is greater than
+                    10 it is extremely slow.
+
+                `"aa"` - implements Alternating Algorithm heuristic described in arXiv:1707.07057
+                    which solves the equivalent Bilinear Assignment Problem (BAP). The algorithm
+                    first generates a feasible solution to the BAP by sampling from a uniform
+                    distribution two permutations σ, v and then performs a coordinate-descent-like
+                    refinment by interchangeably fixing one of the permutations, solving the
+                    corresponding Linear Assignment Problem (LAP) and updating the other permutation
+                    with the matching found in LAP, doing so until convergence. Time complexity of
+                    this method is O(N * (nv**3 + nc**3)) where N is the number of iterations it
+                    takes for the algorithm to converge.
+
+                    NOTE: This method is much faster in practice than "bf" but there are no
+                    theoretical guarantees on the approximation ratio for the used heuristic.
+
+                `"bb"` - implements Branch-and-Bound algorithm to solve exactly the equivalent
+                    Bilinear Assigmnent Problem (BAP).
+
+                    NOTE: Performance of this method highly depends on the cultures from which the
+                    elections were sampled. In the worst case scenario it may be significantly
+                    slower than "bf". Also due to the implemented bounding function this method is
+                    not suited for instances with more than few dozen voters.  
+
+    Raises:
+        ImportError: Raises exception if `fastmap` module is not found.
+
+    Returns:
+        Tuple of Isomorphic Spearman distance value and None.
+    """
+    try:
+        import fastmap
+    except ImportError as e:
+        raise ImportError("`fastmap` library module not found") from e
+
+    U, V = election_1.votes, election_2.votes
+    d = fastmap.spearman(U=U, V=V, method=method)
+    
+    return d, None
 
 
 def compute_spearman_distance_ilp_py(election_1: OrdinalElection,
