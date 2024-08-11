@@ -66,7 +66,13 @@ class ElectionFamily(Family):
             return setattr(self, 'instance_ids', value)
         else:
             self.__dict__[name] = value
-
+    
+    def __getstate__(self):
+        return self.__dict__
+    
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        
     def prepare_family(self,
                        experiment_id=None,
                        is_exported=True,
