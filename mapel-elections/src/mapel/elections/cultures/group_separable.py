@@ -4,6 +4,7 @@ import prefsampling.ordinal as pref_ordinal
 def gs_mask(num_voters=None,
             num_candidates=None,
             tree_sampler=None,
+            seed=None,
             **kwargs):
 
     if type(tree_sampler) is str:
@@ -18,4 +19,4 @@ def gs_mask(num_voters=None,
     return pref_ordinal.group_separable(num_voters=num_voters,
                                         num_candidates=num_candidates,
                                         tree_sampler=tree_sampler,
-                                        **kwargs)
+                                        seed=seed)

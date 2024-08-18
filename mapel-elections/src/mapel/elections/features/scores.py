@@ -41,11 +41,16 @@ def highest_borda_score(election) -> dict:
     """
     if election.culture_id in LIST_OF_FAKE_MODELS:
         return {'value': None}
-    c = election.num_candidates
+    n = election.num_voters
+    m = election.num_candidates
     vectors = election.get_vectors()
-    borda = [sum([vectors[i][pos] * (c - pos - 1) for pos in range(c)])
-             for i in range(c)]
-    return {'value': max(borda) * election.num_voters}
+    scores = [0 for _ in range(m)]
+
+    for i in range(n):
+        for j in range(m):
+            scores[vectors[i][j]] += m - j - 1
+
+    return {'value': max(scores) * election.num_voters}
 
 
 def highest_plurality_score(election) -> dict:

@@ -121,7 +121,7 @@ def compute_spearman_distance(election_1: OrdinalElection,
 
 
 def compute_spearman_distance_fastmap(
-    election_1: OrdinalElection, election_2: OrdinalElection, method: str = "bf"
+    election_1: OrdinalElection, election_2: OrdinalElection, method: str = "aa"
 ) -> tuple[int, Union[list, None]]:
     """Computes Isomorphic Spearman distance between elections using `fastmap` library.
 
@@ -169,7 +169,7 @@ def compute_spearman_distance_fastmap(
     except ImportError as e:
         raise ImportError("`fastmap` library module not found") from e
 
-    U, V = election_1.votes, election_2.votes
+    U, V = np.array(election_1.votes), np.array(election_2.votes)
     d = fastmap.spearman(U=U, V=V, method=method)
     
     return d, None

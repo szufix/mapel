@@ -34,6 +34,7 @@ registered_ordinal_distances = {
 
     'swap': mod.compute_swap_distance,
     'spearman': mod.compute_spearman_distance,
+    'spearman_aa': mod.compute_spearman_distance_fastmap,
 
     'blank': mod.compute_blank_distance,
 
