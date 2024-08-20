@@ -230,6 +230,8 @@ class ElectionExperiment(Experiment):
             elif culture_id in {'norm-mallows', 'norm-mallows_matrix'} \
                     and params['normphi'] is not None:
                 family_id += '_' + str(float(params['normphi']))
+            elif culture_id in {'euclidean'} and params['dim'] is not None and params['space'] is not None:
+                family_id += '_' + str(int(params['dim'])) + '_' + str(params['space'])
 
         elif label is None:
             label = family_id
@@ -788,6 +790,12 @@ class ElectionExperiment(Experiment):
             election[1].election_features.num_voters = election[1].num_voters
             election[1].election_features.features_vector = self.calculate_features_vector(election[1].election_id,
                                                                                            features)
+        
+    def __getstate__(self):
+            return self.__dict__
+    
+    def __setstate__(self, state):
+        self.__dict__.update(state)
 
 
 def check_if_all_equal(values, subject):
