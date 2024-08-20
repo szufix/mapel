@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import math
 import numpy as np
-from mapel.elections.distances import lp as lp
+from mapel.elections.distances import ilp_other as lp
 
 def randomize(vector, num_winners):
     scores = [x for x, _ in vector]

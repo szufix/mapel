@@ -1,5 +1,5 @@
 import numpy as np
-from mapel.elections.distances.lp import solve_rand_approx_pav
+from mapel.elections.distances.ilp_other import solve_rand_approx_pav
 from mapel.elections.features.scores import get_score, get_dissat
 
 

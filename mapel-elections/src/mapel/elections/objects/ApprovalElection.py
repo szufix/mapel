@@ -76,6 +76,11 @@ class ApprovalElection(Election, ABC):
         self.reverse_approvals = [set(i for i, vote in enumerate(self.votes) if c in vote)
                                   for c in range(self.num_candidates)]
 
+    def get_reverse_approvals(self):
+        if self.reverse_approvalsis is None or self.reverse_approvals == []:
+            self.compute_reverse_approvals()
+        return self.reverse_approvals
+
     def prepare_instance(self, is_exported=None, is_aggregated=True):
         self.votes = generate_approval_votes(culture_id=self.culture_id,
                                              num_candidates=self.num_candidates,
@@ -141,6 +146,9 @@ class ApprovalElection(Election, ABC):
         return distances
 
     def compute_distances(self, object_type=None, distance_id='hamming'):
+        if object_type is None:
+            object_type = self.object_type
+
         if object_type == 'vote':
             return self._compute_distances_between_votes(distance_id=distance_id)
         elif object_type == 'candidate':
@@ -162,13 +170,15 @@ class ApprovalElection(Election, ABC):
             annotate=False
     ):
 
+        if object_type is None:
+            object_type = self.object_type
+
         if object_type == 'vote':
             length = self.num_voters
             votes = self.votes
         elif object_type == 'candidate':
             length = self.num_candidates
-            self.compute_reverse_approvals()
-            votes = self.reverse_approvals
+            votes = self.get_reverse_approvals()
         else:
             logging.warning(f'Incorrect object type: {object_type}')
             length = 0
