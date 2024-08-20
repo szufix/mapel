@@ -3,13 +3,12 @@ Implementation of the positionwise infinity distance.
 Code name: 'ep' (as in 'extended positionwise')
 """
 
-import copy
 import math
-import mapel.elections as mapel
-from mapel.elections.objects import Election
-from mapel.core.inner_distances import emd
+
 import numpy as np
+
 from mapel.core.matchings import solve_matching_vectors
+from mapel.elections.objects import Election
 
 """
 Wasserstein distance calculation
@@ -79,7 +78,7 @@ def memoization(e1_stretched, e1_original_columns, e2_stretched, e2_original_col
 
 
 """
-Calculate indeces of copies.
+Calculate indexes of copies.
 """
 
 
@@ -136,14 +135,6 @@ Main function of the positionwise infinity distance, pointer to this function is
 
 
 def positionwise_size_independent(e1: Election, e2: Election):
-    # print(e1.election_id, e2.election_id)
-    # print(e1.election_id, "and", e2.election_id)
-    # print("e1 num candidates", e1.num_candidates, "e1 num voters", e1.num_voters)
-    # print("e2 num candidates", e2.num_candidates, "e2 num voters", e2.num_voters)2
-    # if e1.num_candidates is None:
-    #     e1.num_candidates = len(e1.votes[0])
-    # if e1.num_candidates is None:
-    #     e2.num_candidates = len(e2.votes[0])
     election_lcm = lcm(e1.num_candidates, e2.num_candidates)
     e1_stretched = stretch_matrix(e1.get_matrix(), e1.num_candidates, int(election_lcm / e1.num_candidates))
     e2_stretched = stretch_matrix(e2.get_matrix(), e2.num_candidates, int(election_lcm / e2.num_candidates))
@@ -159,21 +150,19 @@ def positionwise_size_independent(e1: Election, e2: Election):
                                            e2_copies_to_original)
     distance, mapping = solve_matching_vectors(cost_table)
     normalized_distance = distance / (e1.num_candidates * int(election_lcm / e1.num_candidates))
-    # print("computed", e1.election_id, e2.election_id)
     return normalized_distance, mapping
 
-"""
-Space for testing purposes.
-"""
-
-if __name__ == "__main__":
-    precision_of_testing = 3
-    for _ in range(100):
-        distance_id = 'emd-positionwise'
-        el1 = mapel.generate_ordinal_election(culture_id='ic', num_candidates=3, num_voters=5)
-        el2 = mapel.generate_ordinal_election(culture_id='ic', num_candidates=3, num_voters=5)
-        d1_mine, mapping1 = positionwise_size_independent(copy.deepcopy(el1), copy.deepcopy(el2))
-        d2_mapel, mapping2 = mapel.compute_distance(el1, el2, distance_id='emd-positionwise')
-        # assert round(d1_mine, precision_of_testing) == round(d2_mapel, precision_of_testing)
-        print("mapel: ", d2_mapel, " mine: ", d1_mine)
-    print("Testing of emd-positionwise-diffsizes ended (successfuly)?")
+# """
+# Space for testing purposes.
+# """
+#
+# if __name__ == "__main__":
+#     precision_of_testing = 3
+#     for _ in range(100):
+#         distance_id = 'emd-positionwise'
+#         el1 = mapel.generate_ordinal_election(culture_id='ic', num_candidates=3, num_voters=5)
+#         el2 = mapel.generate_ordinal_election(culture_id='ic', num_candidates=3, num_voters=5)
+#         d1_mine, mapping1 = positionwise_size_independent(copy.deepcopy(el1), copy.deepcopy(el2))
+#         d2_mapel, mapping2 = mapel.compute_distance(el1, el2, distance_id='emd-positionwise')
+#         print("mapel: ", d2_mapel, " mine: ", d1_mine)
+#     print("Testing of emd-positionwise-diffsizes ended (successfuly)?")

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import logging
 
 import gurobipy as gp
 import numpy as np
@@ -79,8 +80,7 @@ def solve_ilp_voter_subelection(election_1, election_2, metric_name='0') -> int:
     if model.status == GRB.OPTIMAL:
         return model.objVal
     else:
-        print("Exception raised while solving")
-        return None
+        logging.warning("No optimal solution found")
 
 
 # THIS FUNCTION HAS NOT BEEN TESTED SINCE CONVERSION TO GUROBI
@@ -171,11 +171,8 @@ def solve_ilp_candidate_subelection(election_1, election_2) -> int:
     # Optimize model
     model.optimize()
 
-    # Extract results
-    result = np.zeros([election_1.num_candidates, election_1.num_candidates])
-    for c in range(election_1.num_candidates):
-        for d in range(election_2.num_candidates):
-            result[c][d] = M[c, d].x
-
-    return sum(sum(result))
-
+    # Return the objective value
+    if model.status == GRB.OPTIMAL:
+        return model.objVal
+    else:
+        logging.warning("No optimal solution found")

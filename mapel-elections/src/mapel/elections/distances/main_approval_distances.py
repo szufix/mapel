@@ -2,9 +2,7 @@
 
 from typing import Callable
 
-import os
 
-from mapel.core.matchings import *
 from mapel.elections.objects.ApprovalElection import ApprovalElection
 
 

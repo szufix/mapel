@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import logging
 
 import scipy.special
 import scipy.special
@@ -70,8 +71,7 @@ def solve_ilp_spearman_distance(votes_1, votes_2, params):
     model.optimize()
 
     if model.status != GRB.OPTIMAL:
-        print("No optimal solution found.")
-        return None
+        logging.warning("No optimal solution found")
 
     return model.objVal
 
@@ -180,7 +180,6 @@ def solve_ilp_swap_distance(votes_1, votes_2, params):
     model.optimize()
 
     if model.status != GRB.OPTIMAL:
-        print("No optimal solution found.")
-        return None
+        logging.warning("No optimal solution found")
 
     return model.objVal

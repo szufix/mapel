@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import logging
 import math
 import os
 from contextlib import suppress
@@ -91,7 +91,7 @@ def solve_lp_matching_interval(cost_table, length_1, length_2):
 
 
 # THIS FUNCTION HAS NOT BEEN TESTED SINCE CONVERSION TO GUROBI
-def solve_lp_file_dodgson_score(election, N=None, e=None, D=None):
+def solve_lp_file_dodgson_score(N=None, e=None, D=None) -> float:
     # Create a new model
     model = Model("dodgson_score")
     model.setParam('Threads', 1)
@@ -146,8 +146,7 @@ def solve_lp_file_dodgson_score(election, N=None, e=None, D=None):
     if model.status == GRB.OPTIMAL:
         return model.objVal
     else:
-        print("No optimal solution found")
-        return None
+        logging.warning("No optimal solution found")
 
 
 # THIS FUNCTION HAS NOT BEEN TESTED SINCE CONVERSION TO GUROBI

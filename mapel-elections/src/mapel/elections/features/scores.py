@@ -158,7 +158,7 @@ def lowest_dodgson_score(election):
                     D[k] = threshold - diff
         D[target_id] = 0  # always winning
 
-        score = lp.solve_lp_file_dodgson_score(election, N=N, e=e, D=D)
+        score = ilp_other.solve_lp_file_dodgson_score(N=N, e=e, D=D)
 
         if score < min_score:
             min_score = score

@@ -3,12 +3,9 @@ Implementation of the feature distance.
 
 """
 
-
-import mapel.elections as mapel
-from mapel.elections.objects import Election
 import numpy as np
-from collections import defaultdict
-import math
+
+from mapel.elections.objects import Election
 
 """
 L1 distance between two feature vectors
