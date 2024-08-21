@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Callable, List, Union
 from itertools import combinations, permutations
 
@@ -8,8 +7,8 @@ from mapel.elections.objects.OrdinalElection import OrdinalElection
 import mapel.core.utils as utils
 from mapel.core.inner_distances import swap_distance
 import mapel.elections.distances.ilp_isomorphic as ilp_iso
+import mapel.elections.distances.ilp_subelections as ilp_sub
 
-import mapel.elections.distances.lp as lp
 
 try:
     import mapel.elections.distances.cppdistances as cppd
@@ -121,7 +120,7 @@ def compute_spearman_distance(election_1: OrdinalElection,
 
 
 def compute_spearman_distance_fastmap(
-    election_1: OrdinalElection, election_2: OrdinalElection, method: str = "bf"
+    election_1: OrdinalElection, election_2: OrdinalElection, method: str = "aa"
 ) -> tuple[int, Union[list, None]]:
     """Computes Isomorphic Spearman distance between elections using `fastmap` library.
 
@@ -169,7 +168,7 @@ def compute_spearman_distance_fastmap(
     except ImportError as e:
         raise ImportError("`fastmap` library module not found") from e
 
-    U, V = election_1.votes, election_2.votes
+    U, V = np.array(election_1.votes), np.array(election_2.votes)
     d = fastmap.spearman(U=U, V=V, method=method)
     
     return d, None
@@ -183,11 +182,7 @@ def compute_spearman_distance_ilp_py(election_1: OrdinalElection,
     params = {'voters': election_1.num_voters,
               'candidates': election_1.num_candidates}
 
-    file_name = f'{np.random.random()}.lp'
-    path = os.path.join(os.getcwd(), "trash", file_name)
-    ilp_iso.generate_ilp_spearman_distance(path, votes_1, votes_2, params)
-    objective_value = ilp_iso.solve_ilp_distance(path)
-    ilp_iso.remove_lp_file(path)
+    objective_value = ilp_iso.solve_ilp_spearman_distance(votes_1, votes_2, params)
     objective_value = int(round(objective_value, 0))
     return objective_value, None
 
@@ -200,11 +195,7 @@ def compute_swap_distance_ilp_py(election_1: OrdinalElection,
     params = {'voters': election_1.num_voters,
               'candidates': election_1.num_candidates}
 
-    file_name = f'{np.random.random()}.lp'
-    path = os.path.join(os.getcwd(), 'trash', file_name)
-    ilp_iso.generate_ilp_swap_distance(path, votes_1, votes_2, params)
-    objective_value = ilp_iso.solve_ilp_distance_swap(path, votes_1, votes_2, params)
-    ilp_iso.remove_lp_file(path)
+    objective_value = ilp_iso.solve_ilp_swap_distance(votes_1, votes_2, params)
     objective_value = int(round(objective_value, 0))
     return objective_value, None
 
@@ -218,16 +209,12 @@ def compute_discrete_distance(election_1: OrdinalElection,
 # SUBELECTIONS #
 def compute_voter_subelection(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Voter-Subelection """
-    return lp.solve_lp_voter_subelection(election_1, election_2)
+    return ilp_sub.solve_ilp_voter_subelection(election_1, election_2)
 
 
 def compute_candidate_subelection(election_1: OrdinalElection, election_2: OrdinalElection) -> int:
     """ Compute Candidate-Subelection """
-    file_name = f'{np.random.random()}.lp'
-    path = os.path.join(os.getcwd(), 'trash', file_name)
-    objective_value = lp.solve_lp_candidate_subelections(path, election_1, election_2)
-    lp.remove_lp_file(path)
-    return objective_value
+    return ilp_sub.solve_ilp_candidate_subelection(election_1, election_2)
 
 
 # HELPER FUNCTIONS #

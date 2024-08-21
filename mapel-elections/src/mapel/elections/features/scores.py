@@ -20,7 +20,7 @@ except ImportError:
     preferences = None
 
 from mapel.core.glossary import *
-from mapel.elections.distances import lp
+from mapel.elections.distances import ilp_other
 from mapel.elections.other import winners as win
 
 
@@ -41,11 +41,16 @@ def highest_borda_score(election) -> dict:
     """
     if election.culture_id in LIST_OF_FAKE_MODELS:
         return {'value': None}
-    c = election.num_candidates
+    n = election.num_voters
+    m = election.num_candidates
     vectors = election.get_vectors()
-    borda = [sum([vectors[i][pos] * (c - pos - 1) for pos in range(c)])
-             for i in range(c)]
-    return {'value': max(borda) * election.num_voters}
+    scores = [0 for _ in range(m)]
+
+    for i in range(n):
+        for j in range(m):
+            scores[vectors[i][j]] += m - j - 1
+
+    return {'value': max(scores) * election.num_voters}
 
 
 def highest_plurality_score(election) -> dict:
@@ -153,7 +158,7 @@ def lowest_dodgson_score(election):
                     D[k] = threshold - diff
         D[target_id] = 0  # always winning
 
-        score = lp.solve_lp_file_dodgson_score(election, N=N, e=e, D=D)
+        score = ilp_other.solve_lp_file_dodgson_score(N=N, e=e, D=D)
 
         if score < min_score:
             min_score = score

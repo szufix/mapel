@@ -292,7 +292,6 @@ class Election(Instance):
             except Exception:
                 pass
 
-
         if object_type == 'vote':
             length = self.num_options
         elif object_type == 'candidate':

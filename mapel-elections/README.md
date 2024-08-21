@@ -19,7 +19,6 @@ For the full functionality of the package, it is recommended to also install
 extra dependencies. Doing this is covered in [this
 readme](https://pypi.org/project/mapel/). The extra dependencies contain:  
 ```
-cplex>=20.1.0.1
 pulp~=2.5.1
 abcvoting~=2.0.0b0
 permanent

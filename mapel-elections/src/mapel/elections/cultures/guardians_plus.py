@@ -7,6 +7,7 @@ import mapel.elections.cultures.sampling.samplemat as smpl
 
 # Auxiliary functions
 
+
 def distribute_in_matrix(n, m):
     if m == 0:
         return []
@@ -75,13 +76,13 @@ def generate_un_from_list(num_voters=None, num_candidates=None):
 
 
 def generate_un_from_matrix_votes(num_voters=None, num_candidates=None):
-    """ Generate real elections that have UN positionwise matrix """
+    """ Generate real election that have UN positionwise matrix """
     matrix = distribute_in_matrix(num_voters, num_candidates)
     return draw_election(matrix)
 
 
 def generate_idan_part_votes(num_voters=None, num_candidates=None, part_share=None, **kwargs):
-    """ Generate real elections between (ID) and (AN) """
+    """ Generate real election between (ID) and (AN) """
     if part_share is None:
         print("IDAN_part generation : params None : random param generated")
         part_size = np.random.choice(range(num_voters))
@@ -253,13 +254,13 @@ def generate_unst_mallows_votes(num_voters=None, num_candidates=None, params=Non
     return votes
 
 
-def generate_unst_topsize_votes(num_voters=None, num_candidates=None, params=None):
+def generate_unst_topsize_votes(num_voters=None, num_candidates=None, top_share=None, **kwargs):
     """ Generate kind of real elections between (UN) and (ST) """
-    if params is None or not ('top_share' in params):
+    if top_share is None:
         print("UNST_topsize generation : params None : random param generated")
         top_share = np.random.random()
     else:
-        top_share = params['top_share']
+        top_share = top_share
     top_size = int(round(top_share * num_candidates))
     better = top_size
     worse = num_candidates - top_size
@@ -267,13 +268,13 @@ def generate_unst_topsize_votes(num_voters=None, num_candidates=None, params=Non
     return draw_election(matrix)
 
 
-def generate_idst_blocks_votes(num_voters=None, num_candidates=None, params=None):
+def generate_idst_blocks_votes(num_voters=None, num_candidates=None, no_blocks=None, **kwargs):
     """ Generate kind of real elections between (ID) and (UN) """
-    if params is None or not ('no_blocks' in params):
+    if no_blocks is None:
         print("IDST_blocks generation : params None : random param generated")
         no_blocks = np.random.choice(range(num_candidates + 1))
     else:
-        no_blocks = params['no_blocks']
+        no_blocks = no_blocks
     no_blocks = int(round(no_blocks))
     k = num_candidates // no_blocks
     r = num_candidates - k * no_blocks
@@ -281,6 +282,5 @@ def generate_idst_blocks_votes(num_voters=None, num_candidates=None, params=None
     with_one_more = list(np.random.choice(range(no_blocks), r, replace=False))
     for i in with_one_more:
         blocks[i] = blocks[i] + 1
-    print(blocks)
     matrix = distribute_in_block_matrix(num_voters, blocks)
     return draw_election(matrix)
