@@ -468,8 +468,6 @@ class ElectionExperiment(Experiment):
         else:
             processes = []
             for process_id in range(num_processes):
-                print(f'Starting process: {process_id}')
-                sleep(0.1)
                 start = int(process_id * num_distances / num_processes)
                 stop = int((process_id + 1) * num_distances / num_processes)
                 instances_ids = ids[start:stop]
@@ -790,7 +788,7 @@ class ElectionExperiment(Experiment):
             election[1].election_features.num_voters = election[1].num_voters
             election[1].election_features.features_vector = self.calculate_features_vector(election[1].election_id,
                                                                                            features)
-        
+
     def __getstate__(self):
             return self.__dict__
     
