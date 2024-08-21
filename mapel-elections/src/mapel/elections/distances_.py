@@ -195,7 +195,7 @@ def run_multiple_processes(experiment: Experiment,
     """ Single process for computing distances """
 
     for instance_id_1, instance_id_2 in tqdm(instances_ids,
-                                             desc=f'Computing distances of thread {process_id}'):
+                                             desc=f'Computing distances of thread {process_id}', position=process_id, leave = True):
         start_time = time()
         distance = get_distance(copy.deepcopy(experiment.instances[instance_id_1]),
                                 copy.deepcopy(experiment.instances[instance_id_2]),
