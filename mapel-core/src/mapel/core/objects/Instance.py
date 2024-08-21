@@ -1,4 +1,5 @@
 
+
 class Instance:
 
     def __init__(self,
@@ -13,3 +14,6 @@ class Instance:
         self.features = {}
         self.printing_params = {}
         self.params = kwargs
+
+        for key in ['color', 'alpha', 'marker', 'ms']:
+            self.printing_params[key] = None
