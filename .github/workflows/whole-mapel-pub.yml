@@ -79,7 +79,7 @@ jobs:
       - name: Artifactize compiled-python wheels
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.MAPEL_EL_ARTS }}
+          name: ${{ env.MAPEL_EL_ARTS }}-${{ matrix.os }}
           path: ${{ env.WHL_HOUSE }}
 
   publish:
@@ -90,16 +90,17 @@ jobs:
       - uses: actions/download-artifact@v4.1.7
         with:
           path: ${{ env.WHL_HOUSE }}
+          merge-multiple: true
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: ${{ env.WHL_HOUSE }}
-      - name: Prepare the distrib directory
-        run: |
-          mv $MAPEL_EL_ARTS/* .
-          mv $MAPEL_REST_ARTS/* .
-          rm -r  $MAPEL_EL_ARTS
-          rm -r $MAPEL_REST_ARTS
-        working-directory: ${{ env.WHL_HOUSE }}
+#      - name: Prepare the distrib directory
+#        run: |
+#          mv $MAPEL_EL_ARTS/* .
+#          mv $MAPEL_REST_ARTS/* .
+#          rm -r  $MAPEL_EL_ARTS
+#          rm -r $MAPEL_REST_ARTS
+#        working-directory: ${{ env.WHL_HOUSE }}
       - name: Display all artifacts
         run: ls -R
         working-directory: ${{ env.WHL_HOUSE }}
