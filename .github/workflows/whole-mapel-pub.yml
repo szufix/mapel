@@ -21,9 +21,9 @@ jobs:
   build-python-wheels-and-sdists:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     - name: Install dependencies
@@ -67,10 +67,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build mapel-elections wheels
-        uses: pypa/cibuildwheel@v2.16.5
-        # env:
-        #   CIBW_SOME_OPTION: value
-        #    ...
+        uses: pypa/cibuildwheel@v2.20.0
+        env:
+          # We skip old versions of cPython, and all PyPy
+          # because the C++ extension is incompatible with PyPy
+          CIBW_SKIP: "cp36-* pp37-* pp38-* pp39-* pp310-*"
+          CIBW_BUILD_FRONTEND: "build"
         with:
           package-dir: 'mapel-elections'
           output-dir: '${{ env.WHL_HOUSE }}'
