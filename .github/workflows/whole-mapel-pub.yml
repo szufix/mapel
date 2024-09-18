@@ -71,13 +71,13 @@ jobs:
         env:
           # We skip old versions of cPython, and all PyPy
           # because the C++ extension is incompatible with PyPy
-          CIBW_SKIP: "cp36-* pp37-* pp38-* pp39-* pp310-*"
+          CIBW_SKIP: "cp36-* pp3*"
           CIBW_BUILD_FRONTEND: "build"
         with:
           package-dir: 'mapel-elections'
           output-dir: '${{ env.WHL_HOUSE }}'
       - name: Artifactize compiled-python wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.1.7
         with:
           name: ${{ env.MAPEL_EL_ARTS }}
           path: ${{ env.WHL_HOUSE }}
