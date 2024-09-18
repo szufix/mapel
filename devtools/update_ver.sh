@@ -8,7 +8,7 @@ fi
 MAPELDIR=..
 
 find "$MAPELDIR" -name 'pyproject.toml' |\
-  xargs -I % sed -i '' -e 's\^version[[:blank:]]*=.*$\version = "'$1'"\g' %
+       	xargs -I % sed -i -e 's\^version[[:blank:]]*=.*$\version = "'$1'"\g' %
 
 echo "Version updated to "$1
 
