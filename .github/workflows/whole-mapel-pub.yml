@@ -47,7 +47,7 @@ jobs:
         pip wheel ./mapel-marriages --no-deps -w $WHL_HOUSE
         ls ./$WHL_HOUSE # Listing the contents of ./$WHL_HOUSE for a sanity check
     - name: Artifactize pure-python wheels and sdists
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.MAPEL_REST_ARTS }}
         path: ${{ env.WHL_HOUSE }} 
