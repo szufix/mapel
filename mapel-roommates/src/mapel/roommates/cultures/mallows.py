@@ -2,7 +2,7 @@ import os
 import pickle
 
 import numpy as np
-from mapel.roommates.cultures._utils import convert
+from mapel.roommates.cultures._utils import *
 from mapel.core.utils import *
 
 import mapel.core.features.mallows as ml
@@ -84,15 +84,19 @@ def runif_in_simplex(n):
 
 
 def generate_roommates_norm_mallows_votes(num_agents: int = None,
-                                          normphi: float = 0.5,
                                           weight: float = 0,
+                                          normphi: float = 0.5,
+                                          incompleteness: int = 0,
+                                          ties: int = 0,
+                                          srti_func = None,
                                           **kwargs):
 
     phi = ml.phi_from_normphi(num_agents, normphi=normphi)
 
     votes = generate_mallows_votes(num_agents, num_agents, phi=phi, weight=weight)
-
-    return convert(votes)
+    
+    out = convert_votes_to_srti(votes)
+    return out if srti_func is None else srti_func(out, incompleteness, ties)
 
 
 def mallows_vote(vote, phi):
@@ -112,6 +116,9 @@ def mallows_votes(votes, phi):
 
 def generate_roommates_malasym_votes(num_agents: int = None,
                                      normphi=0.5,
+                                     incompleteness: int = 0,
+                                     ties: int = 0,
+                                     srti_func = None,
                                      **kwargs):
     """ Mallows on top of Asymmetric instance """
 
@@ -125,4 +132,5 @@ def generate_roommates_malasym_votes(num_agents: int = None,
     phi = ml.phi_from_normphi(num_agents, normphi=normphi)
     votes = mallows_votes(votes, phi)
 
-    return convert(votes)
+    out = convert_votes_to_srti(votes)
+    return out if srti_func is None else srti_func(out, incompleteness, ties)

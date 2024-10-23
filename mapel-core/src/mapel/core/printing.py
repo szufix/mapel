@@ -57,18 +57,21 @@ def print_map_2d(
         experiment,
         return_map: bool = False,
         xlabel=None,
+        shading: bool = False,
         legend_pos=None,
         title_pos=None,
         angle=0,
         reverse: bool = False,
         update: bool = False,
         axis: bool = False,
+        individual: bool = False,
         textual: list[str] = None,
         textual_size: int = 16,
         title: str = None,
         bbox_inches='tight',
         saveas: str = None,
         show: bool = True,
+        urn_orangered: bool = False,
         tex: bool = False,
         legend: bool = True,
         dpi: int = 250,
@@ -88,6 +91,8 @@ def print_map_2d(
             If True then return: fig, ax
         xlabel
             Pyplot param.
+        shading : bool
+            If True that use a culture param to adjust the alpha of the point on the map.
         legend_pos
             Pyplot param.
         title_pos
@@ -99,6 +104,8 @@ def print_map_2d(
         update : bool
             If True then the points coordinates are exported.
         axis : bool
+            Deprecated param.
+        individual : bool
             Deprecated param.
         textual : list[str]
             Print thext over the points with names from the list.
@@ -112,6 +119,8 @@ def print_map_2d(
             Name of file in which the image will be stored.
         show : bool
             If true show the map on screen.
+        urn_orangered : bool
+            Deprecated param.
         tex : bool
             If True save image in tex format.
         legend
@@ -156,14 +165,14 @@ def print_map_2d(
     if not axis:
         plt.axis('off')
 
-    _add_textual(experiment=experiment,
-                 textual=textual,
-                 ax=ax,
-                 size=textual_size)
+    _add_textual(experiment=experiment, textual=textual, ax=ax, size=textual_size)
 
-    _basic_coloring(experiment=experiment,
-                    ax=ax,
-                    dim=2)
+    if shading:
+        basic_coloring_with_shading(experiment=experiment, ax=ax, urn_orangered=urn_orangered)
+    elif individual:
+        basic_coloring_with_individual(experiment=experiment, ax=ax, individual=individual)
+    else:
+        basic_coloring(experiment=experiment, ax=ax, dim=2, textual=textual)
 
     _basic_background(ax=ax,
                       legend=legend,
@@ -185,6 +194,7 @@ def print_map_2d(
             _saveas_tex(saveas=saveas)
         if show:
             plt.show()
+        plt.close()
 
 
 def get_map_2d(experiment, **kwargs):
@@ -276,6 +286,7 @@ def print_map_2d_colored_by_feature(
                  column_id=column_id,
                  feature_id=feature_id)
 
+    # BACKGROUND
     _basic_background(ax=ax,
                       legend=False,
                       mask=mask,
@@ -329,7 +340,7 @@ def print_map_2d_colored_by_features(
         title_size: int = 16,
         ticks_pos=None,
         textual_size: int = 16,
-        figsize=(6.4, 6.4)
+        figsize=(20, 10)
 ) -> None:
     if textual is None:
         textual = []
@@ -407,8 +418,9 @@ def print_map_3d(experiment,
                               xticklabels=xticklabels, ms=ms, cmap=cmap,
                               ticks=ticks, dim=dim)
     else:
-        _basic_coloring(experiment=experiment, ax=ax, dim=3)
+        basic_coloring(experiment=experiment, ax=ax, dim=dim)
 
+    # BACKGROUND
     _basic_background(ax=ax, legend=legend,
                       saveas=saveas, xlabel=xlabel,
                       title=title, title_pos=title_pos)
@@ -537,7 +549,8 @@ def _import_values_for_feature(experiment,
             if normalizing_func is not None:
                 shade = normalizing_func(shade)
 
-            shade = (shade - local_min) / (local_max - local_min)
+            if local_max - local_min != 0:
+                shade = (shade - local_min) / (local_max - local_min)
             shades.append(shade)
             names.append(election_id)
 
@@ -568,7 +581,7 @@ def _import_values_for_feature(experiment,
     #         [1. + 20. * (b / (v + 1)) for b, v in zip(bounds.values(), values.values())])
     # else:
     #     mses = None
-
+    
     return xx, yy, zz, shades, markers, mses, local_min, local_max, blank_xx, blank_yy, names
 
 
@@ -715,7 +728,6 @@ def _color_map_by_feature(experiment=None,
                           scale='default',
                           strech=None,
                           colors=None):
-
     xx, yy, zz, shades, markers, mses, _min, _max, blank_xx, blank_yy, names = \
         _import_values_for_feature(
             experiment,
@@ -794,7 +806,7 @@ def _color_map_by_feature(experiment=None,
 
             xticklabels = [lin[i] for i in range(6)]
             if scale == 'log':
-                xticklabels = [math.e ** x for x in xticklabels]
+                xticklabels = [int(math.e ** x) for x in xticklabels]
             elif scale == 'sqrt':
                 xticklabels = [x ** 2 for x in xticklabels]
 
@@ -827,6 +839,7 @@ def _color_map_by_feature(experiment=None,
     cb.ax.tick_params(labelsize=feature_labelsize)
 
     if ticks_pos is None:
+        # ticks_pos = [0, 0.2, 0.4, 0.6, 0.8, 1]
         ticks_pos = np.linspace(vmin, vmax, 6)
 
     cb.ax.xaxis.set_ticks(ticks_pos)
@@ -846,8 +859,7 @@ def _color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None,
                            normalizing_func=None, marker_func=None, xticklabels=None, ms=None,
                            cmap=None, ticks=None, dim=2, rounding=1, column_id='value',
                            feature_labelsize=14, ticks_pos=None):
-    xx, yy, zz, shades_1, shades_2, markers_1, mses_1, _min, _max, blank_xx_1, blank_yy_1 = \
-        _import_values_for_features(
+    xx, yy, zz, shades_1, shades_2, markers_1, mses_1, _min, _max, blank_xx_1, blank_yy_1 = _import_values_for_features(
         experiment, feature_ids=feature_ids, upper_limit=upper_limit,
         normalizing_func=normalizing_func,
         marker_func=marker_func, dim=dim, column_id=column_id)
@@ -930,13 +942,13 @@ def _color_map_by_features(experiment=None, fig=None, ax=None, feature_ids=None,
                 if rounding == 0:
                     xticklabels = [int(lin[i]) for i in range(6)]
                 else:
-                    xticklabels = [np.round(lin[i], rounding) for i in range(6)]
+                    xticklabels = [int(np.round(lin[i], rounding)) for i in range(6)]
             else:
                 lin = np.linspace(_min, _max, 6)
                 if rounding == 0:
                     xticklabels = [int(_min), '', 'log', 'scale', '', str(int(_max))]
                 else:
-                    xticklabels = [_min, '', 'log', 'scale', '', str(_max)]
+                    xticklabels = [int(_min), '', 'log', 'scale', '', str(int(_max))]
 
         if ticks_pos is None:
             ticks_pos = [0, 0.2, 0.4, 0.6, 0.8, 1]
@@ -1004,69 +1016,119 @@ def add_advanced_points_to_picture_3d(fig, ax, experiment, experiment_id,
                         vmin=0, vmax=1, cmap=cmap, marker=um, s=ms)])
 
 
-def _basic_coloring(experiment=None, ax=None, dim=2):
+# COLORING
+def basic_coloring(experiment=None, ax=None, dim=2, textual=None):
+    if textual is None:
+        textual = []
+    for family in experiment.families.values():
 
+        if family.show:
+            if dim == 2:
+                if family.label in textual:
+                    label = '_nolegend_'
+                else:
+                    label = family.label
+
+                ax.scatter(experiment.coordinates_by_families[family.family_id][0],
+                           experiment.coordinates_by_families[family.family_id][1],
+                           color=family.color,
+                           label=label,
+                           alpha=family.alpha,
+                           s=family.ms,
+                           marker=family.marker)
+            elif dim == 3:
+                ax.scatter(experiment.coordinates_by_families[family.family_id][0],
+                           experiment.coordinates_by_families[family.family_id][1],
+                           experiment.coordinates_by_families[family.family_id][2],
+                           color=family.color,
+                           label=family.label,
+                           alpha=family.alpha,
+                           s=family.ms,
+                           marker=family.marker)
+
+
+def basic_coloring_with_individual(experiment=None, ax=None, individual=None):
+    for family_id in experiment.families:
+        if experiment.families[family_id].show:
+
+            for i in range(experiment.families[family_id].size):
+                election_id = experiment.families[family_id].election_ids[i]
+
+                ax.scatter(experiment.coordinates_by_families[family_id][0][i],
+                           experiment.coordinates_by_families[family_id][1][i],
+                           color=individual['color'][election_id],
+                           alpha=individual['alpha'][election_id],
+                           s=individual['ms'][election_id],
+                           marker=individual['marker'][election_id])
+
+
+def basic_coloring_with_shading(experiment=None,
+                                ax=None,
+                                urn_orangered=False):
     for family in experiment.families.values():
         if family.show:
             label = family.label
             for i in range(family.size):
+                election_id = list(family.instance_ids)[i]
 
-                instance_id = list(family.instance_ids)[i]
-
-                color = experiment.instances[instance_id].printing_params['color']
-                alpha = experiment.instances[instance_id].printing_params['alpha']
-                marker = experiment.instances[instance_id].printing_params['marker']
-                ms = experiment.instances[instance_id].printing_params['ms']
-
-                if color is None:
-                    color = family.color
+                try:
+                    alpha = experiment.instances[election_id].printing_params['alpha']
+                except:
+                    alpha = None
 
                 if alpha is None:
                     alpha = family.alpha
 
-                if marker is None:
-                    marker = family.marker
+                ms = family.ms
+                color = family.color
 
-                if ms is None:
-                    ms = family.ms
+                if 'Mallows (triangle)' in label:
+                    tint = experiment.instances[election_id].params['tint']
+                    tint = 2 * tint
+                    color = (0.75 - 0.75 * alpha + 0.125 * tint + 0.875 * alpha * tint,
+                             0.75 - 0.75 * alpha,
+                             0.75 - 0.75 * alpha + 0.125 * (1 - tint) + 0.875 * alpha * (1 - tint))
+                    alpha = 1
 
-                if dim == 2:
-                    if i == (family.size - 1):  # for the legend
-                        ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
-                                   experiment.coordinates_by_families[family.family_id][1][i],
-                                   color=color,
-                                   label=label,
-                                   alpha=alpha,
-                                   s=ms,
-                                   marker=marker)
-                    else:
-                        ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
-                                   experiment.coordinates_by_families[family.family_id][1][i],
-                                   color=color,
-                                   alpha=alpha,
-                                   s=ms,
-                                   marker=marker)
+                elif 'Urn' in label:
 
-                elif dim == 3:
-                    if i == (family.size - 1):  # for the legend
-                        ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
-                                   experiment.coordinates_by_families[family.family_id][1][i],
-                                   experiment.coordinates_by_families[family.family_id][2][i],
-                                   color=color,
-                                   label=label,
-                                   alpha=alpha,
-                                   s=ms,
-                                   marker=marker)
-                    else:
-                        ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
-                                   experiment.coordinates_by_families[family.family_id][1][i],
-                                   experiment.coordinates_by_families[family.family_id][2][i],
-                                   color=color,
-                                   alpha=alpha,
-                                   s=ms,
-                                   marker=marker)
+                    color, alpha = get_color_alpha_for_urn(alpha, urn_orangered)
+
+                else:
+
+                    if alpha is None or alpha > 1:
+                        alpha = 1
+
+                    if '1D _path' in label:
+                        alpha *= 4
+                    elif '2D _path' in label:
+                        alpha *= 2
+                    elif 'scale' in family.path:
+                        alpha *= 1. / family.path['scale']
+
+                    # alpha *= family.alpha
+                    alpha = (alpha + 0.2) / 1.2
+
+                if i == (family.size - 1):
+                    ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
+                               experiment.coordinates_by_families[family.family_id][1][i],
+                               color=color,
+                               label=label,
+                               alpha=alpha,
+                               # s=family.ms,
+                               s=ms,
+                               marker=family.marker)
+                else:
+                    ax.scatter(experiment.coordinates_by_families[family.family_id][0][i],
+                               experiment.coordinates_by_families[family.family_id][1][i],
+                               color=color,
+                               alpha=alpha,
+                               # s=family.ms,
+                               s=ms,
+                               marker=family.marker)
 
 
+# BACKGROUNDS
 def _basic_background(
         ax=None,
         legend=None,
@@ -1119,7 +1181,7 @@ def _saveas_tex(saveas=None):
         os.mkdir(os.path.join(os.getcwd(), "images", "tex"))
     except FileExistsError:
         pass
-    file_name = saveas + ".tex"
+    file_name = saveas + ".svg"
     path = os.path.join(os.getcwd(), "images", "tex", file_name)
     tikzplotlib.save(path)
 
@@ -1140,7 +1202,7 @@ def print_matrix(experiment=None,
                  dpi=100,
                  vmin=None,
                  vmax=None):
-    """ Print the matrix with average distances between each pair of election """
+    """Print the matrix with average distances between each pair of election """
 
     if omit is None:
         omit = []
@@ -1348,7 +1410,8 @@ def _add_textual(experiment=None, textual=None, ax=None, size=16,
 
     for name in textual:
         name_id = name_from_label(experiment, name)
-
+        x = .0
+        y = .0
         try:
             x, y = experiment.coordinates[name_id]
         except KeyError as err:
@@ -1741,6 +1804,21 @@ def adjust_the_map_on_one_point(experiment) -> None:
         print('Cannot adjust!')
 
 
+def get_color_alpha_for_urn(alpha, urn_orangered=True):
+    if urn_orangered:
+        if alpha > 1.07:
+            return 'red', 0.9
+        elif alpha > 0.53:
+            return 'orangered', 0.9
+        elif alpha > 0.22:
+            return 'orange', 0.9
+        else:
+            return 'gold', 0.9
+    else:
+        if alpha > 2:
+            return 'orange', 1
+        else:
+            return 'orange', alpha * 0.35 + 0.3
 
 
 def print_approvals_histogram(election):

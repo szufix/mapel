@@ -13,6 +13,7 @@ def map_str_to_func(name):
             'emdinf': emd_infty,
             'discrete': discrete,
             'wl1': wl1,
+            'mutual_attraction': l1,
             }.get(name)
 
 

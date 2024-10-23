@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+import threading
+
 import ast
 import copy
 import csv
@@ -83,22 +86,25 @@ class RoommatesExperiment(Experiment):
         return instances
 
     def add_instance(self, culture_id="none", params=None, label=None,
-                     color="black", alpha=1., show=True, marker='x', starting_from=0, size=1,
+                     color="black", alpha=1., show=True, marker='x', ms: int = 20, starting_from=0, size=1,
                      num_agents=None, instance_id=None):
 
         if num_agents is None:
             num_agents = self.default_num_agents
 
         return self.add_family(culture_id=culture_id, params=params, size=size, label=label,
-                               color=color, alpha=alpha, show=show, marker=marker,
+                               color=color, alpha=alpha, show=show, marker=marker, ms=ms,
                                starting_from=starting_from, family_id=instance_id,
                                num_agents=num_agents, single_instance=True)
 
     def add_family(self, culture_id: str = "none", params: dict = None, size: int = 1,
                    label: str = None, color: str = "black", alpha: float = 1.,
-                   show: bool = True, marker: str = 'o', starting_from: int = 0,
+                   show: bool = True, marker: str = 'o', ms: int = 20, starting_from: int = 0,
                    family_id: str = None, single_instance: bool = False,
                    num_agents: int = None, path: dict = None):
+
+        if family_id is None:
+            family_id = culture_id
 
         if num_agents is None:
             num_agents = self.default_num_agents
@@ -113,16 +119,22 @@ class RoommatesExperiment(Experiment):
                                                    params=params, label=label, color=color,
                                                    alpha=alpha, single=single_instance,
                                                    show=show, size=size, marker=marker,
+                                                   ms=ms,
                                                    starting_from=starting_from,
                                                    num_agents=num_agents, path=path)
 
         self.num_families = len(self.families)
         self.num_instances = sum([self.families[family_id].size for family_id in self.families])
 
+        # print('families: ' + str(self.families))
+
+        self.prepare_instances()
+        '''
         models_main.prepare_instances(experiment=self,
                                     culture_id=self.families[family_id].culture_id,
                                     family_id=family_id,
                                     params=copy.deepcopy(self.families[family_id].params))
+        '''
 
     def compute_distances(self,
                           distance_id: str = 'emd-positionwise',
@@ -149,59 +161,67 @@ class RoommatesExperiment(Experiment):
                     ids.append((instance_1, instance_2))
 
         num_distances = len(ids)
-        processes =[]
+        # processes = []
+        threads = []
 
-        for t in range(num_threads):
-            print(f'Starting thread: {t}')
-            sleep(0.1)
-            start = int(t * num_distances / num_threads)
-            stop = int((t + 1) * num_distances / num_threads)
-            thread_ids = ids[start:stop]
+        if num_threads == 1:
+            metr.run_single_thread(self, ids, distances, times, matchings, 0)
+        else:
+            for t in range(num_threads):
+                self.is_exported = True
+                self.experiment_id = 'roommates-exp'
 
-            process = Process(target=metr.run_single_thread, args=(self,
-                                                                   thread_ids,
-                                                                     distances,
-                                                                   times,
-                                                                   matchings,
-                                                                     t ))
+                print(f'Starting thread: {t}')
+                sleep(0.1)
+                start = int(t * num_distances / num_threads)
+                stop = int((t + 1) * num_distances / num_threads)
+                thread_ids = ids[start:stop]
 
-            process.start()
-            processes.append(process)
+                thread = threading.Thread(target=metr.run_single_thread, args=(self,
+                                                                               thread_ids,
+                                                                               distances,
+                                                                               times,
+                                                                               matchings,
+                                                                               t))
+                thread.start()
+                threads.append(thread)
 
-        for process in processes:
-            process.join()
+            for thread in threads:
+                thread.join()
 
-        distances = {instance_id: {} for instance_id in self.instances}
-        times = {instance_id: {} for instance_id in self.instances}
-        for t in range(num_threads):
+            '''
+            distances = {instance_id: {} for instance_id in self.instances}
+            times = {instance_id: {} for instance_id in self.instances}
+            for t in range(num_threads):
 
-            file_name = f'{distance_id}_p{t}.csv'
-            path = os.path.join(os.getcwd(), "election", self.experiment_id, "distances",
-                                file_name)
+                file_name = f'{distance_id}_p{t}.csv'
+                path = os.path.join(os.getcwd(), "election", self.experiment_id, "distances",
+                                    file_name)
 
-            with open(path, 'r', newline='') as csv_file:
-                reader = csv.DictReader(csv_file, delimiter=';')
+                with open(path, 'r', newline='') as csv_file:
+                    reader = csv.DictReader(csv_file, delimiter=';')
 
-                for row in reader:
-                    distances[row['instance_id_1']][row['instance_id_2']] = float(row['distance'])
-                    times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
+                    for row in reader:
+                        distances[row['instance_id_1']][row['instance_id_2']] = float(row['distance'])
+                        times[row['instance_id_1']][row['instance_id_2']] = float(row['time'])
 
-        if self.is_exported:
+            if self.is_exported:
 
-            path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id,
-                                          "distances")
-            make_folder_if_do_not_exist(path_to_folder)
-            path_to_file = os.path.join(path_to_folder, f'{distance_id}.csv')
+                path_to_folder = os.path.join(os.getcwd(), "election", self.experiment_id,
+                                              "distances")
+                make_folder_if_do_not_exist(path_to_folder)
+                path_to_file = os.path.join(path_to_folder, f'{distance_id}.csv')
 
-            with open(path_to_file, 'w', newline='') as csv_file:
-                writer = csv.writer(csv_file, delimiter=';')
-                writer.writerow(
-                    ["instance_id_1", "instance_id_2", "distance", "time"])
+                with open(path_to_file, 'w', newline='') as csv_file:
+                    writer = csv.writer(csv_file, delimiter=';')
+                    writer.writerow(
+                        ["instance_id_1", "instance_id_2", "distance", "time"])
 
-                for election_1, election_2 in itertools.combinations(self.instances, 2):
-                    distance = str(distances[election_1][election_2])
-                    time = str(times[election_1][election_2])
-                    writer.writerow([election_1, election_2, distance, time])
+                    for election_1, election_2 in itertools.combinations(self.instances, 2):
+                        distance = str(distances[election_1][election_2])
+                        time = str(times[election_1][election_2])
+                        writer.writerow([election_1, election_2, distance, time])
+            '''
 
         self.distances = distances
         self.times = times
@@ -394,7 +414,7 @@ class RoommatesExperiment(Experiment):
                         else:
                             value = feature(instance)
 
-                        print(value)
+                        # print(value)
 
                     total_time = time.time() - start
                     total_time /= num_iterations

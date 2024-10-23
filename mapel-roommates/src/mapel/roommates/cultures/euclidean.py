@@ -1,7 +1,8 @@
 import numpy as np
 import math
+import random
 from numpy import linalg
-from mapel.roommates.cultures._utils import convert
+from mapel.roommates.cultures._utils import *
 from mapel.roommates.cultures.mallows import mallows_votes
 
 def get_range(params):
@@ -18,9 +19,39 @@ def weighted_l1(a1, a2, w):
     return total
 
 
+def rotate(l, n):
+    return l[n:] + l[:n]
+
+
+# pref[a].indexof(a') == i <=> pref[a'].indexof(a) == (num_agents-1 - i)
+'''
+listas:
+0: 3 2 1
+1: 0 3 2
+2: 1 0 3
+3: 2 1 0
+
+com n+1 agentes:
+lista mestre: n n-1 n-2 ... 3 2 1 0
+i-ésimo agente: rotaciona a lista 1 unidade pra direita e remove ele mesmo.
+'''
+def generate_roommates_mutual_disagreement(num_agents: int = None, dim: int = 2, **kwargs):
+    master_list = [[(num_agents-1 -i)] for i in range(num_agents)]
+    out = [[-1] * (num_agents-1)] * num_agents
+    for i in range(num_agents):
+        remove_itself = master_list.copy()
+        remove_itself.remove([i])
+        out[i] = remove_itself
+        master_list = rotate(master_list, -1)
+    return out
+
+
 def generate_roommates_attributes_votes(num_agents: int = None,
                                         dim: int = 2,
                                         space='uniform',
+                                        incompleteness: float = 0,
+                                        ties: float = 0,
+                                        srti_func = None,
                                         **kwargs):
     name = f'{dim}d_{space}'
 
@@ -39,13 +70,17 @@ def generate_roommates_attributes_votes(num_agents: int = None,
             else:
                 distances[v][c] = weighted_l1(ones, agents_skills[c], agents_weights[v])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
-
-    return convert(votes)
+        
+    out = convert_votes_to_srti(votes)
+    return out if srti_func is None else srti_func(out, incompleteness, ties)
 
 
 def generate_roommates_euclidean_votes(num_agents: int = None,
                                        dim: int = 2,
-                                       space='uniform',
+                                       space = 'uniform',
+                                       incompleteness = 0,
+                                       ties = 0,
+                                       srti_func = None,
                                        **kwargs):
     name = f'{dim}d_{space}'
 
@@ -60,14 +95,19 @@ def generate_roommates_euclidean_votes(num_agents: int = None,
             distances[v][c] = np.linalg.norm(agents[v] - agents[c])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
-    return convert(votes)
+    out = convert_votes_to_srti(votes)
+    return out if srti_func is None else srti_func(out, incompleteness, ties)
 
 
 def generate_roommates_reverse_euclidean_votes(num_agents: int = None,
                                                dim: int = 2,
                                                space='uniform',
-                                               proportion=0.5,
+                                               proportion = 0.5,
+                                               incompleteness = 0,
+                                               ties = 0,
+                                               srti_func = None,
                                                **kwargs):
+    proportion = 0.5 if not ('proportion' in kwargs) else kwargs.get('proportion')
     name = f'{dim}d_{space}'
 
     agents = np.array([get_rand(name, i=i, num_agents=num_agents) for i in range(num_agents)])
@@ -87,14 +127,31 @@ def generate_roommates_reverse_euclidean_votes(num_agents: int = None,
         tmp = list(votes[i])
         tmp.reverse()
         votes[i] = tmp
+    
+    out = convert_votes_to_srti(votes)
+    return out if srti_func is None else srti_func(out, incompleteness, ties)
 
-    return convert(votes)
+# Returns all lists with no agent ranked
+def generate_roommates_incomplete(num_agents: int = None, **kwargs):
+    return [[[] for _ in range(num_agents-1)] for _ in range(num_agents)]
+
+# Returns all lists complete, with all agents tied on every preference list
+def generate_roommates_tied(num_agents: int = None, **kwargs):
+    empty_lists = [[[] for _ in range(num_agents-1)] for _ in range(num_agents)]
+    for i in range(len(empty_lists)):
+        for j in range(num_agents):
+            if i != j:
+                empty_lists[i][0].append(j)
+    return empty_lists
 
 
 def generate_roommates_expectation_votes(num_agents: int = None,
                                          dim: int = 2,
+                                         std: float = 0.1,
                                          space='uniform',
-                                         std=0.1,
+                                         incompleteness: float = 0,
+                                         ties: float = 0,
+                                         srti_func = None,
                                          **kwargs):
     name = f'{dim}d_{space}'
 
@@ -116,16 +173,19 @@ def generate_roommates_expectation_votes(num_agents: int = None,
             distances[v][c] = np.linalg.norm(agents_reality[c] - agents_wishes[v])
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
-    return convert(votes)
+    out = convert_votes_to_srti(votes)
+    return out if srti_func is None else srti_func(out, incompleteness, ties)
 
 
 def generate_roommates_fame_votes(num_agents: int = None,
                                   dim: int = 2,
                                   space='uniform',
-                                  radius=0.1,
+                                  incompleteness: float = 0,
+                                  ties: float = 0,
+                                  srti_func = None,
                                   **kwargs):
     # Also known as radius model
-
+    radius = 0.1 if not ('radius' in kwargs) else kwargs.get('radius')
     name = f'{dim}d_{space}'
 
     agents = np.array([get_rand(name) for _ in range(num_agents)])
@@ -140,13 +200,17 @@ def generate_roommates_fame_votes(num_agents: int = None,
             distances[v][c] = distances[v][c] - rays[c]
         votes[v] = [x for _, x in sorted(zip(distances[v], votes[v]))]
 
-    return convert(votes)
+    out = convert_votes_to_srti(votes)
+    return out if srti_func is None else srti_func(out, incompleteness, ties)
 
 
 def generate_roommates_mallows_euclidean_votes(num_agents: int = None,
                                                dim: int = 2,
                                                space='uniform',
                                                phi=0.5,
+                                               incompleteness: float = 0,
+                                               ties: float = 0,
+                                               srti_func = None,
                                                **kwargs):
     name = f'{dim}d_{space}'
 
@@ -163,7 +227,8 @@ def generate_roommates_mallows_euclidean_votes(num_agents: int = None,
 
     votes = mallows_votes(votes, phi)
 
-    return convert(votes)
+    out = convert_votes_to_srti(votes)
+    return out if srti_func is None else srti_func(out, incompleteness, ties)
 
 # AUXILIARY
 def random_ball(dimension, num_points=1, radius=1):

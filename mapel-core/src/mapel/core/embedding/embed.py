@@ -158,6 +158,8 @@ def embed(experiment_id,
     experiment_id.coordinates = {}
     for i, instance_id in enumerate(experiment_id.distances):
         experiment_id.coordinates[instance_id] = [my_pos[i][d] for d in range(dim)]
+    for i, family_id in enumerate(experiment_id.families):
+        experiment_id.coordinates[family_id] = [my_pos[i][d] for d in range(dim)]
 
     pr.adjust_the_map(experiment_id, left=left, up=up, right=right, down=down)
 

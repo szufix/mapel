@@ -1,21 +1,29 @@
 
 
 import numpy as np
-from mapel.roommates.cultures._utils import convert
+from mapel.roommates.cultures._utils import *
 from mapel.core.utils import *
 import logging
 
 
-def generate_roommates_ic_votes(num_agents: int = None, **kwargs):
+def generate_roommates_ic_votes(num_agents: int = None,
+                                incompleteness: int = 0,
+                                ties: int = 0,
+                                srti_func = None,
+                                **kwargs):
     """ Impartial Culture """
 
     votes = [list(np.random.permutation(num_agents)) for _ in range(num_agents)]
-
-    return convert(votes)
+    
+    out = convert_votes_to_srti(votes)
+    return out if srti_func is None else srti_func(out, incompleteness, ties)
 
 
 def generate_roommates_group_ic_votes(num_agents: int = None,
-                                      proportion=0.5,
+                                      proportion: float = 0.5,
+                                      incompleteness: int = 0,
+                                      ties: int = 0,
+                                      srti_func = None,
                                       **kwargs):
     """ Impartial Culture with two groups """
 
@@ -32,26 +40,29 @@ def generate_roommates_group_ic_votes(num_agents: int = None,
 
     votes = votes_1 + votes_2
 
-    return convert(votes)
+    out = convert_votes_to_srti(votes)
+    return out if srti_func is None else srti_func(out, incompleteness, ties)
 
 
+# Retorna a instância para o Identity
 def generate_roommates_id_votes(num_agents: int = None, **kwargs):
     """ One of four extreme points for Compass """
 
     votes = [list(range(num_agents)) for _ in range(num_agents)]
+    
+    return convert_votes_to_srti(votes)
 
-    return convert(votes)
 
-
+# Retorna a instância para o Mutual disagreement
 def generate_roommates_asymmetric_votes(num_agents: int = None, **kwargs):
     """ One of four extreme points for Compass """
     votes = [list(range(num_agents)) for _ in range(num_agents)]
 
     votes = [rotate(vote, shift) for shift, vote in enumerate(votes)]
+    
+    return convert_votes_to_srti(votes)
 
-    return convert(votes)
-
-
+# Retorna a instância para o Mutual agreement
 def generate_roommates_symmetric_votes(num_agents: int = None, **kwargs):
     """ One of four extreme points for Compass """
 
@@ -83,10 +94,10 @@ def generate_roommates_symmetric_votes(num_agents: int = None, **kwargs):
         for x, y in partition:
             votes[x][pos] = y
             votes[y][pos] = x
+    return [[[votes[i][j]] for j in range(len(votes[i]))] for i in range(len(votes))]
 
-    return votes
 
-
+# Retorna a instância para o Chaos
 def generate_roommates_chaos_votes(num_agents: int = None, **kwargs):
     """ One of four extreme points for Compass """
 
@@ -111,8 +122,8 @@ def generate_roommates_chaos_votes(num_agents: int = None, **kwargs):
             for i in range(num_agents):
                 if k1 != i and matrix[i][matrix[k1][k2]] == matrix[k1][k2]:
                     votes[k1][k2] = i
-
-    return votes
+    
+    return [[[votes[i][j]] for j in range(len(votes[i]))] for i in range(len(votes))]
 
 
 # # # # # # # # # # # # # # # #

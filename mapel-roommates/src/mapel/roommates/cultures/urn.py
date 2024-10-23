@@ -1,5 +1,5 @@
 import numpy as np
-from mapel.roommates.cultures._utils import convert
+from mapel.roommates.cultures._utils import convert_votes_to_sr
 
 
 def generate_roommates_urn_votes(num_agents: int = None,
@@ -16,7 +16,7 @@ def generate_roommates_urn_votes(num_agents: int = None,
             votes[j] = votes[np.random.randint(0, j)]
         urn_size += alpha
 
-    return convert(votes)
+    return convert_votes_to_sr(votes)
 
 # # # # # # # # # # # # # # # #
 # LAST CLEANUP ON:  9.06.2023 #

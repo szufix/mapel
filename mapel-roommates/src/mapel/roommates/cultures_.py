@@ -11,21 +11,27 @@ import mapel.roommates.cultures.urn as urn
 
 
 registered_roommates_culture = {
-    'ic': impartial.generate_roommates_ic_votes,
+    'fully_incomplete': euclidean.generate_roommates_incomplete,
+    'fully_tied': euclidean.generate_roommates_tied,
+
+    'euclidean': euclidean.generate_roommates_euclidean_votes,
+    'reverse_euclidean': euclidean.generate_roommates_reverse_euclidean_votes,
+    'mallows_euclidean': euclidean.generate_roommates_mallows_euclidean_votes,
+    'fame': euclidean.generate_roommates_fame_votes,
+    'expectation': euclidean.generate_roommates_expectation_votes,
+    'attributes': euclidean.generate_roommates_attributes_votes,
+
     'id': impartial.generate_roommates_id_votes,
     'chaos': impartial.generate_roommates_chaos_votes,
     'symmetric': impartial.generate_roommates_symmetric_votes,
     'asymmetric': impartial.generate_roommates_asymmetric_votes,
-    'urn': urn.generate_roommates_urn_votes,
-    'fame': euclidean.generate_roommates_fame_votes,
-    'expectation': euclidean.generate_roommates_expectation_votes,
-    'attributes': euclidean.generate_roommates_attributes_votes,
-    'euclidean': euclidean.generate_roommates_euclidean_votes,
-    'reverse_euclidean': euclidean.generate_roommates_reverse_euclidean_votes,
+    'ic': impartial.generate_roommates_ic_votes,
     'group_ic': impartial.generate_roommates_group_ic_votes,
+
     'norm-mallows': mallows.generate_roommates_norm_mallows_votes,
-    'mallows_euclidean': euclidean.generate_roommates_mallows_euclidean_votes,
     'malasym': mallows.generate_roommates_malasym_votes,
+
+    'urn': urn.generate_roommates_urn_votes,
 }
 
 

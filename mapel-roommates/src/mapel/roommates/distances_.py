@@ -30,20 +30,24 @@ def get_distance(election_1: Roommates, election_2: Roommates,
     inner_distance, main_distance = extract_distance_id(distance_id)
 
     if main_distance in registered_roommates_distances:
-        return registered_roommates_distances.get(main_distance)(election_1,
-                                                                 election_2,
-                                                                 inner_distance)
+        return registered_roommates_distances.get(distance_id)(election_1,
+                                                               election_2,
+                                                               inner_distance)
     else:
         logging.warning('No such metric!')
 
 
 def extract_distance_id(distance_id: str) -> (Callable, str):
+    inner_distance = map_str_to_func(distance_id)
+    main_distance = distance_id
+    ''' Minha cagadinha
     if '-' in distance_id:
         inner_distance, main_distance = distance_id.split('-')
         inner_distance = map_str_to_func(inner_distance)
     else:
         main_distance = distance_id
         inner_distance = None
+    '''
     return inner_distance, main_distance
 
 
@@ -77,7 +81,7 @@ def run_single_thread(experiment: Experiment,
         path = os.path.join(os.getcwd(), "election", experiment.experiment_id, "distances",
                             file_name)
 
-        with open(path, 'w', newline='') as csv_file:
+        with open(path, 'w+', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=';')
             writer.writerow(
                 ["instance_id_1", "instance_id_2", "distance", "time"])

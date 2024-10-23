@@ -6,8 +6,7 @@ from mapel.core.objects.Family import Family
 from mapel.roommates.objects.Roommates import Roommates
 from mapel.core.utils import *
 
-import mapel.roommates.cultures.mallows as mallows
-
+import mapel.core.features.mallows as mallows
 
 class RoommatesFamily(Family):
 
@@ -86,8 +85,8 @@ class RoommatesFamily(Family):
 
             if params is not None and 'normphi' in params:
                 params['phi'] = mallows.phi_from_normphi(self.num_agents,
-                                                        relphi=params['normphi'])
-
+                                                        normphi=params['normphi'])
+                
             instance_id = get_instance_id(self.single, self.family_id, j)
 
             instance = Roommates(experiment_id, instance_id, is_imported=False,

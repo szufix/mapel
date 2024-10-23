@@ -41,7 +41,6 @@ class KamadaKawai:
             'bb': _get_positions_bb,
             'adam': _get_positions_adam
         }
-
         positions = initial_place_points(distances, initial_positions, self.initial_positions_algorithm)
 
         start_time = time.time()

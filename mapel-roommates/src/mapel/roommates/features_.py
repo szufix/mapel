@@ -8,6 +8,8 @@ from itertools import combinations
 from mapel.core.inner_distances import l2
 
 registered_roommates_features = {
+    'number_of_solutions': basic.num_solutions,
+
     'summed_rank_minimal_matching': basic.summed_rank_minimal_matching,
     'summed_rank_maximal_matching': basic.summed_rank_maximal_matching,
     'min_num_bps_matching': basic.min_num_bps_matching,
